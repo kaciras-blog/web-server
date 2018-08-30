@@ -1,0 +1,18 @@
+{
+	"port": 80,
+	"content": "D:\\Coding\\Blog-V8\\WebContent\\dist",
+	"image": {
+		"root": "G:/备份/blog.kaciras.net/image",
+		"maxSize": 52428800
+	},
+	"cors": {
+		"maxAge": 864000,
+		"exposeHeaders": ["Location"],
+		"allowHeaders": ["X-CSRF-Token", "X-Requested-With", "Content-Type"],
+		"credentials": true
+	},
+	"tls": true,
+	"httpsPort": 443,
+	"certificate": "D:/Coding/Utils/dev.pem",
+	"privatekey": "D:/Coding/Utils/dev.pvk"
+}
