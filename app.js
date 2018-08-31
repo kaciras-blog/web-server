@@ -42,8 +42,6 @@ app.use(vuessr());
 //单页应用，默认返回页面
 app.use(ctx => send(ctx, "index.html", {root: config.content, maxage: 365 * 24 * 3600 * 1000}));
 
-app.on('error', err => logger.error(err));
-
 if (config.tls) {
 	const tlsPort = config.httpsPort || 443;
 	const httpPort = config.port || 80;
