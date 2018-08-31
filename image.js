@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const {promisify} = require('util');
 
+
 const asyncfs = {
 	exists: promisify(fs.exists),
 	writeFile: promisify(fs.writeFile),
@@ -31,7 +32,12 @@ async function uploadImage(ctx) {
 		return ctx.response.status = 400;
 	}
 
-	const name = sha3_256(file.buffer).toUpperCase() + path.extname(file.originalname);
+	const ext = path.extname(file.originalname).toLowerCase();
+	if([".jpg", ".png", ".gif", ".bmp", ".svg"].indexOf(ext) < 0) {
+		return ctx.response.status = 400;
+	}
+
+	const name = sha3_256(file.buffer).toUpperCase() + ext;
 	const store = path.join(config.image.root, name);
 
 	if (await asyncfs.exists(store)) {
