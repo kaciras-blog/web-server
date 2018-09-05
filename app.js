@@ -10,7 +10,6 @@ const cors = require('@koa/cors');
 const multer = require('koa-multer');
 const fs = require("fs");
 const log4js = require('log4js');
-const vuessr = require("./vuessr");
 const config = require("./config");
 const image = require("./image");
 
@@ -37,7 +36,7 @@ app.use(serve(config.content, {
 	maxage: 30 * 86400 * 1000,
 }));
 
-app.use(vuessr());
+app.use(require("./vuessr"));
 
 //单页应用，默认返回页面
 app.use(ctx => send(ctx, "index.html", {root: config.content, maxage: 365 * 24 * 3600 * 1000}));
