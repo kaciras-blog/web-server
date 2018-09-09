@@ -11,6 +11,10 @@
 		"allowHeaders": ["X-CSRF-Token", "X-Requested-With", "Content-Type"],
 		"credentials": true
 	},
+	"ssr":{
+		"enable": false,
+		"cache": true
+	},
 	"tls": true,
 	"httpsPort": 443,
 	"certificate": "D:/Coding/Utils/dev.pem",
