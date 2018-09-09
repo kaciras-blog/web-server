@@ -48,6 +48,7 @@ if (config.tls) {
 	http2.createSecureServer({
 		key: fs.readFileSync(config.privatekey),
 		cert: fs.readFileSync(config.certificate),
+		allowHTTP1: true,
 	}, app.callback()).listen(tlsPort);
 
 	// 创建重定向服务
