@@ -12,7 +12,7 @@
 		"credentials": true
 	},
 	"ssr":{
-		"enable": false,
+		"enable": true,
 		"cache": true
 	},
 	"tls": true,

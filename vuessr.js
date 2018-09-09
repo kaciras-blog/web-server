@@ -10,7 +10,7 @@ function createMiddleware () {
 		template: fs.readFileSync(config.content + "/index.template.html", "utf-8"),
 		clientManifest: require(config.content + "/vue-ssr-client-manifest.json"),
 	});
-	const createApp = require("D:/Coding/Blog-V8/WebContent/dist/static/app.ssr").default;
+	const createApp = require("D:/Coding/Blog-V8/WebContent/dist/server-bundle").default;
 	const renderToString = promisify(renderer.renderToString);
 
 	if (config.ssr.cache) {
@@ -23,7 +23,7 @@ function createMiddleware () {
 			url: ctx.request.url,
 		};
 		try {
-			ctx.body = await renderToString(createApp(context), context);
+			ctx.body = await renderToString(await createApp(context), context);
 		} catch (e) {
 			if (e.code === 404) {
 				ctx.response.status = 404;
