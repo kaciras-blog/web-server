@@ -1,6 +1,6 @@
 const fs = require("./asyncfs");
-const send = require('koa-send');
-const { promisify } = require('util');
+const send = require("koa-send");
+const { promisify } = require("util");
 const config = require("./config");
 const renderer = require('vue-server-renderer').createRenderer({
 	runInNewContext: false,

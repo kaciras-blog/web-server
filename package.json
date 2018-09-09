@@ -3,6 +3,9 @@
 	"version": "1.0.0",
 	"private": true,
 	"description": "Kaciras Bolg version 8 frontend server.",
+	"scripts": {
+		"eslint": "eslint --fix --ext .js ."
+	},
 	"dependencies": {
 		"@koa/cors": "^2.2.2",
 		"axios": "^0.18.0",
@@ -18,5 +21,13 @@
 		"spdy": "^3.4.7",
 		"vue": "^2.5.17",
 		"vue-server-renderer": "^2.5.17"
+	},
+	"devDependencies": {
+		"eslint": "^5.5.0",
+		"eslint-config-standard": "^12.0.0",
+		"eslint-plugin-import": "^2.14.0",
+		"eslint-plugin-node": "^7.0.1",
+		"eslint-plugin-promise": "^4.0.1",
+		"eslint-plugin-standard": "^4.0.0"
 	}
 }

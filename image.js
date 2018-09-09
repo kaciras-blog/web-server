@@ -1,21 +1,21 @@
 const logger = require("log4js").getLogger("Http");
-const send = require('koa-send');
+const send = require("koa-send");
 const config = require("./config");
-const sha3_256 = require('js-sha3').sha3_256;
+const sha3_256 = require("js-sha3").sha3_256;
 const asyncfs = require("./asyncfs");
 const path = require("path");
 
 
-async function getImage(ctx) {
+async function getImage (ctx) {
 	const name = ctx.request.path.substring("/image/".length);
 	if (!name || /[\\/]/.test(name)) {
 		ctx.response.status = 404;
 	} else {
-		return await send(ctx, name, { root: config.image.root, maxage: 365 * 24 * 3600 * 1000 })
+		return await send(ctx, name, { root: config.image.root, maxage: 365 * 24 * 3600 * 1000 });
 	}
 }
 
-async function uploadImage(ctx) {
+async function uploadImage (ctx) {
 	logger.trace("有图片正在上传");
 	// if (!await apiServer.utils.checkPermission(req, "WEB", "UPLOAD_IMAGE")) {
 	// 	return next(createError(403))
