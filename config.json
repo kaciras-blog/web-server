@@ -15,6 +15,7 @@
 		"enable": true,
 		"cache": true
 	},
+	"apiServer": "http://localhost:2374",
 	"tls": true,
 	"httpsPort": 443,
 	"certificate": "D:/Coding/Utils/dev.pem",

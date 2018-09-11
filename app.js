@@ -25,6 +25,16 @@ const uploader = multer({
 app.use(cors(config.cors));
 app.use(conditional());
 app.use(uploader.single("file"));
+
+// robots.txt 帮助爬虫抓取，并指向站点地图
+app.use((ctx, next) => {
+	if (ctx.request.path === "/robots.txt") {
+		return send(ctx, "robots.txt");
+	}
+	return next();
+});
+
+app.use(require("./sitemap"));
 app.use(image); // 图片太大不计算etag，也不需要二次压缩
 
 app.use(compress({
