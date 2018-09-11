@@ -1,16 +1,19 @@
 const fs = require("./asyncfs");
 const send = require("koa-send");
 const { promisify } = require("util");
+const path = require("path");
 const config = require("./config");
 
+function reslove (file) {
+	return path.join(config.content, file);
+}
 
 function createMiddleware () {
-	const renderer = require("vue-server-renderer").createRenderer({
+	const renderer = require("vue-server-renderer").createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
 		runInNewContext: false,
-		template: fs.readFileSync(config.content + "/index.template.html", "utf-8"),
-		clientManifest: require(config.content + "/vue-ssr-client-manifest.json"),
+		template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
+		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
 	});
-	const createApp = require("D:/Coding/Blog-V8/WebContent/dist/server-bundle").default;
 	const renderToString = promisify(renderer.renderToString);
 
 	if (config.ssr.cache) {
@@ -23,7 +26,7 @@ function createMiddleware () {
 			url: ctx.request.url,
 		};
 		try {
-			ctx.body = await renderToString(await createApp(context), context);
+			ctx.body = await renderToString(context);
 		} catch (e) {
 			if (e.code === 404) {
 				ctx.response.status = 404;

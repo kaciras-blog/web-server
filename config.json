@@ -12,8 +12,8 @@
 		"credentials": true
 	},
 	"ssr":{
-		"enable": true,
-		"cache": true
+		"enable": false,
+		"cache": false
 	},
 	"apiServer": "http://localhost:2374",
 	"tls": true,
