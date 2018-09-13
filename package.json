@@ -10,7 +10,7 @@
 		"@koa/cors": "^2.2.2",
 		"axios": "^0.18.0",
 		"js-sha3": "^0.8.0",
-		"koa": "^2.5.2",
+		"koa": "^2.5.3",
 		"koa-compress": "^3.0.0",
 		"koa-conditional-get": "^2.0.0",
 		"koa-etag": "^3.0.0",
