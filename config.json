@@ -12,7 +12,6 @@
 		"credentials": true
 	},
 	"ssr":{
-		"enable": false,
 		"cache": false
 	},
 	"apiServer": "http://localhost:2374",

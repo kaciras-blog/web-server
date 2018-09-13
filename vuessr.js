@@ -71,11 +71,4 @@ module.exports = function createMiddleware (options) {
 			return next();
 		}
 	};
-}
-
-module.exports = function () {
-	if (!config.ssr.enable) {
-		return (ctx, next) => next();
-	}
-	return createMiddleware();
 };
