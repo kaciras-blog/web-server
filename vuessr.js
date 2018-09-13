@@ -8,13 +8,20 @@ function reslove (file) {
 	return path.join(config.content, file);
 }
 
-function createMiddleware () {
+function productionRenderFunctionFactory () {
 	const renderer = require("vue-server-renderer").createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
 		runInNewContext: false,
 		template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
 		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
 	});
-	const renderToString = promisify(renderer.renderToString);
+	return () => promisify(renderer.renderToString);
+}
+
+module.exports = function createMiddleware (options) {
+	options = options || {};
+	const createRenderFunction = options.renderFunctionFactory
+		? options.renderFunctionFactory()
+		: productionRenderFunctionFactory();
 
 	if (config.ssr.cache) {
 		fs.mkdirs("cache/article");
@@ -26,7 +33,7 @@ function createMiddleware () {
 			url: ctx.request.url,
 		};
 		try {
-			ctx.body = await renderToString(context);
+			ctx.body = await createRenderFunction()(context);
 		} catch (e) {
 			if (e.code === 404) {
 				ctx.response.status = 404;
