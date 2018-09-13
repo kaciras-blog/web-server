@@ -3,13 +3,13 @@ const http2 = require("http2");
 const http = require("http");
 const config = require("./config");
 const app = require("./app");
-
 const logger = require("log4js").getLogger("app");
+
 logger.level = "info";
+const httpPort = config.port || 80;
 
 if (config.tls) {
 	const tlsPort = config.httpsPort || 443;
-	const httpPort = config.port || 80;
 
 	http2.createSecureServer({
 		key: fs.readFileSync(config.privatekey),
@@ -25,6 +25,6 @@ if (config.tls) {
 
 	logger.info(`Https连接端口：${tlsPort}，并重定向来自端口${httpPort}的Http请求`);
 } else {
-	http.createServer(app.callback()).listen(config.port || 80);
-	logger.info(`在端口：${config.port || 80}上监听Http连接`);
+	http.createServer(app.callback()).listen(httpPort);
+	logger.info(`在端口：${httpPort}上监听Http连接`);
 }
