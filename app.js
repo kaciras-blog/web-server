@@ -43,6 +43,7 @@ app.use(uploader.single("file"));
 
 // robots.txt 帮助爬虫抓取，并指向站点地图
 app.use(staticFile("/robots.txt"));
+app.use(staticFile("/favicon.ico"));
 
 app.use(require("./sitemap"));
 app.use(image); // 图片太大不计算etag，也不需要二次压缩
