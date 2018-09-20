@@ -28,7 +28,7 @@ function staticFile (path) {
 			ctx.status = 405;
 			return Promise.resolve();
 		}
-		return send(ctx, path, { root: config.content, maxage: 365 * 24 * 3600 * 1000 });
+		return send(ctx, path, { root: config.content });
 	};
 }
 
@@ -41,16 +41,15 @@ app.use(cors(config.cors));
 app.use(conditional());
 app.use(uploader.single("file"));
 
-// robots.txt 帮助爬虫抓取，并指向站点地图
-app.use(staticFile("/robots.txt"));
-app.use(staticFile("/favicon.ico"));
-
-app.use(require("./sitemap"));
 app.use(image); // 图片太大不计算etag，也不需要二次压缩
+app.use(staticFile("/favicon.ico"));
+app.use(staticFile("/robots.txt")); // robots.txt 帮助爬虫抓取，并指向站点地图
 
 app.use(compress({
 	threshold: 2048,
 }));
+
+app.use(require("./sitemap"));
 app.use(etag());
 
 // 仅允许/static/开头的请求访问静态资源，避免发送dist目录下的文件
