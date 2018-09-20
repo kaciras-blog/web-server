@@ -1,8 +1,8 @@
 {
 	"name": "web-server",
 	"version": "1.0.0",
-	"private": true,
 	"description": "Kaciras Bolg version 8 frontend server.",
+	"private": true,
 	"scripts": {
 		"eslint": "eslint --fix --ext .js ."
 	},

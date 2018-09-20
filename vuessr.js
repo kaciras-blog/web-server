@@ -36,7 +36,7 @@ module.exports = function createMiddleware (options) {
 			ctx.body = await createRenderFunction()(context);
 		} catch (e) {
 			if (e.code === 404) {
-				ctx.response.status = 404;
+				ctx.status = 404;
 			} else {
 				ctx.throw(e);
 			}
@@ -46,14 +46,13 @@ module.exports = function createMiddleware (options) {
 	// Markdown转换比较慢，用个缓存
 	async function sendHtml (ctx) {
 		if (config.ssr.cache) {
-			const path = ctx.request.path;
-			const cache = `cache${path}.html`;
+			const cache = `cache${ctx.path}.html`;
 
-			if (notFoundCache[path]) {
-				ctx.response.status = 404;
+			if (notFoundCache[ctx.path]) {
+				ctx.status = 404;
 			}
 			if (await fs.existsAsync(cache)) {
-				return await send(ctx, path + ".html", { root: "cache", maxage: 365 * 24 * 3600 * 1000 });
+				return await send(ctx, ctx.path + ".html", { root: "cache", maxage: 365 * 24 * 3600 * 1000 });
 			}
 			await renderArticlePages(ctx);
 			if (ctx.body) {
@@ -65,7 +64,7 @@ module.exports = function createMiddleware (options) {
 	}
 
 	return function (ctx, next) {
-		if (ctx.request.path.startsWith("/article")) {
+		if (ctx.path.startsWith("/article")) {
 			return renderArticlePages(ctx);
 		} else {
 			return next();

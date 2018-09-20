@@ -7,9 +7,9 @@ const path = require("path");
 
 
 async function getImage (ctx) {
-	const name = ctx.request.path.substring("/image/".length);
+	const name = ctx.path.substring("/image/".length);
 	if (!name || /[\\/]/.test(name)) {
-		ctx.response.status = 404;
+		ctx.status = 404;
 	} else {
 		return await send(ctx, name, { root: config.image.root, maxage: 365 * 24 * 3600 * 1000 });
 	}
@@ -23,24 +23,24 @@ async function uploadImage (ctx) {
 
 	const file = ctx.req.file;
 	if (!file) {
-		return ctx.response.status = 400;
+		return ctx.status = 400;
 	}
 
 	const ext = path.extname(file.originalname).toLowerCase();
 	if ([".jpg", ".png", ".gif", ".bmp", ".svg"].indexOf(ext) < 0) {
-		return ctx.response.status = 400;
+		return ctx.status = 400;
 	}
 
 	const name = sha3_256(file.buffer).toUpperCase() + ext;
 	const store = path.join(config.image.root, name);
 
 	if (await asyncfs.existsAsync(store)) {
-		ctx.response.status = 200;
+		ctx.status = 200;
 		ctx.response.set("Location", "/image/" + name);
 	} else {
 		logger.debug("保存上传的图片:", name);
 		await asyncfs.writeFileAsync(store, file.buffer);
-		ctx.response.status = 201;
+		ctx.status = 201;
 		ctx.response.set("Location", "/image/" + name);
 	}
 }
@@ -53,6 +53,6 @@ module.exports = async (ctx, next) => {
 	} else if (ctx.request.method === "POST") {
 		await uploadImage(ctx, next);
 	} else {
-		ctx.response.status = 405;
+		ctx.status = 405;
 	}
 };
