@@ -19,7 +19,7 @@ function productionRenderFunctionFactory () {
 
 module.exports = function createMiddleware (options) {
 	options = options || {};
-	const createRenderFunction = options.renderFunctionFactory
+	const getRenderFunction = options.renderFunctionFactory
 		? options.renderFunctionFactory()
 		: productionRenderFunctionFactory();
 
@@ -28,12 +28,12 @@ module.exports = function createMiddleware (options) {
 	}
 	const notFoundCache = {};
 
-	async function renderArticlePages (ctx) {
+	async function renderPage (ctx) {
 		const context = {
 			url: ctx.request.url,
 		};
 		try {
-			ctx.body = await createRenderFunction()(context);
+			ctx.body = await getRenderFunction()(context);
 		} catch (e) {
 			if (e.code === 404) {
 				ctx.status = 404;
@@ -54,18 +54,20 @@ module.exports = function createMiddleware (options) {
 			if (await fs.existsAsync(cache)) {
 				return await send(ctx, ctx.path + ".html", { root: "cache", maxage: 365 * 24 * 3600 * 1000 });
 			}
-			await renderArticlePages(ctx);
+			await renderPage(ctx);
 			if (ctx.body) {
 				await fs.writeFileAsync(cache, ctx.body);
 			}
 		} else {
-			await renderArticlePages(ctx);
+			await renderPage(ctx);
 		}
 	}
 
+	const regex = new RegExp("^(?:/|/article)[/?$]?");
+
 	return function (ctx, next) {
-		if (ctx.path.startsWith("/article")) {
-			return renderArticlePages(ctx);
+		if (regex.test(ctx.path)) {
+			return renderPage(ctx);
 		} else {
 			return next();
 		}
