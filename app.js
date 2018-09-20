@@ -53,9 +53,17 @@ app.use(compress({
 }));
 app.use(etag());
 
-app.use(serve(config.content, {
+// 仅允许/static/开头的请求访问静态资源，避免发送dist目录下的文件
+const staticMiddleware = serve(config.content, {
+	index: false,
 	maxage: 30 * 86400 * 1000,
-}));
+});
+app.use((ctx, next) => {
+	if (ctx.path.startsWith("/static/")) {
+		return staticMiddleware(ctx, next);
+	}
+	return next();
+});
 
 app.use(require("./vuessr")());
 
