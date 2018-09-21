@@ -31,7 +31,7 @@ async function uploadImage (ctx) {
 		return ctx.status = 400;
 	}
 
-	const name = sha3_256(file.buffer).toUpperCase() + ext;
+	const name = sha3_256(file.buffer) + ext;
 	const store = path.join(config.image.root, name);
 
 	if (await asyncfs.existsAsync(store)) {
