@@ -42,7 +42,7 @@ app.use(conditional());
 app.use(uploader.single("file"));
 
 app.use(image); // 图片太大不计算etag，也不需要二次压缩
-app.use(staticFile("/favicon.ico"));
+app.use(staticFile("/service-worker.js"));
 app.use(staticFile("/robots.txt")); // robots.txt 帮助爬虫抓取，并指向站点地图
 
 app.use(compress({
