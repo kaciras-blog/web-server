@@ -16,6 +16,7 @@
 	},
 	"apiServer": "http://localhost:2374",
 	"tls": true,
+	"redirectHttp": false,
 	"httpsPort": 443,
 	"certificate": "D:/Coding/Utils/dev.pem",
 	"privatekey": "D:/Coding/Utils/dev.pvk"

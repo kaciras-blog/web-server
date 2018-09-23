@@ -17,13 +17,16 @@ if (config.tls) {
 		allowHTTP1: true,
 	}, app.callback()).listen(tlsPort);
 
+	logger.info(`Https连接端口：${tlsPort}`);
+}
+
+if (config.tls && config.redirectHttp) {
 	// 创建重定向服务
 	http.createServer((req, res) => {
 		res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
 		res.end();
 	}).listen(httpPort);
-
-	logger.info(`Https连接端口：${tlsPort}，并重定向来自端口${httpPort}的Http请求`);
+	logger.info(`重定向来自端口${httpPort}的Http请求至Https`);
 } else {
 	http.createServer(app.callback()).listen(httpPort);
 	logger.info(`在端口：${httpPort}上监听Http连接`);
