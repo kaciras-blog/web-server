@@ -30,6 +30,8 @@ module.exports = function createMiddleware (options) {
 
 	async function renderPage (ctx) {
 		const context = {
+			title: "Kaciras的博客",
+			meta: "",
 			url: ctx.request.url,
 		};
 		try {
