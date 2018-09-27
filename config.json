@@ -1,4 +1,5 @@
 {
+	"logLevel": "info",
 	"port": 80,
 	"content": "D:\\Coding\\Blog-V8\\WebContent\\dist",
 	"image": {

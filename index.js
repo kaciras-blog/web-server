@@ -5,7 +5,7 @@ const config = require("./config");
 const app = require("./app");
 const logger = require("log4js").getLogger("app");
 
-logger.level = "info";
+logger.level = config.logLevel || "debug";
 const httpPort = config.port || 80;
 
 if (config.tls) {

@@ -8,7 +8,7 @@ let cached = null;
 function updateCache () {
 	getLastUpdatePosts()
 		.then(siteMap => cached = siteMap)
-		.catch(err => log.error("创建站点地图失败", err));
+		.catch(err => log.error("创建站点地图失败：", err.message));
 }
 
 async function getLastUpdatePosts () {
