@@ -2,16 +2,21 @@ extends: standard
 rules:
   semi: [error, always]
   quotes: [error, double]
-  indent: [error, tab]
   comma-dangle: [error, always-multiline]
   no-tabs: off
   camelcase: off
   no-return-await: off
   no-return-assign: off
   no-unused-vars: warn
+
+  indent:
+  - error
+  - tab
+  - SwitchCase: 1
+
   no-multiple-empty-lines:
-    - error
-    - max: 2
-      maxEOF: 1
-      maxBOF: 0
+  - error
+  - max: 2
+    maxEOF: 1
+    maxBOF: 0
 

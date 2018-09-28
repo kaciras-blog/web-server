@@ -36,11 +36,18 @@ module.exports = function createMiddleware (options) {
 		};
 		try {
 			ctx.body = await getRenderFunction()(context);
-		} catch (e) {
-			if (e.code === 404) {
-				ctx.status = 404;
-			} else {
-				ctx.throw(e);
+		} catch (err) {
+			switch (err.code) {
+				case 301:
+				case 302:
+					ctx.status = err.code;
+					ctx.redirect(err.location);
+					break;
+				case 404:
+					ctx.status = 404;
+					break;
+				default:
+					ctx.throw(err);
 			}
 		}
 	}
