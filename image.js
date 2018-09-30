@@ -26,7 +26,10 @@ async function uploadImage (ctx) {
 		return ctx.status = 400;
 	}
 
-	const ext = path.extname(file.originalname).toLowerCase();
+	let ext = path.extname(file.originalname).toLowerCase();
+	if (ext === ".jpeg") {
+		ext = ".jpg"; // 统一使用JPG
+	}
 	if ([".jpg", ".png", ".gif", ".bmp", ".svg"].indexOf(ext) < 0) {
 		return ctx.status = 400;
 	}
