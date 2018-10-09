@@ -4,7 +4,13 @@ const config = require("./config");
 const sha3_256 = require("js-sha3").sha3_256;
 const asyncfs = require("./asyncfs");
 const path = require("path");
-
+// const redis = require("redis");
+//
+// const client = redis.createClient();
+//
+// client.on("error", function (err) {
+// 	console.log("Error " + err);
+// });
 
 async function getImage (ctx) {
 	const name = ctx.path.substring("/image/".length);
@@ -17,6 +23,7 @@ async function getImage (ctx) {
 
 async function uploadImage (ctx) {
 	logger.trace("有图片正在上传");
+
 	// if (!await apiServer.utils.checkPermission(req, "WEB", "UPLOAD_IMAGE")) {
 	// 	return next(createError(403))
 	// }

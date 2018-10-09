@@ -35,7 +35,8 @@ module.exports = function createMiddleware (options) {
 			url: ctx.request.url,
 		};
 		try {
-			ctx.body = await getRenderFunction()(context);
+			const render = getRenderFunction();
+			ctx.body = await render(context);
 		} catch (err) {
 			switch (err.code) {
 				case 301:
