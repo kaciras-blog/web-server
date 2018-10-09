@@ -2,7 +2,7 @@ const fs = require("fs");
 const http2 = require("http2");
 const http = require("http");
 const config = require("./config");
-const app = require("./app");
+const app = require("./lib/app");
 const logger = require("log4js").getLogger("app");
 
 logger.level = config.logLevel || "debug";
