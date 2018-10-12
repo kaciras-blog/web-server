@@ -2,6 +2,7 @@
 	"logLevel": "info",
 	"port": 80,
 	"content": "D:\\Coding\\Blog-V8\\WebContent\\dist",
+	"cacheMaxAge": 31536000000,
 	"image": {
 		"root": "G:/备份/blog.kaciras.net/image",
 		"maxSize": 52428800
