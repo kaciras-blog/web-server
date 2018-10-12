@@ -5,6 +5,7 @@ const config = require("./config");
 const app = require("./lib/app");
 const logger = require("log4js").getLogger("app");
 
+
 logger.level = config.logLevel || "debug";
 const httpPort = config.port || 80;
 
@@ -26,6 +27,7 @@ if (config.tls && config.redirectHttp) {
 		res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
 		res.end();
 	}).listen(httpPort);
+
 	logger.info(`重定向来自端口${httpPort}的Http请求至Https`);
 } else {
 	http.createServer(app.callback()).listen(httpPort);
