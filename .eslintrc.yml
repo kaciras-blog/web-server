@@ -8,6 +8,8 @@ rules:
   no-return-await: off
   no-return-assign: off
   no-unused-vars: warn
+  padded-blocks: off
+  no-trailing-spaces: off
 
   indent:
   - error
