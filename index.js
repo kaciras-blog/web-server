@@ -27,7 +27,7 @@ function configureLog4js () {
  */
 function redirectSystemError () {
 	const logger = log4js.getLogger("system");
-	process.on("uncaughtException", err => logger.error(err));
+	process.on("uncaughtException", err => logger.error(err.message, err.stack));
 }
 
 configureLog4js();
