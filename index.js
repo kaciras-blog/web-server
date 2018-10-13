@@ -33,6 +33,9 @@ function redirectSystemError () {
 configureLog4js();
 redirectSystemError();
 
+// 其它服务只启用了HTTPS，并且对于内部调用证书的CN不是localhost，需要关闭证书检查
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *							设置完日志之后再加载程序
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
