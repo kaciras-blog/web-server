@@ -1,12 +1,48 @@
+const log4js = require("log4js");
+const config = require("./config");
+
+function configureLog4js () {
+	const logConfig = {
+		appenders: {
+			out: { type: "stdout" },
+		},
+		categories: {
+			default: { appenders: ["out"], level: config.logLevel },
+		},
+	};
+	if (config.fileLog) {
+		logConfig.appenders.file = {
+			type: "file",
+			filename: "app.log",
+			flags: "w",
+			encoding: "utf-8",
+		};
+		logConfig.categories.default.appenders = ["file"];
+	}
+	log4js.configure(logConfig);
+}
+
+/**
+ * 捕获全局异常，将其输出到Log4js中。
+ */
+function redirectSystemError () {
+	const logger = log4js.getLogger("system");
+	process.on("uncaughtException", err => logger.error(err));
+}
+
+configureLog4js();
+redirectSystemError();
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *							设置完日志之后再加载程序
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 const fs = require("fs");
 const http2 = require("http2");
 const http = require("http");
-const config = require("./config");
 const app = require("./lib/app");
-const logger = require("log4js").getLogger("app");
 
-
-logger.level = config.logLevel || "debug";
+const logger = log4js.getLogger("app");
 const httpPort = config.port || 80;
 
 if (config.tls) {

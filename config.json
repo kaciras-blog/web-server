@@ -1,7 +1,9 @@
 {
 	"logLevel": "info",
+	"fileLog": false,
+
 	"port": 80,
-	"content": "D:\\Coding\\Blog-V8\\WebContent\\dist",
+	"content": "D:\\Project\\Blog\\WebContent\\dist",
 	"cacheMaxAge": 31536000000,
 	"image": {
 		"root": "G:/备份/blog.kaciras.net/image",
@@ -16,10 +18,11 @@
 	"ssr":{
 		"cache": false
 	},
-	"apiServer": "http://localhost:2374",
+	"httpsPort": 443,
 	"tls": true,
 	"redirectHttp": false,
-	"httpsPort": 443,
+
+	"apiServer": "http://localhost:2374",
 	"certificate": "D:/Coding/Utils/dev.pem",
 	"privatekey": "D:/Coding/Utils/dev.pvk"
 }
