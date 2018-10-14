@@ -39,4 +39,3 @@ axios.get("https://localhost:2375/articles?start=0&category=0&count=16&deletion=
 	.then(res => console.log(res.data));
 axios.get("https://localhost:2375/articles?start=0&category=0&count=16&deletion=FALSE")
 	.then(res => console.log(res.data));
-

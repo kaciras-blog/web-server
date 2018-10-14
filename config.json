@@ -22,7 +22,7 @@
 	"tls": true,
 	"redirectHttp": false,
 
-	"apiServer": "http://localhost:2374",
+	"apiServer": "http://localhost:2375",
 	"certificate": "D:/Coding/Utils/dev.pem",
 	"privatekey": "D:/Coding/Utils/dev.pvk"
 }
