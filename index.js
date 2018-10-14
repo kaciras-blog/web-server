@@ -36,6 +36,31 @@ redirectSystemError();
 // 其它服务只启用了HTTPS，并且对于内部调用证书的CN不是localhost，需要关闭证书检查
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
+function request (options, callback) {
+	let host = `https://${options.hostname}`;
+	if (options.port) {
+		host += ":" + options.port;
+	}
+
+	const client = http2.connect(host);
+	const req = client.request({
+		...options.headers,
+		":method": options.method.toUpperCase(),
+		":path": options.path,
+	});
+
+	req.on("response", headers => {
+		req.headers = headers;
+		req.statusCode = headers[":status"];
+		callback(req);
+	});
+	req.on("end", () => client.close());
+	return req;
+}
+
+const axios = require("axios");
+axios.defaults.transport = { request };
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *							设置完日志之后再加载程序
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
