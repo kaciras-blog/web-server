@@ -47,17 +47,10 @@ redirectSystemError();
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *							设置完日志之后再加载程序
+ *						修改Axios使其支持内置http2模块
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-const fs = require("fs");
 const axios = require("axios");
-const http = require("http");
-const app = require("./lib/app");
-
-const logger = log4js.getLogger("app");
-const httpPort = config.port || 80;
-
 
 // 其它服务只启用了HTTPS，并且对于内部调用证书的CN不是localhost，需要关闭证书检查
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -87,6 +80,17 @@ function request (options, callback) {
 // Axios发送Http2请求
 axios.defaults.transport = { request };
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *							设置完日志之后再加载程序
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+const http = require("http");
+const fs = require("fs");
+const app = require("./lib/app");
+
+
+const logger = log4js.getLogger("app");
+const httpPort = config.port || 80;
 
 if (config.tls) {
 	const tlsPort = config.httpsPort || 443;
