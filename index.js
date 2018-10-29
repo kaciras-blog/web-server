@@ -1,5 +1,7 @@
 const log4js = require("log4js");
 const config = require("./config");
+const http2 = require("http2");
+
 
 function configureLog4js () {
 	const logConfig = {
@@ -33,6 +35,20 @@ function redirectSystemError () {
 configureLog4js();
 redirectSystemError();
 
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *							设置完日志之后再加载程序
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+const fs = require("fs");
+const axios = require("axios");
+const http = require("http");
+const app = require("./lib/app");
+
+const logger = log4js.getLogger("app");
+const httpPort = config.port || 80;
+
+
 // 其它服务只启用了HTTPS，并且对于内部调用证书的CN不是localhost，需要关闭证书检查
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -58,20 +74,9 @@ function request (options, callback) {
 	return req;
 }
 
-const axios = require("axios");
+// Axios发送Http2请求
 axios.defaults.transport = { request };
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *							设置完日志之后再加载程序
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-const fs = require("fs");
-const http2 = require("http2");
-const http = require("http");
-const app = require("./lib/app");
-
-const logger = log4js.getLogger("app");
-const httpPort = config.port || 80;
 
 if (config.tls) {
 	const tlsPort = config.httpsPort || 443;
