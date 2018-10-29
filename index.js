@@ -6,10 +6,16 @@ const http2 = require("http2");
 function configureLog4js () {
 	const logConfig = {
 		appenders: {
-			out: { type: "stdout" },
+			console: {
+				type: "stdout",
+				layout: {
+					type: "pattern",
+					pattern: "%[%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %]%m",
+				},
+			},
 		},
 		categories: {
-			default: { appenders: ["out"], level: config.logLevel },
+			default: { appenders: ["console"], level: config.logLevel },
 		},
 	};
 	if (config.fileLog) {
@@ -18,6 +24,10 @@ function configureLog4js () {
 			filename: "app.log",
 			flags: "w",
 			encoding: "utf-8",
+			layout: {
+				type: "pattern",
+				pattern: "%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %m",
+			},
 		};
 		logConfig.categories.default.appenders = ["file"];
 	}
