@@ -2,6 +2,11 @@
 	"logLevel": "info",
 	"fileLog": false,
 
+	"dev": {
+		"client": "D:\\Project\\Blog\\WebContent\\build\\webpack\\client.config.js",
+		"server": "D:\\Project\\Blog\\WebContent\\build\\webpack\\server.config.js"
+	},
+
 	"port": 80,
 	"content": "D:\\Project\\Blog\\WebContent\\dist",
 	"cacheMaxAge": 31536000000,
