@@ -7,13 +7,10 @@ module.exports = {
 		server: "D:\\Project\\Blog\\WebContent\\build\\webpack\\server.config.js",
 	},
 
-	port: 80,
-	content: "D:\\Project\\Blog\\WebContent\\dist",
-	cacheMaxAge: 31536000000,
-	image: {
-		root: "G:/备份/blog.kaciras.net/image",
-		maxSize: 52428800,
-	},
+	contentRoot: "D:/Project/Blog/WebContent/dist",
+	imageRoot: "G:/备份/blog.kaciras.net/image",
+
+	cacheMaxAge: 30 * 24 * 60 * 60 * 1000,
 	cors: {
 		maxAge: 864000,
 		exposeHeaders: ["Location"],
@@ -23,6 +20,8 @@ module.exports = {
 	ssr: {
 		cache: false,
 	},
+
+	port: 80,
 	httpsPort: 443,
 	tls: true,
 	redirectHttp: false,

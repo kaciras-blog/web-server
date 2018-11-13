@@ -2,7 +2,9 @@ const log4js = require("log4js");
 const config = require("./config");
 const http2 = require("http2");
 
-
+/**
+ * 配置日志功能，先于其他模块执行保证日志系统的完整。
+ */
 function configureLog4js () {
 	const logConfig = {
 		appenders: {
@@ -42,8 +44,9 @@ function redirectSystemError () {
 	process.on("uncaughtException", err => logger.error(err.message, err.stack));
 }
 
-configureLog4js();
 redirectSystemError();
+configureLog4js();
+const logger = log4js.getLogger("app");
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -52,7 +55,7 @@ redirectSystemError();
 
 const axios = require("axios");
 
-// 其它服务只启用了HTTPS，并且对于内部调用证书的CN不是localhost，需要关闭证书检查
+// 其它服务启用了HTTPS，并且对于内部调用证书的CN不是localhost，需要关闭证书检查
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 function request (options, callback) {
@@ -80,6 +83,7 @@ function request (options, callback) {
 // Axios发送Http2请求
 axios.defaults.transport = { request };
 
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *							设置完日志之后再加载程序
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -87,9 +91,17 @@ axios.defaults.transport = { request };
 const http = require("http");
 const fs = require("fs");
 const app = require("./lib/app");
+const send = require("koa-send");
 
 
-const logger = log4js.getLogger("app");
+app.use(require("./lib/vuessr")());
+app.use(ctx => send(ctx, "index.html", { root: config.contentRoot, maxage: config.cacheMaxAge }));
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *								  启动服务器
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 const httpPort = config.port || 80;
 
 if (config.tls) {
