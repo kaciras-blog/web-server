@@ -1,7 +1,9 @@
 {
 	"name": "web-server",
 	"version": "1.0.0",
-	"description": "Kaciras Bolg version 8 frontend server.",
+	"description": "Kaciras Bolg v10 frontend server.",
+	"author": "Kaciras",
+	"main": "index.js",
 	"scripts": {
 		"eslint": "eslint --fix --ext .js ."
 	},

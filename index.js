@@ -88,19 +88,28 @@ axios.defaults.transport = { request };
  *							设置完日志之后再加载程序
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-const http = require("http");
-const fs = require("fs");
-const app = require("./lib/app");
-const send = require("koa-send");
+const path = require("path");
+const appConfigLocation = process.argv[1];
+let app;
 
-
-app.use(require("./lib/vuessr")());
-app.use(ctx => send(ctx, "index.html", { root: config.contentRoot, maxage: config.cacheMaxAge }));
+if (appConfigLocation) {
+	logger.info(`Startup development server with config ${appConfigLocation}.`);
+	app = require(path.resolve(appConfigLocation));
+} else {
+	logger.info("No webpack config specified, run on production mode.");
+	app = require("./lib/app");
+	const send = require("koa-send");
+	app.use(require("./lib/vuessr")());
+	app.use(ctx => send(ctx, "index.html", { root: config.contentRoot, maxage: config.cacheMaxAge }));
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *								  启动服务器
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+const http = require("http");
+const fs = require("fs");
 
 const httpPort = config.port || 80;
 
