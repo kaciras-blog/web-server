@@ -2,11 +2,6 @@ module.exports = {
 	logLevel: "info",
 	fileLog: false,
 
-	dev: {
-		client: "D:\\Project\\Blog\\WebContent\\build\\webpack\\client.config.js",
-		server: "D:\\Project\\Blog\\WebContent\\build\\webpack\\server.config.js",
-	},
-
 	contentRoot: "D:/Project/Blog/WebContent/dist",
 	imageRoot: "G:/备份/blog.kaciras.net/image",
 

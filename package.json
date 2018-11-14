@@ -3,7 +3,15 @@
 	"version": "1.0.0",
 	"description": "Kaciras Bolg v10 frontend server.",
 	"author": "Kaciras",
+	"license": "Private",
+	"repository": "none",
+	"engines": {
+		"node": ">=11.0.0"
+	},
 	"main": "index.js",
+	"bin": {
+		"web-server": "./index.js"
+	},
 	"scripts": {
 		"eslint": "eslint --fix --ext .js ."
 	},
@@ -18,9 +26,13 @@
 		"koa-multer": "^1.0.2",
 		"koa-send": "^5.0.0",
 		"koa-static": "^5.0.0",
+		"koa-webpack": "^5.1.1",
 		"log4js": "^3.0.6",
+		"memory-fs": "latest",
 		"redis": "^2.8.0",
 		"vue-server-renderer": "^2.5.17",
+		"webpack": "^4.25.1",
+		"webpack-dev-middleware": "^3.4.0",
 		"xml2js": "^0.4.19"
 	},
 	"devDependencies": {
@@ -29,10 +41,6 @@
 		"eslint-plugin-import": "^2.14.0",
 		"eslint-plugin-node": "^8.0.0",
 		"eslint-plugin-promise": "^4.0.1",
-		"eslint-plugin-standard": "^4.0.0",
-		"webpack": "^4.25.1",
-		"webpack-dev-middleware": "^3.4.0",
-		"webpack-hot-middleware": "^2.24.3",
-		"memory-fs": "latest"
+		"eslint-plugin-standard": "^4.0.0"
 	}
 }
