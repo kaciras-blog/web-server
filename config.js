@@ -19,7 +19,7 @@ module.exports = {
 	port: 80,
 	httpsPort: 443,
 	tls: true,
-	redirectHttp: false,
+	redirectHttp: true,
 
 	apiServer: "https://localhost:2375",
 	certificate: "D:/Coding/Utils/dev.pem",
