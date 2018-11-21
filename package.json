@@ -3,7 +3,6 @@
 	"version": "1.0.0",
 	"description": "Kaciras Bolg v10 frontend server.",
 	"author": "Kaciras",
-	"license": "Private",
 	"repository": "none",
 	"engines": {
 		"node": ">=11.0.0"
@@ -31,7 +30,7 @@
 		"memory-fs": "latest",
 		"redis": "^2.8.0",
 		"vue-server-renderer": "^2.5.17",
-		"webpack": "^4.25.1",
+		"webpack": "^4.26.0",
 		"webpack-dev-middleware": "^3.4.0",
 		"xml2js": "^0.4.19"
 	},
