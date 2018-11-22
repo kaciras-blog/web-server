@@ -6,6 +6,7 @@ module.exports = {
 	imageRoot: "G:/备份/blog.kaciras.net/image",
 
 	cacheMaxAge: 30 * 24 * 60 * 60 * 1000,
+
 	cors: {
 		maxAge: 864000,
 		exposeHeaders: ["Location"],
