@@ -1,9 +1,9 @@
-const base = require("./config");
+const config = require("./config");
 
-base.contentRoot = "../content/dist";
-base.imageRoot = "./image";
+config.contentRoot = "../content/dist";
+config.imageRoot = "./image";
 
-base.server.certificate = "/etc/letsencrypt/live/blog.kaciras.net/cert.pem";
-base.server.certificate = "/etc/letsencrypt/live/blog.kaciras.net/privkey.pem";
+config.server.certificate = "/etc/letsencrypt/live/blog.kaciras.net/cert.pem";
+config.server.certificate = "/etc/letsencrypt/live/blog.kaciras.net/privkey.pem";
 
-module.exports = base;
+module.exports = config;
