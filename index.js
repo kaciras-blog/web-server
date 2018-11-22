@@ -92,19 +92,20 @@ axios.defaults.transport = { request };
  *							设置完日志之后再加载程序
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-const httpPort = config.port || 80;
-const tlsPort = config.httpsPort || 443;
+const options = config.server;
+const httpPort = options.port || 80;
+const tlsPort = options.httpsPort || 443;
 
-if (config.tls) {
+if (options.tls) {
 	const server = http2.createSecureServer({
-		key: fs.readFileSync(config.privatekey),
-		cert: fs.readFileSync(config.certificate),
+		key: fs.readFileSync(options.privatekey),
+		cert: fs.readFileSync(options.certificate),
 		allowHTTP1: true,
 		// settings: { enableConnectProtocol: true },
 	}).listen(tlsPort);
 
 	// 创建重定向服务
-	if (config.redirectHttp) {
+	if (options.redirectHttp) {
 		http.createServer((req, res) => {
 			res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
 			res.end();

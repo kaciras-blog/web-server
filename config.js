@@ -12,16 +12,15 @@ module.exports = {
 		allowHeaders: ["X-CSRF-Token", "X-Requested-With", "Content-Type"],
 		credentials: true,
 	},
-	ssr: {
-		cache: false,
+
+	server: {
+		port: 80,
+		tls: true,
+		httpsPort: 443,
+		certificate: "D:/Coding/Utils/dev.pem",
+		privatekey: "D:/Coding/Utils/dev.pvk",
+		redirectHttp: true,
 	},
 
-	port: 80,
-	httpsPort: 443,
-	tls: true,
-	redirectHttp: true,
-
 	apiServer: "https://localhost:2375",
-	certificate: "D:/Coding/Utils/dev.pem",
-	privatekey: "D:/Coding/Utils/dev.pvk",
 };
