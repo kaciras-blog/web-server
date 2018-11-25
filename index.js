@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 const log4js = require("log4js");
-const config = require("./config");
 const http2 = require("http2");
 const http = require("http");
 const fs = require("fs");
 const axios = require("axios");
 const startup = require("./lib/app");
+
+const config = require(process.env.development ? "./config" : "./config.production");
 
 
 /**
@@ -126,4 +127,4 @@ async function start () {
 	await startup(server, config);
 }
 
-start().then(() => logger.info("Startup complete."));
+start().then(() => logger.info("Startup completed."));
