@@ -30,9 +30,10 @@
 		"memory-fs": "latest",
 		"redis": "^2.8.0",
 		"vue-server-renderer": "^2.5.17",
-		"webpack": "^4.26.0",
+		"webpack": "^4.26.1",
 		"webpack-dev-middleware": "^3.4.0",
-		"xml2js": "^0.4.19"
+		"xml2js": "^0.4.19",
+		"webpack-hot-middleware": "^2.24.3"
 	},
 	"devDependencies": {
 		"eslint": "^5.9.0",
