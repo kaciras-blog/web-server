@@ -47,4 +47,10 @@ function redirectSystemError () {
 
 redirectSystemError();
 configureLog4js();
-require("./lib/app")().catch(err => console.error(err));
+
+if (process.argv[2] === "build") {
+	const options = require(process.argv[3]);
+	require("./lib/build")(options.webpack);
+} else {
+	require("./lib/app")().catch(err => console.error(err));
+}

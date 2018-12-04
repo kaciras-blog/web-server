@@ -17,6 +17,7 @@
 	"dependencies": {
 		"@koa/cors": "^2.2.2",
 		"axios": "^0.18.0",
+		"fs-extra": "^7.0.1",
 		"js-sha3": "^0.8.0",
 		"koa": "^2.6.2",
 		"koa-compress": "^3.0.0",
@@ -32,9 +33,14 @@
 		"vue-server-renderer": "^2.5.17",
 		"webpack": "^4.26.1",
 		"webpack-dev-middleware": "^3.4.0",
-		"xml2js": "^0.4.19"
+		"xml2js": "^0.4.19",
+		"chalk": "latest"
 	},
 	"devDependencies": {
+		"@types/fs-extra": "^5.0.4",
+		"@types/koa": "^2.0.47",
+		"@types/koa-webpack": "^5.0.1",
+		"@types/webpack": "^4.4.20",
 		"eslint": "^5.9.0",
 		"eslint-config-standard": "^12.0.0",
 		"eslint-plugin-import": "^2.14.0",
