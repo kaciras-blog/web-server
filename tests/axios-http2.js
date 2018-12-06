@@ -1,7 +1,6 @@
 const http2 = require("http2");
-const axios = require("axios");
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+const Axios = require("axios");
+const fs = require("fs");
 
 /**
  * 简单的适配HTTP2到https.request()，因为傻B的Tomcat不支持Http2降级Http1.1。
@@ -13,7 +12,9 @@ function request (options, callback) {
 		host += ":" + options.port;
 	}
 
-	const client = http2.connect(host);
+	const client = http2.connect(host, {
+		ca: fs.readFileSync("D:/Coding/Utils/dev.pem"), // Trust self signed certificate
+	});
 	const req = client.request({
 		...options.headers,
 		":method": options.method.toUpperCase(),
@@ -29,10 +30,36 @@ function request (options, callback) {
 	return req;
 }
 
+let server;
 
-axios.defaults.transport = { request };
+beforeAll(done => {
+	server = http2.createSecureServer({
+		cert: fs.readFileSync("D:/Coding/Utils/dev.pem"),
+		key: fs.readFileSync("D:/Coding/Utils/dev.pvk"),
+		allowHTTP1: false,
+	}, (req, res) => {
+		res.writeHead(200, { "Content-Type": "text/plain" });
+		res.write("Hellow");
+		res.end();
+	});
+	server.listen(0, done);
+});
 
-axios.get("https://localhost:2375/articles?start=0&category=0&count=16&deletion=FALSE")
-	.then(res => console.log(1));
-axios.get("https://localhost:2375/articles?start=0&category=0&count=16&deletion=FALSE")
-	.then(res => console.log(2));
+afterAll(done => server.close(done));
+
+
+it("fail without adapt", () => {
+	expect.assertions(1);
+	const axios = Axios.create();
+
+	return axios.get("https://localhost:" + server.address().port)
+		.catch(err => expect(err).toBeTruthy());
+});
+
+it("success with adapt", async () => {
+	const axios = Axios.create({
+		transport: { request },
+	});
+	const res = await axios.get("https://localhost:" + server.address().port);
+	expect(res.data).toBe("Hellow");
+});
