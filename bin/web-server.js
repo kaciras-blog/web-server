@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 const log4js = require("log4js");
-const config = require(process.env.development ? "./config" : "./config.production");
-
+const main = require("../lib/main");
 
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
  */
-function configureLog4js () {
+function configureLog4js ({ logLevel, logFile }) {
 	const logConfig = {
 		appenders: {
 			console: {
@@ -18,13 +17,13 @@ function configureLog4js () {
 			},
 		},
 		categories: {
-			default: { appenders: ["console"], level: config.logLevel },
+			default: { appenders: ["console"], level: logLevel },
 		},
 	};
-	if (config.fileLog) {
+	if (logFile) {
 		logConfig.appenders.file = {
 			type: "file",
-			filename: "app.log",
+			filename: logFile,
 			flags: "w",
 			encoding: "utf-8",
 			layout: {
@@ -46,6 +45,11 @@ function redirectSystemError () {
 	process.on("uncaughtException", err => logger.error(err.message, err.stack));
 }
 
-redirectSystemError();
+
 configureLog4js();
-require("./lib/app")().catch(err => console.error(err));
+redirectSystemError();
+
+main(process.argv.slice(2)).catch(err => {
+	console.error(err);
+	process.exit(1);
+});

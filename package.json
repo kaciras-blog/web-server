@@ -7,9 +7,9 @@
 	"engines": {
 		"node": ">=11.0.0"
 	},
-	"main": "index.js",
+	"main": "bin/web-server.js",
 	"bin": {
-		"web-server": "./index.js"
+		"web-server": "bin/web-server.js"
 	},
 	"scripts": {
 		"eslint": "eslint --fix --ext .js .",
