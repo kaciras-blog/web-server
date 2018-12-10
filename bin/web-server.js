@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const log4js = require("log4js");
-const main = require("../lib/main");
+const main = require("../lib");
 
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
@@ -36,20 +36,11 @@ function configureLog4js ({ logLevel, logFile }) {
 	log4js.configure(logConfig);
 }
 
-/**
- * 捕获全局异常，将其输出到Log4js中。
- */
-function redirectSystemError () {
-	const logger = log4js.getLogger("system");
-	process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
-	process.on("uncaughtException", err => logger.error(err.message, err.stack));
-}
+configureLog4js({ logFile: false, logLevel: "info" });
 
-
-configureLog4js();
-redirectSystemError();
-
-main(process.argv.slice(2)).catch(err => {
-	console.error(err);
+const optionsFile = process.argv[2];
+if (!optionsFile) {
+	console.error("Configuration not specified");
 	process.exit(1);
-});
+}
+main(require(optionsFile));
