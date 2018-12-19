@@ -1,10 +1,20 @@
-const http2 = require("http2");
-const http = require("http");
-const fs = require("fs-extra");
+import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
+import http, { IncomingMessage, ServerResponse } from "http";
+import fs from "fs-extra";
+import log4js from "log4js";
 
 
-module.exports = function (requestHandler, options) {
-	const logger = require("log4js").getLogger("server");
+// app.callback() 的定义，比较长不方便直接写在参数里
+type OnRequestHandler = (req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) => void;
+
+/**
+ * 创建Http服务器。
+ *
+ * @param requestHandler 请求处理函数
+ * @param options 选项
+ */
+export default function (requestHandler: OnRequestHandler, options: any) {
+	const logger = log4js.getLogger("server");
 	const httpPort = options.port || 80;
 	const tlsPort = options.httpsPort || 443;
 

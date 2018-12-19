@@ -1,26 +1,30 @@
-const logger = require("log4js").getLogger("Http");
-const send = require("koa-send");
-const sha3_256 = require("js-sha3").sha3_256;
-const fs = require("fs-extra");
-const path = require("path");
+import path from "path";
+import fs from "fs-extra";
+import koaSend from "koa-send";
+import log4js from "log4js";
+import { sha3_256 } from "js-sha3";
+import { Middleware, Context } from "koa";
 
 
-module.exports = function (options) {
+const logger = log4js.getLogger("Image");
+
+export default function (options: any): Middleware {
 	fs.ensureDirSync(options.imageRoot);
 
-	async function getImage (ctx) {
+	async function getImage(ctx: Context): Promise<void> {
 		const name = ctx.path.substring("/image/".length);
 		if (!name || /[\\/]/.test(name)) {
 			ctx.status = 404;
 		} else {
-			return await send(ctx, name, { root: options.imageRoot, maxage: options.cacheMaxAge });
+			await koaSend(ctx, name, { root: options.imageRoot, maxage: options.cacheMaxAge });
 		}
 	}
 
-	async function uploadImage (ctx) {
+	async function uploadImage(ctx: Context) {
 		logger.trace("有图片正在上传");
 
-		const file = ctx.req.file;
+		// Multer 库直接修改ctx.req
+		const file = (ctx.req as any).file;
 		if (!file) {
 			return ctx.status = 400;
 		}
@@ -54,7 +58,7 @@ module.exports = function (options) {
 		} else if (ctx.method === "GET") {
 			await getImage(ctx);
 		} else if (ctx.method === "POST") {
-			await uploadImage(ctx, next);
+			await uploadImage(ctx);
 		} else {
 			ctx.status = 405;
 		}

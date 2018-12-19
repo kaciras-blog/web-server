@@ -8,7 +8,7 @@
 	"engines": {
 		"node": ">=11.0.0"
 	},
-	"main": "lib/index.js",
+	"main": "lib/index.ts",
 	"bin": {
 		"web-server": "bin/web-server.js"
 	},
@@ -54,8 +54,10 @@
 		"@types/fs-extra": "^5.0.4",
 		"@types/jest": "^23.3.10",
 		"@types/koa": "^2.0.47",
+		"@types/koa-send": "^4.1.1",
 		"@types/koa-webpack": "^5.0.1",
 		"@types/webpack": "^4.4.21",
+		"@types/xml2js": "^0.4.3",
 		"eslint": "^5.10.0",
 		"eslint-config-standard": "^12.0.0",
 		"eslint-plugin-import": "^2.14.0",
@@ -63,7 +65,8 @@
 		"eslint-plugin-node": "^8.0.0",
 		"eslint-plugin-promise": "^4.0.1",
 		"eslint-plugin-standard": "^4.0.0",
-		"jest": "^23.6.0"
+		"jest": "^23.6.0",
+		"typescript": "^3.2.2"
 	},
 	"optionalDependencies": {
 		"webpack-hot-client": "^4.1.1",

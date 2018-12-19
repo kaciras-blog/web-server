@@ -1,10 +1,18 @@
-const fs = require("fs-extra");
-const { promisify } = require("util");
-const path = require("path");
-const vuessr = require("vue-server-renderer");
+import fs from "fs-extra";
+import path from "path";
+import { promisify } from "util";
+import vuessr from "vue-server-renderer";
+import { Middleware, Context } from "koa";
 
 
-async function renderPage (ctx, render) {
+export interface RenderContext {
+	title: string;
+	meta: string;
+	request: Context;
+	shellOnly: boolean;
+}
+
+async function renderPage(ctx: Context, render: (ctx: RenderContext) => Promise<string>) {
 	const context = {
 		title: "Kaciras的博客",
 		meta: "",
@@ -26,13 +34,13 @@ async function renderPage (ctx, render) {
 	}
 }
 
-module.exports = function (options) {
+module.exports = function (options: any): Middleware {
 
-	function reslove (file) {
+	function reslove(file: string) {
 		return path.resolve(options.webpack.outputPath, file);
 	}
 
-	function productionRenderFunctionFactory () {
+	function productionRenderFunctionFactory() {
 		const renderer = vuessr.createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
 			runInNewContext: false,
 			template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
