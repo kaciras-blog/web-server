@@ -1,4 +1,4 @@
-jest.mock("fs"); // Jest对Node的核心库必需显示调用Mock
+jest.mock("fs"); // Jest对Node的核心库的Mock必须显示调用
 
 const image = require("../lib/image");
 const fs = require("fs-extra");
