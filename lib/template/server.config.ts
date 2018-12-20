@@ -3,8 +3,7 @@ import { DefinePlugin } from "webpack";
 import VueSSRServerPlugin from "vue-server-renderer/server-plugin"
 import baseConfig from "./base.config";
 import merge from "webpack-merge";
-
-const nodeExternals = require("webpack-node-externals");
+import nodeExternals from "webpack-node-externals";
 
 
 export default (options: any) => {
@@ -30,9 +29,7 @@ export default (options: any) => {
 
 		plugins: [
 			new DefinePlugin({ "process.env.VUE_ENV": "'server'" }),
-
-			// 这是将服务器的整个输出单个 JSON 文件的插件，默认文件名`vue-ssr-server-bundle.json`
-			new VueSSRServerPlugin(),
+			new VueSSRServerPlugin(), // 将输出打包成单个 JSON 文件，默认文件名`vue-ssr-server-bundle.json`
 		],
 	});
 };

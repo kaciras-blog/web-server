@@ -1,5 +1,5 @@
-import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import http, { IncomingMessage, ServerResponse } from "http";
+import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import fs from "fs-extra";
 import log4js from "log4js";
 

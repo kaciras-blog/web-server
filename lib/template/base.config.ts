@@ -3,8 +3,7 @@ import { Configuration } from "webpack";
 import { VueLoaderPlugin } from "vue-loader";
 import { resolve } from "./utils";
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
-
-const hash = require("hash-sum");
+import hash from "hash-sum";
 
 
 /**

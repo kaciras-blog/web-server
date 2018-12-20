@@ -8,6 +8,15 @@ import { Middleware, Context } from "koa";
 
 const logger = log4js.getLogger("Image");
 
+const SUPPORTED_FORMAT = [".jpg", ".png", ".gif", ".bmp", ".svg"];
+
+/**
+ * 根据指定的选项创建中间件。
+ * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
+ *
+ * @param options 选项
+ * @return Koa的中间件函数
+ */
 export default function (options: any): Middleware {
 	fs.ensureDirSync(options.imageRoot);
 
@@ -20,6 +29,12 @@ export default function (options: any): Middleware {
 		}
 	}
 
+	/**
+	 * 接收上传的图片，文件名为图片内容的SHA3值，扩展名与原始文件名一样。
+	 * 如果图片已存在则直接返回，否则将保存文件，保存的文件的URL由Location响应头返回。
+	 *
+	 * @param ctx 请求上下文
+	 */
 	async function uploadImage(ctx: Context) {
 		logger.trace("有图片正在上传");
 
@@ -33,7 +48,7 @@ export default function (options: any): Middleware {
 		if (ext === ".jpeg") {
 			ext = ".jpg"; // 统一使用JPG
 		}
-		if ([".jpg", ".png", ".gif", ".bmp", ".svg"].indexOf(ext) < 0) {
+		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
 			return ctx.status = 400;
 		}
 

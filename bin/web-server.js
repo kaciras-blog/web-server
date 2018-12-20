@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 const log4js = require("log4js");
-const main = require("../lib");
 require("source-map-support").install();
 
 
@@ -45,4 +44,4 @@ if (!optionsFile) {
 	console.error("Configuration not specified");
 	process.exit(1);
 }
-main.default(require(optionsFile));
+require("../lib").default(require(optionsFile));
