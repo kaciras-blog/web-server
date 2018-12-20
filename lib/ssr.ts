@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { promisify } from "util";
-import vuessr from "vue-server-renderer";
+import { createBundleRenderer } from "vue-server-renderer";
 import { Middleware, Context } from "koa";
 
 
@@ -41,7 +41,7 @@ export default function (options: any): Middleware {
 	}
 
 	function productionRenderFunctionFactory() {
-		const renderer = vuessr.createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
+		const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
 			runInNewContext: false,
 			template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
 			clientManifest: require(reslove("vue-ssr-client-manifest.json")),

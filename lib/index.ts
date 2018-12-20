@@ -1,9 +1,8 @@
 import { getLogger } from "log4js";
 import { Options } from "webpack";
 import build from "./plugins/build";
+import service from "./plugins/service";
 
-
-const service = require("./plugins/service");
 
 export default function (options: WebServerConfiguration) {
 	// 捕获全局异常，将其输出到日志中。
@@ -26,9 +25,9 @@ export default function (options: WebServerConfiguration) {
 	}
 }
 
-// ===========================================================================
-//								配置选项定义
-// ===========================================================================
+/* =========================================================================== *\
+								配置选项定义
+\* =========================================================================== */
 
 export interface WebServerConfiguration {
 	server?: ServerOptions;

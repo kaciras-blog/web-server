@@ -78,7 +78,7 @@ function setupBasicMiddlewares(app: Koa, options: any) {
 	}));
 }
 
-module.exports = async function (options: any, _devserver: boolean /* 临时 */) {
+export default async function (options: any, _devserver: boolean /* 临时 */) {
 	adaptAxiosHttp2();
 	const app = new Koa();
 

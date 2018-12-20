@@ -4,7 +4,7 @@
 	"description": "Kaciras Bolg v10 frontend server.",
 	"author": "Kaciras",
 	"repository": "none",
-	"license": "none",
+	"license": "MIT",
 	"engines": {
 		"node": ">=11.0.0"
 	},
@@ -45,7 +45,7 @@
 		"serviceworker-webpack-plugin": "^1.0.1",
 		"source-map-support": "^0.5.9",
 		"url-loader": "^1.1.2",
-		"webpack": "^4.27.1",
+		"webpack": "^4.28.0",
 		"webpack-bundle-analyzer": "^3.0.3",
 		"webpack-dev-middleware": "^3.4.0",
 		"webpack-merge": "^4.1.5",
