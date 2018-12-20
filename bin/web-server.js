@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const log4js = require("log4js");
 const main = require("../lib");
+require("source-map-support").install();
 
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
@@ -43,4 +44,4 @@ if (!optionsFile) {
 	console.error("Configuration not specified");
 	process.exit(1);
 }
-main(require(optionsFile));
+main.default(require(optionsFile));

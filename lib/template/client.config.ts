@@ -1,19 +1,22 @@
-const webpack = require("webpack");
-const merge = require("webpack-merge");
-const path = require("path");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
+import path from "path";
+import { Configuration, RuleSetLoader } from "webpack";
+import { HashedModuleIdsPlugin } from "webpack";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import baseWebpackConfig from "./base.config";
+import { resolve, styleLoaders } from "./utils";
+import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
+import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
+import merge from "webpack-merge";
+
+// 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const OptimizeCSSPlugin = require("optimize-css-assets-webpack-plugin");
-const VueSSRClientPlugin = require("vue-server-renderer/client-plugin");
-const baseWebpackConfig = require("./base.config");
-const { resolve, styleLoaders } = require("./utils");
 
 
-const setupBabel = (webpackConfig, options) => {
+const setupBabel = (webpackConfig: any, options: any) => {
 	webpackConfig.entry.unshift("@babel/polyfill");
 
-	const loaders = [{
+	const loaders: RuleSetLoader[] = [{
 		loader: "babel-loader",
 		options: {
 			cacheDirectory: true,
@@ -43,11 +46,11 @@ const setupBabel = (webpackConfig, options) => {
 	});
 };
 
-module.exports = (options) => {
+export default (options: any) => {
 	options = Object.assign({}, options, options.client);
-	const assetsPath = (path_) => path.posix.join(options.assetsDirectory, path_);
+	const assetsPath = (path_: string) => path.posix.join(options.assetsDirectory, path_);
 
-	const config = {
+	const config: Configuration = {
 		entry: ["./src/entry-client.js"],
 		module: {
 			rules: styleLoaders({ ...options, extract: true }),
@@ -90,12 +93,11 @@ module.exports = (options) => {
 			}),
 			new MiniCssExtractPlugin({
 				filename: assetsPath("css/[name].[hash].css"),
-				allChunks: true,
 			}),
 			new OptimizeCSSPlugin({
 				cssProcessorOptions: { map: { inline: false } },
 			}),
-			new webpack.HashedModuleIdsPlugin(),
+			new HashedModuleIdsPlugin(),
 			new VueSSRClientPlugin(),
 		],
 	};
@@ -112,7 +114,7 @@ module.exports = (options) => {
 		setupBabel(config, options);
 	}
 
-	if (options.bundleAnalyzerReport) {
+	if (options.bundleAnalyzerReport && config.plugins /* redundant */) {
 		const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 		config.plugins.push(new BundleAnalyzerPlugin());
 	}

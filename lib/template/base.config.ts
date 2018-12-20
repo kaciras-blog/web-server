@@ -1,8 +1,10 @@
-const path = require("path");
-const VueLoaderPlugin = require("vue-loader/lib/plugin");
-const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
+import path from "path";
+import { Configuration } from "webpack";
+import { VueLoaderPlugin } from "vue-loader";
+import { resolve } from "./utils";
+import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
+
 const hash = require("hash-sum");
-const { resolve } = require("./utils");
 
 
 /**
@@ -11,7 +13,7 @@ const { resolve } = require("./utils");
  *
  * @param options 选项
  */
-const vueCacheIdenifier = (options) => {
+const vueCacheIdenifier = (options: any) => {
 	const varibles = {
 		"cache-loader": require("cache-loader/package.json").version,
 		"vue-loader": require("vue-loader/package.json").version,
@@ -21,11 +23,11 @@ const vueCacheIdenifier = (options) => {
 	return hash(varibles);
 };
 
-// side: "client" or "server"
-module.exports = (options, side) => {
+
+export default (options: any, side: "client" | "server"): Configuration => {
 
 	// 这里的 path 一定要用 posix 的斜杠，与URL中的斜杠一致
-	const assetsPath = (path_) => path.posix.join(options.assetsDirectory, path_);
+	const assetsPath = (path_: string) => path.posix.join(options.assetsDirectory, path_);
 
 	return {
 		mode: options.mode,

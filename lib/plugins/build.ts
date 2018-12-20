@@ -1,9 +1,13 @@
-const path = require("path");
-const chalk = require("chalk");
-const { promisify } = require("util");
-const fs = require("fs-extra");
-const webpack = promisify(require("webpack"));
+import path from "path";
+import { promisify } from "util";
+import fs from "fs-extra";
+import webpack, { Configuration, Stats } from "webpack";
+import chalk from "chalk";
+import ClientConfiguration from "../template/client.config";
+import ServerConfiguration from "../template/server.config";
 
+
+const compile: (arg1: Configuration) => Promise<Stats> = promisify<Configuration, Stats>(webpack);
 
 /**
  * 调用webpack，并输出更友好的信息。
@@ -11,8 +15,8 @@ const webpack = promisify(require("webpack"));
  * @param config 配置
  * @return {Promise<void>} 指示构建状态
  */
-async function invokeWebpack (config) {
-	const stats = await webpack(config);
+async function invokeWebpack(config: Configuration) {
+	const stats = await compile(config);
 
 	process.stdout.write(stats.toString({
 		colors: true,
@@ -35,8 +39,8 @@ async function invokeWebpack (config) {
  * @param options Webpack选项
  * @return {Promise<void>} 指示构建状态
  */
-module.exports = async function build (options) {
+export default async function build(options: any) {
 	await fs.remove(path.join(options.outputPath, "static"));
-	await invokeWebpack(require("../template/client.config")(options));
-	await invokeWebpack(require("../template/server.config")(options));
-};
+	await invokeWebpack(ClientConfiguration(options));
+	await invokeWebpack(ServerConfiguration(options));
+}

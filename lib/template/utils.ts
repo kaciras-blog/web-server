@@ -1,16 +1,20 @@
-const path = require("path");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-
+import path from "path";
+import MiniCssExtractPlugin from "mini-css-extract-plugin"
+import { RuleSetUseItem } from "webpack";
 
 /**
  * 获取相对于项目目录的绝对路径。
  *
- * @param dir {string} 相对路径
- * @return {string} 绝对路径
+ * @param dir 相对路径
+ * @return 绝对路径
  */
-exports.resolve = dir => path.join(process.cwd(), dir);
+export const resolve = (dir: string) => path.join(process.cwd(), dir);
 
-exports.cssLoaders = function (options) {
+interface CssLoadersMap {
+	[name: string]: RuleSetUseItem[]
+}
+
+function cssLoaders(options: any): CssLoadersMap {
 	const cssLoader = {
 		loader: "css-loader",
 		options: {
@@ -23,7 +27,7 @@ exports.cssLoaders = function (options) {
 	};
 
 	// generate loader string to be used with extract text plugin
-	function generateLoaders (loader, loaderOptions) {
+	function generateLoaders(loader?: string, loaderOptions?: any): RuleSetUseItem[] {
 		const loaders = [cssLoader];
 
 		if (loader) {
@@ -40,7 +44,7 @@ exports.cssLoaders = function (options) {
 		if (options.extract) {
 			return [MiniCssExtractPlugin.loader].concat(loaders);
 		} else {
-			return ["vue-style-loader"].concat(loaders);
+			return (<RuleSetUseItem[]>["vue-style-loader"]).concat(loaders);
 		}
 	}
 
@@ -48,15 +52,15 @@ exports.cssLoaders = function (options) {
 		css: generateLoaders(),
 		less: generateLoaders("less"),
 	};
-};
+}
 
-exports.styleLoaders = function (options) {
+export function styleLoaders(options: any) {
 	const output = [];
-	const loaders = exports.cssLoaders(options);
+	const loaders = cssLoaders(options);
 
 	// 再生成一个CSS Modules的加载器
 	options.modules = true;
-	const moduleLoaders = exports.cssLoaders(options);
+	const moduleLoaders = cssLoaders(options);
 
 	for (const extension in loaders) {
 		output.push({
@@ -74,4 +78,4 @@ exports.styleLoaders = function (options) {
 	}
 
 	return output;
-};
+}

@@ -1,15 +1,32 @@
-const path = require("path");
-const fs = require("fs-extra");
-const koaWebpack = require("koa-webpack");
-const webpack = require("webpack");
-const MFS = require("memory-fs");
-const { promisify } = require("util");
-const { createBundleRenderer } = require("vue-server-renderer");
+import path from "path";
+import fs from "fs-extra";
+import koaWebpack from "koa-webpack";
+import webpack, { Compiler, Configuration, MultiCompiler } from "webpack";
+import { promisify } from "util";
+import { createBundleRenderer } from "vue-server-renderer";
+import MFS from "memory-fs";
+import { Context, Middleware } from "koa";
+import { WebpackDevMiddleware } from "webpack-dev-middleware";
+import WebpackHotMiddlewareType from "webpack-hot-middleware";
+import { NextHandleFunction } from "connect";
+import { ServerResponse } from "http";
+import ClientConfiguration from "../template/client.config";
+import ServerConfiguration from "../template/server.config";
 
 
-class AbstractDevelopPlugin {
+abstract class AbstractDevelopPlugin {
 
-	constructor (options) {
+	protected readonly options: any;
+
+	middleware!: Middleware;
+
+	protected serverBundle: any;
+	protected template: any;
+	protected clientManifest: any;
+
+	private renderFunction!: Function;
+
+	constructor(options: any) {
 		this.options = options;
 	}
 
@@ -18,9 +35,8 @@ class AbstractDevelopPlugin {
 	 *
 	 * @param fs 文件系统
 	 * @param file 文件路径
-	 * @return {*} 文件内容
 	 */
-	readFile (fs, file) {
+	readFile(fs: MFS, file: string) {
 		try {
 			const path0 = path.join(this.options.webpack.outputPath, file);
 			return fs.readFileSync(path0, "utf-8");
@@ -29,19 +45,17 @@ class AbstractDevelopPlugin {
 		}
 	};
 
-	async initilize () {
+	async initilize() {
 		const { webpack } = this.options;
 
-		const clientConfig = require("../template/client.config")(webpack);
-		const serverConfig = require("../template/server.config")(webpack);
+		const clientConfig = ClientConfiguration(webpack);
+		const serverConfig = ServerConfiguration(webpack);
 		return Promise.all([this.initClientCompiler(clientConfig), this.initServerCompiler(serverConfig)]);
 	}
 
-	async initClientCompiler (config) {
-		throw Error();
-	}
+	abstract async initClientCompiler(config: Configuration): Promise<void>;
 
-	async initServerCompiler (config) {
+	async initServerCompiler(config: Configuration) {
 		// watch template changes ?
 		this.template = await fs.promises.readFile("D:\\Project\\Blog\\WebContent\\public\\index.template.html", "utf-8");
 
@@ -60,13 +74,13 @@ class AbstractDevelopPlugin {
 	/**
 	 * 更新Vue的服务端渲染器，在客户端或服务端构建完成后调用。
 	 */
-	updateVueSSR () {
+	updateVueSSR() {
 		const { serverBundle, template, clientManifest } = this;
 		const render = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
 		this.renderFunction = promisify(render.renderToString);
 	}
 
-	get renderFunctionFactory () {
+	get renderFunctionFactory() {
 		return () => this.renderFunction;
 	}
 }
@@ -74,7 +88,7 @@ class AbstractDevelopPlugin {
 
 class KoaWebpackDevelopPlugin extends AbstractDevelopPlugin {
 
-	async initClientCompiler (config) {
+	async initClientCompiler(config: any) {
 		try {
 			require("webpack-hot-client");
 		} catch (e) {
@@ -98,8 +112,8 @@ class KoaWebpackDevelopPlugin extends AbstractDevelopPlugin {
 
 		clientCompiler.hooks.done.tap("update server manifest", stats => {
 			const json = stats.toJson();
-			json.errors.forEach(err => console.error(err));
-			json.warnings.forEach(err => console.warn(err));
+			json.errors.forEach((err: any) => console.error(err));
+			json.warnings.forEach((err: any) => console.warn(err));
 			if (json.errors.length) return;
 
 			this.clientManifest = JSON.parse(this.readFile(
@@ -113,14 +127,21 @@ class KoaWebpackDevelopPlugin extends AbstractDevelopPlugin {
 	}
 }
 
+interface ExtResponse extends ServerResponse {
+	locals: any;
+}
+
 class HotMiddlewareDevemopPlugin extends AbstractDevelopPlugin {
 
-	constructor (options) {
+	private clientCompiler!: Compiler | MultiCompiler;
+	private devMiddleware!: WebpackDevMiddleware & NextHandleFunction;
+	private hotMiddleware: any;
+
+	constructor(options: any) {
 		super(options);
-		this.middleware = this.middleware.bind(this);
 	}
 
-	async initClientCompiler (config) {
+	async initClientCompiler(config: any) {
 		if (!Array.isArray(config.entry)) {
 			config.entry = [config.entry];
 		}
@@ -136,8 +157,8 @@ class HotMiddlewareDevemopPlugin extends AbstractDevelopPlugin {
 		});
 		clientCompiler.hooks.done.tap("update client manifest", stats => {
 			const json = stats.toJson();
-			json.errors.forEach(err => console.error(err));
-			json.warnings.forEach(err => console.warn(err));
+			json.errors.forEach((err: any) => console.error(err));
+			json.warnings.forEach((err: any) => console.warn(err));
 			if (json.errors.length) return;
 
 			this.clientManifest = JSON.parse(this.readFile(
@@ -151,14 +172,16 @@ class HotMiddlewareDevemopPlugin extends AbstractDevelopPlugin {
 		this.devMiddleware = devMiddleware;
 
 		try {
-			const WebpackHotMiddleware = require("webpack-hot-middleware");
+			const WebpackHotMiddleware: typeof WebpackHotMiddlewareType = require("webpack-hot-middleware");
 			this.hotMiddleware = WebpackHotMiddleware(clientCompiler, { heartbeat: 5000 });
 		} catch (e) {
 			throw new Error("You should install `webpack-hot-middleware`, try `npm i -D webpack-hot-middleware`");
 		}
+
+		this.middleware = this._middleware.bind(this);
 	}
 
-	middleware (ctx, next) {
+	_middleware(ctx: Context, next: () => Promise<any>) {
 		const innerNext = () => {
 			return new Promise(resolve => this.hotMiddleware(ctx.req, ctx.res, () => resolve(next())));
 		};
@@ -166,27 +189,33 @@ class HotMiddlewareDevemopPlugin extends AbstractDevelopPlugin {
 		// wait for webpack-dev-middleware to signal that the build is ready
 		return Promise.all([
 			new Promise((resolve, reject) => {
-				for (const comp of [].concat(this.clientCompiler.compilers || this.clientCompiler)) {
-					comp.hooks.failed.tap("KoaWebpack", reject);
+				let comps: Compiler[];
+				if (this.clientCompiler instanceof Compiler) {
+					comps = [this.clientCompiler]
+				} else {
+					comps = this.clientCompiler.compilers;
 				}
+				comps.forEach(c => c.hooks.failed.tap("KoaWebpack", reject));
 				this.devMiddleware.waitUntilValid(() => resolve(true));
 			}),
 			new Promise((resolve) => {
 				const resAdapter = {
-					end: (content) => {
+					end: (content: any) => {
 						ctx.body = content;
 						resolve();
 					},
 					setHeader: ctx.set.bind(ctx),
 					locals: ctx.state,
 				};
-				this.devMiddleware(ctx.req, resAdapter, () => resolve(innerNext()));
+
+				// devMiddleware 里只用了上面那几个属性，这里直接强制转换了
+				this.devMiddleware(ctx.req, <ExtResponse>resAdapter, () => resolve(innerNext()));
 			}),
 		]);
 	}
 }
 
-module.exports = function (options) {
+export default function (options: any) {
 	// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();

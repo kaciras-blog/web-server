@@ -1,12 +1,13 @@
-const webpack = require("webpack");
-const merge = require("webpack-merge");
+import { styleLoaders } from "./utils";
+import { DefinePlugin } from "webpack";
+import VueSSRServerPlugin from "vue-server-renderer/server-plugin"
+import baseConfig from "./base.config";
+import merge from "webpack-merge";
+
 const nodeExternals = require("webpack-node-externals");
-const VueSSRServerPlugin = require("vue-server-renderer/server-plugin");
-const baseConfig = require("./base.config");
-const { styleLoaders } = require("./utils");
 
 
-module.exports = (options) => {
+export default (options: any) => {
 	options = Object.assign({}, options, options.server);
 
 	return merge(baseConfig(options, "server"), {
@@ -28,7 +29,7 @@ module.exports = (options) => {
 		}),
 
 		plugins: [
-			new webpack.DefinePlugin({ "process.env.VUE_ENV": "'server'" }),
+			new DefinePlugin({ "process.env.VUE_ENV": "'server'" }),
 
 			// 这是将服务器的整个输出单个 JSON 文件的插件，默认文件名`vue-ssr-server-bundle.json`
 			new VueSSRServerPlugin(),

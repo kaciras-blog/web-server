@@ -1,20 +1,23 @@
-const http2 = require("http2");
-const axios = require("axios");
-const Koa = require("koa");
+import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
+import axios from "axios";
+import Koa from "koa";
+import { intercept } from "../share/koa-middleware";
+import createServer from "../share/server";
+import ssr from "../ssr";
+import image from "../image";
+import dev from "./dev";
+import log4js from "log4js";
+import sitemap from "../sitemap";
+
 const compress = require("koa-compress");
 const serve = require("koa-static");
 const etag = require("koa-etag");
 const conditional = require("koa-conditional-get");
 const cors = require("@koa/cors");
 const multer = require("koa-multer");
-const image = require("../image");
-const ssr = require("../ssr");
-const dev = require("./dev");
-const createServer = require("../share/server");
-const { intercept } = require("../share/koa-middleware");
 
 
-const logger = require("log4js").getLogger("app");
+const logger = log4js.getLogger("app");
 
 // 其它服务启用了HTTPS，但对于内部调用来说证书的CN不是localhost，需要关闭证书检查
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -22,21 +25,22 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 /**
  * 修改Axios使其支持内置http2模块
  */
-function adaptAxiosHttp2 () {
-	function request (options, callback) {
+function adaptAxiosHttp2() {
+
+	function request(options: any, callback: any) {
 		let host = `https://${options.hostname}`;
 		if (options.port) {
 			host += ":" + options.port;
 		}
 
 		const client = http2.connect(host);
-		const req = client.request({
+		const req: any = client.request({
 			...options.headers,
 			":method": options.method.toUpperCase(),
 			":path": options.path,
 		});
 
-		req.on("response", headers => {
+		req.on("response", (headers: IncomingHttpHeaders & IncomingHttpStatusHeader) => {
 			req.headers = headers;
 			req.statusCode = headers[":status"];
 			callback(req);
@@ -45,11 +49,11 @@ function adaptAxiosHttp2 () {
 		return req;
 	}
 
-	// Axios发送Http2请求
-	axios.defaults.transport = { request };
+	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里
+	(<any>axios.defaults).transport = { request };
 }
 
-function setupBasicMiddlewares (app, options) {
+function setupBasicMiddlewares(app: Koa, options: any) {
 	app.use(cors(options.blog.cors));
 	app.use(conditional());
 
@@ -59,7 +63,7 @@ function setupBasicMiddlewares (app, options) {
 	app.use(image(options.blog));
 
 	app.use(compress({ threshold: 2048 }));
-	app.use(require("../sitemap")(options.blog)); // robots.txt 帮助爬虫抓取，并指向站点地图
+	app.use(sitemap(options.blog)); // robots.txt 帮助爬虫抓取，并指向站点地图
 
 	app.use(etag());
 	app.use(intercept([
@@ -74,7 +78,7 @@ function setupBasicMiddlewares (app, options) {
 	}));
 }
 
-module.exports = async function (options, _devserver /* 临时 */) {
+module.exports = async function (options: any, _devserver: boolean /* 临时 */) {
 	adaptAxiosHttp2();
 	const app = new Koa();
 

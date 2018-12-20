@@ -34,7 +34,7 @@ async function renderPage(ctx: Context, render: (ctx: RenderContext) => Promise<
 	}
 }
 
-module.exports = function (options: any): Middleware {
+export default function (options: any): Middleware {
 
 	function reslove(file: string) {
 		return path.resolve(options.webpack.outputPath, file);
@@ -46,12 +46,10 @@ module.exports = function (options: any): Middleware {
 			template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
 			clientManifest: require(reslove("vue-ssr-client-manifest.json")),
 		});
-		return () => promisify(renderer.renderToString);
+		return () => promisify<RenderContext, string>(renderer.renderToString);
 	}
 
-	const getRenderFunction = process.argv.includes("-dev")
-		? options.renderFunctionFactory
-		: productionRenderFunctionFactory();
+	const getRenderFunction = options.renderFunctionFactory || productionRenderFunctionFactory();
 
 	return ctx => renderPage(ctx, getRenderFunction());
-};
+}

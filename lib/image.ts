@@ -63,4 +63,4 @@ export default function (options: any): Middleware {
 			ctx.status = 405;
 		}
 	};
-};
+}
