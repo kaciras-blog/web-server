@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs-extra";
 import koaWebpack from "koa-webpack";
-import webpack, { Compiler, Configuration, MultiCompiler } from "webpack";
+import webpack, { Compiler, Configuration, MultiCompiler, Plugin } from "webpack";
 import { promisify } from "util";
 import { createBundleRenderer } from "vue-server-renderer";
 import MFS from "memory-fs";
@@ -12,7 +12,37 @@ import { NextHandleFunction } from "connect";
 import { ServerResponse } from "http";
 import ClientConfiguration from "../template/client.config";
 import ServerConfiguration from "../template/server.config";
+import { EventEmitter } from "events";
 
+
+interface ClientManifestUpdatePlugin {
+	on(event: "update", listener: (manifest: any) => void): this
+}
+
+/**
+ * 读取并保存 VueSSRClientPlugin 输出的清单文件的 Webpack 插件
+ */
+class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
+
+	readonly id = "ClientManifestUpdatePlugin";
+
+	clientManifest: any;
+
+	private readonly filename: string;
+
+	constructor(filename: string = "vue-ssr-client-manifest.json") {
+		super();
+		this.filename = filename;
+	}
+
+	apply(compiler: Compiler): void {
+		compiler.hooks.afterEmit.tap(this.id, compilation => {
+			if (compilation.getStats().hasErrors()) return;
+			this.clientManifest = JSON.parse(compilation.assets[this.filename].source());
+			this.emit("update", this.clientManifest);
+		});
+	}
+}
 
 abstract class AbstractDevelopPlugin {
 
@@ -49,6 +79,17 @@ abstract class AbstractDevelopPlugin {
 		const { webpack } = this.options;
 
 		const clientConfig = ClientConfiguration(webpack);
+
+		const cu = new ClientManifestUpdatePlugin();
+		cu.on("update", manifest => {
+			this.clientManifest = manifest;
+			this.updateVueSSR();
+		});
+		if (!clientConfig.plugins) {
+			clientConfig.plugins = []; // 我觉得不太可能一个插件都没有
+		}
+		clientConfig.plugins.push(cu);
+
 		const serverConfig = ServerConfiguration(webpack);
 		return Promise.all([this.initClientCompiler(clientConfig), this.initServerCompiler(serverConfig)]);
 	}
@@ -103,22 +144,7 @@ class KoaWebpackDevelopPlugin extends AbstractDevelopPlugin {
 		 * webpack-hot-client 无法创建 websocket。
 		 * 当前做法是关闭Firefox的 network.websocket.allowInsecureFromHTTPS 设为true。
 		 */
-		const middleware = await koaWebpack({ compiler: clientCompiler });
-
-		clientCompiler.hooks.done.tap("update server manifest", stats => {
-			const json = stats.toJson();
-			json.errors.forEach((err: any) => console.error(err));
-			json.warnings.forEach((err: any) => console.warn(err));
-			if (json.errors.length) return;
-
-			this.clientManifest = JSON.parse(this.readFile(
-				middleware.devMiddleware.fileSystem,
-				"vue-ssr-client-manifest.json"
-			));
-			this.updateVueSSR();
-		});
-
-		this.middleware = middleware;
+		this.middleware = await koaWebpack({ compiler: clientCompiler });
 	}
 }
 
@@ -145,18 +171,7 @@ class HotMiddlewareDevemopPlugin extends AbstractDevelopPlugin {
 		const devMiddleware = require("webpack-dev-middleware")(clientCompiler, {
 			publicPath: config.output.publicPath,
 			noInfo: true,
-		});
-		clientCompiler.hooks.done.tap("update client manifest", stats => {
-			const json = stats.toJson();
-			json.errors.forEach((err: any) => console.error(err));
-			json.warnings.forEach((err: any) => console.warn(err));
-			if (json.errors.length) return;
-
-			this.clientManifest = JSON.parse(this.readFile(
-				devMiddleware.fileSystem,
-				"vue-ssr-client-manifest.json",
-			));
-			this.updateVueSSR();
+			stats: "minimal",
 		});
 
 		this.clientCompiler = clientCompiler;
