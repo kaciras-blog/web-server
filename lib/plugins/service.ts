@@ -4,10 +4,9 @@ import Koa from "koa";
 import { intercept } from "../share/koa-middleware";
 import createServer from "../share/server";
 import ssr from "../ssr";
-import image from "../image";
 import dev from "./dev";
 import log4js from "log4js";
-import sitemap from "../sitemap";
+import blogPlugin from "./blog";
 
 const compress = require("koa-compress");
 const serve = require("koa-static");
@@ -57,13 +56,11 @@ function setupBasicMiddlewares(app: Koa, options: any) {
 	app.use(cors(options.blog.cors));
 	app.use(conditional());
 
-	// 图片太大不计算etag，也不需要二次压缩所以放得靠前
 	const uploader = multer({ limits: 16 * 1024 * 1024 });
 	app.use(uploader.single("file"));
-	app.use(image(options.blog));
 
 	app.use(compress({ threshold: 2048 }));
-	app.use(sitemap(options.blog)); // robots.txt 帮助爬虫抓取，并指向站点地图
+	blogPlugin(app, options.blog); // 图片太大不计算etag
 
 	app.use(etag());
 	app.use(intercept([
