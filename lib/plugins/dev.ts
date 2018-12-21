@@ -57,7 +57,7 @@ abstract class AbstractDevelopPlugin {
 
 	async initServerCompiler(config: Configuration) {
 		// watch template changes ?
-		this.template = await fs.promises.readFile("D:\\Project\\Blog\\WebContent\\public\\index.template.html", "utf-8");
+		this.template = await fs.promises.readFile(this.options.webpack.server.template, "utf-8");
 
 		const serverCompiler = webpack(config);
 		const mfs = new MFS();
@@ -103,11 +103,6 @@ class KoaWebpackDevelopPlugin extends AbstractDevelopPlugin {
 		 * webpack-hot-client 无法创建 websocket。
 		 * 当前做法是关闭Firefox的 network.websocket.allowInsecureFromHTTPS 设为true。
 		 */
-		// const webSocketServer = https.createServer({
-		// 	key: fs.readFileSync(config.privatekey),
-		// 	cert: fs.readFileSync(config.certificate),
-		// }).listen(5678, "localhost");
-
 		const middleware = await koaWebpack({ compiler: clientCompiler });
 
 		clientCompiler.hooks.done.tap("update server manifest", stats => {
@@ -136,10 +131,6 @@ class HotMiddlewareDevemopPlugin extends AbstractDevelopPlugin {
 	private clientCompiler!: Compiler | MultiCompiler;
 	private devMiddleware!: WebpackDevMiddleware & NextHandleFunction;
 	private hotMiddleware: any;
-
-	constructor(options: any) {
-		super(options);
-	}
 
 	async initClientCompiler(config: any) {
 		if (!Array.isArray(config.entry)) {
