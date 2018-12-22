@@ -18,7 +18,7 @@ const logger = getLogger("Blog");
  * @param options 选项
  * @return Koa的中间件函数
  */
-function createImageMiddleware(options: any): Middleware {
+export function createImageMiddleware(options: any): Middleware {
 	const SUPPORTED_FORMAT = [".jpg", ".png", ".gif", ".bmp", ".svg"];
 	fs.ensureDirSync(options.imageRoot);
 
@@ -41,7 +41,7 @@ function createImageMiddleware(options: any): Middleware {
 		logger.trace("有图片正在上传");
 
 		// Multer 库直接修改ctx.req
-		const file = (ctx.req as any).file;
+		const file = (<any>ctx.req).file;
 		if (!file) {
 			return ctx.status = 400;
 		}
@@ -146,7 +146,7 @@ async function buildSitemap(resources: ArticleCollection[]) {
 	return sitemapBuilder.buildObject(urlset.map(item => ({ url: item })));
 }
 
-function createSitemapMiddleware(options: any): Middleware {
+export function createSitemapMiddleware(options: any): Middleware {
 	let cached: string;
 
 	const resources: ArticleCollection[] = [];
@@ -171,7 +171,6 @@ function createSitemapMiddleware(options: any): Middleware {
 			ctx.type = "application/xml; charset=utf-8";
 			ctx.body = cached;
 		}
-		return Promise.resolve();
 	};
 }
 

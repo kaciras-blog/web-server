@@ -40,6 +40,10 @@ async function invokeWebpack(config: Configuration) {
  * @return {Promise<void>} 指示构建状态
  */
 export default async function build(options: any) {
+	// TODO: remove
+	process.env.NODE_PATH = path.resolve("node_modules");
+	require("module").Module._initPaths();
+
 	await fs.remove(path.join(options.outputPath, "static"));
 	await invokeWebpack(ClientConfiguration(options));
 	await invokeWebpack(ServerConfiguration(options));

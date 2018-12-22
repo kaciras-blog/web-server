@@ -23,19 +23,17 @@ export default function (requestHandler: OnRequestHandler, options: any) {
 			key: fs.readFileSync(options.privatekey),
 			cert: fs.readFileSync(options.certificate),
 			allowHTTP1: true,
-		}, requestHandler).listen(tlsPort);
-
-		logger.info(`Https连接端口：${tlsPort}`);
+		}, requestHandler)
+			.listen(tlsPort, () => logger.info(`Https连接端口：${tlsPort}`));
 	}
 
 	if (options.redirectHttp) {
 		http.createServer((req, res) => {
 			res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
 			res.end();
-		}).listen(httpPort);
-		logger.info(`重定向来自端口：${httpPort}的Http请求至端口：${tlsPort}`);
+		}).listen(httpPort, () => logger.info(`重定向来自端口：${httpPort}的请求至：${tlsPort}`));
 	} else {
-		logger.info(`在端口：${httpPort}上监听Http连接`);
-		return http.createServer(requestHandler).listen(httpPort);
+		http.createServer(requestHandler).listen(httpPort,
+			() => logger.info(`在端口：${httpPort}上监听Http连接`));
 	}
 };

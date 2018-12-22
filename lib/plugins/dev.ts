@@ -96,16 +96,22 @@ abstract class AbstractDevelopPlugin {
 
 	abstract async initClientCompiler(config: Configuration): Promise<void>;
 
+	/**
+	 * 对服务端构建的监听，使用 wabpack.watch 来监视文件的变更，并输出到内存文件系统中，还会在每次
+	 * 构建完成后更新 serverBundle。
+	 *
+	 * @param config webpack配置
+	 */
 	async initServerCompiler(config: Configuration) {
 		// watch template changes ?
 		this.template = await fs.promises.readFile(this.options.webpack.server.template, "utf-8");
 
-		const serverCompiler = webpack(config);
+		const compiler = webpack(config);
 		const mfs = new MFS();
-		serverCompiler.outputFileSystem = mfs;
-		serverCompiler.watch({}, (err, stats) => {
+		compiler.outputFileSystem = mfs;
+		compiler.watch({}, (err, stats) => {
 			if (err) throw err;
-			if (stats.toJson().errors.length) return;
+			if (stats.hasErrors()) return;
 
 			this.serverBundle = JSON.parse(this.readFile(mfs, "vue-ssr-server-bundle.json"));
 			this.updateVueSSR();

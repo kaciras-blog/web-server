@@ -5,7 +5,7 @@ import service from "./plugins/service";
 
 
 export default function (options: WebServerConfiguration) {
-	// 捕获全局异常，将其输出到日志中。
+	// 捕获全局异常记录到日志中。
 	const logger = getLogger("system");
 	process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 	process.on("uncaughtException", err => logger.error(err.message, err.stack));

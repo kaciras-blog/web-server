@@ -40,16 +40,16 @@ export default function (options: any): Middleware {
 		return path.resolve(options.webpack.outputPath, file);
 	}
 
-	function productionRenderFunctionFactory() {
-		const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
-			runInNewContext: false,
-			template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
-			clientManifest: require(reslove("vue-ssr-client-manifest.json")),
-		});
-		return () => promisify<RenderContext, string>(renderer.renderToString);
+	if (options.renderFunctionFactory) {
+		return ctx => renderPage(ctx, options.renderFunctionFactory());
 	}
 
-	const getRenderFunction = options.renderFunctionFactory || productionRenderFunctionFactory();
+	const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
+		runInNewContext: false,
+		template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
+		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
+	});
 
-	return ctx => renderPage(ctx, getRenderFunction());
+	const renderFunction = promisify<RenderContext, string>(renderer.renderToString);
+	return ctx => renderPage(ctx, renderFunction);
 }
