@@ -91,7 +91,7 @@ export default async function (options: any, _devserver: boolean /* 临时 */) {
 		logger.info("No webpack config specified, run as production mode.");
 
 		setupBasicMiddlewares(app, options);
-		app.use(prodMiddleware(options));
+		app.use(await prodMiddleware(options));
 	}
 
 	await createServer(app.callback(), options.server);

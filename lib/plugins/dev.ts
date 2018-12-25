@@ -4,9 +4,13 @@ import webpack, { Configuration } from "webpack";
 import { Context } from "koa";
 import WebpackHotMiddlewareType from "webpack-hot-middleware";
 import { NextHandleFunction } from "connect";
-import { ServerResponse } from "http";
 
 
+/**
+ * 更新 css modules 有些问题。
+ *
+ * @param config webpack的配置
+ */
 async function createKoaWebpack(config: any) {
 	try {
 		require("webpack-hot-client");
@@ -14,7 +18,7 @@ async function createKoaWebpack(config: any) {
 		throw new Error("You should install `webpack-hot-client`, try `npm i -D webpack-hot-client`");
 	}
 
-	const clientCompiler = webpack(config);
+	const compiler = webpack(config);
 	config.output.filename = "[name].js";
 
 	/*
@@ -22,14 +26,24 @@ async function createKoaWebpack(config: any) {
 	 * webpack-hot-client 无法创建 websocket。
 	 * 当前做法是关闭Firefox的 network.websocket.allowInsecureFromHTTPS 设为true。
 	 */
-	return await koaWebpack({ compiler: clientCompiler });
+	return await koaWebpack({ compiler });
 }
 
 
+/**
+ * 使用 webpack-hot-middleware，webpack 官方的开发服务器也使用这个库。
+ * webpack-hot-middleware 使用 Server-Sent-Event 来通知前端更新资源，兼容性比WebpackHotClient好。
+ *
+ * @param config webpack的配置
+ */
 async function createHotMiddleware(config: any) {
+	if (!config.entry) {
+		throw new Error("No entry specified.")
+	}
 	if (!Array.isArray(config.entry)) {
 		config.entry = [config.entry];
 	}
+
 	config.entry.unshift("webpack-hot-middleware/client");
 	config.output.filename = "[name].js";
 	config.plugins.push(new webpack.HotModuleReplacementPlugin());
@@ -49,7 +63,7 @@ async function createHotMiddleware(config: any) {
 		throw new Error("You should install `webpack-hot-middleware`, try `npm i -D webpack-hot-middleware`");
 	}
 
-	function _middleware(ctx: Context, next: () => Promise<any>) {
+	return (ctx: Context, next: () => Promise<any>) => {
 		const innerNext = () => {
 			return new Promise(resolve => hotMiddleware(ctx.req, ctx.res, () => resolve(next())));
 		};
@@ -71,16 +85,10 @@ async function createHotMiddleware(config: any) {
 				};
 
 				// devMiddleware 里只用了上面那几个属性，这里直接强制转换了
-				devMiddleware(ctx.req, <ExtResponse>resAdapter, () => resolve(innerNext()));
+				devMiddleware(ctx.req, resAdapter, () => resolve(innerNext()));
 			}),
 		]);
-	}
-
-	return _middleware;
-}
-
-interface ExtResponse extends ServerResponse {
-	locals: any;
+	};
 }
 
 
@@ -89,7 +97,5 @@ export default function (options: any, webpackConfig: Configuration) {
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();
 
-	return options.dev.useHotClient
-		? createKoaWebpack(webpackConfig)
-		: createHotMiddleware(webpackConfig);
+	return options.dev.useHotClient ? createKoaWebpack(webpackConfig) : createHotMiddleware(webpackConfig);
 };

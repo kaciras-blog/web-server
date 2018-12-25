@@ -37,9 +37,11 @@ async function renderPage(ctx: Context, render: (ctx: RenderContext) => Promise<
 	}
 }
 
+/* Vue服务端渲染所需的几个参数 */
 let serverBundle: any;
-let template: any;
+let template: string;
 let clientManifest: any;
+
 let renderFunction: (ctx: RenderContext) => Promise<string>;
 
 /**
@@ -48,8 +50,6 @@ let renderFunction: (ctx: RenderContext) => Promise<string>;
 class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 
 	readonly id = "ClientManifestUpdatePlugin";
-
-	clientManifest: any;
 
 	private readonly filename: string;
 
@@ -61,8 +61,8 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 	apply(compiler: Compiler): void {
 		compiler.hooks.afterEmit.tap(this.id, compilation => {
 			if (compilation.getStats().hasErrors()) return;
-			this.clientManifest = JSON.parse(compilation.assets[this.filename].source());
-			this.emit("update", this.clientManifest);
+			const clientManifest = JSON.parse(compilation.assets[this.filename].source());
+			this.emit("update", clientManifest);
 		});
 	}
 }
@@ -93,7 +93,7 @@ export function configureWebpack(config: Configuration) {
  */
 export async function devMiddleware(options: any): Promise<Middleware> {
 	const config: Configuration = require("../template/server.config").default(options.webpack);
-	template = await fs.promises.readFile(options.webpack.server.template, "utf-8");
+	template = await fs.readFile(options.webpack.server.template, "utf-8");
 
 	const compiler = webpack(config);
 	compiler.outputFileSystem = new MFS(); // TODO: remove
@@ -116,7 +116,7 @@ function updateVueSSR() {
 	renderFunction = promisify(render.renderToString);
 }
 
-export function prodMiddleware (options: any): Middleware {
+export async function prodMiddleware(options: any): Promise<Middleware> {
 
 	function reslove(file: string) {
 		return path.resolve(options.webpack.outputPath, file);
@@ -124,7 +124,7 @@ export function prodMiddleware (options: any): Middleware {
 
 	const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
 		runInNewContext: false,
-		template: fs.readFileSync(reslove("index.template.html"), "utf-8"),
+		template: await fs.readFile(reslove("index.template.html"), { encoding: "utf-8" }),
 		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
 	});
 
