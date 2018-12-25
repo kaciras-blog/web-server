@@ -3,7 +3,7 @@ import axios from "axios";
 import Koa from "koa";
 import { intercept } from "../share/koa-middleware";
 import createServer from "../share/server";
-import ssr from "../ssr";
+import { configureWebpack, devMiddleware, prodMiddleware } from "./vue-ssr";
 import dev from "./dev";
 import log4js from "log4js";
 import blogPlugin from "./blog";
@@ -80,18 +80,18 @@ export default async function (options: any, _devserver: boolean /* 临时 */) {
 	const app = new Koa();
 
 	if (_devserver) {
-		const { middleware, renderFunctionFactory } = await dev(options);
+		const clientConfig = require("../template/client.config").default(options.webpack);
+		configureWebpack(clientConfig);
+		const { middleware } = await dev(options, clientConfig);
 
 		app.use(middleware); // 这个得放在koa-compress前头。
 		setupBasicMiddlewares(app, options);
-
-		options.renderFunctionFactory = renderFunctionFactory;
-		app.use(ssr(options));
+		app.use(await devMiddleware(options));
 	} else {
 		logger.info("No webpack config specified, run as production mode.");
 
 		setupBasicMiddlewares(app, options);
-		app.use(ssr(options));
+		app.use(prodMiddleware(options));
 	}
 
 	await createServer(app.callback(), options.server);
