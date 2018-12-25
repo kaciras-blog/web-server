@@ -26,9 +26,14 @@ function cssLoaders(options: any): CssLoadersMap {
 		},
 	};
 
+	// TODO: 这些破加载器到时候还得测下
+	const postcss = {
+		loader: "postcss-loader",
+	};
+
 	// generate loader string to be used with extract text plugin
 	function generateLoaders(loader?: string, loaderOptions?: any): RuleSetUseItem[] {
-		const loaders = [cssLoader];
+		const loaders: RuleSetUseItem[] = [cssLoader, postcss];
 
 		if (loader) {
 			loaders.push({
@@ -42,7 +47,7 @@ function cssLoaders(options: any): CssLoadersMap {
 		// Extract CSS when that option is specified
 		// (which is the case during production build)
 		if (options.extract) {
-			return [MiniCssExtractPlugin.loader].concat(loaders);
+			return (<RuleSetUseItem[]>[MiniCssExtractPlugin.loader]).concat(loaders);
 		} else {
 			return (<RuleSetUseItem[]>["vue-style-loader"]).concat(loaders);
 		}
