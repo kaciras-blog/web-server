@@ -82,7 +82,7 @@ export default async function (options: any, _devserver: boolean /* 临时 */) {
 	if (_devserver) {
 		const clientConfig = require("../template/client.config").default(options.webpack);
 		configureWebpack(clientConfig);
-		const { middleware } = await dev(options, clientConfig);
+		const middleware = await dev(options, clientConfig);
 
 		app.use(middleware); // 这个得放在koa-compress前头。
 		setupBasicMiddlewares(app, options);
