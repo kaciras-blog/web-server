@@ -5,7 +5,7 @@ module.exports = {
 	moduleFileExtensions: ["js", "json", "jsx", "ts", "mjs"],
 	testEnvironment: "node",
 	testMatch: [
-		"**/tests/**/*.js?(x)",
+		"**/test/**/*.js?(x)",
 		"**/?(*.)+(spec|test).js?(x)",
 	],
 };
