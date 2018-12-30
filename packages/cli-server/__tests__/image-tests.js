@@ -1,6 +1,6 @@
 jest.mock("fs"); // Jest对Node的核心库的Mock必须显示调用
 
-const image = require("../lib/plugins/blog").createImageMiddleware;
+const image = require("../packages/cli-server/blog").createImageMiddleware;
 const fs = require("fs-extra");
 const sha3 = require("js-sha3").sha3_256;
 

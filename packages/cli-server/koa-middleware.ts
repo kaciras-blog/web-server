@@ -40,3 +40,5 @@ export function intercept(files: string[]): Middleware {
 		return Promise.resolve();
 	};
 }
+// 		"kx-ui": "../../KxUI",
+// 		"web-server": "../WebServer",

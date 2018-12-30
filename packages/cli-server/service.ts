@@ -1,10 +1,10 @@
 import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import axios from "axios";
 import Koa from "koa";
-import { intercept } from "../share/koa-middleware";
-import createServer from "../share/server";
-import { configureWebpack, devMiddleware, prodMiddleware } from "./vue-ssr";
-import dev from "./dev";
+import { intercept } from "./koa-middleware";
+import createServer from "./server";
+import { configureWebpack, devMiddleware, prodMiddleware } from "../cli-plugin-vue/vue-ssr";
+import dev from "../cli-core/plugins/dev";
 import log4js from "log4js";
 import blogPlugin from "./blog";
 
@@ -80,7 +80,7 @@ export default async function (options: any, _devserver: boolean /* 临时 */) {
 	const app = new Koa();
 
 	if (_devserver) {
-		const clientConfig = require("../template/client.config").default(options.webpack);
+		const clientConfig = require("../cli-core/template/client.config").default(options.webpack);
 		configureWebpack(clientConfig);
 		const middleware = await dev(options, clientConfig);
 

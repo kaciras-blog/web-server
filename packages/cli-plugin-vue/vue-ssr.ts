@@ -92,7 +92,7 @@ export function configureWebpack(config: Configuration) {
  * @param options 配置
  */
 export async function devMiddleware(options: any): Promise<Middleware> {
-	const config: Configuration = require("../template/server.config").default(options.webpack);
+	const config: Configuration = require("../cli-core/template/server.config").default(options.webpack);
 	template = await fs.readFile(options.webpack.server.template, "utf-8");
 
 	const compiler = webpack(config);

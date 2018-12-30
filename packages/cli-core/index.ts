@@ -1,7 +1,7 @@
 import { getLogger } from "log4js";
 import { Options } from "webpack";
 import build from "./plugins/build";
-import service from "./plugins/service";
+import service from "../cli-server/service";
 
 
 export default function (options: WebServerConfiguration) {

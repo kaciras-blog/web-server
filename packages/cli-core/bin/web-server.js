@@ -44,4 +44,4 @@ if (!optionsFile) {
 	console.error("Configuration not specified");
 	process.exit(1);
 }
-require("../lib").default(require(optionsFile));
+require("..").default(require(optionsFile));

@@ -7,7 +7,7 @@ import ClientConfiguration from "../template/client.config";
 import ServerConfiguration from "../template/server.config";
 
 
-const compile: (arg1: Configuration) => Promise<Stats> = promisify<Configuration, Stats>(webpack);
+const compile: (config: Configuration) => Promise<Stats> = promisify<Configuration, Stats>(webpack);
 
 /**
  * 调用webpack，并输出更友好的信息。
