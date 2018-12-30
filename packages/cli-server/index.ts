@@ -3,7 +3,7 @@ import axios from "axios";
 import Koa from "koa";
 import { intercept } from "./koa-middleware";
 import createServer from "./server";
-import { configureWebpack, devMiddleware, prodMiddleware } from "../cli-plugin-vue/vue-ssr";
+import { configureWebpack, devMiddleware, prodMiddleware } from "../cli-plugin-vue";
 import dev from "../cli-core/plugins/dev";
 import log4js from "log4js";
 import blogPlugin from "./blog";
