@@ -7,9 +7,41 @@ import xml2js from "xml2js";
 import axios from "axios";
 import { getLogger } from "log4js";
 import Application = require("koa");
+import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 
 
 const logger = getLogger("Blog");
+
+/**
+ * 修改Axios使其支持内置http2模块
+ */
+function adaptAxiosHttp2() {
+
+	function request(options: any, callback: any) {
+		let host = `https://${options.hostname}`;
+		if (options.port) {
+			host += ":" + options.port;
+		}
+
+		const client = http2.connect(host);
+		const req: any = client.request({
+			...options.headers,
+			":method": options.method.toUpperCase(),
+			":path": options.path,
+		});
+
+		req.on("response", (headers: IncomingHttpHeaders & IncomingHttpStatusHeader) => {
+			req.headers = headers;
+			req.statusCode = headers[":status"];
+			callback(req);
+		});
+		req.on("end", () => client.close());
+		return req;
+	}
+
+	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里
+	(<any>axios.defaults).transport = { request };
+}
 
 /**
  * 根据指定的选项创建中间件。
@@ -175,6 +207,7 @@ export function createSitemapMiddleware(options: any): Middleware {
 }
 
 export default function (app: Application, options: any) {
+	adaptAxiosHttp2();
 	app.use(createImageMiddleware(options));
 	app.use(createSitemapMiddleware(options));
 }
