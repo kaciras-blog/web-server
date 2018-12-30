@@ -50,14 +50,14 @@ export default (options: any, side: "client" | "server"): Configuration => {
 			},
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../node_modules"),
+				path.join(__dirname, "../../../node_modules"),
 			],
 			symlinks: false,
 		},
 		resolveLoader: {
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../node_modules"),
+				path.join(__dirname, "../../../node_modules"),
 			],
 		},
 		module: {

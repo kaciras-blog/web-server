@@ -4,6 +4,8 @@
 	"dependencies": {
 		"axios": "^0.18.0",
 		"js-sha3": "^0.8.0",
-		"xml2js": "^0.4.19"
+		"xml2js": "^0.4.19",
+		"cli-core": "1.0.0",
+		"cli-plugin-vue": "1.0.0"
 	}
 }

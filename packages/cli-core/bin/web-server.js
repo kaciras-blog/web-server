@@ -44,4 +44,4 @@ if (!optionsFile) {
 	console.error("Configuration not specified");
 	process.exit(1);
 }
-require("..").default(require(optionsFile));
+require("../index.js").default(require(optionsFile));
