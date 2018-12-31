@@ -6,6 +6,7 @@
 		"js-sha3": "^0.8.0",
 		"xml2js": "^0.4.19",
 		"cli-core": "1.0.0",
+		"fs-extra": "^7.0.1",
 		"cli-plugin-vue": "1.0.0"
 	}
 }

@@ -41,7 +41,8 @@
 		"eslint-plugin-promise": "^4.0.1",
 		"eslint-plugin-standard": "^4.0.0",
 		"jest": "^23.6.0",
-		"typescript": "^3.2.2"
+		"typescript": "^3.2.2",
+		"memfs": "^2.14.2"
 	},
 	"optionalDependencies": {
 		"ts-loader": "^5.3.2",

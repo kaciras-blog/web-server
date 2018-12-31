@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-const log4js = require("log4js");
+import log4js, { Configuration } from "log4js";
+import index from "..";
+
 require("source-map-support").install();
 
 
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
  */
-function configureLog4js ({ logLevel, logFile }) {
-	const logConfig = {
+function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: string | boolean }) {
+	const logConfig: Configuration = {
 		appenders: {
 			console: {
 				type: "stdout",
@@ -44,4 +46,4 @@ if (!optionsFile) {
 	console.error("Configuration not specified");
 	process.exit(1);
 }
-require("../index.js").default(require(optionsFile));
+index(require(optionsFile));
