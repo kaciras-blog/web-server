@@ -1,6 +1,6 @@
 {
 	"name": "cli-server",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"dependencies": {
 		"@koa/cors": "^2.2.3",
 		"koa": "^2.6.2",
