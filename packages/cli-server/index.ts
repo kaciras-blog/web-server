@@ -1,10 +1,10 @@
+import { configureWebpack, devMiddleware, prodMiddleware } from "cli-plugin-vue";
 import Koa from "koa";
+import log4js from "log4js";
+import dev from "../cli-core/plugins/dev";
+import blogPlugin from "../kaciras-blog";
 import { intercept } from "./middleware";
 import createServer from "./server";
-import { configureWebpack, devMiddleware, prodMiddleware } from "cli-plugin-vue";
-import dev from "../cli-core/plugins/dev";
-import log4js from "log4js";
-import blogPlugin from "../kaciras-blog";
 
 const compress = require("koa-compress");
 const serve = require("koa-static");
@@ -20,8 +20,7 @@ const logger = log4js.getLogger("app");
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 
-
-function setupBasicMiddlewares(app: Koa, options: any) {
+function setupBasicMiddlewares (app: Koa, options: any) {
 	app.use(cors(options.blog.cors));
 	app.use(conditional());
 
@@ -44,10 +43,10 @@ function setupBasicMiddlewares(app: Koa, options: any) {
 	}));
 }
 
-export default async function (options: any, _devserver: boolean /* 临时 */) {
+export default async function (options: any, devserver: boolean /* 临时 */) {
 	const app = new Koa();
 
-	if (_devserver) {
+	if (devserver) {
 		const clientConfig = require("../cli-core/template/client.config").default(options.webpack);
 		configureWebpack(clientConfig);
 		const middleware = await dev(options, clientConfig);
@@ -63,4 +62,4 @@ export default async function (options: any, _devserver: boolean /* 临时 */) {
 	}
 
 	await createServer(app.callback(), options.server);
-};
+}

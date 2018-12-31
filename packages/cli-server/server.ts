@@ -29,11 +29,11 @@ export default function (requestHandler: OnRequestHandler, options: any) {
 
 	if (options.redirectHttp) {
 		http.createServer((req, res) => {
-			res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
+			res.writeHead(301, { Location: "https://" + req.headers.host + req.url });
 			res.end();
 		}).listen(httpPort, () => logger.info(`重定向来自端口：${httpPort}的请求至：${tlsPort}`));
 	} else {
 		http.createServer(requestHandler).listen(httpPort,
 			() => logger.info(`在端口：${httpPort}上监听Http连接`));
 	}
-};
+}

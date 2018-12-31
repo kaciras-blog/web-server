@@ -11,7 +11,7 @@ import { NextHandleFunction } from "connect";
  *
  * @param config webpack的配置
  */
-async function createKoaWebpack(config: any) {
+async function createKoaWebpack (config: any) {
 	try {
 		require("webpack-hot-client");
 	} catch (e) {
@@ -36,9 +36,9 @@ async function createKoaWebpack(config: any) {
  *
  * @param config webpack的配置
  */
-async function createHotMiddleware(config: any) {
+async function createHotMiddleware (config: any) {
 	if (!config.entry) {
-		throw new Error("No entry specified.")
+		throw new Error("No entry specified.");
 	}
 	if (!Array.isArray(config.entry)) {
 		config.entry = [config.entry];
@@ -65,7 +65,7 @@ async function createHotMiddleware(config: any) {
 
 	return (ctx: Context, next: () => Promise<any>) => {
 		const innerNext = () => {
-			return new Promise(resolve => hotMiddleware(ctx.req, ctx.res, () => resolve(next())));
+			return new Promise((resolve) => hotMiddleware(ctx.req, ctx.res, () => resolve(next())));
 		};
 
 		// wait for webpack-dev-middleware to signal that the build is ready
@@ -98,4 +98,4 @@ export default function (options: any, webpackConfig: Configuration) {
 	require("module").Module._initPaths();
 
 	return options.dev.useHotClient ? createKoaWebpack(webpackConfig) : createHotMiddleware(webpackConfig);
-};
+}

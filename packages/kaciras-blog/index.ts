@@ -15,9 +15,9 @@ const logger = getLogger("Blog");
 /**
  * 修改Axios使其支持内置http2模块
  */
-function adaptAxiosHttp2() {
+function adaptAxiosHttp2 () {
 
-	function request(options: any, callback: any) {
+	function request (options: any, callback: any) {
 		let host = `https://${options.hostname}`;
 		if (options.port) {
 			host += ":" + options.port;
@@ -40,7 +40,7 @@ function adaptAxiosHttp2() {
 	}
 
 	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里
-	(<any>axios.defaults).transport = { request };
+	(axios.defaults as any).transport = { request };
 }
 
 /**
@@ -50,11 +50,11 @@ function adaptAxiosHttp2() {
  * @param options 选项
  * @return Koa的中间件函数
  */
-export function createImageMiddleware(options: any): Middleware {
+export function createImageMiddleware (options: any): Middleware {
 	const SUPPORTED_FORMAT = [".jpg", ".png", ".gif", ".bmp", ".svg"];
 	fs.ensureDirSync(options.imageRoot);
 
-	async function getImage(ctx: Context): Promise<void> {
+	async function getImage (ctx: Context): Promise<void> {
 		const name = ctx.path.substring("/image/".length);
 		if (!name || /[\\/]/.test(name)) {
 			ctx.status = 404;
@@ -69,11 +69,11 @@ export function createImageMiddleware(options: any): Middleware {
 	 *
 	 * @param ctx 请求上下文
 	 */
-	async function uploadImage(ctx: Context) {
+	async function uploadImage (ctx: Context) {
 		logger.trace("有图片正在上传");
 
 		// Multer 库直接修改ctx.req
-		const file = (<any>ctx.req).file;
+		const file = (ctx.req as any).file;
 		if (!file) {
 			return ctx.status = 400;
 		}
@@ -123,18 +123,7 @@ interface ArticlePreview {
 
 class ArticleCollection {
 
-	private readonly urlPrefix: string;
-
-	/**
-	 * 创建一个文章集合，从指定的服务器上获取文章列表。
-	 *
-	 * @param urlPrefix 后端服务器URL前缀
-	 */
-	constructor(urlPrefix: string) {
-		this.urlPrefix = urlPrefix;
-	}
-
-	static convert(art: ArticlePreview) {
+	public static convert (art: ArticlePreview) {
 		const parts = art.update.split(/[- :]/g);
 		const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1,
 			parseInt(parts[2]), parseInt(parts[3]), parseInt(parts[4]));
@@ -147,7 +136,18 @@ class ArticleCollection {
 		};
 	}
 
-	async getItems() {
+	private readonly urlPrefix: string;
+
+	/**
+	 * 创建一个文章集合，从指定的服务器上获取文章列表。
+	 *
+	 * @param urlPrefix 后端服务器URL前缀
+	 */
+	constructor (urlPrefix: string) {
+		this.urlPrefix = urlPrefix;
+	}
+
+	public async getItems () {
 		const res = await axios.get(this.urlPrefix + "/articles", {
 			params: {
 				count: 20,
@@ -164,7 +164,7 @@ class ArticleCollection {
 
 
 /** 由资源集合构建 sitemap.xml 的内容 */
-async function buildSitemap(resources: ArticleCollection[]) {
+async function buildSitemap (resources: ArticleCollection[]) {
 	const sitemapBuilder = new xml2js.Builder({
 		rootName: "urlset",
 		xmldec: { version: "1.0", encoding: "UTF-8" },
@@ -175,24 +175,24 @@ async function buildSitemap(resources: ArticleCollection[]) {
 		urlset.push.apply(urlset, await res.getItems());
 	}
 
-	return sitemapBuilder.buildObject(urlset.map(item => ({ url: item })));
+	return sitemapBuilder.buildObject(urlset.map((item) => ({ url: item })));
 }
 
-export function createSitemapMiddleware(options: any): Middleware {
+export function createSitemapMiddleware (options: any): Middleware {
 	let cached: string;
 
 	const resources: ArticleCollection[] = [];
 	resources.push(new ArticleCollection(options.apiServer));
 
-	function updateCache() {
+	function updateCache () {
 		buildSitemap(resources)
-			.then(siteMap => cached = siteMap)
-			.catch(err => logger.error("创建站点地图失败：", err.message));
+			.then((siteMap) => cached = siteMap)
+			.catch((err) => logger.error("创建站点地图失败：", err.message));
 	}
 
 	updateCache(); // 启动时先创建一个存着
 
-	return function handle(ctx, next) {
+	return function handle (ctx, next) {
 		if (ctx.path !== "/sitemap.xml") {
 			return next();
 		}

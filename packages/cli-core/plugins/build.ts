@@ -15,7 +15,7 @@ const compile: (config: Configuration) => Promise<Stats> = promisify<Configurati
  * @param config 配置
  * @return {Promise<void>} 指示构建状态
  */
-async function invokeWebpack(config: Configuration) {
+async function invokeWebpack (config: Configuration) {
 	const stats = await compile(config);
 
 	process.stdout.write(stats.toString({
@@ -39,7 +39,7 @@ async function invokeWebpack(config: Configuration) {
  * @param options Webpack选项
  * @return {Promise<void>} 指示构建状态
  */
-export default async function build(options: any) {
+export default async function build (options: any) {
 	// TODO: remove
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();

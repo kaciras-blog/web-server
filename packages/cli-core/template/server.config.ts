@@ -1,6 +1,6 @@
 import { styleLoaders } from "./utils";
 import { DefinePlugin } from "webpack";
-import VueSSRServerPlugin from "vue-server-renderer/server-plugin"
+import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
 import baseConfig from "./base.config";
 import merge from "webpack-merge";
 import nodeExternals from "webpack-node-externals";

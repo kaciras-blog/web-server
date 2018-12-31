@@ -84,7 +84,7 @@ export default (options: any) => {
 					from: "./public",
 					to: ".",
 					ignore: ["index.html"],
-				}]
+				}],
 			),
 			new ServiceWorkerWebpackPlugin({
 				entry: "./src/service-worker/index.ts",

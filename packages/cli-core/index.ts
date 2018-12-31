@@ -8,7 +8,7 @@ export default function (options: WebServerConfiguration) {
 	// 捕获全局异常记录到日志中。
 	const logger = getLogger("system");
 	process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
-	process.on("uncaughtException", err => logger.error(err.message, err.stack));
+	process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 	switch (process.argv[3]) {
 		case "build":
@@ -36,39 +36,39 @@ export interface WebServerConfiguration {
 }
 
 export interface ServerOptions {
-	port?: number,
-	httpsPort?: number,
-	tls?: boolean,
-	certificate?: string,
-	privatekey?: string,
-	redirectHttp?: boolean,
+	port?: number;
+	httpsPort?: number;
+	tls?: boolean;
+	certificate?: string;
+	privatekey?: string;
+	redirectHttp?: boolean;
 }
 
 export interface DevelopmentOptions {
-	useHotClient?: boolean,
-	slient?: boolean,
+	useHotClient?: boolean;
+	slient?: boolean;
 }
 
 export interface WebpackOptions {
 	mode: "development" | "production" | "none";
 
-	outputPath: string,	// webpack的输出目录
-	publicPath: string,	// 公共资源的URL前缀，可以设为外部服务器等
-	assetsDirectory: string,	// 公共资源输出目录，是outputPath的子目录
+	outputPath: string;	// webpack的输出目录
+	publicPath: string;	// 公共资源的URL前缀，可以设为外部服务器等
+	assetsDirectory: string;	// 公共资源输出目录，是outputPath的子目录
 
-	bundleAnalyzerReport: boolean,
+	bundleAnalyzerReport: boolean;
 
 	client: {
 		useBabel: boolean,
 		parallel: boolean, // 多线程编译JS文件
 		devtool: Options.Devtool;
 		cssSourceMap: boolean,
-	},
+	};
 
 	server: {
 		devtool: Options.Devtool; // 服务端没有eval模式
 		cssSourceMap: boolean,
-	},
+	};
 
 	vueLoader?: any;
 }

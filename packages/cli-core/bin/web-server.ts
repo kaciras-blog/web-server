@@ -8,7 +8,7 @@ require("source-map-support").install();
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
  */
-function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: string | boolean }) {
+function configureLog4js ({ logLevel, logFile }: { logLevel: string, logFile: string | boolean }) {
 	const logConfig: Configuration = {
 		appenders: {
 			console: {

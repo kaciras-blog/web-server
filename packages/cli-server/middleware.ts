@@ -9,11 +9,11 @@ import { Middleware } from "koa";
  * @param options 选项
  * @return 中间件函数
  */
-export function staticFile(path: string, options: any): Middleware {
+export function staticFile (path: string, options: any): Middleware {
 	if (path.startsWith("/static/")) {
 		throw new Error("静态文件目录请用 koa-static 处理");
 	}
-	return function (ctx, next) {
+	return (ctx, next) => {
 		if (ctx.path !== path) {
 			return next();
 		}
@@ -31,8 +31,8 @@ export function staticFile(path: string, options: any): Middleware {
  * @param files 文件列表
  * @return Koa 的中间件函数
  */
-export function intercept(files: string[]): Middleware {
-	return function (ctx, next) {
+export function intercept (files: string[]): Middleware {
+	return (ctx, next) => {
 		if (!files.includes(ctx.path)) {
 			return next();
 		}
@@ -40,5 +40,3 @@ export function intercept(files: string[]): Middleware {
 		return Promise.resolve();
 	};
 }
-// 		"kx-ui": "../../KxUI",
-// 		"web-server": "../WebServer",

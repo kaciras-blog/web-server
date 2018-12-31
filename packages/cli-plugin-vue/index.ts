@@ -15,11 +15,11 @@ export interface RenderContext {
 	shellOnly: boolean;
 }
 
-async function renderPage(ctx: Context, render: (ctx: RenderContext) => Promise<string>) {
+async function renderPage (ctx: Context, render: (ctx: RenderContext) => Promise<string>) {
 	const context = {
 		title: "Kaciras的博客",
 		meta: "",
-		shellOnly: ctx.query["shellOnly"],
+		shellOnly: ctx.query.shellOnly,
 		request: ctx,
 	};
 	try {
@@ -53,29 +53,29 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 
 	private readonly filename: string;
 
-	constructor(filename: string = "vue-ssr-client-manifest.json") {
+	constructor (filename: string = "vue-ssr-client-manifest.json") {
 		super();
 		this.filename = filename;
 	}
 
-	apply(compiler: Compiler): void {
-		compiler.hooks.afterEmit.tap(this.id, compilation => {
-			if (compilation.getStats().hasErrors()) return;
-			const clientManifest = JSON.parse(compilation.assets[this.filename].source());
-			this.emit("update", clientManifest);
+	apply (compiler: Compiler): void {
+		compiler.hooks.afterEmit.tap(this.id, (compilation) => {
+			if (compilation.getStats().hasErrors()) { return; }
+			const source = compilation.assets[this.filename].source();
+			this.emit("update", JSON.parse(source));
 		});
 	}
 }
 
 // noinspection JSUnusedLocalSymbols
 interface ClientManifestUpdatePlugin {
-	on(event: "update", listener: (manifest: any) => void): this
+	on (event: "update", listener: (manifest: any) => void): this;
 }
 
 
-export function configureWebpack(config: Configuration) {
+export function configureWebpack (config: Configuration) {
 	const plugin = new ClientManifestUpdatePlugin();
-	plugin.on("update", manifest => {
+	plugin.on("update", (manifest) => {
 		clientManifest = manifest;
 		updateVueSSR();
 	});
@@ -91,34 +91,34 @@ export function configureWebpack(config: Configuration) {
  *
  * @param options 配置
  */
-export async function devMiddleware(options: any): Promise<Middleware> {
+export async function devMiddleware (options: any): Promise<Middleware> {
 	const config: Configuration = require("../cli-core/template/server.config").default(options.webpack);
 	template = await fs.readFile(options.webpack.server.template, "utf-8");
 
 	const compiler = webpack(config);
 	compiler.outputFileSystem = new MFS(); // TODO: remove
 	compiler.watch({}, (err, stats) => {
-		if (err) throw err;
-		if (stats.hasErrors()) return;
+		if (err) { throw err; }
+		if (stats.hasErrors()) { return; }
 
 		serverBundle = JSON.parse(stats.compilation.assets["vue-ssr-server-bundle.json"].source());
 		updateVueSSR();
 	});
 
-	return ctx => renderPage(ctx, renderFunction);
+	return (ctx) => renderPage(ctx, renderFunction);
 }
 
 /**
  * 更新Vue的服务端渲染器，在客户端或服务端构建完成后调用。
  */
-function updateVueSSR() {
+function updateVueSSR () {
 	const render = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
 	renderFunction = promisify(render.renderToString);
 }
 
-export async function prodMiddleware(options: any): Promise<Middleware> {
+export async function prodMiddleware (options: any): Promise<Middleware> {
 
-	function reslove(file: string) {
+	function reslove (file: string) {
 		return path.resolve(options.webpack.outputPath, file);
 	}
 
@@ -128,6 +128,6 @@ export async function prodMiddleware(options: any): Promise<Middleware> {
 		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
 	});
 
-	const renderFunction = promisify<RenderContext, string>(renderer.renderToString);
-	return ctx => renderPage(ctx, renderFunction);
+	const rf = promisify<RenderContext, string>(renderer.renderToString);
+	return (ctx) => renderPage(ctx, rf);
 }

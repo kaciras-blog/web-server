@@ -45,7 +45,7 @@ export default (options: any, side: "client" | "server"): Configuration => {
 				".vue", ".json",	// Others
 			],
 			alias: {
-				vue$: "vue/dist/vue.runtime.esm.js",
+				"vue$": "vue/dist/vue.runtime.esm.js",
 				"@": resolve("src"),
 			},
 			modules: [

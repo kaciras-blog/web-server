@@ -1,5 +1,5 @@
 import path from "path";
-import MiniCssExtractPlugin from "mini-css-extract-plugin"
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import { RuleSetUseItem } from "webpack";
 
 /**
@@ -11,10 +11,10 @@ import { RuleSetUseItem } from "webpack";
 export const resolve = (dir: string) => path.join(process.cwd(), dir);
 
 interface CssLoadersMap {
-	[name: string]: RuleSetUseItem[]
+	[name: string]: RuleSetUseItem[];
 }
 
-function cssLoaders(options: any): CssLoadersMap {
+function cssLoaders (options: any): CssLoadersMap {
 	const cssLoader = {
 		loader: "css-loader",
 		options: {
@@ -32,7 +32,7 @@ function cssLoaders(options: any): CssLoadersMap {
 	};
 
 	// generate loader string to be used with extract text plugin
-	function generateLoaders(loader?: string, loaderOptions?: any): RuleSetUseItem[] {
+	function generateLoaders (loader?: string, loaderOptions?: any): RuleSetUseItem[] {
 		const loaders: RuleSetUseItem[] = [cssLoader, postcss];
 
 		if (loader) {
@@ -47,9 +47,9 @@ function cssLoaders(options: any): CssLoadersMap {
 		// Extract CSS when that option is specified
 		// (which is the case during production build)
 		if (options.extract) {
-			return (<RuleSetUseItem[]>[MiniCssExtractPlugin.loader]).concat(loaders);
+			return ([MiniCssExtractPlugin.loader] as RuleSetUseItem[]).concat(loaders);
 		} else {
-			return (<RuleSetUseItem[]>["vue-style-loader"]).concat(loaders);
+			return (["vue-style-loader"] as RuleSetUseItem[]).concat(loaders);
 		}
 	}
 
@@ -59,7 +59,7 @@ function cssLoaders(options: any): CssLoadersMap {
 	};
 }
 
-export function styleLoaders(options: any) {
+export function styleLoaders (options: any) {
 	const output = [];
 	const loaders = cssLoaders(options);
 
