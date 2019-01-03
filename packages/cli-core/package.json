@@ -1,37 +1,11 @@
 {
 	"name": "cli-core",
 	"version": "0.0.1",
-	"main": "index.ts",
+	"main": "index.js",
 	"bin": {
-		"web-server": "bin/web-server.js"
+		"kx-cli": "index.js"
 	},
 	"dependencies": {
-		"babel-loader": "^8.0.4",
-		"cache-loader": "^2.0.0",
-		"case-sensitive-paths-webpack-plugin": "^2.1.2",
-		"chalk": "^2.4.1",
-		"cli-server": "^0.0.1",
-		"copy-webpack-plugin": "^4.6.0",
-		"css-loader": "^2.1.0",
-		"file-loader": "^3.0.1",
-		"fs-extra": "^7.0.1",
-		"hash-sum": "^1.0.2",
-		"koa-webpack": "^5.1.1",
-		"less": "^3.9.0",
-		"less-loader": "^4.1.0",
-		"less-plugin-clean-css": "^1.5.1",
-		"memory-fs": "latest",
-		"mini-css-extract-plugin": "^0.5.0",
-		"optimize-css-assets-webpack-plugin": "^5.0.1",
-		"postcss-loader": "^3.0.0",
-		"serviceworker-webpack-plugin": "^1.0.1",
-		"source-map-support": "^0.5.9",
-		"url-loader": "^1.1.2",
-		"webpack": "^4.28.2",
-		"webpack-bundle-analyzer": "^3.0.3",
-		"webpack-dev-middleware": "^3.4.0",
-		"webpack-hot-client": "^4.1.1",
-		"webpack-hot-middleware": "^2.24.3",
-		"webpack-merge": "^4.1.5"
+		"log4js": "^3.0.6"
 	}
 }
