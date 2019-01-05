@@ -1,20 +1,21 @@
-defaultSeverity: error,
+defaultSeverity: error
 extends:
   - "tslint:recommended"
 rules:
-  indent: [true, "tabs", 1]
+  indent: [true, "tabs", 4]
   no-consecutive-blank-lines: [true, 2]
   space-before-function-paren: [true, "always"]
-  object-literal-sort-keys: false
-  no-console: false
-  ordered-imports: false
   variable-name:
     - true
     - "allow-leading-underscore"
     - "allow-trailing-underscore"
     - "allow-pascal-case" # 仅用于 require 一些没有类型定义的类
   interface-name: [true, "never-prefix"]
+  object-literal-sort-keys: false
+  no-console: false
+  ordered-imports: false
   forin: false
   radix: false
   member-access: false
   no-var-requires: false
+  max-classes-per-file: false
