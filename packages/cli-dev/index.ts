@@ -39,12 +39,3 @@ export interface WebpackOptions {
 	vueLoader?: any;
 }
 
-
-export interface CliConfig {
-	plugins?: any[];
-	service?: CliService[];
-}
-
-export interface CliService {
-	serve (plugins: any[]): void | Promise<void>;
-}
