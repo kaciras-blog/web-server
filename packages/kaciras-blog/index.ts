@@ -1,12 +1,17 @@
 import axios from "axios";
-import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
+import { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import log4js, { Configuration, getLogger } from "log4js";
 
 
 /**
- * 修改Axios使其支持内置http2模块
+ * 修改Axios使其支持内置Node的http2模块。
+ * 注意该函数还在页面的API模块中使用了，用于服务端渲染。
  */
-function adaptAxiosHttp2 () {
+export function adaptAxiosHttp2 () {
+
+	// 在使用webpack打包时会修改导入，所以这里得变通一下。
+	/* tslint:disable:no-eval */
+	const http2 = eval("require")("http2");
 
 	function request (options: any, callback: any) {
 		let host = `https://${options.hostname}`;
@@ -80,4 +85,13 @@ process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", 
 process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 
+switch (process.argv[2]) {
+	case "build":
+		break;
+	case "serve":
+		break;
+	case "prod":
+	default:
+		break;
+}
 adaptAxiosHttp2();

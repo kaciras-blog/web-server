@@ -38,4 +38,3 @@ export interface WebpackOptions {
 
 	vueLoader?: any;
 }
-

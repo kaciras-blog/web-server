@@ -1,48 +1,16 @@
-import fs from "fs-extra";
-import path from "path";
-import { promisify } from "util";
-import { createBundleRenderer } from "vue-server-renderer";
-import { Context, Middleware } from "koa";
-import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { EventEmitter } from "events";
+import fs from "fs-extra";
 import MFS from "memory-fs";
+import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
+import webpack, { Compiler, Configuration, Plugin } from "webpack";
 
-
-export interface RenderContext {
-	title: string;
-	meta: string;
-	request: Context;
-	shellOnly: boolean;
-}
-
-async function renderPage (ctx: Context, render: (ctx: RenderContext) => Promise<string>) {
-	const context = {
-		title: "Kaciras的博客",
-		meta: "",
-		shellOnly: ctx.query.shellOnly,
-		request: ctx,
-	};
-	try {
-		ctx.body = await render(context);
-	} catch (err) {
-		switch (err.code) {
-			case 301:
-			case 302:
-				ctx.status = err.code;
-				ctx.redirect(err.location);
-				break;
-			default:
-				ctx.throw(err);
-		}
-	}
-}
 
 /* Vue服务端渲染所需的几个参数 */
 let serverBundle: any;
 let template: string;
 let clientManifest: any;
 
-let renderFunction: (ctx: RenderContext) => Promise<string>;
+let renderer: BundleRenderer;
 
 /**
  * 读取并保存 VueSSRClientPlugin 输出的清单文件的 Webpack 插件
@@ -72,7 +40,6 @@ interface ClientManifestUpdatePlugin {
 	on (event: "update", listener: (manifest: any) => void): this;
 }
 
-
 export function configureWebpack (config: Configuration) {
 	const plugin = new ClientManifestUpdatePlugin();
 	plugin.on("update", (manifest) => {
@@ -91,8 +58,8 @@ export function configureWebpack (config: Configuration) {
  *
  * @param options 配置
  */
-export async function devMiddleware (options: any): Promise<Middleware> {
-	const config: Configuration = require("../cli-dev/template/server.config").default(options.webpack);
+export async function rendererFactory (options: any): Promise<() => BundleRenderer> {
+	const config: Configuration = require("../template/server.config").default(options.webpack);
 	template = await fs.readFile(options.webpack.server.template, "utf-8");
 
 	const compiler = webpack(config);
@@ -105,29 +72,12 @@ export async function devMiddleware (options: any): Promise<Middleware> {
 		updateVueSSR();
 	});
 
-	return (ctx) => renderPage(ctx, renderFunction);
+	return () => renderer;
 }
 
 /**
  * 更新Vue的服务端渲染器，在客户端或服务端构建完成后调用。
  */
 function updateVueSSR () {
-	const render = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
-	renderFunction = promisify(render.renderToString);
-}
-
-export async function prodMiddleware (options: any): Promise<Middleware> {
-
-	function reslove (file: string) {
-		return path.resolve(options.webpack.outputPath, file);
-	}
-
-	const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
-		runInNewContext: false,
-		template: await fs.readFile(reslove("index.template.html"), { encoding: "utf-8" }),
-		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
-	});
-
-	const rf = promisify<RenderContext, string>(renderer.renderToString);
-	return (ctx) => renderPage(ctx, rf);
+	renderer = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
 }

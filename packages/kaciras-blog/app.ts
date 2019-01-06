@@ -1,4 +1,3 @@
-import { CliService } from "cli-core";
 import fs from "fs-extra";
 import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
