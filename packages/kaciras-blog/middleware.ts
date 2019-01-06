@@ -49,6 +49,11 @@ export function intercept (files: string[]): Middleware {
 	};
 }
 
+export interface ImageMiddlewareOptions {
+	imageRoot: string;
+	cacheMaxAge: number;
+}
+
 /**
  * 根据指定的选项创建中间件。
  * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
@@ -56,7 +61,7 @@ export function intercept (files: string[]): Middleware {
  * @param options 选项
  * @return Koa的中间件函数
  */
-export function createImageMiddleware (options: any): Middleware {
+export function createImageMiddleware (options: ImageMiddlewareOptions): Middleware {
 	const SUPPORTED_FORMAT = [".jpg", ".png", ".gif", ".bmp", ".svg"];
 	fs.ensureDirSync(options.imageRoot);
 
@@ -184,11 +189,11 @@ async function buildSitemap (resources: ArticleCollection[]) {
 	return sitemapBuilder.buildObject(urlset.map((item) => ({ url: item })));
 }
 
-export function createSitemapMiddleware (options: any): Middleware {
+export function createSitemapMiddleware (serverAddress: string): Middleware {
 	let cached: string;
 
 	const resources: ArticleCollection[] = [];
-	resources.push(new ArticleCollection(options.apiServer));
+	resources.push(new ArticleCollection(serverAddress));
 
 	function updateCache () {
 		buildSitemap(resources)

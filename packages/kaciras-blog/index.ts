@@ -1,17 +1,16 @@
 import axios from "axios";
+import http2 from "http2";
 import { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import log4js, { Configuration, getLogger } from "log4js";
+import {createApp, createServer} from "./app";
 
+
+require("source-map-support").install();
 
 /**
  * 修改Axios使其支持内置Node的http2模块。
- * 注意该函数还在页面的API模块中使用了，用于服务端渲染。
  */
 export function adaptAxiosHttp2 () {
-
-	// 在使用webpack打包时会修改导入，所以这里得变通一下。
-	/* tslint:disable:no-eval */
-	const http2 = eval("require")("http2");
 
 	function request (options: any, callback: any) {
 		let host = `https://${options.hostname}`;
@@ -38,9 +37,6 @@ export function adaptAxiosHttp2 () {
 	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里
 	(axios.defaults as any).transport = { request };
 }
-
-require("source-map-support").install();
-
 
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
@@ -94,4 +90,8 @@ switch (process.argv[2]) {
 	default:
 		break;
 }
+
+// 其它服务启用了HTTPS，但对于内部调用来说证书的CN不是localhost，需要关闭证书检查
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 adaptAxiosHttp2();
