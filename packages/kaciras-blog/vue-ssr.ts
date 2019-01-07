@@ -1,4 +1,4 @@
-import { Context, Middleware } from "koa";
+import { Context, Middleware, Request } from "koa";
 import { BundleRenderer } from "vue-server-renderer";
 
 
@@ -10,7 +10,7 @@ export interface RenderContext {
 }
 
 async function renderPage (ctx: Context, render: BundleRenderer) {
-	const context = {
+	const context: RenderContext = {
 		title: "Kaciras的博客",
 		meta: "",
 		shellOnly: ctx.query.shellOnly,
@@ -31,7 +31,13 @@ async function renderPage (ctx: Context, render: BundleRenderer) {
 	}
 }
 
-export default function (renderer: BundleRenderer | (() => BundleRenderer)): Middleware {
+export interface SSRMiddlewareOptions {
+	renderer: BundleRenderer | (() => BundleRenderer);
+	include?: RegExp | ((request: Request) => boolean);
+}
+
+export default function (options: SSRMiddlewareOptions): Middleware {
+	const { renderer, include } = options;
 
 	// function reslove (file: string) {
 	// 	return path.resolve(options.webpack.outputPath, file);
@@ -43,8 +49,23 @@ export default function (renderer: BundleRenderer | (() => BundleRenderer)): Mid
 	// 	clientManifest: require(reslove("vue-ssr-client-manifest.json")),
 	// });
 
-	if (typeof renderer !== "function") {
-		return (ctx) => renderPage(ctx, renderer);
+	const handler: Middleware = typeof renderer !== "function"
+		? (ctx) => renderPage(ctx, renderer)
+		: (ctx) => renderPage(ctx, renderer());
+
+	if (!include) {
+		return handler;
 	}
-	return (ctx) => renderPage(ctx, renderer());
+
+	const filter = typeof include === "function"
+		? include
+		: (request: Request) => include.test(request.path);
+
+	return (ctx, next) => {
+		if (filter(ctx.request)) {
+			handler(ctx, next);
+		} else {
+			return next();
+		}
+	};
 }
