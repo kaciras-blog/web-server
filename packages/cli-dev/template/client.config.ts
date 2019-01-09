@@ -8,6 +8,7 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
 import merge from "webpack-merge";
+import { WebpackOptions } from "../index";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");

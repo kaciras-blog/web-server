@@ -7,10 +7,10 @@ import { configureApp, createServer } from "./app";
 import ssr from "./vue-ssr";
 import { createBundleRenderer } from "vue-server-renderer";
 import fs from "fs-extra";
+import parseArgs from "minimist";
 
 
 require("source-map-support").install();
-
 /**
  * 修改Axios使其支持内置Node的http2模块。
  */
@@ -123,10 +123,11 @@ export = class KacirasService {
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
-		const env = process.argv[3] === "-prod" ? ".prod" : "";
-		const config = require(path.join(process.cwd(), `config/config${env}`));
+		const args = parseArgs(process.argv.slice(2));
+		const env = args.profile ?  ("." + args.profile) : "";
+		const config = require(path.join(process.cwd(), `config/webserver${env}`));
 
-		const handler = this.commands.get(process.argv[2]);
+		const handler = this.commands.get(args._[0]);
 		if (!handler) {
 			return logger.error("No command specified"); // print command help
 		}

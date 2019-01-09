@@ -1,6 +1,7 @@
 import path from "path";
 import { Configuration } from "webpack";
 import { VueLoaderPlugin } from "vue-loader";
+import { WebpackOptions } from "../index";
 import { resolve } from "./utils";
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
@@ -23,7 +24,7 @@ const vueCacheIdenifier = (options: any) => {
 };
 
 
-export default (options: any, side: "client" | "server"): Configuration => {
+export default (options: WebpackOptions, side: "client" | "server"): Configuration => {
 
 	// 这里的 path 一定要用 posix 的斜杠，与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDirectory, path_);

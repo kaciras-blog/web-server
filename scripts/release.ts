@@ -8,9 +8,9 @@ async function pack (name: string) {
 	await execa("yarn", ["workspace", name, "pack"]);
 
 	const packname = `${name}-v${version}.tgz`;
-	await fs.rename(`/packages/${name}/${packname}`, `dist/${packname}`);
+	await fs.rename(`packages/${name}/${packname}`, `dist/${packname}`);
 
-	console.log(chalk.blueBright(`Build package ${packname}`));
+	console.log(`\nBuild package: ${packname}`);
 }
 
 async function release () {
@@ -18,6 +18,7 @@ async function release () {
 	for (const p of packages) {
 		await pack(p);
 	}
+	console.log(chalk.blueBright("Pack complete."));
 }
 
 release().catch((err) => console.error(err));

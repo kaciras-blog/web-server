@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import { configureApp, createServer } from "kxc-server/app";
+import ssr from "kxc-server/vue-ssr";
 import path from "path";
 import { promisify } from "util";
 import webpack, { Options, Configuration, Stats } from "webpack";
@@ -72,7 +73,8 @@ async function runServe (config: any) {
 	app.use(devMiddleware);
 
 	configureApp(app, config.blog);
-	const rf = rendererFactory(config.webpack);
+	const renderer = rendererFactory(config.webpack);
+	app.use(ssr({ renderer }));
 
 	createServer(app.callback(), config.server);
 }
@@ -80,12 +82,9 @@ async function runServe (config: any) {
 const service = new KacirasService();
 
 service.registerCommand("build", async (config) => {
-	process.env.NODE_PATH = path.resolve("node_modules");
-	require("module").Module._initPaths();
-
-	await fs.remove(config.webpack.assetsDirectory);
-	await invokeWebpack(ClientConfiguration(config));
-	await invokeWebpack(ServerConfiguration(config));
+	await fs.remove(config.webpack.outputPath);
+	await invokeWebpack(ClientConfiguration(config.webpack));
+	await invokeWebpack(ServerConfiguration(config.webpack));
 
 	console.log(chalk.cyan("Build complete.\n"));
 });

@@ -64,9 +64,9 @@ export function configureWebpackSSR (config: Configuration) {
  *
  * @param options 配置
  */
-export async function rendererFactory (options: any): Promise<() => BundleRenderer> {
+export function rendererFactory (options: any) {
 	const config: Configuration = require("../template/server.config").default(options.webpack);
-	template = await fs.readFile(options.server.template, "utf-8");
+	template = fs.readFileSync(options.server.template, "utf-8");
 
 	const compiler = webpack(config);
 	compiler.outputFileSystem = new MFS(); // TODO: remove
