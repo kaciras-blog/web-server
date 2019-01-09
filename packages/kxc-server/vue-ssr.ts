@@ -39,16 +39,6 @@ export interface SSRMiddlewareOptions {
 export default function (options: SSRMiddlewareOptions): Middleware {
 	const { renderer, include } = options;
 
-	// function reslove (file: string) {
-	// 	return path.resolve(options.webpack.outputPath, file);
-	// }
-	//
-	// const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
-	// 	runInNewContext: false,
-	// 	template: await fs.readFile(reslove("index.template.html"), { encoding: "utf-8" }),
-	// 	clientManifest: require(reslove("vue-ssr-client-manifest.json")),
-	// });
-
 	const handler: Middleware = typeof renderer !== "function"
 		? (ctx) => renderPage(ctx, renderer)
 		: (ctx) => renderPage(ctx, renderer());

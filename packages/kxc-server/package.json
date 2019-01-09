@@ -2,19 +2,24 @@
 	"name": "kxc-server",
 	"version": "0.0.1",
 	"main": "index.js",
+	"bin": {
+		"kxc-server": "bin/kxc-server.js"
+	},
 	"dependencies": {
+		"@koa/cors": "^2.2.3",
 		"axios": "^0.18.0",
 		"fs-extra": "^7.0.1",
 		"js-sha3": "^0.8.0",
-		"xml2js": "^0.4.19",
-		"koa-static": "^5.0.0",
-		"koa-send": "^5.0.0",
-		"@koa/cors": "^2.2.3",
 		"koa": "^2.6.2",
 		"koa-compress": "^3.0.0",
 		"koa-conditional-get": "^2.0.0",
 		"koa-etag": "^3.0.0",
 		"koa-multer": "^1.0.2",
-		"log4js": "^3.0.6"
+		"koa-send": "^5.0.0",
+		"koa-static": "^5.0.0",
+		"log4js": "^3.0.6",
+		"minimist": "^1.2.0",
+		"vue-server-renderer": "^2.5.21",
+		"xml2js": "^0.4.19"
 	}
 }

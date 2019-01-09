@@ -2,7 +2,11 @@ import axios from "axios";
 import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import Koa from "koa";
 import log4js, { Configuration, getLogger } from "log4js";
+import path from "path";
 import { configureApp, createServer } from "./app";
+import ssr from "./vue-ssr";
+import { createBundleRenderer } from "vue-server-renderer";
+import fs from "fs-extra";
 
 
 require("source-map-support").install();
@@ -73,9 +77,22 @@ function configureLog4js ({ logLevel, logFile }: { logLevel: string, logFile: st
 }
 
 
-async function runProd (config: any) {
+async function runProd (options: any) {
 	const app = new Koa();
-	configureApp(app, config.blog);
+	configureApp(app, options.blog);
+
+	function reslove (file: string) {
+		return path.resolve(options.webpack.outputPath, file);
+	}
+
+	const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
+		runInNewContext: false,
+		template: await fs.readFile(reslove("index.template.html"), { encoding: "utf-8" }),
+		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
+	});
+
+	app.use(ssr({ renderer }));
+	createServer(app.callback(), options.server);
 }
 
 type CommandHandler = (options: any) => void | Promise<void>;
@@ -107,7 +124,7 @@ export = class KacirasService {
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 		const env = process.argv[3] === "-prod" ? ".prod" : "";
-		const config = require(`./config${env}`);
+		const config = require(path.join(process.cwd(), `config/config${env}`));
 
 		const handler = this.commands.get(process.argv[2]);
 		if (!handler) {
@@ -117,5 +134,3 @@ export = class KacirasService {
 		handler(config);
 	}
 };
-
-
