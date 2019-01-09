@@ -1,4 +1,4 @@
-import cors, { Options } from "@koa/cors";
+import cors, { Options as CorsOptions } from "@koa/cors";
 import fs from "fs-extra";
 import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
@@ -14,14 +14,13 @@ import serve from "koa-static";
 
 const logger = log4js.getLogger("app");
 
-interface AppOptions {
-	cors?: Options;
+export interface AppOptions {
+	cors?: CorsOptions;
 	serverAddress: string;
 	staticRoot: string;
 }
 
-export function createApp (options: AppOptions & ImageMiddlewareOptions) {
-	const app = new Koa();
+export function configureApp (app: Koa, options: AppOptions & ImageMiddlewareOptions) {
 	app.use(cors(options.cors));
 	app.use(conditional());
 

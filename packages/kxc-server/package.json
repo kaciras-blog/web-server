@@ -1,6 +1,7 @@
 {
-	"name": "kaciras-blog",
+	"name": "kxc-server",
 	"version": "0.0.1",
+	"main": "index.js",
 	"dependencies": {
 		"axios": "^0.18.0",
 		"fs-extra": "^7.0.1",

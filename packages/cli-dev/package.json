@@ -1,6 +1,7 @@
 {
 	"name": "cli-dev",
 	"version": "0.0.1",
+	"main": "index.js",
 	"dependencies": {
 		"babel-loader": "^8.0.4",
 		"cache-loader": "^2.0.0",
@@ -32,6 +33,8 @@
 		"webpack-dev-middleware": "^3.4.0",
 		"webpack-hot-client": "^4.1.1",
 		"webpack-hot-middleware": "^2.24.3",
-		"webpack-merge": "^4.1.5"
+		"webpack-merge": "^4.1.5",
+		"kxc-server": "^0.0.1",
+		"koa": "^2.6.2"
 	}
 }

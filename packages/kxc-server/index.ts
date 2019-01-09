@@ -1,8 +1,8 @@
 import axios from "axios";
-import http2 from "http2";
-import { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
+import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
+import Koa from "koa";
 import log4js, { Configuration, getLogger } from "log4js";
-import {createApp, createServer} from "./app";
+import { configureApp, createServer } from "./app";
 
 
 require("source-map-support").install();
@@ -10,7 +10,7 @@ require("source-map-support").install();
 /**
  * 修改Axios使其支持内置Node的http2模块。
  */
-export function adaptAxiosHttp2 () {
+function adaptAxiosHttp2 () {
 
 	function request (options: any, callback: any) {
 		let host = `https://${options.hostname}`;
@@ -73,25 +73,49 @@ function configureLog4js ({ logLevel, logFile }: { logLevel: string, logFile: st
 }
 
 
-configureLog4js({ logFile: false, logLevel: "info" });
-
-// 捕获全局异常记录到日志中。
-const logger = getLogger("system");
-process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
-process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
-
-
-switch (process.argv[2]) {
-	case "build":
-		break;
-	case "serve":
-		break;
-	case "prod":
-	default:
-		break;
+async function runProd (config: any) {
+	const app = new Koa();
+	configureApp(app, config.blog);
 }
 
-// 其它服务启用了HTTPS，但对于内部调用来说证书的CN不是localhost，需要关闭证书检查
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+type CommandHandler = (options: any) => void | Promise<void>;
 
-adaptAxiosHttp2();
+export = class KacirasService {
+
+	private commands = new Map<string, CommandHandler>();
+
+	// 先注册个内置命令
+	constructor () {
+		this.registerCommand("run", runProd);
+	}
+
+	registerCommand (command: string, handler: CommandHandler) {
+		this.commands.set(command, handler);
+	}
+
+	run () {
+		configureLog4js({ logFile: false, logLevel: "info" });
+
+		// TODO: TEMP
+		// 其它服务启用了HTTPS，但对于内部调用来说证书的CN不是localhost，需要关闭证书检查
+		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+		adaptAxiosHttp2();
+
+		// 捕获全局异常记录到日志中。
+		const logger = getLogger("system");
+		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
+		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
+
+		const env = process.argv[3] === "-prod" ? ".prod" : "";
+		const config = require(`./config${env}`);
+
+		const handler = this.commands.get(process.argv[2]);
+		if (!handler) {
+			return logger.error("No command specified"); // print command help
+		}
+
+		handler(config);
+	}
+};
+
+

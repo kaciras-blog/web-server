@@ -92,10 +92,10 @@ async function createHotMiddleware (config: any) {
 }
 
 
-export default function (options: any, webpackConfig: Configuration) {
+export default function (useHotClient: boolean, webpackConfig: Configuration) {
 	// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();
 
-	return options.dev.useHotClient ? createKoaWebpack(webpackConfig) : createHotMiddleware(webpackConfig);
+	return useHotClient ? createKoaWebpack(webpackConfig) : createHotMiddleware(webpackConfig);
 }

@@ -5,6 +5,12 @@ import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
 
 
+export function configureWebpack (config: Configuration) {
+	return config;
+}
+
+// ============================ Server Side Rendering ============================
+
 /* Vue服务端渲染所需的几个参数 */
 let serverBundle: any;
 let template: string;
@@ -40,7 +46,7 @@ interface ClientManifestUpdatePlugin {
 	on (event: "update", listener: (manifest: any) => void): this;
 }
 
-export function configureWebpack (config: Configuration) {
+export function configureWebpackSSR (config: Configuration) {
 	const plugin = new ClientManifestUpdatePlugin();
 	plugin.on("update", (manifest) => {
 		clientManifest = manifest;
@@ -60,7 +66,7 @@ export function configureWebpack (config: Configuration) {
  */
 export async function rendererFactory (options: any): Promise<() => BundleRenderer> {
 	const config: Configuration = require("../template/server.config").default(options.webpack);
-	template = await fs.readFile(options.webpack.server.template, "utf-8");
+	template = await fs.readFile(options.server.template, "utf-8");
 
 	const compiler = webpack(config);
 	compiler.outputFileSystem = new MFS(); // TODO: remove
