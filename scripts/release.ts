@@ -18,7 +18,7 @@ async function release () {
 	for (const p of packages) {
 		await pack(p);
 	}
-	console.log(chalk.blueBright("Pack complete."));
+	console.log(chalk.cyan("Pack complete."));
 }
 
 release().catch((err) => console.error(err));
