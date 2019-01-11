@@ -1,16 +1,4 @@
-import chalk from "chalk";
-import fs from "fs-extra";
-import { configureApp, createServer } from "kxc-server/app";
-import ssr from "kxc-server/vue-ssr";
-import path from "path";
-import { promisify } from "util";
-import webpack, { Options, Configuration, Stats } from "webpack";
-import KacirasService from "kxc-server";
-import dev from "./plugins/dev";
-import { configureWebpackSSR, rendererFactory } from "./plugins/vue";
-import ClientConfiguration from "./template/client.config";
-import ServerConfiguration from "./template/server.config";
-import Koa from "koa";
+import { Configuration, Options } from "webpack";
 
 
 /* =========================================================================== *\
@@ -42,52 +30,77 @@ export interface WebpackOptions {
 	vueLoader?: any;
 }
 
-/**
- * 调用webpack，并输出更友好的信息。
- *
- * @param config 配置
- * @return {Promise<void>} 指示构建状态
- */
-async function invokeWebpack (config: Configuration) {
-	const stats = await promisify<Configuration, Stats>(webpack)(config);
+type ConfigFactory = (api: DevelopmentApi) => Configuration;
+type Configurer = (config: Configuration) => void;
 
-	process.stdout.write(stats.toString({
-		colors: true,
-		modules: false,
-		children: true, // Setting this to true will make TypeScript errors show up during build.
-		chunks: false,
-		chunkModules: false,
-	}) + "\n\n");
+export interface ConfigRegistration {
+	build: boolean;
+	factory: ConfigFactory;
+}
 
-	if (stats.hasErrors()) {
-		console.log(chalk.red("Build failed with errors.\n"));
-		process.exit(1);
+interface ConfigMap {
+	[name: string]: ConfigRegistration;
+}
+
+export class DevelopmentApi {
+
+	private readonly registeredConfig: ConfigMap = {};
+	private readonly configurer = new Map<string, Configurer[]>();
+
+	private readonly cache = new Map<string, Configuration>();
+	private readonly building = new Set<string>();
+
+	addConfigurer (name: string, configurer: Configurer) {
+		const list = this.configurer.get(name);
+		if (list) {
+			list.push(configurer);
+		} else {
+			this.configurer.set(name, [configurer]);
+		}
+	}
+
+	addConfiguration (name: string, factory: ConfigFactory, build = false) {
+		if (this.registeredConfig[name]) {
+			throw new Error(`Webpack config: ${name} already registered`);
+		}
+		this.registeredConfig[name] = { factory, build };
+	}
+
+	resloveConfig (name: string): Configuration | undefined {
+		const { registeredConfig, configurer, cache, building } = this;
+
+		const registation = registeredConfig[name];
+		if (!registation) {
+			return undefined;
+		}
+
+		if (building.has(name)) {
+			building.clear();
+			throw new Error(`Cyclic refrence: ${name}`);
+		}
+
+		const cached = cache.get(name);
+		if (cached) {
+			return cached;
+		}
+
+		building.add(name);
+		const config = registation.factory(this);
+		cache.set(name, config);
+
+		(configurer.get(name) || []).forEach((cx) => cx(config));
+
+		building.delete(name);
+		return config;
+	}
+
+	get toBuildConfigs () {
+		return Object.entries(this.registeredConfig)
+			.filter((value) => value[1].build)
+			.map((value) => this.resloveConfig(value[0]));
 	}
 }
 
-async function runServe (config: any) {
-	const app = new Koa();
-
-	configureWebpackSSR(config.webpack);
-	const devMiddleware = await dev(false, config.webpack);
-	app.use(devMiddleware);
-
-	configureApp(app, config.blog);
-	const renderer = rendererFactory(config.webpack);
-	app.use(ssr({ renderer }));
-
-	createServer(app.callback(), config.server);
+export interface DevelopmentApi {
+	resloveConfig (name: "base"): Configuration;
 }
-
-const service = new KacirasService();
-
-service.registerCommand("build", async (config) => {
-	await fs.remove(config.webpack.outputPath);
-	await invokeWebpack(ClientConfiguration(config.webpack));
-	await invokeWebpack(ServerConfiguration(config.webpack));
-
-	console.log(chalk.cyan("Build complete.\n"));
-});
-
-service.registerCommand("serve", runServe);
-service.run();
