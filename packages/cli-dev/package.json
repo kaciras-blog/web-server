@@ -2,6 +2,9 @@
 	"name": "cli-dev",
 	"version": "0.0.1",
 	"main": "index.js",
+	"bin": {
+		"cli-dev": "bin/cli-dev.js"
+	},
 	"dependencies": {
 		"babel-loader": "^8.0.4",
 		"cache-loader": "^2.0.0",
