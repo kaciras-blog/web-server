@@ -1,4 +1,4 @@
-import axios from "axios";
+import Axios, { AxiosInstance } from "axios";
 import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import Koa from "koa";
 import log4js, { Configuration, getLogger } from "log4js";
@@ -11,13 +11,16 @@ import parseArgs from "minimist";
 
 
 require("source-map-support").install();
+
 /**
  * 修改Axios使其支持内置Node的http2模块。
+ * Axios是不是放弃维护了？
  */
-function adaptAxiosHttp2 () {
+export function adaptAxiosHttp2 (axios: AxiosInstance, https = false) {
+	const schema = https ? "https" : "http";
 
 	function request (options: any, callback: any) {
-		let host = `https://${options.hostname}`;
+		let host = `${schema}://${options.hostname}`;
 		if (options.port) {
 			host += ":" + options.port;
 		}
@@ -97,7 +100,7 @@ async function runProd (options: any) {
 
 type CommandHandler = (options: any) => void | Promise<void>;
 
-export = class KacirasService {
+export default class KacirasService {
 
 	private commands = new Map<string, CommandHandler>();
 
@@ -116,7 +119,7 @@ export = class KacirasService {
 		// TODO: TEMP
 		// 其它服务启用了HTTPS，但对于内部调用来说证书的CN不是localhost，需要关闭证书检查
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-		adaptAxiosHttp2();
+		adaptAxiosHttp2(Axios, true);
 
 		// 捕获全局异常记录到日志中。
 		const logger = getLogger("system");
@@ -124,7 +127,7 @@ export = class KacirasService {
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 		const args = parseArgs(process.argv.slice(2));
-		const env = args.profile ?  ("." + args.profile) : "";
+		const env = args.profile ? ("." + args.profile) : "";
 		const config = require(path.join(process.cwd(), `config/webserver${env}`));
 
 		const handler = this.commands.get(args._[0]);
@@ -134,4 +137,4 @@ export = class KacirasService {
 
 		handler(config);
 	}
-};
+}

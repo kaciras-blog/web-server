@@ -1,11 +1,11 @@
 jest.mock("fs"); // Jest对Node的核心库的Mock必须显示调用
 
-const image = require("..").createImageMiddleware;
-const fs = require("fs-extra");
-const sha3 = require("js-sha3").sha3_256;
+import { createImageMiddleware } from "../middleware";
+import fs from "fs-extra";
+import { sha3_256 } from "js-sha3";
 
 
-const middleware = image({
+const middleware = createImageMiddleware({
 	imageRoot: "",
 	cacheMaxAge: 0,
 });
@@ -13,7 +13,7 @@ const middleware = image({
 it("POST for save new file", async () => {
 	const content = "TEST CONTENT";
 
-	const ctx = {
+	const ctx: any = {
 		method: "POST",
 		path: "/image",
 		req: {
@@ -29,14 +29,14 @@ it("POST for save new file", async () => {
 
 	expect(ctx.status).toBe(201);
 	expect(next.mock.calls.length).toBe(0);
-	fs.accessSync(sha3(content) + ".png");
+	fs.accessSync(sha3_256(content) + ".png");
 });
 
 it("POST for return exists file", async () => {
 	const content = "TEST CONTENT EXISTS";
-	fs.writeFileSync(sha3(content) + ".png", content);
+	fs.writeFileSync(sha3_256(content) + ".png", content);
 
-	const ctx = {
+	const ctx: any = {
 		method: "POST",
 		path: "/image",
 		req: {
@@ -57,9 +57,9 @@ it("POST for return exists file", async () => {
 it("Invaild method", async () => {
 	const content = "TEST CONTENT EXISTS";
 
-	const ctx = {
+	const ctx: any = {
 		method: "PUT",
-		path: "/image/" + sha3(content) + ".png",
+		path: "/image/" + sha3_256(content) + ".png",
 		req: {
 			file: {
 				originalname: "test.png",
