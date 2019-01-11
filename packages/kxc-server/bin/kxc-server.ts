@@ -1,2 +1,3 @@
-import KacirasService = require("..");
+import KacirasService from "..";
+
 new KacirasService().run();

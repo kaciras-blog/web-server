@@ -1,9 +1,9 @@
-jest.mock("fs"); // Jest对Node的核心库的Mock必须显示调用
-
 import { createImageMiddleware } from "../middleware";
 import fs from "fs-extra";
 import { sha3_256 } from "js-sha3";
 
+
+jest.mock("fs"); // Jest对Node的核心库的Mock必须显示调用
 
 const middleware = createImageMiddleware({
 	imageRoot: "",
