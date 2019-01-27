@@ -1,5 +1,5 @@
 import execa from "execa";
-import { promises as fs } from "fs";
+import fs from "fs-extra";
 import chalk from "chalk";
 
 
@@ -14,7 +14,9 @@ async function pack (name: string) {
 }
 
 async function release () {
+	await fs.mkdirs("dist");
 	const packages = await fs.readdir("packages");
+
 	for (const p of packages) {
 		await pack(p);
 	}
