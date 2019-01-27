@@ -3,11 +3,12 @@ import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import Koa, { Middleware } from "koa";
 import log4js, { Configuration, getLogger } from "log4js";
 import path from "path";
-import { configureApp, createServer } from "./app";
-import ssr from "./vue-ssr";
+import { createServer } from "./app";
+import ssr from "./VueSSR";
 import { createBundleRenderer } from "vue-server-renderer";
 import fs from "fs-extra";
 import parseArgs from "minimist";
+import BlogPlugin from "./BlogPlugin";
 
 
 require("source-map-support").install();
@@ -162,8 +163,10 @@ export class CliServerAPI {
 
 
 async function runProd (options: any) {
-	const app = new Koa();
-	configureApp(app, options.blog);
+	const api = new CliServerAPI();
+
+	const bp = new BlogPlugin(options.blog);
+	bp.configureServer(api);
 
 	function reslove (file: string) {
 		return path.resolve(options.webpack.outputPath, file);
@@ -174,9 +177,9 @@ async function runProd (options: any) {
 		template: await fs.readFile(reslove("index.template.html"), { encoding: "utf-8" }),
 		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
 	});
+	api.useFallBack(ssr({ renderer }));
 
-	app.use(ssr({ renderer }));
-	createServer(app.callback(), options.server);
+	createServer(api.createApp().callback(), options.server);
 }
 
 type CommandHandler = (options: any) => void | Promise<void>;
