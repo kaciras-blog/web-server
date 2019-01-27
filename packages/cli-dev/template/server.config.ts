@@ -23,6 +23,8 @@ export default (options: any) => {
 		},
 
 		// 外置化应用程序依赖模块，可以使服务器构建速度更快，并生成较小的 bundle 文件。
+		// 被排除的依赖要求在运行时由服务器提供，需要单独安装。
+		// whitelist 中的文件将不会被排除，包括样式表、vue文件以及需要构建的第三方库。
 		externals: nodeExternals({
 			whitelist: [/\.css$/, /\?vue&type=style/, /\.less$/, /\.vue$/, /kx-ui/],
 		}),

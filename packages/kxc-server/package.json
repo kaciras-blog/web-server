@@ -17,9 +17,9 @@
 		"koa-multer": "^1.0.2",
 		"koa-send": "^5.0.0",
 		"koa-static": "^5.0.0",
-		"log4js": "^3.0.6",
+		"log4js": "^4.0.0",
 		"minimist": "^1.2.0",
-		"vue-server-renderer": "^2.5.21",
+		"vue-server-renderer": "^2.5.22",
 		"xml2js": "^0.4.19"
 	}
 }

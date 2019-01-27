@@ -66,6 +66,12 @@ export class DevelopmentApi {
 		this.registeredConfig[name] = { factory, build };
 	}
 
+	/**
+	 * 获取指定的Webpack配置，并保证其所有相关的Configurer均已调用。
+	 *
+	 * @param name 配置名
+	 * @return 配置对象，如果指定名称的配置不存在则为undefined
+	 */
 	resloveConfig (name: string): Configuration | undefined {
 		const { registeredConfig, configurer, cache, building } = this;
 
@@ -74,6 +80,7 @@ export class DevelopmentApi {
 			return undefined;
 		}
 
+		// 检查循环引用
 		if (building.has(name)) {
 			building.clear();
 			throw new Error(`Cyclic refrence: ${name}`);
@@ -101,6 +108,9 @@ export class DevelopmentApi {
 	}
 }
 
+/**
+ * base和app两个配置是内置的。
+ */
 export interface DevelopmentApi {
-	resloveConfig (name: "base"): Configuration;
+	resloveConfig (name: "base" | "app"): Configuration;
 }

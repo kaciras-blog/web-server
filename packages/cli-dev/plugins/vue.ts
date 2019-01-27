@@ -2,12 +2,13 @@ import { EventEmitter } from "events";
 import fs from "fs-extra";
 import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
-import webpack, { Compiler, Configuration, Plugin } from "webpack";
+import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
+import webpack, { Compiler, Configuration, DefinePlugin, Plugin } from "webpack";
+import { CliDevelopmentPlugin } from "../Boot";
+import { DevelopmentApi } from "../index";
+import merge from "webpack-merge";
+import { styleLoaders } from "../template/utils";
 
-
-export function configureWebpack (config: Configuration) {
-	return config;
-}
 
 // ============================ Server Side Rendering ============================
 
@@ -86,4 +87,8 @@ export function rendererFactory (options: any) {
  */
 function updateVueSSR () {
 	renderer = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
+}
+
+export default class VueSSRDevelopmentPlugin implements CliDevelopmentPlugin {
+	applyWebpack (api: DevelopmentApi): void {}
 }

@@ -21,7 +21,10 @@
 		}
 	},
 	"lint-staged": {
-		"*.ts": ["tslint --fix", "git add"]
+		"*.ts": [
+			"tslint --fix",
+			"git add"
+		]
 	},
 	"devDependencies": {
 		"@types/case-sensitive-paths-webpack-plugin": "^2.1.2",
@@ -29,7 +32,7 @@
 		"@types/execa": "^0.9.0",
 		"@types/fs-extra": "^5.0.4",
 		"@types/hash-sum": "^1.0.0",
-		"@types/jest": "^23.3.11",
+		"@types/jest": "^23.3.13",
 		"@types/koa": "^2.0.48",
 		"@types/koa-compress": "^2.0.8",
 		"@types/koa-conditional-get": "^2.0.0",
@@ -42,23 +45,23 @@
 		"@types/mini-css-extract-plugin": "^0.2.0",
 		"@types/minimist": "^1.2.0",
 		"@types/optimize-css-assets-webpack-plugin": "^1.3.3",
-		"@types/webpack": "^4.4.22",
+		"@types/webpack": "^4.4.24",
 		"@types/webpack-hot-middleware": "^2.16.4",
 		"@types/webpack-merge": "^4.1.3",
 		"@types/webpack-node-externals": "^1.6.3",
 		"@types/xml2js": "^0.4.3",
 		"execa": "^1.0.0",
-		"globby": "^8.0.1",
+		"globby": "^9.0.0",
 		"husky": "^1.3.1",
 		"inquirer": "^6.2.1",
-		"jest": "^23.6.0",
-		"lerna": "^3.8.4",
+		"jest": "^24.0.0",
+		"lerna": "^3.10.7",
 		"lint-staged": "^8.1.0",
 		"memfs": "^2.14.2",
 		"semver": "^5.6.0",
 		"ts-jest": "^23.10.5",
-		"tslint": "^5.12.0",
-		"typescript": "^3.2.2"
+		"tslint": "^5.12.1",
+		"typescript": "^3.2.4"
 	},
 	"optionalDependencies": {
 		"ts-loader": "^5.3.2",
