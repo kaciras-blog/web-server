@@ -3,7 +3,7 @@ import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import Koa, { Middleware } from "koa";
 import log4js, { Configuration, getLogger } from "log4js";
 import path from "path";
-import { configureApp, createServer } from "./app";
+import { configureApp, runServer } from "./app";
 import ssr from "./vue-ssr";
 import { createBundleRenderer } from "vue-server-renderer";
 import fs from "fs-extra";
@@ -176,7 +176,7 @@ async function runProd (options: any) {
 	});
 
 	app.use(ssr({ renderer }));
-	createServer(app.callback(), options.server);
+	runServer(app.callback(), options.server);
 }
 
 type CommandHandler = (options: any) => void | Promise<void>;

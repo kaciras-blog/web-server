@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import KacirasService from "kxc-server";
-import { configureApp, createServer } from "kxc-server/app";
+import { configureApp, runServer } from "kxc-server/app";
 import ssr from "kxc-server/vue-ssr";
 import { promisify } from "util";
 import webpack, { Configuration, Stats } from "webpack";
@@ -46,7 +46,7 @@ async function runServe (config: any) {
 	const renderer = rendererFactory(config.webpack);
 	app.use(ssr({ renderer }));
 
-	createServer(app.callback(), config.server);
+	runServer(app.callback(), config.server);
 }
 
 const service = new KacirasService();

@@ -60,9 +60,9 @@ export interface CliServerOptions {
 // app.callback() 的定义，比较长不方便直接写在参数里
 type OnRequestHandler = (req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) => void;
 
-export function createServer (requestHandler: OnRequestHandler, options: CliServerOptions) {
+export function runServer (requestHandler: OnRequestHandler, options: CliServerOptions) {
 	const {
-		port = 80, httpsPort = 443,
+		port = 80, httpsPort = 4438,
 		tls, privatekey, certificate, redirectHttp,
 	} = options;
 
