@@ -1,6 +1,7 @@
 {
 	"name": "cli-dev",
 	"version": "0.0.1",
+	"license": "MIT",
 	"main": "index.js",
 	"bin": {
 		"cli-dev": "bin/cli-dev.js"

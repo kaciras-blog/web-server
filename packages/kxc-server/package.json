@@ -1,6 +1,7 @@
 {
 	"name": "kxc-server",
 	"version": "0.0.1",
+	"license": "MIT",
 	"main": "index.js",
 	"bin": {
 		"kxc-server": "bin/kxc-server.js"
