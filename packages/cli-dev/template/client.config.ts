@@ -87,7 +87,7 @@ export default (options: any) => {
 				}],
 			),
 			new ServiceWorkerWebpackPlugin({
-				entry: "./src/service-worker/index.ts",
+				entry: "./src/service-worker/index",
 				includes: ["static/**/*"],
 				excludes: ["**/.*", "**/*.map", "static/icons/*"],
 			}),
