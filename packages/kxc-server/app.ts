@@ -10,7 +10,7 @@ import conditional from "koa-conditional-get";
 import etag from "koa-etag";
 import multer from "koa-multer";
 import log4js from "log4js";
-import { intercept, createSitemapMiddleware, createImageMiddleware, ImageMiddlewareOptions } from "./middleware";
+import { intercept, createSitemapMiddleware, createImageMiddleware, ImageMiddlewareOptions } from "./middlewares";
 import serve from "koa-static";
 
 
@@ -94,10 +94,10 @@ export function runServer (requestHandler: OnRequestHandler, options: CliServerO
 	async function cleanup () {
 		try {
 			if (httpServer) {
-				await promisify(httpServer.close)();
+				await promisify(httpServer.close.bind(httpServer))();
 			}
 			if (httpsServer) {
-				await promisify(httpsServer.close)();
+				await promisify(httpsServer.close.bind(httpsServer))();
 			}
 			process.exit(0);
 		} catch (e) {
