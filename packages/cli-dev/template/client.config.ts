@@ -14,8 +14,6 @@ const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
 
 
 const setupBabel = (webpackConfig: any, options: any) => {
-	webpackConfig.entry.unshift("@babel/polyfill");
-
 	const loaders: RuleSetLoader[] = [{
 		loader: "babel-loader",
 		options: {
