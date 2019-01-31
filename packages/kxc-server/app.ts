@@ -66,14 +66,11 @@ export function runServer (requestHandler: OnRequestHandler, options: CliServerO
 		tls, privatekey, certificate, redirectHttp,
 	} = options;
 
-	let httpsServer: Server;
-	let httpServer: Server;
-
 	if (tls) {
 		if (!privatekey || !certificate) {
 			throw new Error("You must specifiy privatekey and certificate with tls enabled.");
 		}
-		httpsServer = http2.createSecureServer({
+		http2.createSecureServer({
 			key: fs.readFileSync(privatekey),
 			cert: fs.readFileSync(certificate),
 			allowHTTP1: true,
@@ -82,30 +79,12 @@ export function runServer (requestHandler: OnRequestHandler, options: CliServerO
 	}
 
 	if (redirectHttp) {
-		httpServer = http.createServer((req, res) => {
+		http.createServer((req, res) => {
 			res.writeHead(301, { Location: "https://" + req.headers.host + req.url });
 			res.end();
 		}).listen(port, () => logger.info(`重定向来自端口：${port}的请求至：${httpsPort}`));
 	} else {
-		httpServer = http.createServer(requestHandler)
+		http.createServer(requestHandler)
 			.listen(port, () => logger.info(`在端口：${port}上监听Http连接`));
 	}
-
-	async function cleanup () {
-		try {
-			if (httpServer) {
-				await promisify(httpServer.close.bind(httpServer))();
-			}
-			if (httpsServer) {
-				await promisify(httpsServer.close.bind(httpsServer))();
-			}
-			process.exit(0);
-		} catch (e) {
-			logger.fatal("Error occured when closing servers", e);
-			process.exit(1);
-		}
-	}
-
-	process.on("SIGINT", cleanup);
-	process.on("SIGTERM", cleanup);
 }
