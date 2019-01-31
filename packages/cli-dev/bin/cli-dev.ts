@@ -38,12 +38,13 @@ async function invokeWebpack (config: Configuration) {
 async function runServe (config: any) {
 	const app = new Koa();
 
-	configureWebpackSSR(config.webpack);
-	const devMiddleware = await dev(false, config.webpack);
+	const cc = ClientConfiguration(config.webpack);
+	configureWebpackSSR(cc);
+	const devMiddleware = await dev(false, cc);
 	app.use(devMiddleware);
 
 	configureApp(app, config.blog);
-	const renderer = rendererFactory(config.webpack);
+	const renderer = await rendererFactory(config.webpack);
 	app.use(ssr({ renderer }));
 
 	runServer(app.callback(), config.server);
