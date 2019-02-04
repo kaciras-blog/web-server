@@ -8,15 +8,12 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
 import merge from "webpack-merge";
-import { WebpackOptions } from "../index";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
 
 
 const setupBabel = (webpackConfig: any, options: any) => {
-	webpackConfig.entry.unshift("@babel/polyfill");
-
 	const loaders: RuleSetLoader[] = [{
 		loader: "babel-loader",
 		options: {
@@ -88,7 +85,7 @@ export default (options: any) => {
 				}],
 			),
 			new ServiceWorkerWebpackPlugin({
-				entry: "./src/service-worker/index.ts",
+				entry: "./src/service-worker/index",
 				includes: ["static/**/*"],
 				excludes: ["**/.*", "**/*.map", "static/icons/*"],
 			}),

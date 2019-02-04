@@ -4,9 +4,6 @@
 	"description": "Kaciras Bolg v10 frontend server.",
 	"author": "Kaciras",
 	"private": true,
-	"engines": {
-		"node": ">=11.0.0"
-	},
 	"workspaces": [
 		"packages/*"
 	],

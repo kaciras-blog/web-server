@@ -1,7 +1,11 @@
 {
 	"name": "cli-dev",
 	"version": "0.0.1",
+	"license": "MIT",
 	"main": "index.js",
+	"engines": {
+		"node": ">=11.0.0"
+	},
 	"bin": {
 		"cli-dev": "bin/cli-dev.js"
 	},
@@ -10,7 +14,6 @@
 		"cache-loader": "^2.0.0",
 		"case-sensitive-paths-webpack-plugin": "^2.2.0",
 		"chalk": "^2.4.1",
-		"cli-server": "^0.0.1",
 		"copy-webpack-plugin": "^4.6.0",
 		"css-loader": "^2.1.0",
 		"file-loader": "^3.0.1",
@@ -23,7 +26,7 @@
 		"less-loader": "^4.1.0",
 		"less-plugin-clean-css": "^1.5.1",
 		"log4js": "^4.0.0",
-		"memory-fs": "latest",
+		"memory-fs": "^0.4.1",
 		"mini-css-extract-plugin": "^0.5.0",
 		"optimize-css-assets-webpack-plugin": "^5.0.1",
 		"postcss-loader": "^3.0.0",

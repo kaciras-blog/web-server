@@ -2,13 +2,25 @@ import { EventEmitter } from "events";
 import fs from "fs-extra";
 import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
-import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
-import webpack, { Compiler, Configuration, DefinePlugin, Plugin } from "webpack";
+import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { CliDevelopmentPlugin } from "../Boot";
 import { DevelopmentApi } from "../index";
-import merge from "webpack-merge";
-import { styleLoaders } from "../template/utils";
+import ServerConfiguration from "../template/server.config";
 
+class PromiseCompleteionSource<T> {
+
+	promise: Promise<T>;
+	reslove!: (value?: T | PromiseLike<T>) => void;
+	reject!: (reason?: any) => void;
+
+	constructor () {
+		this.promise = new Promise((reslove, reject) => {
+			this.reject = reject;
+			this.reslove = reslove;
+		});
+	}
+}
 
 // ============================ Server Side Rendering ============================
 
@@ -19,6 +31,8 @@ let clientManifest: any;
 
 let renderer: BundleRenderer;
 
+let clientPlugin: ClientManifestUpdatePlugin;
+
 /**
  * 读取并保存 VueSSRClientPlugin 输出的清单文件的 Webpack 插件
  */
@@ -27,18 +41,33 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 	readonly id = "ClientManifestUpdatePlugin";
 
 	private readonly filename: string;
+	private readonly readyPromiseSource: PromiseCompleteionSource<void>;
 
 	constructor (filename: string = "vue-ssr-client-manifest.json") {
 		super();
 		this.filename = filename;
+		this.readyPromiseSource = new PromiseCompleteionSource();
 	}
 
 	apply (compiler: Compiler): void {
+		const plugins = compiler.options.plugins || [];
+
+		if (!plugins.some((plugin) => plugin instanceof VueSSRClientPlugin)) {
+			throw new Error("请将 vue-server-renderer/client-plugin 加入到客户端的构建中");
+		}
+
 		compiler.hooks.afterEmit.tap(this.id, (compilation) => {
-			if (compilation.getStats().hasErrors()) { return; }
+			if (compilation.getStats().hasErrors()) {
+				return;
+			}
+			this.readyPromiseSource.reslove();
 			const source = compilation.assets[this.filename].source();
 			this.emit("update", JSON.parse(source));
 		});
+	}
+
+	get readyPromise () {
+		return this.readyPromiseSource.promise;
 	}
 }
 
@@ -48,15 +77,15 @@ interface ClientManifestUpdatePlugin {
 }
 
 export function configureWebpackSSR (config: Configuration) {
-	const plugin = new ClientManifestUpdatePlugin();
-	plugin.on("update", (manifest) => {
+	clientPlugin = new ClientManifestUpdatePlugin();
+	clientPlugin.on("update", (manifest) => {
 		clientManifest = manifest;
 		updateVueSSR();
 	});
 	if (!config.plugins) {
 		config.plugins = []; // 我觉得不太可能一个插件都没有
 	}
-	config.plugins.push(plugin);
+	config.plugins.push(clientPlugin);
 }
 
 /**
@@ -65,19 +94,31 @@ export function configureWebpackSSR (config: Configuration) {
  *
  * @param options 配置
  */
-export function rendererFactory (options: any) {
-	const config: Configuration = require("../template/server.config").default(options.webpack);
+export async function rendererFactory (options: any) {
+	if (!clientPlugin) {
+		throw Error("请先将ClientManifestUpdatePlugin加入客户端webpack的配置中");
+	}
+	const config = ServerConfiguration(options);
 	template = fs.readFileSync(options.server.template, "utf-8");
 
 	const compiler = webpack(config);
 	compiler.outputFileSystem = new MFS(); // TODO: remove
-	compiler.watch({}, (err, stats) => {
-		if (err) { throw err; }
-		if (stats.hasErrors()) { return; }
 
+	const readyPromise = new PromiseCompleteionSource();
+	compiler.watch({}, (err, stats) => {
+		if (err) {
+			throw err;
+		}
+		if (stats.hasErrors()) {
+			return;
+		}
+		readyPromise.reslove();
 		serverBundle = JSON.parse(stats.compilation.assets["vue-ssr-server-bundle.json"].source());
 		updateVueSSR();
 	});
+
+	await Promise.all([readyPromise.promise, clientPlugin.readyPromise]);
+	console.log("Vue server side renderer created.");
 
 	return () => renderer;
 }
@@ -90,5 +131,6 @@ function updateVueSSR () {
 }
 
 export default class VueSSRDevelopmentPlugin implements CliDevelopmentPlugin {
-	applyWebpack (api: DevelopmentApi): void {}
+	applyWebpack (api: DevelopmentApi): void {
+	}
 }
