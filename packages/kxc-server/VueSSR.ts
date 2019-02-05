@@ -1,5 +1,9 @@
+import fs from "fs-extra";
 import { Context, Middleware, Request } from "koa";
-import { BundleRenderer } from "vue-server-renderer";
+import path from "path";
+import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
+import { CliServerPligun } from "./index";
+import ServerAPI from "./ServerAPI";
 
 
 export interface RenderContext {
@@ -36,7 +40,7 @@ export interface SSRMiddlewareOptions {
 	include?: RegExp | ((request: Request) => boolean);
 }
 
-export default function (options: SSRMiddlewareOptions): Middleware {
+export function ssrMiddleware (options: SSRMiddlewareOptions): Middleware {
 	const { renderer, include } = options;
 
 	const handler: Middleware = typeof renderer !== "function"
@@ -58,4 +62,28 @@ export default function (options: SSRMiddlewareOptions): Middleware {
 			return next();
 		}
 	};
+}
+
+export default class VueSSRProductionPlugin implements CliServerPligun {
+
+	private readonly context: string;
+
+	constructor (context: string) {
+		this.context = context;
+	}
+
+	configureCliServer (api: ServerAPI): void {
+		const { context } = this;
+
+		function reslove (file: string) {
+			return path.resolve(context, file);
+		}
+
+		const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
+			runInNewContext: false,
+			template: fs.readFileSync(reslove("index.template.html"), { encoding: "utf-8" }),
+			clientManifest: require(reslove("vue-ssr-client-manifest.json")),
+		});
+		api.useFallBack(ssrMiddleware({ renderer }));
+	}
 }

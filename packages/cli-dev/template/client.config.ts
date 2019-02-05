@@ -31,11 +31,11 @@ const setupBabel = (webpackConfig: any, options: any) => {
 		use: loaders,
 		include: [
 			resolve("node_modules/kx-ui/src"),
-			resolve("node_modules/markdown-it-anchor"),
+			/"node_modules\/markdown-it-anchor"/,
 			resolve("src"),
 			resolve("test"),
 
-			resolve("node_modules/webpack-hot-middleware/client"),
+			/node_modules\/webpack-hot-middleware\/client/,
 			resolve("node_modules/webpack-hot-client/client"),
 		],
 		exclude: [

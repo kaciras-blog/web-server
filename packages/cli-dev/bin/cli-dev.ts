@@ -1,11 +1,13 @@
 import chalk from "chalk";
 import fs from "fs-extra";
-import KacirasService, { CliServerAPI } from "kxc-server";
-import { createServer } from "kxc-server/app";
+import KacirasService from "kxc-server";
+import { runServer } from "kxc-server/app";
 import BlogPlugin from "kxc-server/BlogPlugin";
-import ssr from "kxc-server/VueSSR";
+import ServerAPI from "kxc-server/ServerAPI";
+import { ssrMiddleware } from "kxc-server/VueSSR";
 import { promisify } from "util";
 import webpack, { Configuration, Stats } from "webpack";
+import CliDevelopmentOptions from "../OldOptions";
 import dev from "../plugins/dev";
 import { configureWebpackSSR, rendererFactory } from "../plugins/vue";
 import ClientConfiguration from "../template/client.config";
@@ -35,23 +37,24 @@ async function invokeWebpack (config: Configuration) {
 	}
 }
 
-async function runServe (options: any) {
-	const api = new CliServerAPI();
+async function runServe (options: CliDevelopmentOptions) {
+	const api = new ServerAPI();
 
 	const bp = new BlogPlugin(options.blog);
-	bp.configureServer(api);
+	bp.configureCliServer(api);
 
-	configureWebpackSSR(options.webpack);
-	const devMiddleware = await dev(false, options.webpack);
+	const cc = ClientConfiguration(options.webpack);
+	configureWebpackSSR(cc);
+	const devMiddleware = await dev(false, cc);
 
 	api.useBeforeFilter(devMiddleware);
-	const renderer = rendererFactory(options.webpack);
+	const renderer = await rendererFactory(options.webpack);
 
-	api.useFallBack(ssr({ renderer }));
-	createServer(api.createApp().callback(), options.server);
+	api.useFallBack(ssrMiddleware({ renderer }));
+	runServer(api.createApp().callback(), options.server);
 }
 
-const service = new KacirasService();
+const service = new KacirasService<CliDevelopmentOptions>();
 
 service.registerCommand("build", async (config) => {
 	await fs.remove(config.webpack.outputPath);

@@ -6,6 +6,7 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { CliDevelopmentPlugin } from "../Boot";
 import { DevelopmentApi } from "../index";
+import { WebpackOptions } from "../OldOptions";
 import ServerConfiguration from "../template/server.config";
 
 class PromiseCompleteionSource<T> {
@@ -94,7 +95,7 @@ export function configureWebpackSSR (config: Configuration) {
  *
  * @param options 配置
  */
-export async function rendererFactory (options: any) {
+export async function rendererFactory (options: WebpackOptions) {
 	if (!clientPlugin) {
 		throw Error("请先将ClientManifestUpdatePlugin加入客户端webpack的配置中");
 	}

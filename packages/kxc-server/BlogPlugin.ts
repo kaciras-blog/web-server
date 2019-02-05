@@ -1,7 +1,8 @@
 import conditional from "koa-conditional-get";
 import etag from "koa-etag";
-import { CliServerAPI } from "./index";
-import { createImageMiddleware, createSitemapMiddleware, ImageMiddlewareOptions, intercept } from "./middleware";
+import ServerAPI from "./ServerAPI";
+import { CliServerPligun } from "./index";
+import { createImageMiddleware, createSitemapMiddleware, ImageMiddlewareOptions, intercept } from "./middlewares";
 import multer = require("koa-multer");
 import cors, { Options as CorsOptions } from "@koa/cors";
 import compress from "koa-compress";
@@ -14,7 +15,7 @@ export interface AppOptions extends ImageMiddlewareOptions {
 	staticRoot: string;
 }
 
-export default class BlogPlugin {
+export default class BlogPlugin implements CliServerPligun {
 
 	private readonly options: AppOptions;
 
@@ -22,7 +23,7 @@ export default class BlogPlugin {
 		this.options = options;
 	}
 
-	configureServer (api: CliServerAPI) {
+	configureCliServer (api: ServerAPI) {
 		const { options } = this;
 
 		const uploader = multer({ limits: { fileSize: 16 * 1024 * 1024 } });

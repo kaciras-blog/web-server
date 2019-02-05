@@ -1,7 +1,7 @@
 import path from "path";
 import { Configuration } from "webpack";
 import { VueLoaderPlugin } from "vue-loader";
-import { WebpackOptions } from "../index";
+import { WebpackOptions } from "../OldOptions";
 import { resolve } from "./utils";
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
@@ -13,7 +13,7 @@ import hash from "hash-sum";
  *
  * @param options 选项
  */
-const vueCacheIdenifier = (options: any) => {
+const vueCacheIdenifier = (options: WebpackOptions) => {
 	const varibles = {
 		"cache-loader": require("cache-loader/package.json").version,
 		"vue-loader": require("vue-loader/package.json").version,

@@ -11,7 +11,7 @@ import { promisify } from "util";
 const logger = log4js.getLogger("app");
 
 
-export interface CliServerOptions {
+export interface ServerOptions {
 	port?: number;
 	httpsPort?: number;
 	tls?: boolean;
@@ -23,7 +23,7 @@ export interface CliServerOptions {
 // app.callback() 的定义，比较长不方便直接写在参数里
 type OnRequestHandler = (req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) => void;
 
-export function runServer (requestHandler: OnRequestHandler, options: CliServerOptions) {
+export function runServer (requestHandler: OnRequestHandler, options: ServerOptions) {
 	const {
 		port = 80, httpsPort = 4438,
 		tls, privatekey, certificate, redirectHttp,

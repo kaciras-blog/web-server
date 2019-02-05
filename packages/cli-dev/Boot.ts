@@ -1,10 +1,11 @@
+import ServerAPI from "kxc-server/ServerAPI";
 import { DevelopmentApi } from "./index";
-import { CliServerAPI, CliServerPligun } from "kxc-server";
+import { CliServerPligun } from "kxc-server";
 
 
 export interface CliDevelopmentPlugin extends CliServerPligun {
 	applyWebpack? (api: DevelopmentApi): void;
-	applyDevServer? (devApi: DevelopmentApi, serverApi: CliServerAPI): void;
+	applyDevServer? (devApi: DevelopmentApi, serverApi: ServerAPI): void;
 }
 
 export interface CliDevelopmentConfig {
@@ -15,7 +16,7 @@ export class KacirasDevService {
 
 	static run (config: CliDevelopmentConfig, args: string[]) {
 		const devApi = new DevelopmentApi();
-		const serv = new CliServerAPI();
+		const serv = new ServerAPI();
 
 		for (const plugin of config.plugins) {
 			if (plugin.applyWebpack) {
