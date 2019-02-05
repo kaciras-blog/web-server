@@ -9,7 +9,7 @@ import { promisify } from "util";
 import webpack, { Configuration, Stats } from "webpack";
 import CliDevelopmentOptions from "../OldOptions";
 import dev from "../plugins/dev";
-import { configureWebpackSSR, rendererFactory } from "../plugins/vue";
+import VueSSRDevelopmentPlugin from "../plugins/vue";
 import ClientConfiguration from "../template/client.config";
 import ServerConfiguration from "../template/server.config";
 
@@ -44,11 +44,12 @@ async function runServe (options: CliDevelopmentOptions) {
 	bp.configureCliServer(api);
 
 	const cc = ClientConfiguration(options.webpack);
-	configureWebpackSSR(cc);
+	const ssrPlugin = new VueSSRDevelopmentPlugin();
+	ssrPlugin.configureWebpackSSR(cc);
 	const devMiddleware = await dev(false, cc);
 
 	api.useBeforeFilter(devMiddleware);
-	const renderer = await rendererFactory(options.webpack);
+	const renderer = await ssrPlugin.rendererFactory(options.webpack);
 
 	api.useFallBack(ssrMiddleware({ renderer }));
 	runServer(api.createApp().callback(), options.server);
