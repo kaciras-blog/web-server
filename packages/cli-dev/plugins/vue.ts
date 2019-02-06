@@ -6,24 +6,12 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { WebpackOptions } from "../OldOptions";
 import ServerConfiguration from "../template/server.config";
-
-class PromiseCompleteionSource<T> {
-
-	promise: Promise<T>;
-	reslove!: (value?: T | PromiseLike<T>) => void;
-	reject!: (reason?: any) => void;
-
-	constructor () {
-		this.promise = new Promise((reslove, reject) => {
-			this.reject = reject;
-			this.reslove = reslove;
-		});
-	}
-}
+import { PromiseCompleteionSource } from "../utils";
 
 
 /**
- * 读取并保存 VueSSRClientPlugin 输出的清单文件的 Webpack 插件
+ * 读取并保存 VueSSRClientPlugin 输出的清单文件的 Webpack 插件。
+ * 该插件需要被添加到客户端的构建配置里。
  */
 class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 
@@ -64,7 +52,12 @@ interface ClientManifestUpdatePlugin {
 	on (event: "update", listener: (manifest: any) => void): this;
 }
 
-export default class VueSSRDevelopmentPlugin {
+/**
+ * 提供Vue服务端渲染的热重载功能。
+ * 该类需要调用 configureWebpackSSR 配置客户端构建，以便更新ClientManifest。
+ * 该类将以监视模式构建服务端，在更新后重新构建渲染器。
+ */
+export default class VueSSRHotReloader {
 
 	private clientPlugin?: ClientManifestUpdatePlugin;
 

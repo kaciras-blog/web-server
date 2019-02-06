@@ -1,14 +1,14 @@
 import path from "path";
-import koaWebpack from "koa-webpack";
 import webpack, { Configuration } from "webpack";
 import { Context } from "koa";
-import WebpackHotMiddlewareType from "webpack-hot-middleware";
 import { NextHandleFunction } from "connect";
 import { Middleware } from "koa";
+import koaWebpack from "koa-webpack";
+import WebpackHotMiddlewareType from "webpack-hot-middleware";
 
 
 /**
- * 更新 css modules 有些问题。
+ * koaWebpack 在更新 css modules 时有些问题。
  *
  * @param config webpack的配置
  */
@@ -56,6 +56,7 @@ async function createHotMiddleware (config: any) {
 		stats: "minimal",
 	});
 
+	// 使用 TypeScript 的延迟加载，保证在调用时才会 require("webpack-hot-middleware")
 	let hotMiddleware: NextHandleFunction;
 	try {
 		const WebpackHotMiddleware: typeof WebpackHotMiddlewareType = require("webpack-hot-middleware");

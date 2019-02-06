@@ -9,7 +9,7 @@ import { promisify } from "util";
 import webpack, { Configuration, Stats } from "webpack";
 import CliDevelopmentOptions from "../OldOptions";
 import dev from "../plugins/dev";
-import VueSSRDevelopmentPlugin from "../plugins/vue";
+import VueSSRHotReloader from "../plugins/vue";
 import ClientConfiguration from "../template/client.config";
 import ServerConfiguration from "../template/server.config";
 
@@ -44,7 +44,7 @@ async function runServe (options: CliDevelopmentOptions) {
 	bp.configureCliServer(api);
 
 	const cc = ClientConfiguration(options.webpack);
-	const ssrPlugin = new VueSSRDevelopmentPlugin();
+	const ssrPlugin = new VueSSRHotReloader();
 	ssrPlugin.configureWebpackSSR(cc);
 	const devMiddleware = await dev(false, cc);
 
