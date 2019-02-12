@@ -7,6 +7,7 @@ import { runServer } from "./app";
 import BlogPlugin from "./BlogPlugin";
 import { CliServerOptions } from "./OldOptions";
 import ServerAPI from "./ServerAPI";
+import VueSSRProductionPlugin from "./VueSSR";
 
 
 require("source-map-support").install();
@@ -88,6 +89,9 @@ async function runProd (options: CliServerOptions) {
 
 	const bp = new BlogPlugin(options.blog);
 	bp.configureCliServer(api);
+
+	const ssrPlugin = new VueSSRProductionPlugin(options.blog.staticRoot);
+	ssrPlugin.configureCliServer(api);
 
 	runServer(api.createApp().callback(), options.server);
 }

@@ -90,7 +90,7 @@ export default (options: any) => {
 				excludes: ["**/.*", "**/*.map", "static/icons/*"],
 			}),
 			new MiniCssExtractPlugin({
-				filename: assetsPath("css/[name].[hash].css"),
+				filename: assetsPath("css/[name].[contenthash].css"),
 			}),
 			new OptimizeCSSPlugin({
 				cssProcessorOptions: { map: { inline: false } },
@@ -103,8 +103,8 @@ export default (options: any) => {
 	/** 默认文件名不带hash，生产模式带上以便区分不同版本的文件 */
 	if (options.mode === "production") {
 		config.output = {
-			filename: assetsPath("js/[name].[contenthash:8].js"),
-			chunkFilename: assetsPath("js/[name].[contenthash:8].js"),
+			filename: assetsPath("js/[name].[contenthash].js"),
+			chunkFilename: assetsPath("js/[name].[contenthash].js"),
 		};
 	}
 

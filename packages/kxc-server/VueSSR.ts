@@ -77,17 +77,17 @@ export function ssrMiddleware (options: SSRMiddlewareOptions): Middleware {
 
 export default class VueSSRProductionPlugin implements CliServerPligun {
 
-	private readonly context: string;
+	private readonly workingDir: string;
 
-	constructor (context: string) {
-		this.context = context;
+	constructor (workingDir: string) {
+		this.workingDir = workingDir;
 	}
 
 	configureCliServer (api: ServerAPI): void {
-		const { context } = this;
+		const { workingDir } = this;
 
 		function reslove (file: string) {
-			return path.resolve(context, file);
+			return path.resolve(workingDir, file);
 		}
 
 		const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
