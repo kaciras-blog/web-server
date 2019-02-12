@@ -1,25 +1,34 @@
 import fs from "fs-extra";
 import { Context, Middleware, Request } from "koa";
+import log4js from "log4js";
 import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import { CliServerPligun } from "./index";
 import ServerAPI from "./ServerAPI";
 
+const logger = log4js.getLogger("app");
+
 
 export interface RenderContext {
+	url: string;
 	title: string;
 	meta: string;
-	request: Context;
 	shellOnly: boolean;
+	request?: Context;
 }
 
+const DEFAULT_CONTEXT = {
+	title: "Kaciras的博客",
+	meta: "",
+	shellOnly: false,
+};
+
 async function renderPage (ctx: Context, render: BundleRenderer) {
-	const context: RenderContext = {
-		title: "Kaciras的博客",
-		meta: "",
-		shellOnly: ctx.query.shellOnly,
+	const context: RenderContext = Object.assign({}, DEFAULT_CONTEXT, {
 		request: ctx,
-	};
+		shellOnly: ctx.query.shellOnly,
+		url: ctx.url,
+	});
 	try {
 		ctx.body = await render.renderToString(context);
 	} catch (err) {
@@ -30,7 +39,9 @@ async function renderPage (ctx: Context, render: BundleRenderer) {
 				ctx.redirect(err.location);
 				break;
 			default:
-				ctx.throw(err);
+				logger.error("服务端渲染出错", err);
+				const errorContext = Object.assign({}, DEFAULT_CONTEXT, { url: "/error/500" });
+				ctx.body = await render.renderToString(errorContext);
 		}
 	}
 }
