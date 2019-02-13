@@ -37,14 +37,14 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 			if (compilation.getStats().hasErrors()) {
 				return;
 			}
-			this.readyPromiseSource.reslove();
+			this.readyPromiseSource.resolve();
 			const source = compilation.assets[this.filename].source();
 			this.emit("update", JSON.parse(source));
 		});
 	}
 
-	get readyPromise () {
-		return this.readyPromiseSource.promise;
+	get readyPromise (): PromiseLike<void> {
+		return this.readyPromiseSource;
 	}
 }
 
@@ -105,10 +105,10 @@ export default class VueSSRHotReloader {
 			}
 			this.serverBundle = JSON.parse(stats.compilation.assets["vue-ssr-server-bundle.json"].source());
 			this.updateVueSSR();
-			readyPromise.reslove();
+			readyPromise.resolve();
 		});
 
-		await Promise.all([readyPromise.promise, this.clientPlugin.readyPromise]);
+		await Promise.all([readyPromise, this.clientPlugin.readyPromise]);
 		console.log("Vue server side renderer created.");
 
 		// assert this.renderer !== undefined

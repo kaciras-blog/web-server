@@ -9,7 +9,7 @@ describe("webpack config resloving", () => {
 		api = new DevelopmentApi();
 	});
 
-	it("should reslove config", () => {
+	it("should resolve config", () => {
 		api.addConfiguration("test", () => {
 			return { entry: "test" };
 		});
