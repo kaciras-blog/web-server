@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"main": "index.js",
 	"engines": {
-		"node": ">=11.7.0"
+		"node": ">=11.10.0"
 	},
 	"bin": {
 		"kxc-server": "bin/kxc-server.js"

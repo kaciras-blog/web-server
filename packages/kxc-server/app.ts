@@ -2,10 +2,6 @@ import fs from "fs-extra";
 import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import log4js from "log4js";
-import { intercept, createSitemapMiddleware, createImageMiddleware, ImageMiddlewareOptions } from "./middlewares";
-import serve from "koa-static";
-import { Server } from "net";
-import { promisify } from "util";
 
 
 const logger = log4js.getLogger("app");
@@ -24,12 +20,11 @@ export interface ServerOptions {
 type OnRequestHandler = (req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) => void;
 
 export function runServer (requestHandler: OnRequestHandler, options: ServerOptions) {
-	const {
-		port = 80, httpsPort = 4438,
-		tls, privatekey, certificate, redirectHttp,
-	} = options;
+	const { port = 80, httpsPort = 443 } = options;
 
-	if (tls) {
+	if (options.tls) {
+		const { privatekey, certificate } = options;
+
 		if (!privatekey || !certificate) {
 			throw new Error("You must specifiy privatekey and certificate with tls enabled.");
 		}
@@ -37,17 +32,21 @@ export function runServer (requestHandler: OnRequestHandler, options: ServerOpti
 			key: fs.readFileSync(privatekey),
 			cert: fs.readFileSync(certificate),
 			allowHTTP1: true,
-		}, requestHandler)
-			.listen(httpsPort, () => logger.info(`Https连接端口：${httpsPort}`));
+		}, requestHandler).listen(httpsPort, () => {
+			logger.info(`Https连接端口：${httpsPort}`);
+		});
 	}
 
-	if (redirectHttp) {
-		http.createServer((req, res) => {
-			res.writeHead(301, { Location: "https://" + req.headers.host + req.url });
-			res.end();
-		}).listen(port, () => logger.info(`重定向来自端口：${port}的请求至：${httpsPort}`));
+	if (options.redirectHttp) {
+		// TODO: Remove type fix
+		http.createServer((req, res: any) => {
+			res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` }).end();
+		}).listen(port, () => {
+			logger.info(`重定向来自端口：${port}的请求至：${httpsPort}`);
+		});
 	} else {
-		http.createServer(requestHandler)
-			.listen(port, () => logger.info(`在端口：${port}上监听Http连接`));
+		http.createServer(requestHandler).listen(port, () => {
+			logger.info(`在端口：${port}上监听Http连接`);
+		});
 	}
 }

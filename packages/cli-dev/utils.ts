@@ -1,6 +1,6 @@
 // 这两个太长了单独拿出来
-type Onfulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | undefined | null;
-type Onrejected<R> = ((reason: any) => R | PromiseLike<R>) | undefined | null;
+type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | undefined | null;
+type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | undefined | null;
 
 
 export class PromiseCompleteionSource<T> implements Promise<T> {
@@ -20,11 +20,11 @@ export class PromiseCompleteionSource<T> implements Promise<T> {
 		return "PromiseCompleteionSource";
 	}
 
-	then<R0 = T, R1 = never> (onfulfilled?: Onfulfilled<T, R0>, onrejected?: Onrejected<R1>) {
+	then<R0 = T, R1 = never> (onfulfilled?: OnFulfilled<T, R0>, onrejected?: OnRejected<R1>) {
 		return this.promise.then(onfulfilled, onrejected);
 	}
 
-	catch<R = never> (onrejected?: Onrejected<R>) {
+	catch<R = never> (onrejected?: OnRejected<R>) {
 		return this.promise.catch(onrejected);
 	}
 
