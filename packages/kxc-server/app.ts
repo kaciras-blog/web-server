@@ -2,12 +2,18 @@ import fs from "fs-extra";
 import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { Server } from "net";
+import { SecureContext, createSecureContext } from "tls";
 import { promisify } from "util";
 import log4js from "log4js";
 
 
 const logger = log4js.getLogger("app");
 
+export interface SNIProperties {
+	hostname: string;
+	key: string;
+	cert: string;
+}
 
 export interface ServerOptions {
 	port?: number;
@@ -15,13 +21,36 @@ export interface ServerOptions {
 	tls?: boolean;
 	certificate?: string;
 	privatekey?: string;
+	sni?: SNIProperties[];
 	redirectHttp?: boolean;
 }
 
 // app.callback() 的定义，比较长不方便直接写在参数里
 type OnRequestHandler = (req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) => void;
+type SNIResolve = (err: Error | null, ctx: SecureContext) => void;
 
-/** 将 Server.listen 转成异步方法并调用，返回server */
+
+export function createSNICallback (properties: SNIProperties[]) {
+	const map: { [k: string]: any } = {};
+
+	// 据测试SecureContext可以重用
+	for (const p of properties) {
+		map[p.hostname] = createSecureContext({
+			key: fs.readFileSync(p.key),
+			cert: fs.readFileSync(p.cert),
+		});
+	}
+	return (servername: string, callback: SNIResolve) => callback(null, map[servername]);
+}
+
+
+/**
+ * 将 Server.listen 转成异步方法并调用。
+ *
+ * @param server 服务器
+ * @param port 端口
+ * @return 返回server参数
+ */
 function listenAsync (server: Server, port: number) {
 	return promisify(server.listen.bind(server))(port).then(() => server);
 }
@@ -31,13 +60,15 @@ export async function runServer (requestHandler: OnRequestHandler, options: Serv
 	const servers: Server[] = [];
 
 	if (options.tls) {
-		const { privatekey, certificate } = options;
+		const { privatekey, certificate, sni } = options;
+		const sniCallback = sni && createSNICallback(sni);
 
 		if (!privatekey || !certificate) {
 			throw new Error("You must specifiy privatekey and certificate with tls enabled.");
 		}
 		const server = http2.createSecureServer({
 			allowHTTP1: true,
+			SNICallback: sniCallback,
 			cert: fs.readFileSync(certificate),
 			key: fs.readFileSync(privatekey),
 		}, requestHandler);
