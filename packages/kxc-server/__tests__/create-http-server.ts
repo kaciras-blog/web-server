@@ -1,11 +1,7 @@
-import { runServer, createSNICallback } from "../app";
 import http from "http";
-import https from "https";
-import tls, { Server, TLSSocket } from "tls";
-import constants from "constants";
-import { StringDecoder } from "string_decoder";
 import path from "path";
-import fs from "fs-extra";
+import tls from "tls";
+import { createSNICallback, runServer } from "../app";
 
 
 const HTTP_URL = "http://localhost/";
@@ -43,6 +39,7 @@ describe("SNI callback", () => {
 		return path.join(__dirname, "resources", name);
 	}
 
+	// 创建一个TLS服务器，没有默认证书而是使用SNI回调
 	beforeAll((done) => {
 		const sniCallback = createSNICallback([{
 			hostname: "localhost",
@@ -60,12 +57,17 @@ describe("SNI callback", () => {
 			socket.write("HELLOW");
 			socket.end();
 		});
-
 		server.listen(41000, done);
 	});
 
-	afterAll(() => server.close());
+	// 记得关闭服务器，不然测试进程无法退出
+	afterAll((done) => server.close(done));
 
+	/**
+	 * 连接服务器并验证证书和响应是否正确。
+	 *
+	 * @param servername 服务器名
+	 */
 	function verifyCertCN (servername: string) {
 		return new Promise((resolve, reject) => {
 			const socket = tls.connect({
@@ -79,13 +81,22 @@ describe("SNI callback", () => {
 				expect(cert.subject.CN).toEqual(servername);
 			});
 			socket.on("data", (data) => {
-				expect(data.length).toBeGreaterThan(5);
+				expect(data.length).toBe(6);
 				resolve();
 				socket.end();
 			});
 			socket.on("error", reject);
 		});
 	}
+
+	it("should throw error with invalid servername", async () => {
+		expect.assertions(1);
+		try {
+			await verifyCertCN("127.0.0.1");
+		} catch (e) {
+			expect(e.message).toBe("Client network socket disconnected before secure TLS connection was established");
+		}
+	});
 
 	it("should accept localhost", () => {
 		return verifyCertCN("localhost");
