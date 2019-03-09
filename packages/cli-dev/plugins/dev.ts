@@ -83,6 +83,7 @@ async function createHotMiddleware (config: any) {
 						resolve();
 					},
 					setHeader: ctx.set.bind(ctx),
+					getHeader: ctx.get.bind(ctx),
 					locals: ctx.state,
 				};
 
