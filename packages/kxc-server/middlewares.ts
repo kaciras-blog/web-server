@@ -6,6 +6,7 @@ import { Context, Middleware } from "koa";
 import { getLogger } from "log4js";
 import path from "path";
 import xml2js from "xml2js";
+import mime from "mime-types";
 
 const logger = getLogger("Blog");
 
@@ -62,7 +63,7 @@ export interface ImageMiddlewareOptions {
  * @return Koa的中间件函数
  */
 export function createImageMiddleware (options: ImageMiddlewareOptions): Middleware {
-	const SUPPORTED_FORMAT = [".jpg", ".png", ".gif", ".bmp", ".svg"];
+	const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg"];
 	fs.ensureDirSync(options.imageRoot);
 
 	async function getImage (ctx: Context): Promise<void> {
@@ -75,7 +76,7 @@ export function createImageMiddleware (options: ImageMiddlewareOptions): Middlew
 	}
 
 	/**
-	 * 接收上传的图片，文件名为图片内容的SHA3值，扩展名与原始文件名一样。
+	 * 接收上传的图片，文件名为图片内容的SHA3值，扩展名取决于内容的 MIME-TYPE。
 	 * 如果图片已存在则直接返回，否则将保存文件，保存的文件的URL由Location响应头返回。
 	 *
 	 * @param ctx 请求上下文
@@ -89,15 +90,19 @@ export function createImageMiddleware (options: ImageMiddlewareOptions): Middlew
 			return ctx.status = 400;
 		}
 
-		let ext = path.extname(file.originalname).toLowerCase();
-		if (ext === ".jpeg") {
-			ext = ".jpg"; // 统一使用JPG
+		// mime.extension() 对 undefined 以及不支持的返回 false
+		let ext = mime.extension(file.mimetype);
+		if (ext === "jpeg") {
+			ext = "jpg"; // 统一使用JPG
+		} else if (!ext) {
+			return ctx.status = 400;
 		}
+
 		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
 			return ctx.status = 400;
 		}
 
-		const name = sha3_256(file.buffer) + ext;
+		const name = sha3_256(file.buffer) + "." + ext;
 		const store = path.join(options.imageRoot, name);
 
 		if (await fs.pathExists(store)) {
