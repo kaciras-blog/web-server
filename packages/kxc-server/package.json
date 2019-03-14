@@ -10,7 +10,7 @@
 		"kxc-server": "bin/kxc-server.js"
 	},
 	"dependencies": {
-		"@koa/cors": "^2.2.3",
+		"@koa/cors": "^3.0.0",
 		"axios": "^0.18.0",
 		"fs-extra": "^7.0.1",
 		"js-sha3": "^0.8.0",
@@ -23,7 +23,7 @@
 		"koa-static": "^5.0.0",
 		"log4js": "^4.0.0",
 		"minimist": "^1.2.0",
-		"vue-server-renderer": "2.6.8",
+		"vue-server-renderer": "2.6.9",
 		"xml2js": "^0.4.19"
 	}
 }

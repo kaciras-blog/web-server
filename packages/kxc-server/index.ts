@@ -10,8 +10,6 @@ import ServerAPI from "./ServerAPI";
 import VueSSRProductionPlugin from "./VueSSR";
 
 
-require("source-map-support").install();
-
 /**
  * 修改Axios使其支持内置Node的http2模块。
  * Axios是不是放弃维护了？

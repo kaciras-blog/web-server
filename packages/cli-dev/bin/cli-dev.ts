@@ -13,6 +13,7 @@ import VueSSRHotReloader from "../plugins/vue";
 import ClientConfiguration from "../template/client.config";
 import ServerConfiguration from "../template/server.config";
 
+require("source-map-support").install();
 
 /**
  * 调用webpack，并输出更友好的信息。

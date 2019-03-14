@@ -41,6 +41,7 @@ async function renderPage (ctx: Context, render: BundleRenderer) {
 			default:
 				logger.error("服务端渲染出错", err);
 				const errorContext = Object.assign({}, DEFAULT_CONTEXT, { url: "/error/500" });
+				ctx.status = 503;
 				ctx.body = await render.renderToString(errorContext);
 		}
 	}
