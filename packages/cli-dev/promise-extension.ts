@@ -2,22 +2,16 @@
 type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | undefined | null;
 type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | undefined | null;
 
+export abstract class PromiseDelegate<T> implements Promise<T> {
 
-export class PromiseCompleteionSource<T> implements Promise<T> {
+	protected readonly promise: Promise<T>;
 
-	promise: Promise<T>;
-	resolve!: (value?: T | PromiseLike<T>) => void;
-	reject!: (reason?: any) => void;
-
-	constructor () {
-		this.promise = new Promise((reslove, reject) => {
-			this.reject = reject;
-			this.resolve = reslove;
-		});
+	protected constructor (promise: Promise<T>) {
+		this.promise = promise;
 	}
 
 	get [Symbol.toStringTag] () {
-		return "PromiseCompleteionSource";
+		return "PromiseDelegate";
 	}
 
 	then<R0 = T, R1 = never> (onfulfilled?: OnFulfilled<T, R0>, onrejected?: OnRejected<R1>) {
@@ -30,5 +24,19 @@ export class PromiseCompleteionSource<T> implements Promise<T> {
 
 	finally (onfinally?: (() => void) | undefined | null) {
 		return this.promise.finally(onfinally);
+	}
+}
+
+export class PromiseCompleteionSource<T> extends PromiseDelegate<T> {
+
+	public resolve!: (value?: T | PromiseLike<T>) => void;
+	public reject!: (reason?: any) => void;
+
+	constructor () {
+		super(new Promise((reslove, reject) => { this.resolve = reslove; this.reject = reject; }));
+	}
+
+	get [Symbol.toStringTag] () {
+		return "PromiseCompleteionSource";
 	}
 }
