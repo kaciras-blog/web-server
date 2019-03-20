@@ -65,8 +65,13 @@ export default (options: WebpackOptions, side: "client" | "server"): Configurati
 			rules: [
 				{
 					test: /\.tsx?$/,
-					use: "ts-loader",
-					exclude: /node_modules/,
+					use: {
+						loader: "ts-loader",
+						options: {
+							transpileOnly: true, // 能加快编译速度
+							appendTsSuffixTo: ["\\.vue$"], // vue文件里使用TS必须得加上
+						},
+					},
 				},
 				{
 					test: /\.vue$/,
