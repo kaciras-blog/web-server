@@ -19,7 +19,7 @@ export default (options: any) => {
 		},
 
 		module: {
-			rules: styleLoaders({ ...options, extract: false }),
+			rules: styleLoaders(options),
 		},
 
 		// 外置化应用程序依赖模块，可以使服务器构建速度更快，并生成较小的 bundle 文件。

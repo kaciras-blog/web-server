@@ -44,12 +44,10 @@ function cssLoaders (options: any): CssLoadersMap {
 			});
 		}
 
-		// Extract CSS when that option is specified
-		// (which is the case during production build)
 		if (options.extract) {
 			return ([MiniCssExtractPlugin.loader] as RuleSetUseItem[]).concat(loaders);
 		} else {
-			return (["vue-style-loader"] as RuleSetUseItem[]).concat(loaders);
+			return loaders;
 		}
 	}
 

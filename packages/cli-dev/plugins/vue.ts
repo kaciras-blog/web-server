@@ -101,7 +101,7 @@ export default class VueSSRHotReloader {
 				throw err;
 			}
 			if (stats.hasErrors()) {
-				return;
+				return console.error(stats.toString());
 			}
 			this.serverBundle = JSON.parse(stats.compilation.assets["vue-ssr-server-bundle.json"].source());
 			this.updateVueSSR();
