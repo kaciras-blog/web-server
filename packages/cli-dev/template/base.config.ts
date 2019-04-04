@@ -1,5 +1,6 @@
+import parseArgs from "minimist";
 import path from "path";
-import { Configuration } from "webpack";
+import { Configuration, DefinePlugin } from "webpack";
 import { VueLoaderPlugin } from "vue-loader";
 import { WebpackOptions } from "../OldOptions";
 import { resolve } from "./utils";
@@ -116,8 +117,11 @@ export default (options: WebpackOptions, side: "client" | "server"): Configurati
 			],
 		},
 		plugins: [
-			new VueLoaderPlugin(),
 			new CaseSensitivePathsPlugin(),
+			new DefinePlugin({
+				"process.env.DEPLOY": JSON.stringify(parseArgs(process.argv.slice(2)).deploy),
+			}),
+			new VueLoaderPlugin(),
 		],
 		optimization: {
 			noEmitOnErrors: true,
