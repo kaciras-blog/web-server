@@ -14,26 +14,21 @@ interface CssLoadersMap {
 	[name: string]: RuleSetUseItem[];
 }
 
-function cssLoaders (options: any): CssLoadersMap {
+function cssLoaders (options: any, modules: boolean): CssLoadersMap {
 	const cssLoader = {
 		loader: "css-loader",
 		options: {
 			sourceMap: options.cssSourceMap,
-			modules: options.modules,
+			modules,
 			localIdentName: options.mode === "production"
 				? "[hash:base64:8]"
 				: "[local]_[hash:base64:8]",
 		},
 	};
 
-	// TODO: 这些破加载器到时候还得测下
-	const postcss = {
-		loader: "postcss-loader",
-	};
-
 	// generate loader string to be used with extract text plugin
-	function generateLoaders (loader?: string, loaderOptions?: any): RuleSetUseItem[] {
-		const loaders: RuleSetUseItem[] = [cssLoader, postcss];
+	function generateLoaders (loader?: string, loaderOptions?: any) {
+		const loaders: RuleSetUseItem[] = [cssLoader, { loader: "postcss-loader" }];
 
 		if (loader) {
 			loaders.push({
@@ -44,10 +39,10 @@ function cssLoaders (options: any): CssLoadersMap {
 			});
 		}
 
-		if (options.extract) {
-			return ([MiniCssExtractPlugin.loader] as RuleSetUseItem[]).concat(loaders);
+		if (options.mode !== "production") {
+			return (["vue-style-loader"] as RuleSetUseItem[]).concat(loaders);
 		} else {
-			return loaders;
+			return ([MiniCssExtractPlugin.loader] as RuleSetUseItem[]).concat(loaders);
 		}
 	}
 
@@ -59,11 +54,8 @@ function cssLoaders (options: any): CssLoadersMap {
 
 export function styleLoaders (options: any) {
 	const output = [];
-	const loaders = cssLoaders(options);
-
-	// 再生成一个CSS Modules的加载器
-	options.modules = true;
-	const moduleLoaders = cssLoaders(options);
+	const loaders = cssLoaders(options, false);
+	const moduleLoaders = cssLoaders(options, true);
 
 	for (const extension in loaders) {
 		output.push({

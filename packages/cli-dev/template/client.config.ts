@@ -1,13 +1,11 @@
-import path from "path";
-import { Configuration, RuleSetLoader } from "webpack";
-import { HashedModuleIdsPlugin } from "webpack";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import baseWebpackConfig from "./base.config";
-import { resolve, styleLoaders } from "./utils";
-import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
+import path from "path";
+import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import { Configuration, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
 import merge from "webpack-merge";
+import baseWebpackConfig from "./base.config";
+import { resolve } from "./utils";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
@@ -24,6 +22,11 @@ const setupBabel = (webpackConfig: any, options: any) => {
 
 	if (options.parallel) {
 		loaders.unshift({ loader: "thread-loader" });
+	}
+
+	// 标准化，处理 module 没有定义的情况
+	if (!webpackConfig.module) {
+		webpackConfig.module = { rules: [] };
 	}
 
 	webpackConfig.module.rules.push({
@@ -50,9 +53,6 @@ export default (options: any) => {
 
 	const config: Configuration = {
 		entry: ["./src/entry-client.js"],
-		module: {
-			rules: styleLoaders({ ...options, extract: true }),
-		},
 		devtool: options.devtool,
 		optimization: {
 			splitChunks: {
@@ -88,9 +88,6 @@ export default (options: any) => {
 				entry: "./src/service-worker/index",
 				includes: ["static/**/*"],
 				excludes: ["**/.*", "**/*.map", "static/icons/*"],
-			}),
-			new MiniCssExtractPlugin({
-				filename: assetsPath("css/[name].[contenthash].css"),
 			}),
 			new OptimizeCSSPlugin({
 				cssProcessorOptions: { map: { inline: false } },

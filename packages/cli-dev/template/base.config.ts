@@ -1,11 +1,12 @@
-import parseArgs from "minimist";
-import path from "path";
-import { Configuration, DefinePlugin } from "webpack";
-import { VueLoaderPlugin } from "vue-loader";
-import { WebpackOptions } from "../OldOptions";
-import { resolve } from "./utils";
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import parseArgs from "minimist";
+import path from "path";
+import { VueLoaderPlugin } from "vue-loader";
+import { Configuration, DefinePlugin } from "webpack";
+import { WebpackOptions } from "../OldOptions";
+import { resolve, styleLoaders } from "./utils";
 
 
 /**
@@ -64,6 +65,7 @@ export default (options: WebpackOptions, side: "client" | "server"): Configurati
 		},
 		module: {
 			rules: [
+				...styleLoaders(options),
 				{
 					test: /\.tsx?$/,
 					use: {
@@ -120,6 +122,9 @@ export default (options: WebpackOptions, side: "client" | "server"): Configurati
 			new CaseSensitivePathsPlugin(),
 			new DefinePlugin({
 				"process.env.DEPLOY": JSON.stringify(parseArgs(process.argv.slice(2)).deploy),
+			}),
+			new MiniCssExtractPlugin({
+				filename: assetsPath("css/[name].[contenthash:8].css"),
 			}),
 			new VueLoaderPlugin(),
 		],
