@@ -3,6 +3,7 @@ import { DefinePlugin } from "webpack";
 import merge from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
 import baseConfig from "./base.config";
+import { styleLoaders } from "./utils";
 
 
 export default (options: any) => {
@@ -16,6 +17,10 @@ export default (options: any) => {
 		output: {
 			filename: "server-bundle.js",
 			libraryTarget: "commonjs2",
+		},
+
+		module: {
+			rules: styleLoaders(options, true),
 		},
 
 		// 外置化应用程序依赖模块，可以使服务器构建速度更快，并生成较小的 bundle 文件。

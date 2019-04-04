@@ -14,7 +14,7 @@ interface CssLoadersMap {
 	[name: string]: RuleSetUseItem[];
 }
 
-function cssLoaders (options: any, modules: boolean): CssLoadersMap {
+function cssLoaders (options: any, modules: boolean, isServer: boolean): CssLoadersMap {
 	const cssLoader = {
 		loader: "css-loader",
 		options: {
@@ -39,7 +39,12 @@ function cssLoaders (options: any, modules: boolean): CssLoadersMap {
 			});
 		}
 
-		if (options.mode !== "production") {
+		/*
+		 * 服务端构建也要使用 vue-style-loader，照其官网所说它针对服务端渲染有额外的功能。
+		 * 另外注意 MiniCssExtractPlugin 会在输出的文件里加入一个自动往 HTML > head 注入<link>的模块，这个模块
+		 * 引用了 document 导致其不能在服务端使用。
+		 */
+		if (isServer || options.mode !== "production") {
 			return (["vue-style-loader"] as RuleSetUseItem[]).concat(loaders);
 		} else {
 			return ([MiniCssExtractPlugin.loader] as RuleSetUseItem[]).concat(loaders);
@@ -52,10 +57,16 @@ function cssLoaders (options: any, modules: boolean): CssLoadersMap {
 	};
 }
 
-export function styleLoaders (options: any) {
+/**
+ * 自动创建各种格式的CSS模块加载器链。
+ *
+ * @param options 选项
+ * @param isServer 是否服务端构建
+ */
+export function styleLoaders (options: any, isServer: boolean = false) {
 	const output = [];
-	const loaders = cssLoaders(options, false);
-	const moduleLoaders = cssLoaders(options, true);
+	const loaders = cssLoaders(options, false, isServer);
+	const moduleLoaders = cssLoaders(options, true, isServer);
 
 	for (const extension in loaders) {
 		output.push({

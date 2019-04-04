@@ -5,7 +5,8 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import { Configuration, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
 import merge from "webpack-merge";
 import baseWebpackConfig from "./base.config";
-import { resolve } from "./utils";
+import { resolve, styleLoaders } from "./utils";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
@@ -76,6 +77,9 @@ export default (options: any) => {
 				name: "manifest",
 			},
 		},
+		module: {
+			rules: styleLoaders(options),
+		},
 		plugins: [
 			new CopyWebpackPlugin([
 				{
@@ -88,6 +92,9 @@ export default (options: any) => {
 				entry: "./src/service-worker/index",
 				includes: ["static/**/*"],
 				excludes: ["**/.*", "**/*.map", "static/icons/*"],
+			}),
+			new MiniCssExtractPlugin({
+				filename: assetsPath("css/[name].[contenthash:8].css"),
 			}),
 			new OptimizeCSSPlugin({
 				cssProcessorOptions: { map: { inline: false } },
