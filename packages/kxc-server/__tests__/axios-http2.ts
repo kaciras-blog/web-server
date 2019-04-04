@@ -1,16 +1,12 @@
 import Axios from "axios";
-import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
+import http2 from "http2";
 import { AddressInfo } from "net";
 import { adaptAxiosHttp2 } from "../index";
 
 
 // 创建一个仅支持HTTP2的服务器来测试
-const server = http2.createServer({
-	allowHTTP1: false,
-}, (req: Http2ServerRequest, res: Http2ServerResponse) => {
-	res.writeHead(200, { "Content-Type": "text/plain" });
-	res.write("Hellow");
-	res.end();
+const server = http2.createServer((req, res) => {
+	res.writeHead(200, { "Content-Type": "text/plain" }).end("Hellow");
 });
 
 beforeAll((done) => server.listen(0, done));
