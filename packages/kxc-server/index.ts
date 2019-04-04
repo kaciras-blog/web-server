@@ -91,10 +91,10 @@ async function runProd (options: CliServerOptions) {
 	const ssrPlugin = new VueSSRProductionPlugin(options.blog.staticRoot);
 	ssrPlugin.configureCliServer(api);
 
-	runServer(api.createApp().callback(), options.server);
+	return runServer(api.createApp().callback(), options.server);
 }
 
-type CommandHandler<T> = (options: T) => void | Promise<void>;
+type CommandHandler<T> = (options: T) => void | Promise<any>;
 
 export default class KacirasService<T extends CliServerOptions> {
 
