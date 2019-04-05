@@ -52,6 +52,7 @@ export function createSNICallback (properties: SNIProperties[]) {
  * @return 返回server参数
  */
 function listenAsync (server: Server, port: number) {
+	// @ts-ignore promisify 不能确定 server.listen 到底是哪一个重载
 	return promisify(server.listen.bind(server))(port).then(() => server);
 }
 

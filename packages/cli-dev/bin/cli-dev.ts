@@ -53,7 +53,10 @@ async function runServe (options: CliDevelopmentOptions) {
 	const renderer = await ssrPlugin.rendererFactory(options.webpack);
 
 	api.useFallBack(ssrMiddleware({ renderer }));
-	runServer(api.createApp().callback(), options.server);
+	runServer(api.createApp().callback(), options.server).then(() => {
+		console.info();
+		console.info(`\tLocal URL: https://localhost:${options.server.httpsPort}`);
+	});
 }
 
 const service = new KacirasService<CliDevelopmentOptions>();
