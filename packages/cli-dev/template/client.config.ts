@@ -5,7 +5,7 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import { Configuration, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
 import merge from "webpack-merge";
 import baseWebpackConfig from "./base.config";
-import { resolve, styleLoaders } from "./utils";
+import { resolve, styleLoaders } from "./style-loaders";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
 // 这个没有类型定义

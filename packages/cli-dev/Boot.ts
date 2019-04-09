@@ -1,5 +1,5 @@
 import ServerAPI from "kxc-server/ServerAPI";
-import { DevelopmentApi } from "./index";
+import { DevelopmentApi } from "./build";
 import { CliServerPligun } from "kxc-server";
 
 

@@ -21,7 +21,6 @@
 		"hash-sum": "^1.0.2",
 		"koa": "^2.6.2",
 		"koa-webpack": "^5.2.2",
-		"kxc-server": "^0.0.1",
 		"less": "^3.9.0",
 		"less-loader": "^4.1.0",
 		"less-plugin-clean-css": "^1.5.1",

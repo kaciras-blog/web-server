@@ -1,0 +1,86 @@
+import { Configuration } from "webpack";
+
+type ConfigFactory = (api: DevelopmentApi) => Configuration;
+type Configurer = (config: Configuration) => void;
+
+export interface ConfigRegistration {
+	build: boolean;
+	factory: ConfigFactory;
+}
+
+interface ConfigMap {
+	[name: string]: ConfigRegistration;
+}
+
+export class DevelopmentApi {
+
+	private readonly registeredConfig: ConfigMap = {};
+	private readonly configurer = new Map<string, Configurer[]>();
+
+	private readonly cache = new Map<string, Configuration>();
+	private readonly building = new Set<string>();
+
+	addConfigurer (name: string, configurer: Configurer) {
+		const list = this.configurer.get(name);
+		if (list) {
+			list.push(configurer);
+		} else {
+			this.configurer.set(name, [configurer]);
+		}
+	}
+
+	addConfiguration (name: string, factory: ConfigFactory, build = false) {
+		if (this.registeredConfig[name]) {
+			throw new Error(`Webpack config: ${name} already registered`);
+		}
+		this.registeredConfig[name] = { factory, build };
+	}
+
+	/**
+	 * 获取指定的Webpack配置，并保证其所有相关的Configurer均已调用。
+	 *
+	 * @param name 配置名
+	 * @return 配置对象，如果指定名称的配置不存在则为undefined
+	 */
+	resloveConfig (name: string): Configuration | undefined {
+		const { registeredConfig, configurer, cache, building } = this;
+
+		const registation = registeredConfig[name];
+		if (!registation) {
+			return undefined;
+		}
+
+		// 检查循环引用
+		if (building.has(name)) {
+			building.clear();
+			throw new Error(`Cyclic refrence: ${name}`);
+		}
+
+		const cached = cache.get(name);
+		if (cached) {
+			return cached;
+		}
+
+		building.add(name);
+		const config = registation.factory(this);
+		cache.set(name, config);
+
+		(configurer.get(name) || []).forEach((cx) => cx(config));
+
+		building.delete(name);
+		return config;
+	}
+
+	get toBuildConfigs () {
+		return Object.entries(this.registeredConfig)
+			.filter((value) => value[1].build)
+			.map((value) => this.resloveConfig(value[0]));
+	}
+}
+
+/**
+ * base和app两个配置是内置的。
+ */
+export interface DevelopmentApi {
+	resloveConfig (name: "base" | "app"): Configuration;
+}
