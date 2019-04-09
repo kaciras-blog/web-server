@@ -31,6 +31,8 @@ export default class BlogPlugin implements CliServerPligun {
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(cors(options.cors));
 
+		api.useBeforeFilter(createImageMiddleware(options)); // 图片太大不计算etag
+
 		api.useFilter(intercept([
 			"/index.template.html",
 			"/vue-ssr-client-manifest.json",
@@ -43,7 +45,6 @@ export default class BlogPlugin implements CliServerPligun {
 			index: false,
 			maxage: 30 * 86400 * 1000,
 		}));
-		api.useResource(createImageMiddleware(options)); // 图片太大不计算etag
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 	}
 }

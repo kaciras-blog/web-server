@@ -55,7 +55,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 
 	api.useFallBack(ssrMiddleware({ renderer }));
 	runServer(api.createApp().callback(), options.server).then(() => {
-		console.info(`\n- Local URL: https://localhost:${options.server.httpsPort}\n`);
+		console.info(`\n- Local URL: https://localhost\n`);
 	});
 });
 
