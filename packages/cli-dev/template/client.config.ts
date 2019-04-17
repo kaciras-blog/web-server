@@ -7,6 +7,8 @@ import merge from "webpack-merge";
 import baseWebpackConfig from "./base.config";
 import { resolve, styleLoaders } from "./style-loaders";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
@@ -81,6 +83,18 @@ export default (options: any) => {
 			rules: styleLoaders(options),
 		},
 		plugins: [
+			new HtmlWebpackPlugin({
+				template: "public/index.html",
+				minify: {
+					collapseWhitespace: true,
+					removeComments: true,
+					removeRedundantAttributes: true,
+					removeScriptTypeAttributes: true,
+					removeStyleLinkTypeAttributes: true,
+					useShortDoctype: true,
+					removeAttributeQuotes: true,
+				},
+			}),
 			new CopyWebpackPlugin([
 				{
 					from: "./public",
