@@ -71,7 +71,7 @@ export function createImageMiddleware (options: ImageMiddlewareOptions): Middlew
 		if (!name || /[\\/]/.test(name)) {
 			ctx.status = 404;
 		} else {
-			await koaSend(ctx, name, { root: options.imageRoot, maxage: options.cacheMaxAge });
+			await koaSend(ctx, name, { root: options.imageRoot, maxage: 30 * 86400 * 1000 });
 		}
 	}
 
