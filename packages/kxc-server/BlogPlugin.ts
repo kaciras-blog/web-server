@@ -2,7 +2,13 @@ import conditional from "koa-conditional-get";
 import etag from "koa-etag";
 import ServerAPI from "./ServerAPI";
 import { CliServerPligun } from "./index";
-import { createImageMiddleware, createSitemapMiddleware, ImageMiddlewareOptions, intercept } from "./middlewares";
+import {
+	createImageMiddleware,
+	createSitemapMiddleware,
+	ImageMiddlewareOptions,
+	intercept,
+	serviceWorkerToggle,
+} from "./middlewares";
 import multer = require("koa-multer");
 import cors, { Options as CorsOptions } from "@koa/cors";
 import compress from "koa-compress";
@@ -31,6 +37,7 @@ export default class BlogPlugin implements CliServerPligun {
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(cors(options.cors));
 
+		api.useBeforeFilter(serviceWorkerToggle(true));
 		api.useBeforeFilter(createImageMiddleware(options)); // 图片太大不计算etag
 
 		api.useFilter(intercept([

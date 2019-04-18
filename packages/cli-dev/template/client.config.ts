@@ -84,7 +84,8 @@ export default (options: any) => {
 		},
 		plugins: [
 			new HtmlWebpackPlugin({
-				template: "public/index.html",
+				filename: "app-shell.html",
+				template: "public/app-shell.html",
 				minify: {
 					collapseWhitespace: true,
 					removeComments: true,
@@ -99,7 +100,7 @@ export default (options: any) => {
 				{
 					from: "./public",
 					to: ".",
-					ignore: ["index.html"],
+					ignore: ["app-shell.html"],
 				}],
 			),
 			new ServiceWorkerWebpackPlugin({

@@ -12,6 +12,21 @@ const logger = getLogger("Blog");
 
 
 /**
+ * 前端页面是否注册 ServiceWorker 的检查点，该URI返回200状态码时表示注册，否则应当注销。
+ *
+ * @param register 是否注册 erviceWorker
+ */
+export function serviceWorkerToggle (register: boolean): Middleware {
+	return (ctx, next) => {
+		if (ctx.path !== "/sw-check") {
+			return next();
+		}
+		ctx.status = register ? 200 : 205;
+		ctx.flushHeaders();
+	};
+}
+
+/**
  * 能够发送一个位于网站内容目录下的静态文件。
  *
  * @param path_ 文件路径，是URL中的path部分，以/开头
