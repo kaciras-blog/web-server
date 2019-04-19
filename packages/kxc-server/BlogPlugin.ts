@@ -1,18 +1,14 @@
-import conditional from "koa-conditional-get";
-import etag from "koa-etag";
-import ServerAPI from "./ServerAPI";
-import { CliServerPligun } from "./index";
-import {
-	createImageMiddleware,
-	createSitemapMiddleware,
-	ImageMiddlewareOptions,
-	intercept,
-	serviceWorkerToggle,
-} from "./middlewares";
-import multer = require("koa-multer");
 import cors, { Options as CorsOptions } from "@koa/cors";
 import compress from "koa-compress";
+import conditional from "koa-conditional-get";
+import etag from "koa-etag";
 import serve from "koa-static";
+import { createImageMiddleware, ImageMiddlewareOptions } from "./image-store";
+import { CliServerPligun } from "./index";
+import { intercept, serviceWorkerToggle } from "./middlewares";
+import ServerAPI from "./ServerAPI";
+import { createSitemapMiddleware } from "./sitemap";
+import multer = require("koa-multer");
 
 
 export interface AppOptions extends ImageMiddlewareOptions {
