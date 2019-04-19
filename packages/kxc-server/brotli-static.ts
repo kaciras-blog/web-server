@@ -7,9 +7,15 @@ import fs from "fs-extra";
 import globby from "globby";
 import log4js from "log4js";
 import { promisify } from "util";
-import { brotliCompress, InputType } from "zlib";
+import { brotliCompress, InputType, gzip } from "zlib";
+import { Worker, isMainThread, parentPort, workerData } from "worker_threads";
+import os from "os";
+
 
 const logger = log4js.getLogger("Blog");
+
+const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
+const gzipCompressAsync = promisify<InputType, Buffer>(gzip);
 
 /**
  * WOFF2 字体已经是Brotli压缩的，如果字体中有 WOFF2 则不需要压缩字体文件
@@ -18,28 +24,102 @@ const logger = log4js.getLogger("Blog");
  * @param period 小于此大小（字节）的不压缩
  */
 export async function precompress (root: string, period: number) {
-	logger.info("预压缩静态资源...");
+	console.info("预压缩静态资源...");
+	const resources = await globby([root + "/**/*.{js,css,svg}", root + "/app-shell.html"]) as any[];
 
-	const resources = await globby([root + "/**/*.{js,css,svg}", root + "/app-shell.html"]);
-	const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
+	const tasks = partition(resources);
+	await Promise.all(tasks.map(startWorkerThread));
+	console.info("静态资源压缩完成");
+}
 
+/**
+ * 简单地按照大小均分文件，该算法在实际情况下分得比较均匀，但不一定是最优解。
+ * 求最优解是 3-Partition 问题，该问题是NP难题。对于实际情况来说，有点误差并不会造成什么麻烦。
+ */
+function partition (resources: string[]) {
+
+	interface FileInfo {
+		size: number;
+		file: string;
+	}
+
+	interface Package {
+		size: number;
+		files: string[];
+	}
+
+	const infos: FileInfo[] = [];
+	for (let i = resources.length - 1; i >= 0; i--) {
+		const file = resources[i];
+		const size = fs.statSync(file).size;
+		infos.push({ size, file });
+	}
+
+	infos.sort((a, b) => b.size - a.size);
+
+	const tasks: Package[] = [];
+	for (let i = os.cpus().length; i > 0; i--) {
+		tasks.push({ size: 0, files: [] });
+	}
+
+	for (const res of infos) {
+		const m = tasks[0];
+		const size = (m.size += res.size);
+		(m.files as string[]).push(res.file);
+
+		if (size > tasks[1].size) {
+			let i = tasks.findIndex((t) => t.size > size);
+			if (i === -1) {
+				i = tasks.length;
+			}
+			if (i > 0) {
+				tasks.shift();
+				tasks.splice(i - 1, 0, m);
+			}
+		}
+	}
+	return tasks.map((t) => t.files);
+}
+
+interface CompressResult {
+	origSize: number;
+	outputSize: number;
+}
+
+function startWorkerThread (tasks: string[]) {
+	return new Promise<CompressResult>((resolve, reject) => {
+		const worker = new Worker(__filename, {
+			workerData: tasks,
+		});
+		worker.once("error", reject);
+		worker.once("message", resolve);
+	});
+}
+
+async function doWork (files: string[]): Promise<CompressResult> {
 	let origSize = 0;
 	let outputSize = 0;
 
-	for (const file of resources) {
-		const srcStat = await fs.stat(file);
-		if (srcStat.size < period) {
-			continue;
-		}
+	for (const file of files) {
+		const buffer = await gzipCompressAsync(await fs.readFile(file));
+		origSize += (await fs.stat(file)).size;
+		outputSize += buffer.length;
+		await fs.writeFile(file + ".gz", buffer);
+	}
+
+	for (const file of files) {
 		const buffer = await brotliCompressAsync(await fs.readFile(file));
-		origSize += srcStat.size;
+		origSize += (await fs.stat(file)).size;
 		outputSize += buffer.length;
 		await fs.writeFile(file + ".br", buffer);
 	}
 
-	const ratio = (outputSize * 100 / origSize).toFixed(2);
-	logger.info(`预压缩完成，${bytes(origSize)} -> ${bytes(outputSize)}，压缩率：${ratio}%`);
+	return { origSize, outputSize };
 }
 
-precompress("D:\\Project\\Blog\\WebContent\\dist", 1024)
-	.catch((err) => console.error(err));
+if (isMainThread) {
+	precompress("D:\\Project\\Blog\\WebContent\\dist", 1024)
+		.catch((err) => console.error(err));
+} else {
+	doWork(workerData).then((result) => (parentPort as unknown as MessagePort).postMessage(result));
+}
