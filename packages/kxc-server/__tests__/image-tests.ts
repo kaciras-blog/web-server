@@ -1,4 +1,4 @@
-import { createImageMiddleware } from "../middlewares";
+import { createImageMiddleware } from "../image-store";
 import fs from "fs-extra";
 import { sha3_256 } from "js-sha3";
 

@@ -80,8 +80,8 @@ export async function runServer (requestHandler: OnRequestHandler, options: Serv
 
 	if (options.redirectHttp) {
 		const portPart = httpsPort === 443 ? "" : ":" + httpsPort;
-		// TODO: Remove type fix
-		const server = http.createServer((req, res: any) => {
+
+		const server = http.createServer((req, res) => {
 			res.writeHead(301, { Location: `https://${req.headers.host}${portPart}${req.url}` }).end();
 		});
 		servers.push(await listenAsync(server, port));

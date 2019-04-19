@@ -46,7 +46,7 @@ export default class BlogPlugin implements CliServerPligun {
 
 		api.useResource(serve(options.staticRoot, {
 			index: false,
-			maxage: 30 * 86400 * 1000,
+			maxAge: 31536000,
 		}));
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 	}
