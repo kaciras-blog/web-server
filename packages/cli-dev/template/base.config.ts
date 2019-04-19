@@ -5,7 +5,7 @@ import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
 import { WebpackOptions } from "../OldOptions";
-import { resolve, styleLoaders } from "./style-loaders";
+import { resolve } from "./style-loaders";
 
 
 /**
