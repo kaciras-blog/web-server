@@ -1,5 +1,5 @@
 import { Configuration } from "webpack";
-import { DevelopmentApi } from "../index";
+import { DevelopmentApi } from "../build";
 
 
 describe("webpack config resloving", () => {
