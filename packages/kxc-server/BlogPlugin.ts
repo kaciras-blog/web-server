@@ -21,11 +21,11 @@ export default class BlogPlugin implements CliServerPligun {
 
 	private readonly options: AppOptions;
 
-	constructor (options: AppOptions) {
+	constructor(options: AppOptions) {
 		this.options = options;
 	}
 
-	configureCliServer (api: ServerAPI) {
+	configureCliServer(api: ServerAPI) {
 		const { options } = this;
 
 		const uploader = multer({ limits: { fileSize: 16 * 1024 * 1024 } });
