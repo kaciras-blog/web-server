@@ -1,6 +1,6 @@
 /*
- * 使用 Bortli 算法预压缩一些静态文件，该工具应当在静态资源打包完成后或服务器启动前调用一次，然后
- * 配合 Koa-Send 之类的中间件自动发送回复的响应。
+ * 使用 bortli 和 gzip 算法预压缩一些静态文件。
+ * 该模块应当在静态资源打包完成后或服务器启动前调用一次，然后配合 Koa-Send 之类的中间件自动发送压缩的资源。
  */
 import bytes from "bytes";
 import fs from "fs-extra";
@@ -12,14 +12,14 @@ import { Worker, isMainThread, parentPort, workerData } from "worker_threads";
 import os from "os";
 
 
-const logger = log4js.getLogger("Blog");
+const logger = log4js.getLogger();
 
 const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
 const gzipCompressAsync = promisify<InputType, Buffer>(gzip);
 
 interface FileInfo {
 	size: number;
-	file: string;
+	path: string;
 }
 
 /**
@@ -28,8 +28,8 @@ interface FileInfo {
  * @param root 静态资源目录
  * @param period 小于此大小（字节）的不压缩
  */
-export async function precompress (root: string, period: number) {
-	console.info("预压缩静态资源...");
+export async function precompress(root: string, period: number) {
+	logger.info("预压缩静态资源...");
 	const resources = await globby([root + "/**/*.{js,css,svg}", root + "/app-shell.html"]);
 
 	const infos: FileInfo[] = [];
@@ -41,18 +41,18 @@ export async function precompress (root: string, period: number) {
 			continue;
 		}
 		originSize += size;
-		infos.push({ size, file });
+		infos.push({ size, path: file });
 	}
 
 	const cpuCount = os.cpus().length;
-	if (originSize < 2 * 1024 * 1024 || cpuCount < 2) {
+	if (originSize < bytes("2M") || cpuCount < 2) {
 		await doWork(resources);
 	} else {
 		const tasks = partition(infos, cpuCount);
 		await Promise.all(tasks.map(startWorkerThread));
 	}
 
-	console.info("静态资源压缩完成");
+	logger.info("静态资源压缩完成");
 }
 
 /**
@@ -63,7 +63,7 @@ export async function precompress (root: string, period: number) {
  * @param count 需要均分成多少份？
  * @return 均分后的结果
  */
-function partition (infos: FileInfo[], count: number) {
+function partition(infos: FileInfo[], count: number) {
 
 	interface Package {
 		size: number;
@@ -72,46 +72,44 @@ function partition (infos: FileInfo[], count: number) {
 
 	infos.sort((a, b) => b.size - a.size);
 
-	const tasks: Package[] = [];
+	const packages: Package[] = [];
 	for (let i = count; i > 0; i--) {
-		tasks.push({ size: 0, files: [] });
+		packages.push({ size: 0, files: [] });
 	}
 
 	for (const res of infos) {
-		const m = tasks[0];
+		const m = packages[0];
 		const size = (m.size += res.size);
-		m.files.push(res.file);
+		m.files.push(res.path);
 
-		if (size > tasks[1].size) {
-			let i = tasks.findIndex((t) => t.size > size);
+		if (size > packages[1].size) {
+			let i = packages.findIndex((t) => t.size > size);
 			if (i === -1) {
-				i = tasks.length;
+				i = packages.length;
 			}
 			if (i > 0) {
-				tasks.shift();
-				tasks.splice(i - 1, 0, m);
+				packages.shift();
+				packages.splice(i - 1, 0, m);
 			}
 		}
 	}
-	return tasks.map((t) => t.files);
+	return packages.map((t) => t.files);
 }
 
-interface CompressResult {
-	origSize: number;
-	outputSize: number;
-}
-
-function startWorkerThread (tasks: string[]) {
-	return new Promise<CompressResult>((resolve, reject) => {
+function startWorkerThread(tasks: string[]) {
+	return new Promise<void>((resolve, reject) => {
 		const worker = new Worker(__filename, {
 			workerData: tasks,
+		});
+		worker.on("exit", (code) => {
+			if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`));
 		});
 		worker.once("error", reject);
 		worker.once("message", resolve);
 	});
 }
 
-async function doWork (files: string[]) {
+async function doWork(files: string[]) {
 	for (const file of files) {
 		const data = await fs.readFile(file);
 		await fs.writeFile(file + ".gz", await gzipCompressAsync(data));
@@ -120,7 +118,8 @@ async function doWork (files: string[]) {
 }
 
 if (!isMainThread) {
-	doWork(workerData).then((result) => (parentPort as unknown as MessagePort).postMessage(result));
+	// @ts-ignore 在主线程中 parentPort 才为 null
+	doWork(workerData).then((result) => parentPort.postMessage(result));
 } else {
 	precompress("D:\\Project\\Blog\\WebContent\\dist", 1024)
 		.catch((err) => console.error(err));

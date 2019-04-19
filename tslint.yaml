@@ -4,7 +4,6 @@ extends:
 rules:
   indent: [true, "tabs", 4]
   no-consecutive-blank-lines: [true, 2]
-  space-before-function-paren: [true, "always"]
   variable-name:
     - true
     - "allow-leading-underscore"
