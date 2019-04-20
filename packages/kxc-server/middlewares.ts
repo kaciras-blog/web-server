@@ -44,7 +44,7 @@ export function staticFile(path_: string, options: any): Middleware {
 }
 
 /**
- * 拦截文件，请求Path包含在列表中将返回404。
+ * 拦截文件，path匹配到任一模式串的请求将返回404。
  *
  * @param patterns 匹配被拦截文件路径的模式串
  * @return Koa 的中间件函数

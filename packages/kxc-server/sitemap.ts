@@ -14,7 +14,7 @@ interface ArticlePreview {
 
 class ArticleCollection {
 
-	public static convert (art: ArticlePreview) {
+	public static convert(art: ArticlePreview) {
 		const parts = art.update.split(/[- :]/g);
 		const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1,
 			parseInt(parts[2]), parseInt(parts[3]), parseInt(parts[4]));
@@ -34,11 +34,11 @@ class ArticleCollection {
 	 *
 	 * @param urlPrefix 后端服务器URL前缀
 	 */
-	constructor (urlPrefix: string) {
+	constructor(urlPrefix: string) {
 		this.urlPrefix = urlPrefix;
 	}
 
-	public async getItems () {
+	public async getItems() {
 		const res = await axios.get(this.urlPrefix + "/articles", {
 			params: {
 				count: 20,
@@ -55,7 +55,7 @@ class ArticleCollection {
 
 
 /** 由资源集合构建 sitemap.xml 的内容 */
-async function buildSitemap (resources: ArticleCollection[]) {
+async function buildSitemap(resources: ArticleCollection[]) {
 	const sitemapBuilder = new xml2js.Builder({
 		rootName: "urlset",
 		xmldec: { version: "1.0", encoding: "UTF-8" },
@@ -69,13 +69,13 @@ async function buildSitemap (resources: ArticleCollection[]) {
 	return sitemapBuilder.buildObject(urlset.map((item) => ({ url: item })));
 }
 
-export function createSitemapMiddleware (serverAddress: string): Middleware {
+export function createSitemapMiddleware(serverAddress: string): Middleware {
 	let cached: string;
 
 	const resources: ArticleCollection[] = [];
 	resources.push(new ArticleCollection(serverAddress));
 
-	function updateCache () {
+	function updateCache() {
 		buildSitemap(resources)
 			.then((siteMap) => cached = siteMap)
 			.catch((err) => logger.error("创建站点地图失败：", err.message));
@@ -83,7 +83,7 @@ export function createSitemapMiddleware (serverAddress: string): Middleware {
 
 	updateCache(); // 启动时先创建一个存着
 
-	return function handle (ctx, next) {
+	return function handle(ctx, next) {
 		if (ctx.path !== "/sitemap.xml") {
 			return next();
 		}

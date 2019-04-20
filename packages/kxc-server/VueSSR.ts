@@ -23,7 +23,7 @@ const DEFAULT_CONTEXT = {
 	shellOnly: false,
 };
 
-async function renderPage (ctx: Context, render: BundleRenderer) {
+async function renderPage(ctx: Context, render: BundleRenderer) {
 	const context: RenderContext = Object.assign({}, DEFAULT_CONTEXT, {
 		request: ctx,
 		shellOnly: ctx.query.shellOnly,
@@ -52,7 +52,7 @@ export interface SSRMiddlewareOptions {
 	include?: RegExp | ((request: Request) => boolean);
 }
 
-export function ssrMiddleware (options: SSRMiddlewareOptions): Middleware {
+export function ssrMiddleware(options: SSRMiddlewareOptions): Middleware {
 	const { renderer, include } = options;
 
 	const handler: Middleware = typeof renderer !== "function"
@@ -80,14 +80,14 @@ export default class VueSSRProductionPlugin implements CliServerPligun {
 
 	private readonly workingDir: string;
 
-	constructor (workingDir: string) {
+	constructor(workingDir: string) {
 		this.workingDir = workingDir;
 	}
 
-	configureCliServer (api: ServerAPI): void {
+	configureCliServer(api: ServerAPI): void {
 		const { workingDir } = this;
 
-		function reslove (file: string) {
+		function reslove(file: string) {
 			return path.resolve(workingDir, file);
 		}
 

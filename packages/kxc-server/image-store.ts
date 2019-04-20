@@ -20,11 +20,11 @@ export interface ImageMiddlewareOptions {
  * @param options 选项
  * @return Koa的中间件函数
  */
-export function createImageMiddleware (options: ImageMiddlewareOptions): Middleware {
+export function createImageMiddleware(options: ImageMiddlewareOptions): Middleware {
 	const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg"];
 	fs.ensureDirSync(options.imageRoot);
 
-	async function getImage (ctx: Context): Promise<void> {
+	async function getImage(ctx: Context): Promise<void> {
 		const name = ctx.path.substring("/image/".length);
 		if (!name || /[\\/]/.test(name)) {
 			ctx.status = 404;
@@ -39,7 +39,7 @@ export function createImageMiddleware (options: ImageMiddlewareOptions): Middlew
 	 *
 	 * @param ctx 请求上下文
 	 */
-	async function uploadImage (ctx: Context) {
+	async function uploadImage(ctx: Context) {
 		logger.trace("有图片正在上传");
 
 		// Multer 库直接修改ctx.req

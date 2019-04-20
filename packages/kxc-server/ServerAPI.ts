@@ -12,7 +12,7 @@ export default class ServerAPI {
 
 	private fallBack?: Middleware;
 
-	createApp () {
+	createApp() {
 		const app = new Koa();
 		const setup = app.use.bind(app);
 
@@ -32,7 +32,7 @@ export default class ServerAPI {
 	 *
 	 * @param middleware 中间件
 	 */
-	useBeforeAll (middleware: Middleware) {
+	useBeforeAll(middleware: Middleware) {
 		this.beforeAll.push(middleware);
 	}
 
@@ -41,7 +41,7 @@ export default class ServerAPI {
 	 *
 	 * @param middleware 中间件
 	 */
-	useBeforeFilter (middleware: Middleware) {
+	useBeforeFilter(middleware: Middleware) {
 		this.beforeFilter.push(middleware);
 	}
 
@@ -50,7 +50,7 @@ export default class ServerAPI {
 	 *
 	 * @param middleware 中间件
 	 */
-	useFilter (middleware: Middleware) {
+	useFilter(middleware: Middleware) {
 		this.filter.push(middleware);
 	}
 
@@ -59,7 +59,7 @@ export default class ServerAPI {
 	 *
 	 * @param middleware 中间件
 	 */
-	useResource (middleware: Middleware) {
+	useResource(middleware: Middleware) {
 		this.resource.push(middleware);
 	}
 
@@ -69,7 +69,7 @@ export default class ServerAPI {
 	 *
 	 * @param middleware 中间件
 	 */
-	useFallBack (middleware: Middleware) {
+	useFallBack(middleware: Middleware) {
 		if (this.fallBack) {
 			throw new Error("A fall back middleware already exists.");
 		}

@@ -41,11 +41,13 @@ export async function precompress(resources: string[], period: number) {
 		infos.push({ size, path: file });
 	}
 
-	const cpuCount = os.cpus().length;
-	if (originSize < bytes("2M") || cpuCount < 2) {
+	// 计算一下分配几个线程，每个线程至少处理 4M 的文件，当然不能超出CPU个数
+	let threads = originSize / bytes("4M");
+	threads = Math.min(threads, os.cpus().length);
+	if (threads < 2) {
 		await doWork(resources);
 	} else {
-		const tasks = partition(infos, cpuCount);
+		const tasks = partition(infos, threads);
 		await Promise.all(tasks.map(startWorkerThread));
 	}
 
@@ -112,6 +114,11 @@ function startWorkerThread(tasks: string[]) {
 	});
 }
 
+/**
+ * 分别使用 brotli 和 gzip 算法压缩文件。
+ *
+ * @param files 文件数组
+ */
 async function doWork(files: string[]) {
 	for (const file of files) {
 		const data = await fs.readFile(file);
@@ -121,6 +128,6 @@ async function doWork(files: string[]) {
 }
 
 if (!isMainThread) {
-	// @ts-ignore 在主线程中 parentPort 才为 null
+	// @ts-ignore 在 Worker 线程中 parentPort 不为 null
 	doWork(workerData).then((result) => parentPort.postMessage(result));
 }

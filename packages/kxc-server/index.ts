@@ -89,8 +89,7 @@ async function runProd(options: CliServerOptions) {
 
 	const root = "D:\\Project\\Blog\\WebContent\\dist";
 	const resources = await globby([root + "/**/*.{js,css,svg}", root + "/app-shell.html"]);
-	precompress(resources, 1024)
-		.catch((err) => console.error(err));
+	await precompress(resources, 1024);
 
 	const bp = new BlogPlugin(options.blog);
 	bp.configureCliServer(api);
