@@ -10,7 +10,7 @@ const logger = getLogger("Blog");
  *
  * @param register 是否注册 erviceWorker
  */
-export function serviceWorkerToggle (register: boolean): Middleware {
+export function serviceWorkerToggle(register: boolean): Middleware {
 	return (ctx, next) => {
 		if (ctx.path !== "/sw-check") {
 			return next();
@@ -27,7 +27,7 @@ export function serviceWorkerToggle (register: boolean): Middleware {
  * @param options 选项
  * @return 中间件函数
  */
-export function staticFile (path_: string, options: any): Middleware {
+export function staticFile(path_: string, options: any): Middleware {
 	if (path_.startsWith("/static/")) {
 		throw new Error("静态文件目录请用 koa-static 处理");
 	}
@@ -46,12 +46,12 @@ export function staticFile (path_: string, options: any): Middleware {
 /**
  * 拦截文件，请求Path包含在列表中将返回404。
  *
- * @param files 文件列表
+ * @param patterns 匹配被拦截文件路径的模式串
  * @return Koa 的中间件函数
  */
-export function intercept (files: string[]): Middleware {
+export function intercept(patterns: RegExp[]): Middleware {
 	return (ctx, next) => {
-		if (!files.includes(ctx.path)) {
+		if (!patterns.some((pat) => pat.test(ctx.path))) {
 			return next();
 		}
 		ctx.status = 404;

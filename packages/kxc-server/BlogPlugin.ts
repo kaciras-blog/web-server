@@ -37,9 +37,8 @@ export default class BlogPlugin implements CliServerPligun {
 		api.useBeforeFilter(createImageMiddleware(options)); // 图片太大不计算etag
 
 		api.useFilter(intercept([
-			"/index.template.html",
-			"/vue-ssr-client-manifest.json",
-			"/vue-ssr-server-bundle.json",
+			new RegExp("^/(?:index\\.template|vue-ssr)"),
+			new RegExp("\\.(?:js|css)\\.map$"),
 		]));
 		api.useFilter(compress({ threshold: 2048 }));
 		api.useFilter(etag());
