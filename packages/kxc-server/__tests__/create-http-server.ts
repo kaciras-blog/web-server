@@ -35,7 +35,7 @@ describe("app.runServer", () => {
 describe("SNI callback", () => {
 	let server: tls.Server;
 
-	function resloveResource (name: string) {
+	function resloveResource(name: string) {
 		return path.join(__dirname, "resources", name);
 	}
 
@@ -68,7 +68,7 @@ describe("SNI callback", () => {
 	 *
 	 * @param servername 服务器名
 	 */
-	function verifyCertCN (servername: string) {
+	function verifyCertCN(servername: string) {
 		return new Promise((resolve, reject) => {
 			const socket = tls.connect({
 				host: servername,

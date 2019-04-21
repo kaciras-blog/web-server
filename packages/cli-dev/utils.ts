@@ -10,23 +10,26 @@ export class PromiseCompleteionSource<T> implements Promise<T> {
 
 	protected readonly promise: Promise<T>;
 
-	constructor () {
-		this.promise = new Promise((reslove, reject) => { this.reject = reject; this.resolve = reslove; });
+	constructor() {
+		this.promise = new Promise((reslove, reject) => {
+			this.reject = reject;
+			this.resolve = reslove;
+		});
 	}
 
-	get [Symbol.toStringTag] () {
+	get [Symbol.toStringTag]() {
 		return "PromiseCompleteionSource";
 	}
 
-	then<R0 = T, R1 = never> (onfulfilled?: OnFulfilled<T, R0>, onrejected?: OnRejected<R1>) {
+	then<R0 = T, R1 = never>(onfulfilled?: OnFulfilled<T, R0>, onrejected?: OnRejected<R1>) {
 		return this.promise.then(onfulfilled, onrejected);
 	}
 
-	catch<R = never> (onrejected?: OnRejected<R>) {
+	catch<R = never>(onrejected?: OnRejected<R>) {
 		return this.promise.catch(onrejected);
 	}
 
-	finally (onfinally?: (() => void) | undefined | null) {
+	finally(onfinally?: (() => void) | undefined | null) {
 		return this.promise.finally(onfinally);
 	}
 }

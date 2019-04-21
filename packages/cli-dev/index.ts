@@ -22,7 +22,7 @@ const service = new KacirasService<CliDevelopmentOptions>();
  * @param config 配置
  * @return {Promise<void>} 指示构建状态
  */
-async function invokeWebpack (config: Configuration) {
+async function invokeWebpack(config: Configuration) {
 	const stats = await promisify<Configuration, Stats>(webpack)(config);
 
 	process.stdout.write(stats.toString({

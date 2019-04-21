@@ -2,8 +2,7 @@ import fs from "fs-extra";
 import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { Server } from "net";
-import { SecureContext, createSecureContext } from "tls";
-import { promisify } from "util";
+import { createSecureContext, SecureContext } from "tls";
 import log4js from "log4js";
 
 
@@ -30,7 +29,7 @@ type OnRequestHandler = (req: IncomingMessage | Http2ServerRequest, res: ServerR
 type SNIResolve = (err: Error | null, ctx: SecureContext) => void;
 
 
-export function createSNICallback (properties: SNIProperties[]) {
+export function createSNICallback(properties: SNIProperties[]) {
 	const map: { [k: string]: any } = {};
 
 	// 据测试SecureContext可以重用
@@ -51,12 +50,11 @@ export function createSNICallback (properties: SNIProperties[]) {
  * @param port 端口
  * @return 返回server参数
  */
-function listenAsync (server: Server, port: number) {
-	// @ts-ignore promisify 不能确定 server.listen 到底是哪一个重载
-	return promisify(server.listen.bind(server))(port).then(() => server);
+function listenAsync(server: Server, port: number): Promise<Server> {
+	return new Promise((resolve) => server.listen(port, () => resolve(server)));
 }
 
-export async function runServer (requestHandler: OnRequestHandler, options: ServerOptions) {
+export async function runServer(requestHandler: OnRequestHandler, options: ServerOptions) {
 	const { port = 80, httpsPort = 443 } = options;
 	const servers: Server[] = [];
 
