@@ -1,5 +1,14 @@
 import Koa, { Middleware } from "koa";
 
+
+export type FunctionCliServerPlugin = (api: ServerAPI) => void;
+
+export interface ClassCliServerPligun {
+	configureCliServer(api: ServerAPI): void;
+}
+
+type CliServerPlugin = FunctionCliServerPlugin | ClassCliServerPligun;
+
 /**
  * 把中间件按顺序分下组，便于解耦。
  */
@@ -74,5 +83,13 @@ export default class ServerAPI {
 			throw new Error("A fall back middleware already exists.");
 		}
 		this.fallBack = middleware;
+	}
+
+	addPlugin(plugin: CliServerPlugin) {
+		if (typeof plugin === "function") {
+			plugin(this);
+		} else {
+			plugin.configureCliServer(this);
+		}
 	}
 }

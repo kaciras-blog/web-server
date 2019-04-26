@@ -3,8 +3,7 @@ import { Context, Middleware, Request } from "koa";
 import log4js from "log4js";
 import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
-import { CliServerPligun } from "./index";
-import ServerAPI from "./ServerAPI";
+import ServerAPI, { ClassCliServerPligun } from "./ServerAPI";
 
 const logger = log4js.getLogger("app");
 
@@ -76,26 +75,17 @@ export function ssrMiddleware(options: SSRMiddlewareOptions): Middleware {
 	};
 }
 
-export default class VueSSRProductionPlugin implements CliServerPligun {
+export async function createSSRProductionPlugin(workingDir: string) {
 
-	private readonly workingDir: string;
-
-	constructor(workingDir: string) {
-		this.workingDir = workingDir;
+	function reslove(file: string) {
+		return path.resolve(workingDir, file);
 	}
 
-	configureCliServer(api: ServerAPI): void {
-		const { workingDir } = this;
+	const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
+		runInNewContext: false,
+		template: await fs.readFile(reslove("index.template.html"), { encoding: "utf-8" }),
+		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
+	});
 
-		function reslove(file: string) {
-			return path.resolve(workingDir, file);
-		}
-
-		const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
-			runInNewContext: false,
-			template: fs.readFileSync(reslove("index.template.html"), { encoding: "utf-8" }),
-			clientManifest: require(reslove("vue-ssr-client-manifest.json")),
-		});
-		api.useFallBack(ssrMiddleware({ renderer }));
-	}
+	return (api: ServerAPI) => api.useFallBack(ssrMiddleware({ renderer }));
 }

@@ -1,5 +1,3 @@
-import Axios, { AxiosInstance } from "axios";
-import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader } from "http2";
 import log4js, { Configuration, getLogger } from "log4js";
 import parseArgs from "minimist";
 import path from "path";
@@ -7,43 +5,10 @@ import { runServer } from "./app";
 import BlogPlugin from "./BlogPlugin";
 import { CliServerOptions } from "./OldOptions";
 import ServerAPI from "./ServerAPI";
-import VueSSRProductionPlugin from "./VueSSR";
-import { precompress } from "./static-compress";
-import globby from "globby";
+import { createSSRProductionPlugin } from "./VueSSR";
+import { compressStaticDirectory } from "./static-compress";
+import { configureGlobalAxios } from "./axios-http2";
 
-
-/**
- * 修改Axios使其支持内置Node的http2模块。
- * Axios是不是放弃维护了？
- */
-export function adaptAxiosHttp2(axios: AxiosInstance, https = false) {
-	const schema = https ? "https" : "http";
-
-	function request(options: any, callback: any) {
-		let host = `${schema}://${options.hostname}`;
-		if (options.port) {
-			host += ":" + options.port;
-		}
-
-		const client = http2.connect(host);
-		const req: any = client.request({
-			...options.headers,
-			":method": options.method.toUpperCase(),
-			":path": options.path,
-		});
-
-		req.on("response", (headers: IncomingHttpHeaders & IncomingHttpStatusHeader) => {
-			req.headers = headers;
-			req.statusCode = headers[":status"];
-			callback(req);
-		});
-		req.on("end", () => client.close());
-		return req;
-	}
-
-	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里
-	(axios.defaults as any).transport = { request };
-}
 
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
@@ -79,23 +44,13 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 	log4js.configure(logConfig);
 }
 
-export interface CliServerPligun {
-	configureCliServer?(api: ServerAPI): void;
-}
-
-
 async function runProd(options: CliServerOptions) {
+	await compressStaticDirectory(options.blog.staticRoot);
+	await configureGlobalAxios(options.blog.serverCert);
+
 	const api = new ServerAPI();
-
-	const root = "D:\\Project\\Blog\\WebContent\\dist";
-	const resources = await globby([root + "/**/*.{js,css,svg}", root + "/app-shell.html"]);
-	await precompress(resources, 1024);
-
-	const bp = new BlogPlugin(options.blog);
-	bp.configureCliServer(api);
-
-	const ssrPlugin = new VueSSRProductionPlugin(options.blog.staticRoot);
-	ssrPlugin.configureCliServer(api);
+	api.addPlugin(new BlogPlugin(options.blog));
+	api.addPlugin(await createSSRProductionPlugin(options.blog.staticRoot));
 
 	return runServer(api.createApp().callback(), options.server);
 }
@@ -117,11 +72,6 @@ export default class KacirasService<T extends CliServerOptions> {
 
 	run() {
 		configureLog4js({ logFile: false, logLevel: "info" });
-
-		// TODO: TEMP
-		// 其它服务启用了HTTPS，但对于内部调用来说证书的CN不是localhost，需要关闭证书检查
-		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-		adaptAxiosHttp2(Axios, true);
 
 		// 捕获全局异常记录到日志中。
 		const logger = getLogger("system");

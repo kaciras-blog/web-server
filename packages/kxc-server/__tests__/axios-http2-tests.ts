@@ -1,7 +1,7 @@
 import Axios from "axios";
 import http2 from "http2";
 import { AddressInfo } from "net";
-import { adaptAxiosHttp2 } from "../index";
+import { adaptAxiosHttp2 } from "../axios-http2";
 
 
 // 创建一个仅支持HTTP2的服务器来测试

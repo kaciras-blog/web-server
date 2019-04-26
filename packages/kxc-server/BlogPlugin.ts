@@ -4,9 +4,8 @@ import conditional from "koa-conditional-get";
 import etag from "koa-etag";
 import serve from "koa-static";
 import { createImageMiddleware, ImageMiddlewareOptions } from "./image-store";
-import { CliServerPligun } from "./index";
+import ServerAPI, { ClassCliServerPligun } from "./ServerAPI";
 import { intercept, serviceWorkerToggle } from "./middlewares";
-import ServerAPI from "./ServerAPI";
 import { createSitemapMiddleware } from "./sitemap";
 import multer = require("koa-multer");
 
@@ -14,10 +13,11 @@ import multer = require("koa-multer");
 export interface AppOptions extends ImageMiddlewareOptions {
 	cors?: CorsOptions;
 	serverAddress: string;
+	serverCert: string;
 	staticRoot: string;
 }
 
-export default class BlogPlugin implements CliServerPligun {
+export default class BlogPlugin implements ClassCliServerPligun {
 
 	private readonly options: AppOptions;
 

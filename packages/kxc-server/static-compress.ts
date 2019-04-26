@@ -5,6 +5,7 @@ import { promisify } from "util";
 import { brotliCompress, InputType, gzip } from "zlib";
 import { Worker, isMainThread, parentPort, workerData } from "worker_threads";
 import os from "os";
+import globby from "globby";
 
 
 const logger = log4js.getLogger();
@@ -125,6 +126,17 @@ async function doWork(files: string[]) {
 		await fs.writeFile(file + ".gz", await gzipCompressAsync(data));
 		await fs.writeFile(file + ".br", await brotliCompressAsync(data));
 	}
+}
+
+/**
+ * 便捷方法，搜索指定目录下可压缩的资源并压缩。
+ * 压缩的文件附加 .gz 和 .br 后缀，小于 1KB 的资源不压缩。
+ *
+ * @param path_ 静态资源目录
+ */
+export function compressStaticDirectory(path_: string) {
+	const pattern = [path_ + "/**/*.{js,css,svg,html,xml}"];
+	return globby(pattern).then((files) => precompress(files, 1024));
 }
 
 if (!isMainThread) {
