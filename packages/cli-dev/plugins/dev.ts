@@ -1,3 +1,6 @@
+/*
+ * Webpack 热更新的 Koa 中间件，webpack-hot-middleware 和 koa-webpack 都支持
+ */
 import path from "path";
 import webpack, { Configuration } from "webpack";
 import { Context } from "koa";
@@ -12,7 +15,7 @@ import WebpackHotMiddlewareType from "webpack-hot-middleware";
  *
  * @param config webpack的配置
  */
-async function createKoaWebpack (config: any) {
+async function createKoaWebpack(config: any) {
 	try {
 		require("webpack-hot-client");
 	} catch (e) {
@@ -37,7 +40,7 @@ async function createKoaWebpack (config: any) {
  *
  * @param config webpack的配置
  */
-async function createHotMiddleware (config: any) {
+async function createHotMiddleware(config: any) {
 	if (!config.entry) {
 		throw new Error("No entry specified.");
 	}
@@ -95,7 +98,7 @@ async function createHotMiddleware (config: any) {
 }
 
 
-export default function (useHotClient: boolean, webpackConfig: Configuration): Promise<Middleware> {
+export default function(useHotClient: boolean, webpackConfig: Configuration): Promise<Middleware> {
 	// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();

@@ -2,8 +2,8 @@ import bytes from "bytes";
 import fs from "fs-extra";
 import log4js from "log4js";
 import { promisify } from "util";
-import { brotliCompress, InputType, gzip } from "zlib";
-import { Worker, isMainThread, parentPort, workerData } from "worker_threads";
+import { brotliCompress, gzip, InputType } from "zlib";
+import { isMainThread, parentPort, Worker, workerData } from "worker_threads";
 import os from "os";
 import globby from "globby";
 

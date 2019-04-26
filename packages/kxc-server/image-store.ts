@@ -1,3 +1,6 @@
+/*
+ * 简单的图片存储服务
+ */
 import fs from "fs-extra";
 import { sha3_256 } from "js-sha3";
 import { Context, Middleware } from "koa";
@@ -13,6 +16,8 @@ export interface ImageMiddlewareOptions {
 	cacheMaxAge: number;
 }
 
+const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
+
 /**
  * 根据指定的选项创建中间件。
  * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
@@ -21,7 +26,6 @@ export interface ImageMiddlewareOptions {
  * @return Koa的中间件函数
  */
 export function createImageMiddleware(options: ImageMiddlewareOptions): Middleware {
-	const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg"];
 	fs.ensureDirSync(options.imageRoot);
 
 	async function getImage(ctx: Context): Promise<void> {

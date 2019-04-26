@@ -8,10 +8,11 @@ import { ssrMiddleware } from "kxc-server/VueSSR";
 import { promisify } from "util";
 import webpack, { Configuration, Stats } from "webpack";
 import CliDevelopmentOptions from "./OldOptions";
-import dev from "./plugins/dev";
+import hotReloadMiddleware from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./template/client.config";
 import ServerConfiguration from "./template/server.config";
+import { configureGlobalAxios } from "kxc-server/axios-http2";
 
 
 const service = new KacirasService<CliDevelopmentOptions>();
@@ -40,23 +41,20 @@ async function invokeWebpack(config: Configuration) {
 }
 
 service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
-	const api = new ServerAPI();
+	await configureGlobalAxios(options.blog.serverCert);
 
-	const bp = new BlogPlugin(options.blog);
-	bp.configureCliServer(api);
-
-	const cc = ClientConfiguration(options.webpack);
+	const clientConfig = ClientConfiguration(options.webpack);
 	const ssrPlugin = new VueSSRHotReloader();
-	ssrPlugin.configureWebpackSSR(cc);
-	const devMiddleware = await dev(false, cc);
+	ssrPlugin.configureWebpackSSR(clientConfig);
 
-	api.useBeforeFilter(devMiddleware);
-	const renderer = await ssrPlugin.rendererFactory(options.webpack);
+	const api = new ServerAPI();
+	api.addPlugin(new BlogPlugin(options.blog));
 
-	api.useFallBack(ssrMiddleware({ renderer }));
-	runServer(api.createApp().callback(), options.server).then(() => {
-		console.info(`\n- Local URL: https://localhost\n`);
-	});
+	api.useBeforeFilter(await hotReloadMiddleware(false, clientConfig));
+	api.useFallBack(ssrMiddleware({ renderer: await ssrPlugin.rendererFactory(options.webpack) }));
+
+	await runServer(api.createApp().callback(), options.server);
+	console.info(`\n- Local URL: https://localhost\n`);
 });
 
 service.registerCommand("build", async (config) => {

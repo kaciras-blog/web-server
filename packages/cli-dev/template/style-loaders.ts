@@ -14,7 +14,7 @@ interface CssLoadersMap {
 	[name: string]: RuleSetUseItem[];
 }
 
-function cssLoaders (options: any, modules: boolean, isServer: boolean): CssLoadersMap {
+function cssLoaders(options: any, modules: boolean, isServer: boolean): CssLoadersMap {
 	const cssLoader = {
 		loader: "css-loader",
 		options: {
@@ -27,7 +27,7 @@ function cssLoaders (options: any, modules: boolean, isServer: boolean): CssLoad
 	};
 
 	// generate loader string to be used with extract text plugin
-	function generateLoaders (loader?: string, loaderOptions?: any) {
+	function generateLoaders(loader?: string, loaderOptions?: any) {
 		const loaders: RuleSetUseItem[] = [cssLoader, { loader: "postcss-loader" }];
 
 		if (loader) {
@@ -63,7 +63,7 @@ function cssLoaders (options: any, modules: boolean, isServer: boolean): CssLoad
  * @param options 选项
  * @param isServer 是否服务端构建
  */
-export function styleLoaders (options: any, isServer: boolean = false) {
+export function styleLoaders(options: any, isServer: boolean = false) {
 	const output = [];
 	const loaders = cssLoaders(options, false, isServer);
 	const moduleLoaders = cssLoaders(options, true, isServer);

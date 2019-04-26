@@ -57,6 +57,9 @@ async function runProd(options: CliServerOptions) {
 
 type CommandHandler<T> = (options: T) => void | Promise<any>;
 
+/**
+ * 简单的启动器，提供注册命令然后从命令行里调用的功能，并对启动参数做一些处理。
+ */
 export default class KacirasService<T extends CliServerOptions> {
 
 	private commands = new Map<string, CommandHandler<T>>();

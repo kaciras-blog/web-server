@@ -1,3 +1,6 @@
+/*
+ * 一些乱七八糟的小中间件，懒得分开了
+ */
 import { Middleware } from "koa";
 import koaSend from "koa-send";
 import { getLogger } from "log4js";

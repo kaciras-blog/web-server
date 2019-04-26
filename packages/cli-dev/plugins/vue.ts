@@ -20,13 +20,13 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 	private readonly filename: string;
 	private readonly readyPromiseSource: PromiseCompleteionSource<void>;
 
-	constructor (filename: string = "vue-ssr-client-manifest.json") {
+	constructor(filename: string = "vue-ssr-client-manifest.json") {
 		super();
 		this.filename = filename;
 		this.readyPromiseSource = new PromiseCompleteionSource();
 	}
 
-	apply (compiler: Compiler): void {
+	apply(compiler: Compiler): void {
 		const plugins = compiler.options.plugins || [];
 
 		if (!plugins.some((plugin) => plugin instanceof VueSSRClientPlugin)) {
@@ -43,17 +43,18 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 		});
 	}
 
-	get readyPromise (): PromiseLike<void> {
+	get readyPromise(): PromiseLike<void> {
 		return this.readyPromiseSource;
 	}
 }
 
 interface ClientManifestUpdatePlugin {
-	on (event: "update", listener: (manifest: any) => void): this;
+	on(event: "update", listener: (manifest: any) => void): this;
 }
 
 /**
  * 提供Vue服务端渲染的热重载功能。
+ *
  * 该类需要调用 configureWebpackSSR 配置客户端构建，以便更新ClientManifest。
  * 该类将以监视模式构建服务端，在更新后重新构建渲染器。
  */
@@ -67,7 +68,7 @@ export default class VueSSRHotReloader {
 
 	private renderer?: BundleRenderer;
 
-	configureWebpackSSR (config: Configuration) {
+	configureWebpackSSR(config: Configuration) {
 		this.clientPlugin = new ClientManifestUpdatePlugin();
 		this.clientPlugin.on("update", (manifest) => {
 			this.clientManifest = manifest;
@@ -85,7 +86,7 @@ export default class VueSSRHotReloader {
 	 *
 	 * @param options 配置
 	 */
-	async rendererFactory (options: WebpackOptions) {
+	async rendererFactory(options: WebpackOptions) {
 		if (!this.clientPlugin) {
 			throw Error("请先将ClientManifestUpdatePlugin加入客户端webpack的配置中");
 		}
@@ -93,7 +94,7 @@ export default class VueSSRHotReloader {
 		this.template = fs.readFileSync(options.server.template, "utf-8");
 
 		const compiler = webpack(config);
-		compiler.outputFileSystem = new MFS(); // TODO: remove
+		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
 		const readyPromise = new PromiseCompleteionSource();
 		compiler.watch({}, (err, stats) => {
@@ -118,7 +119,7 @@ export default class VueSSRHotReloader {
 	/**
 	 * 更新Vue的服务端渲染器，在客户端或服务端构建完成后调用。
 	 */
-	updateVueSSR () {
+	updateVueSSR() {
 		const { serverBundle, template, clientManifest } = this;
 		this.renderer = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
 	}

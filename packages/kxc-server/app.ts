@@ -54,6 +54,13 @@ function listenAsync(server: Server, port: number): Promise<Server> {
 	return new Promise((resolve) => server.listen(port, () => resolve(server)));
 }
 
+/**
+ * 创建并启动一个或多个服务器，返回关闭它们的函数。
+ *
+ * @param requestHandler 处理请求的函数
+ * @param options 选项
+ * @return 关闭创建的服务器的函数
+ */
 export async function runServer(requestHandler: OnRequestHandler, options: ServerOptions) {
 	const { port = 80, httpsPort = 443 } = options;
 	const servers: Server[] = [];
