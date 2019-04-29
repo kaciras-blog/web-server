@@ -20,6 +20,7 @@ it("POST for save new file", async () => {
 			file: {
 				originalname: "test.png",
 				buffer: content,
+				mimetype: "image/png",
 			},
 		},
 		set: jest.fn(),
@@ -43,6 +44,7 @@ it("POST for return exists file", async () => {
 			file: {
 				originalname: "test.png",
 				buffer: content,
+				mimetype: "image/png",
 			},
 		},
 		set: jest.fn(),
@@ -64,6 +66,7 @@ it("Invaild method", async () => {
 			file: {
 				originalname: "test.png",
 				buffer: content,
+				mimetype: "image/png",
 			},
 		},
 		set: jest.fn(),
