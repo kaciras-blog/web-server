@@ -2,12 +2,12 @@
  * 简单的图片存储服务
  */
 import fs from "fs-extra";
-import { sha3_256 } from "js-sha3";
 import { Context, Middleware } from "koa";
 import { getLogger } from "log4js";
 import mime from "mime-types";
 import path from "path";
 import koaSend from "koa-send";
+import crypto from "crypto";
 
 const logger = getLogger("Blog");
 
@@ -64,7 +64,8 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 			return ctx.status = 400;
 		}
 
-		const name = sha3_256(file.buffer) + "." + ext;
+		const sha3_256 = crypto.createHash("sha3-256");
+		const name = sha3_256.update(file.buffer).digest("hex") + "." + ext;
 		const store = path.join(options.imageRoot, name);
 
 		if (await fs.pathExists(store)) {

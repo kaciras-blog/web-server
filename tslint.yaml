@@ -8,16 +8,16 @@ rules:
     - true
     - "allow-leading-underscore"
     - "allow-trailing-underscore"
-    - "allow-pascal-case" # 仅用于 require 一些没有类型定义的类
+    - "allow-snake-case" # sha3_256
+    - "allow-pascal-case" # require 一些没有类型定义的类
   interface-name: [true, "never-prefix"]
   curly: [true, "ignore-same-line"]
   object-literal-sort-keys: false
   no-console: false
+  no-trailing-whitespace: false
   ordered-imports: false
   forin: false
   radix: false
   member-access: false
-  no-var-requires: false
   max-classes-per-file: false
-  no-bitwise: false
   no-empty: false

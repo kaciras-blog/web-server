@@ -1,7 +1,11 @@
 import { createImageMiddleware } from "../image-store";
 import fs from "fs-extra";
-import { sha3_256 } from "js-sha3";
+import crypto from "crypto";
 
+
+function sha3_256(buffer: string) {
+	return crypto.createHash("sha3-256").update(buffer).digest("hex");
+}
 
 jest.mock("fs"); // Jest对Node的核心库的Mock必须显示调用
 
