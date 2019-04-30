@@ -42,7 +42,6 @@ export function createSNICallback(properties: SNIProperties[]) {
 	return (servername: string, callback: SNIResolve) => callback(null, map[servername]);
 }
 
-
 /**
  * 将 Server.listen 转成异步方法并调用。
  *

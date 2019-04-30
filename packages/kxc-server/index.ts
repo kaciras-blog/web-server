@@ -1,4 +1,4 @@
-import log4js, { Configuration, getLogger } from "log4js";
+import log4js from "log4js";
 import parseArgs from "minimist";
 import path from "path";
 import { runServer } from "./app";
@@ -9,12 +9,13 @@ import { createSSRProductionPlugin } from "./VueSSR";
 import { compressStaticDirectory } from "./static-compress";
 import { configureGlobalAxios } from "./axios-http2";
 
+const logger = log4js.getLogger();
 
 /**
  * 配置日志功能，先于其他模块执行保证日志系统的完整。
  */
 function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: string | boolean }) {
-	const logConfig: Configuration = {
+	const logConfig: log4js.Configuration = {
 		appenders: {
 			console: {
 				type: "stdout",
@@ -45,7 +46,10 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 }
 
 async function runProd(options: CliServerOptions) {
+	logger.info("预压缩静态资源...");
 	await compressStaticDirectory(options.blog.staticRoot);
+	logger.info("静态资源压缩完成");
+
 	await configureGlobalAxios(options.blog.serverCert);
 
 	const api = new ServerAPI();
@@ -77,7 +81,6 @@ export default class KacirasService<T extends CliServerOptions> {
 		configureLog4js({ logFile: false, logLevel: "info" });
 
 		// 捕获全局异常记录到日志中。
-		const logger = getLogger("system");
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 

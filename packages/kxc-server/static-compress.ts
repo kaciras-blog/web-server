@@ -1,14 +1,11 @@
 import bytes from "bytes";
 import fs from "fs-extra";
-import log4js from "log4js";
 import { promisify } from "util";
 import { brotliCompress, gzip, InputType } from "zlib";
 import { isMainThread, parentPort, Worker, workerData } from "worker_threads";
 import os from "os";
 import globby from "globby";
 
-
-const logger = log4js.getLogger();
 
 const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
 const gzipCompressAsync = promisify<InputType, Buffer>(gzip);
@@ -28,8 +25,6 @@ interface FileInfo {
  * @param period 小于此大小（字节）的不压缩
  */
 export async function precompress(resources: string[], period: number) {
-	logger.info("预压缩静态资源...");
-
 	const infos: FileInfo[] = [];
 	let originSize = 0;
 
@@ -51,8 +46,6 @@ export async function precompress(resources: string[], period: number) {
 		const tasks = partition(infos, threads);
 		await Promise.all(tasks.map(startWorkerThread));
 	}
-
-	logger.info("静态资源压缩完成");
 }
 
 /**
