@@ -4,9 +4,9 @@ import path from "path";
 import { runServer } from "./app";
 import BlogPlugin from "./BlogPlugin";
 import { CliServerOptions } from "./OldOptions";
-import ServerAPI from "./ServerAPI";
+import ServerAPI from "./infra/ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
-import { compressStaticDirectory } from "./static-compress";
+import { compressStaticDirectory } from "./infra/static-compress";
 import { configureGlobalAxios } from "./axios-http2";
 
 const logger = log4js.getLogger();

@@ -40,6 +40,7 @@ export async function precompress(resources: string[], period: number) {
 	// 计算一下分配几个线程，每个线程至少处理 4M 的文件，当然不能超出CPU个数
 	let threads = originSize / bytes("4M");
 	threads = Math.min(threads, os.cpus().length);
+
 	if (threads < 2) {
 		await doWork(resources);
 	} else {

@@ -4,8 +4,8 @@ import conditional from "koa-conditional-get";
 import etag from "koa-etag";
 import serve from "koa-static";
 import { createImageMiddleware, ImageMiddlewareOptions } from "./image-store";
-import ServerAPI, { ClassCliServerPligun } from "./ServerAPI";
-import { intercept, serviceWorkerToggle } from "./middlewares";
+import ServerAPI, { ClassCliServerPligun } from "./infra/ServerAPI";
+import { intercept, serviceWorkerToggle } from "./infra/middlewares";
 import { createSitemapMiddleware } from "./sitemap";
 import multer = require("koa-multer");
 
