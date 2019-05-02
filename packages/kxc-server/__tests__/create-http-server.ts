@@ -12,7 +12,7 @@ const OPTIONS = {
 		certFile: "D:/Coding/Utils/dev.pem",
 		keyFile: "D:/Coding/Utils/dev.pvk",
 	},
-	redirectPort: 80,
+	httpRedirect: 80,
 };
 
 describe("app.runServer", () => {
@@ -44,12 +44,12 @@ describe("SNI callback", () => {
 	beforeAll((done) => {
 		const sniCallback = createSNICallback([{
 			hostname: "localhost",
-			cert: resloveResource("localhost.crt"),
+			cert: resloveResource("localhost.pem"),
 			key: resloveResource("localhost.pvk"),
 		}, {
-			hostname: "127.0.0.2",
-			cert: resloveResource("127_0_0_2.crt"),
-			key: resloveResource("127_0_0_2.pvk"),
+			hostname: "anotherhost",
+			cert: resloveResource("anotherhost.pem"),
+			key: resloveResource("anotherhost.pvk"),
 		}]);
 
 		server = tls.createServer({
@@ -72,10 +72,10 @@ describe("SNI callback", () => {
 	function verifyCertCN(servername: string) {
 		return new Promise((resolve, reject) => {
 			const socket = tls.connect({
-				host: servername,
+				servername,
+				host: "localhost",
 				port: 41000,
 				rejectUnauthorized: false,
-				servername,
 			});
 			socket.on("secureConnect", () => {
 				const cert = socket.getPeerCertificate();
@@ -93,7 +93,7 @@ describe("SNI callback", () => {
 	it("should throw error with invalid servername", async () => {
 		expect.assertions(1);
 		try {
-			await verifyCertCN("127.0.0.1");
+			await verifyCertCN("invaildhost");
 		} catch (e) {
 			expect(e.message).toBe("Client network socket disconnected before secure TLS connection was established");
 		}
@@ -104,8 +104,8 @@ describe("SNI callback", () => {
 	});
 
 	it("should accept mutiple times", async () => {
-		await verifyCertCN("127.0.0.2");
-		await verifyCertCN("127.0.0.2");
-		await verifyCertCN("127.0.0.2");
+		await verifyCertCN("anotherhost");
+		await verifyCertCN("anotherhost");
+		await verifyCertCN("anotherhost");
 	});
 });
