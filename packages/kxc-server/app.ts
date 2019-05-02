@@ -8,20 +8,22 @@ import log4js from "log4js";
 
 const logger = log4js.getLogger("app");
 
+export interface ServerOptions {
+	port?: number;
+	tls?: TLSOptions;
+	httpRedirect?: number | true;
+}
+
+export interface TLSOptions {
+	keyFile: string;
+	certFile: string;
+	sni?: SNIProperties[];
+}
+
 export interface SNIProperties {
 	hostname: string;
 	key: string;
 	cert: string;
-}
-
-export interface ServerOptions {
-	port?: number;
-	httpsPort?: number;
-	tls?: boolean;
-	certificate?: string;
-	privatekey?: string;
-	sni?: SNIProperties[];
-	redirectHttp?: boolean;
 }
 
 // app.callback() 的定义，比较长不方便直接写在参数里
@@ -61,39 +63,41 @@ function listenAsync(server: Server, port: number): Promise<Server> {
  * @return 关闭创建的服务器的函数
  */
 export async function runServer(requestHandler: OnRequestHandler, options: ServerOptions) {
-	const { port = 80, httpsPort = 443 } = options;
+	let port = options.port || 443;
 	const servers: Server[] = [];
 
 	if (options.tls) {
-		const { privatekey, certificate, sni } = options;
-		const sniCallback = sni && createSNICallback(sni);
+		const { certFile, keyFile, sni } = options.tls;
 
-		if (!privatekey || !certificate) {
-			throw new Error("You must specifiy privatekey and certificate with tls enabled.");
-		}
 		const server = http2.createSecureServer({
 			allowHTTP1: true,
-			SNICallback: sniCallback,
-			cert: fs.readFileSync(certificate),
-			key: fs.readFileSync(privatekey),
+			cert: fs.readFileSync(certFile),
+			key: fs.readFileSync(keyFile),
+			SNICallback: sni && createSNICallback(sni),
 		}, requestHandler);
 
-		servers.push(await listenAsync(server, httpsPort));
-		logger.info(`Https连接端口：${httpsPort}`);
+		servers.push(await listenAsync(server, port));
+		logger.info(`Https连接端口：${port}`);
+	} else {
+		port = options.port || 80;
+		const server = http.createServer(requestHandler);
+
+		servers.push(await listenAsync(server, port));
+		logger.info(`在端口：${port}上监听Http连接`);
 	}
 
-	if (options.redirectHttp) {
-		const portPart = httpsPort === 443 ? "" : ":" + httpsPort;
+	if (options.httpRedirect) {
+		if (!options.tls) {
+			throw new Error("没开HTTPS重定向个即把");
+		}
+		const rPort = options.httpRedirect === true ? 80 : options.httpRedirect;
+		const portPart = port === 443 ? "" : ":" + port;
 
 		const server = http.createServer((req, res) => {
 			res.writeHead(301, { Location: `https://${req.headers.host}${portPart}${req.url}` }).end();
 		});
-		servers.push(await listenAsync(server, port));
-		logger.info(`重定向来自端口：${port}的请求至：${httpsPort}`);
-	} else {
-		const server = http.createServer(requestHandler);
-		servers.push(await listenAsync(server, port));
-		logger.info(`在端口：${port}上监听Http连接`);
+		servers.push(await listenAsync(server, rPort));
+		logger.info(`重定向来自端口：${rPort}的请求至：${port}`);
 	}
 
 	// Keep-Alive 的连接无法关闭，反而会使close方法一直等待，所以close的参数里没有回调

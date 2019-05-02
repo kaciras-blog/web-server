@@ -8,10 +8,11 @@ const HTTP_URL = "http://localhost/";
 const HTTPS_URL = "https://localhost/";
 
 const OPTIONS = {
-	tls: true,
-	certificate: "D:/Coding/Utils/dev.pem",
-	privatekey: "D:/Coding/Utils/dev.pvk",
-	redirectHttp: true,
+	tls: {
+		certFile: "D:/Coding/Utils/dev.pem",
+		keyFile: "D:/Coding/Utils/dev.pvk",
+	},
+	redirectPort: 80,
 };
 
 describe("app.runServer", () => {
