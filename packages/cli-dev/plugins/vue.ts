@@ -60,24 +60,35 @@ interface ClientManifestUpdatePlugin {
  */
 export default class VueSSRHotReloader {
 
-	private clientPlugin?: ClientManifestUpdatePlugin;
+	public static create(clientConfig: Configuration, options: WebpackOptions) {
+		const plugin = new ClientManifestUpdatePlugin();
+		if (!clientConfig.plugins) {
+			clientConfig.plugins = []; // 我觉得不太可能一个插件都没有
+		}
+		clientConfig.plugins.push(plugin);
+
+		const serverConfig = ServerConfiguration(options);
+		const template = fs.readFileSync(options.server.template, "utf-8");
+		return new VueSSRHotReloader(plugin, serverConfig, template);
+	}
+
+	private readonly clientPlugin: ClientManifestUpdatePlugin;
+	private readonly template: any;
+	private readonly serverConfig: Configuration;
 
 	private serverBundle: any;
-	private template: any;
 	private clientManifest: any;
 
-	private renderer?: BundleRenderer;
+	private renderer!: BundleRenderer;
 
-	configureWebpackSSR(config: Configuration) {
-		this.clientPlugin = new ClientManifestUpdatePlugin();
-		this.clientPlugin.on("update", (manifest) => {
+	constructor(clientPlugin: ClientManifestUpdatePlugin, serverConfig: Configuration, template: any) {
+		clientPlugin.on("update", (manifest) => {
 			this.clientManifest = manifest;
 			this.updateVueSSR();
 		});
-		if (!config.plugins) {
-			config.plugins = []; // 我觉得不太可能一个插件都没有
-		}
-		config.plugins.push(this.clientPlugin);
+		this.clientPlugin = clientPlugin;
+		this.template = template;
+		this.serverConfig = serverConfig;
 	}
 
 	/**
@@ -87,13 +98,7 @@ export default class VueSSRHotReloader {
 	 * @param options 配置
 	 */
 	async rendererFactory(options: WebpackOptions) {
-		if (!this.clientPlugin) {
-			throw Error("请先将ClientManifestUpdatePlugin加入客户端webpack的配置中");
-		}
-		const config = ServerConfiguration(options);
-		this.template = fs.readFileSync(options.server.template, "utf-8");
-
-		const compiler = webpack(config);
+		const compiler = webpack(this.serverConfig);
 		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
 		const readyPromise = new PromiseCompleteionSource();
@@ -110,10 +115,9 @@ export default class VueSSRHotReloader {
 		});
 
 		await Promise.all([readyPromise, this.clientPlugin.readyPromise]);
-		console.log("Vue server side renderer created.");
 
-		// assert this.renderer !== undefined
-		return () => (this.renderer as BundleRenderer);
+		console.log("Vue server side renderer created.");
+		return () => this.renderer;
 	}
 
 	/**

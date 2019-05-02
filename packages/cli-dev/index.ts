@@ -44,8 +44,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	await configureGlobalAxios(options.blog.serverCert);
 
 	const clientConfig = ClientConfiguration(options.webpack);
-	const ssrPlugin = new VueSSRHotReloader();
-	ssrPlugin.configureWebpackSSR(clientConfig);
+	const ssrPlugin = VueSSRHotReloader.create(clientConfig, options.webpack);
 
 	const api = new ServerAPI();
 	api.addPlugin(new BlogPlugin(options.blog));
@@ -54,7 +53,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	api.useFallBack(ssrMiddleware({ renderer: await ssrPlugin.rendererFactory(options.webpack) }));
 
 	await runServer(api.createApp().callback(), options.server);
-	console.info(`\n- Local URL: https://localhost\n`);
+	console.info(`\n- Local URL: https://localhost/\n`);
 });
 
 service.registerCommand("build", async (config) => {
