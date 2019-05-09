@@ -49,7 +49,7 @@ export function createSNICallback(properties: SNIProperties[]) {
  *
  * @param server 服务器
  * @param port 端口
- * @return 返回server参数
+ * @return 原样返回服务器对象
  */
 function listenAsync(server: Server, port: number): Promise<Server> {
 	return new Promise((resolve) => server.listen(port, () => resolve(server)));

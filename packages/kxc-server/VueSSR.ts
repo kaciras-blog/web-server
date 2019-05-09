@@ -3,7 +3,7 @@ import { Context, Middleware, Request } from "koa";
 import log4js from "log4js";
 import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
-import ServerAPI, { ClassCliServerPligun } from "./infra/ServerAPI";
+import ServerAPI from "./infra/ServerAPI";
 
 const logger = log4js.getLogger("app");
 
@@ -75,6 +75,12 @@ export function ssrMiddleware(options: SSRMiddlewareOptions): Middleware {
 	};
 }
 
+/**
+ * 使用指定目录下的 vue-ssr-server-bundle.json，vue-ssr-client-manifest.json 和 index.template.html
+ * 来创建渲染器。
+ *
+ * @param workingDir 指定的目录
+ */
 export async function createSSRProductionPlugin(workingDir: string) {
 
 	function reslove(file: string) {

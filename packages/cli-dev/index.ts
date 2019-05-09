@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import KacirasService from "kxc-server";
-import { runServer } from "kxc-server/app";
+import { runServer } from "kxc-server/infra/create-server";
 import BlogPlugin from "kxc-server/BlogPlugin";
 import ServerAPI from "kxc-server/infra/ServerAPI";
 import { ssrMiddleware } from "kxc-server/VueSSR";

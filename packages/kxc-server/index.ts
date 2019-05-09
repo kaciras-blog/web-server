@@ -1,7 +1,7 @@
 import log4js from "log4js";
 import parseArgs from "minimist";
 import path from "path";
-import { runServer } from "./app";
+import { runServer } from "./infra/create-server";
 import BlogPlugin from "./BlogPlugin";
 import { CliServerOptions } from "./OldOptions";
 import ServerAPI from "./infra/ServerAPI";

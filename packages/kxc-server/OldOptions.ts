@@ -1,5 +1,5 @@
 import { AppOptions } from "./BlogPlugin";
-import { ServerOptions } from "./app";
+import { ServerOptions } from "./infra/app";
 
 export interface CliServerOptions {
 	blog: AppOptions;
