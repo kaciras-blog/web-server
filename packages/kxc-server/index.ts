@@ -1,9 +1,8 @@
 import log4js from "log4js";
 import parseArgs from "minimist";
 import path from "path";
-import { runServer } from "./infra/create-server";
-import BlogPlugin from "./BlogPlugin";
-import { CliServerOptions } from "./OldOptions";
+import { runServer, ServerOptions } from "./infra/create-server";
+import BlogPlugin, { AppOptions } from "./BlogPlugin";
 import ServerAPI from "./infra/ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
 import { compressStaticDirectory } from "./infra/static-compress";
@@ -43,6 +42,11 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 		logConfig.categories.default.appenders = ["file"];
 	}
 	log4js.configure(logConfig);
+}
+
+export interface CliServerOptions {
+	blog: AppOptions;
+	server: ServerOptions;
 }
 
 async function runProd(options: CliServerOptions) {

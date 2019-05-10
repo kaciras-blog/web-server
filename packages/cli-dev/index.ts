@@ -7,13 +7,49 @@ import ServerAPI from "kxc-server/infra/ServerAPI";
 import { ssrMiddleware } from "kxc-server/VueSSR";
 import { promisify } from "util";
 import webpack, { Configuration, Stats } from "webpack";
-import CliDevelopmentOptions from "./OldOptions";
 import hotReloadMiddleware from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./template/client.config";
 import ServerConfiguration from "./template/server.config";
 import { configureGlobalAxios } from "kxc-server/axios-http2";
+import { Options } from "webpack";
+import { CliServerOptions } from "kxc-server";
 
+
+export interface WebpackOptions {
+	mode: "development" | "production" | "none";
+
+	outputPath: string;	// webpack的输出目录
+	publicPath: string;	// 公共资源的URL前缀，可以设为外部服务器等
+	assetsDirectory: string;	// 公共资源输出目录，是outputPath的子目录
+
+	bundleAnalyzerReport: any;
+
+	client: {
+		useBabel: boolean,
+		parallel: boolean, // 多线程编译JS文件
+		devtool: Options.Devtool;
+		cssSourceMap: boolean,
+	};
+
+	server: {
+		template: string;
+		devtool: Options.Devtool; // 服务端没有eval模式
+		cssSourceMap: boolean,
+	};
+
+	vueLoader?: any;
+}
+
+export interface DevServerOptions {
+	slient: boolean;
+	useHotClient: boolean;
+}
+
+export interface CliDevelopmentOptions extends CliServerOptions {
+	webpack: WebpackOptions;
+	dev: DevServerOptions;
+}
 
 const service = new KacirasService<CliDevelopmentOptions>();
 
