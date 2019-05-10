@@ -4,8 +4,8 @@ import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
-import { WebpackOptions } from "../OldOptions";
-import ServerConfiguration from "../template/server.config";
+import { WebpackOptions } from "..";
+import ServerConfiguration from "../webpack/server.config";
 import { PromiseCompleteionSource } from "../utils";
 
 

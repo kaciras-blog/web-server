@@ -4,7 +4,7 @@ import parseArgs from "minimist";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
-import { WebpackOptions } from "../OldOptions";
+import { WebpackOptions } from "..";
 import { resolve } from "./style-loaders";
 
 
@@ -27,7 +27,7 @@ const vueCacheIdenifier = (options: WebpackOptions) => {
 
 export default (options: WebpackOptions, side: "client" | "server"): Configuration => {
 
-	// 这里的 path 一定要用 posix 的斜杠，与URL中的斜杠一致
+	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDirectory, path_);
 
 	return {

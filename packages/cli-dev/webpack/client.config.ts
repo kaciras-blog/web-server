@@ -9,10 +9,8 @@ import { resolve, styleLoaders } from "./style-loaders";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 
-
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
-
 
 const setupBabel = (webpackConfig: any, options: any) => {
 	const loaders: RuleSetLoader[] = [{
