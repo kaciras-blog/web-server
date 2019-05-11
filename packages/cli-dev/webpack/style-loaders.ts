@@ -1,6 +1,7 @@
 import path from "path";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import { RuleSetUseItem } from "webpack";
+import { WebpackOptions } from "../index";
 
 /**
  * 获取相对于项目目录的绝对路径。
@@ -63,7 +64,7 @@ function cssLoaders(options: any, modules: boolean, isServer: boolean): CssLoade
  * @param options 选项
  * @param isServer 是否服务端构建
  */
-export function styleLoaders(options: any, isServer: boolean = false) {
+export function styleLoaders(options: WebpackOptions, isServer: boolean = false) {
 	const output = [];
 	const loaders = cssLoaders(options, false, isServer);
 	const moduleLoaders = cssLoaders(options, true, isServer);

@@ -28,7 +28,7 @@ export default class BlogPlugin implements ClassCliServerPligun {
 	configureCliServer(api: ServerAPI) {
 		const { options } = this;
 
-		const uploader = multer({ limits: { fileSize: 16 * 1024 * 1024 } });
+		const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
 		api.useBeforeAll(uploader.single("file"));
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(cors(options.cors));
@@ -40,7 +40,7 @@ export default class BlogPlugin implements ClassCliServerPligun {
 			new RegExp("^/(?:index\\.template|vue-ssr)"),
 			new RegExp("\\.(?:js|css)\\.map$"),
 		]));
-		api.useFilter(compress({ threshold: 2048 }));
+		api.useFilter(compress({ threshold: 1024 }));
 		api.useFilter(etag());
 
 		api.useResource(serve(options.staticRoot, {
