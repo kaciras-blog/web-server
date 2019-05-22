@@ -85,18 +85,32 @@ export default (options: WebpackOptions, side: "client" | "server"): Configurati
 				},
 				{
 					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-					loader: "url-loader",
-					options: {
-						limit: 2048,
-						name: assetsPath("img/[name].[hash:8].[ext]"),
-					},
+					use: [
+						{
+							loader: "url-loader",
+							options: {
+								limit: 2048,
+								name: assetsPath("img/[name].[hash:8].[ext]"),
+							},
+						},
+						{
+							loader: "image-webpack-loader",
+						},
+					],
 				},
 				{
 					test: /\.(svg)(\?.*)?$/,
-					loader: "file-loader",
-					options: {
-						name: assetsPath("img/[name].[hash:8].[ext]"),
-					},
+					use: [
+						{
+							loader: "file-loader",
+							options: {
+								name: assetsPath("img/[name].[hash:8].[ext]"),
+							},
+						},
+						{
+							loader: "image-webpack-loader",
+						},
+					],
 				},
 				{
 					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
