@@ -8,6 +8,7 @@ import mime from "mime-types";
 import path from "path";
 import koaSend from "koa-send";
 import crypto from "crypto";
+import { compress } from "./image-converter";
 
 const logger = getLogger("Blog");
 
@@ -64,15 +65,17 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 			return ctx.status = 400;
 		}
 
+		const buffer = await compress(file.buffer);
+
 		const sha3_256 = crypto.createHash("sha3-256");
-		const name = sha3_256.update(file.buffer).digest("hex") + "." + ext;
+		const name = sha3_256.update(buffer).digest("hex") + "." + ext;
 		const store = path.join(options.imageRoot, name);
 
 		if (await fs.pathExists(store)) {
 			ctx.status = 200;
 		} else {
 			logger.debug("保存上传的图片:", name);
-			await fs.writeFile(store, file.buffer);
+			await fs.writeFile(store, buffer);
 			ctx.status = 201;
 		}
 

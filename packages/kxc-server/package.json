@@ -28,6 +28,7 @@
 		"xml2js": "^0.4.19"
 	},
 	"devDependencies": {
+		"@types/imagemin": "^6.0.0",
 		"@types/sharp": "^0.22.2"
 	}
 }
