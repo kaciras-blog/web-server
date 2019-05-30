@@ -59,11 +59,11 @@
 		"lerna": "^3.14.1",
 		"lint-staged": "^8.1.7",
 		"memfs": "^2.15.2",
-		"semver": "^6.0.0",
+		"semver": "^6.1.1",
 		"supertest": "^4.0.2",
 		"ts-jest": "^24.0.2",
 		"tslint": "^5.16.0",
-		"typescript": "^3.4.5"
+		"typescript": "^3.5.1"
 	},
 	"optionalDependencies": {
 		"ts-loader": "^6.0.1",

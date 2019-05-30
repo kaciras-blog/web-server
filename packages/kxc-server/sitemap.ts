@@ -49,7 +49,7 @@ class ArticleCollection {
 		if (res.status !== 200) {
 			throw new Error("Api server response status: " + res.status);
 		}
-		return res.data.map(ArticleCollection.convert);
+		return res.data.items.map(ArticleCollection.convert);
 	}
 }
 
