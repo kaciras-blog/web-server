@@ -26,23 +26,19 @@ export function serviceWorkerToggle(register: boolean): Middleware {
 /**
  * 能够发送一个位于网站内容目录下的静态文件。
  *
- * @param path_ 文件路径，是URL中的path部分，以/开头
- * @param options 选项
+ * @param path_ 资源路径，是URL中的path部分，以/开头
+ * @param root 文件所在的目录
  * @return 中间件函数
  */
-export function staticFile(path_: string, options: any): Middleware {
-	if (path_.startsWith("/static/")) {
-		throw new Error("静态文件目录请用 koa-static 处理");
-	}
+export function staticFile(path_: string, root: string): Middleware {
 	return (ctx, next) => {
 		if (ctx.path !== path_) {
 			return next();
 		}
 		if (ctx.method !== "GET") {
-			ctx.status = 405;
-			return Promise.resolve();
+			return ctx.status = 405;
 		}
-		return koaSend(ctx, path_, { root: options.contentRoot });
+		return koaSend(ctx, path_, { root });
 	};
 }
 

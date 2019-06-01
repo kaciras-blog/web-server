@@ -7,6 +7,7 @@ import ServerAPI from "./infra/ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
 import { compressStaticDirectory } from "./infra/static-compress";
 import { configureGlobalAxios } from "./axios-http2";
+import serve from "koa-static";
 
 const logger = log4js.getLogger();
 
@@ -45,20 +46,30 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 }
 
 export interface CliServerOptions {
+	outputDir: string;	// webpack的输出目录
+	assetsDir: string;	// 公共资源的URL前缀，可以设为外部服务器等
+
 	blog: AppOptions;
 	server: ServerOptions;
 }
 
 async function runProd(options: CliServerOptions) {
+	const staticResources = path.join(options.outputDir, options.assetsDir);
+
 	logger.info("预压缩静态资源...");
-	await compressStaticDirectory(options.blog.staticRoot);
+	await compressStaticDirectory(staticResources);
 	logger.info("静态资源压缩完成");
 
 	await configureGlobalAxios(options.blog.serverCert);
 
 	const api = new ServerAPI();
 	api.addPlugin(new BlogPlugin(options.blog));
-	api.addPlugin(await createSSRProductionPlugin(options.blog.staticRoot));
+	api.addPlugin(await createSSRProductionPlugin(options.outputDir));
+
+	api.useResource(serve(staticResources, {
+		index: false,
+		maxAge: 31536000,
+	}));
 
 	return runServer(api.createApp().callback(), options.server);
 }

@@ -6,8 +6,8 @@ import supertest from "supertest";
 describe("intercept middleware", () => {
 	const app = new Koa();
 	app.use(intercept([
+		/\.(?:js|css)\.map$/,
 		new RegExp("^/index\\.template|vue-ssr"),
-		new RegExp("\\.(?:js|css)\\.map$"),
 	]));
 	app.use((ctx) => ctx.status = 200);
 	const server = app.listen();

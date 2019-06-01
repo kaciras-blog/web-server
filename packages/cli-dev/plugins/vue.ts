@@ -4,7 +4,7 @@ import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
-import { WebpackOptions } from "..";
+import { CliDevelopmentOptions, WebpackOptions } from "..";
 import ServerConfiguration from "../webpack/server.config";
 import { PromiseCompleteionSource } from "../utils";
 
@@ -60,7 +60,7 @@ interface ClientManifestUpdatePlugin {
  */
 export default class VueSSRHotReloader {
 
-	public static create(clientConfig: Configuration, options: WebpackOptions) {
+	public static create(clientConfig: Configuration, options: CliDevelopmentOptions) {
 		const plugin = new ClientManifestUpdatePlugin();
 		if (!clientConfig.plugins) {
 			clientConfig.plugins = []; // 我觉得不太可能一个插件都没有
@@ -68,7 +68,7 @@ export default class VueSSRHotReloader {
 		clientConfig.plugins.push(plugin);
 
 		const serverConfig = ServerConfiguration(options);
-		const template = fs.readFileSync(options.server.template, "utf-8");
+		const template = fs.readFileSync(options.webpack.server.template, "utf-8");
 		return new VueSSRHotReloader(plugin, serverConfig, template);
 	}
 

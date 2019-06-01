@@ -2,19 +2,24 @@ import cors, { Options as CorsOptions } from "@koa/cors";
 import compress from "koa-compress";
 import conditional from "koa-conditional-get";
 import etag from "koa-etag";
-import serve from "koa-static";
 import { createImageMiddleware, ImageMiddlewareOptions } from "./image-store";
 import ServerAPI, { ClassCliServerPligun } from "./infra/ServerAPI";
 import { intercept, serviceWorkerToggle } from "./infra/middlewares";
 import { createSitemapMiddleware } from "./sitemap";
 import multer = require("koa-multer");
+import { ParameterizedContext } from "koa";
 
 
 export interface AppOptions extends ImageMiddlewareOptions {
 	cors?: CorsOptions;
 	serverAddress: string;
 	serverCert: string;
-	staticRoot: string;
+}
+
+export async function AdvancedSecurityFilter(ctx: ParameterizedContext, next: () => Promise<any>) {
+	await next();
+	ctx.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; block-all-mixed-content");
 }
 
 export default class BlogPlugin implements ClassCliServerPligun {
@@ -28,25 +33,20 @@ export default class BlogPlugin implements ClassCliServerPligun {
 	configureCliServer(api: ServerAPI) {
 		const { options } = this;
 
-		const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
-		api.useBeforeAll(uploader.single("file"));
+		api.useBeforeAll(AdvancedSecurityFilter);
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(cors(options.cors));
+
+		const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
+		api.useBeforeAll(uploader.single("file"));
 
 		api.useBeforeFilter(serviceWorkerToggle(true));
 		api.useBeforeFilter(createImageMiddleware(options)); // 图片太大不计算etag
 
-		api.useFilter(intercept([
-			new RegExp("^/(?:index\\.template|vue-ssr)"),
-			new RegExp("\\.(?:js|css)\\.map$"),
-		]));
+		api.useFilter(intercept(/\.(?:js|css)\.map$/));
 		api.useFilter(compress({ threshold: 1024 }));
 		api.useFilter(etag());
 
-		api.useResource(serve(options.staticRoot, {
-			index: false,
-			maxAge: 31536000,
-		}));
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 	}
 }
