@@ -52,9 +52,14 @@ export function staticFile(path_: string, options: any): Middleware {
  * @param patterns 匹配被拦截文件路径的模式串
  * @return Koa 的中间件函数
  */
-export function intercept(patterns: RegExp[]): Middleware {
+export function intercept(patterns: RegExp | RegExp[]): Middleware {
+
+	const combied = Array.isArray(patterns)
+		? new RegExp(patterns.map((p) => `(?:${p.source})`).join("|"))
+		: patterns;
+
 	return (ctx, next) => {
-		if (!patterns.some((pat) => pat.test(ctx.path))) {
+		if (!combied.test(ctx.path)) {
 			return next();
 		}
 		ctx.status = 404;
