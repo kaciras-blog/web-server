@@ -1486,6 +1486,11 @@
   dependencies:
     "@types/superagent" "*"
 
+"@types/svgo@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/svgo/-/svgo-1.0.1.tgz#6095fc0119febcf5920ed9cdacdcc0a0d026e4a5"
+  integrity sha512-tV+xgQS8v4McSQqk+tGDCwTT1Bo/QLqgRPS1M9UgNZHK2cTf6CdwzxcMG7YAQwd/ZPUNgfgvN7tfe4OUv077Lw==
+
 "@types/tapable@*":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@types/tapable/-/tapable-1.0.4.tgz#b4ffc7dc97b498c969b360a41eee247f82616370"
@@ -10418,7 +10423,7 @@ supports-color@^6.1.0:
   dependencies:
     has-flag "^3.0.0"
 
-svgo@^1.0.0, svgo@^1.0.5:
+svgo@^1.0.0, svgo@^1.0.5, svgo@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/svgo/-/svgo-1.2.2.tgz#0253d34eccf2aed4ad4f283e11ee75198f9d7316"
   integrity sha512-rAfulcwp2D9jjdGu+0CuqlrAUin6bBWrpoqXWwKDZZZJfXcUXQSxLJOFJCQCSA0x0pP2U0TxSlJu2ROq5Bq6qA==

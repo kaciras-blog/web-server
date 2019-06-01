@@ -24,11 +24,13 @@
 		"log4js": "^4.3.1",
 		"minimist": "^1.2.0",
 		"sharp": "^0.22.1",
+		"svgo": "^1.2.2",
 		"vue-server-renderer": "2.6.10",
 		"xml2js": "^0.4.19"
 	},
 	"devDependencies": {
 		"@types/imagemin": "^6.0.0",
-		"@types/sharp": "^0.22.2"
+		"@types/sharp": "^0.22.2",
+		"@types/svgo": "^1.0.1"
 	}
 }
