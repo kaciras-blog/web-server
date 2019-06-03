@@ -29,7 +29,6 @@ export interface WebpackOptions {
 	};
 
 	server: {
-		template: string;
 		devtool: Options.Devtool; // 服务端没有eval模式
 		cssSourceMap: boolean,
 	};

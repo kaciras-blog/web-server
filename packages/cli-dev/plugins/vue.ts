@@ -1,5 +1,4 @@
 import { EventEmitter } from "events";
-import fs from "fs-extra";
 import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
@@ -17,18 +16,21 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 
 	readonly id = "ClientManifestUpdatePlugin";
 
-	private readonly filename: string;
+	private readonly manifestFile: string;
+	private readonly templateFile: string;
 	private readonly readyPromiseSource: PromiseCompleteionSource<void>;
 
-	constructor(filename: string = "vue-ssr-client-manifest.json") {
+	constructor(manifestFile: string = "vue-ssr-client-manifest.json", templateFile: string = "index.template.html") {
 		super();
-		this.filename = filename;
+		this.manifestFile = manifestFile;
+		this.templateFile = templateFile;
 		this.readyPromiseSource = new PromiseCompleteionSource();
 	}
 
 	apply(compiler: Compiler): void {
 		const plugins = compiler.options.plugins || [];
 
+		// noinspection SuspiciousTypeOfGuard 这是Vue自己的类型定义没写
 		if (!plugins.some((plugin) => plugin instanceof VueSSRClientPlugin)) {
 			throw new Error("请将 vue-server-renderer/client-plugin 加入到客户端的构建中");
 		}
@@ -38,8 +40,9 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 				return;
 			}
 			this.readyPromiseSource.resolve();
-			const source = compilation.assets[this.filename].source();
-			this.emit("update", JSON.parse(source));
+			const source = compilation.assets[this.manifestFile].source();
+			const template = compilation.assets[this.templateFile].source();
+			this.emit("update", JSON.parse(source), template);
 		});
 	}
 
@@ -49,7 +52,7 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 }
 
 interface ClientManifestUpdatePlugin {
-	on(event: "update", listener: (manifest: any) => void): this;
+	on(event: "update", listener: (manifest: any, template: any) => void): this;
 }
 
 /**
@@ -68,26 +71,25 @@ export default class VueSSRHotReloader {
 		clientConfig.plugins.push(plugin);
 
 		const serverConfig = ServerConfiguration(options);
-		const template = fs.readFileSync(options.webpack.server.template, "utf-8");
-		return new VueSSRHotReloader(plugin, serverConfig, template);
+		return new VueSSRHotReloader(plugin, serverConfig);
 	}
 
 	private readonly clientPlugin: ClientManifestUpdatePlugin;
-	private readonly template: any;
 	private readonly serverConfig: Configuration;
 
-	private serverBundle: any;
+	private template: any;
 	private clientManifest: any;
+	private serverBundle: any;
 
 	private renderer!: BundleRenderer;
 
-	constructor(clientPlugin: ClientManifestUpdatePlugin, serverConfig: Configuration, template: any) {
-		clientPlugin.on("update", (manifest) => {
+	constructor(clientPlugin: ClientManifestUpdatePlugin, serverConfig: Configuration) {
+		clientPlugin.on("update", (manifest, template) => {
+			this.template = template;
 			this.clientManifest = manifest;
 			this.updateVueSSR();
 		});
 		this.clientPlugin = clientPlugin;
-		this.template = template;
 		this.serverConfig = serverConfig;
 	}
 

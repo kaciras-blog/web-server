@@ -3,7 +3,7 @@ import { DefinePlugin } from "webpack";
 import merge from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
 import baseConfig from "./base.config";
-import { styleLoaders } from "./style-loaders";
+import { styleLoaders } from "./share";
 import { CliDevelopmentOptions } from "../index";
 
 
