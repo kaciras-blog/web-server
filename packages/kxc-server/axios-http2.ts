@@ -1,6 +1,6 @@
 /*
  * 修改 Axios 使其支持内置 Node 的 http2 模块。
- * Axios是不是放弃维护了？
+ * 【警告】Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
 import Axios, { AxiosInstance } from "axios";
 import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader, SecureClientSessionOptions } from "http2";

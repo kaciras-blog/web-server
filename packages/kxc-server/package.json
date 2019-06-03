@@ -11,7 +11,7 @@
 	},
 	"dependencies": {
 		"@koa/cors": "^3.0.0",
-		"axios": "^0.18.0",
+		"axios": "~0.18.1",
 		"bytes": "^3.1.0",
 		"fs-extra": "^8.0.1",
 		"koa": "^2.6.2",
