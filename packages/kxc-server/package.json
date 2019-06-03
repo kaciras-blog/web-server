@@ -23,12 +23,11 @@
 		"koa-static": "^5.0.0",
 		"log4js": "^4.3.1",
 		"minimist": "^1.2.0",
-		"sharp": "^0.22.1",
 		"vue-server-renderer": "2.6.10",
 		"xml2js": "^0.4.19"
 	},
 	"devDependencies": {
 		"@types/imagemin": "^6.0.0",
-		"@types/sharp": "^0.22.2"
+		"@types/xml2js": "^0.4.4"
 	}
 }
