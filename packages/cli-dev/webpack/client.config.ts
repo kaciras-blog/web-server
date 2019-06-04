@@ -17,7 +17,7 @@ interface ServiceWorkerOption {
 	assets: string[];
 }
 
-function setupBabel(webpackConfig: any, options: CliDevelopmentOptions) {
+function setupBabel(config: any, options: CliDevelopmentOptions) {
 	const loaders: RuleSetLoader[] = [{
 		loader: "babel-loader",
 		options: {
@@ -31,11 +31,11 @@ function setupBabel(webpackConfig: any, options: CliDevelopmentOptions) {
 	}
 
 	// 标准化，处理 module 没有定义的情况
-	if (!webpackConfig.module) {
-		webpackConfig.module = { rules: [] };
+	if (!config.module) {
+		config.module = { rules: [] };
 	}
 
-	webpackConfig.module.rules.push({
+	config.module.rules.push({
 		test: /\.(mjs|jsx?)$/,
 		use: loaders,
 		include: [
@@ -92,7 +92,7 @@ export default (options: CliDevelopmentOptions) => {
 			{
 				from: "./public",
 				to: ".",
-				ignore: ["app-shell.html"],
+				ignore: ["index.html"],
 			}],
 		),
 		new ServiceWorkerWebpackPlugin({
@@ -159,7 +159,7 @@ export default (options: CliDevelopmentOptions) => {
 		removeAttributeQuotes: true,
 	};
 	plugins.push(new HtmlWebpackPlugin({
-		template: "public/app-shell.html",
+		template: "public/index.html",
 		filename: assetsPath("app-shell.html"),
 		minify: htmlMinifyOptions,
 	}));
@@ -168,7 +168,7 @@ export default (options: CliDevelopmentOptions) => {
 	const templateFile = "index.template.html";
 	plugins.push(new HtmlWebpackPlugin({
 		chunks: [],
-		template: "public/app-shell.html",
+		template: "public/index.html",
 		filename: templateFile,
 		minify: htmlMinifyOptions,
 	}));

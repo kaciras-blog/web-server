@@ -1,7 +1,7 @@
 import path from "path";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import { RuleSetUseItem } from "webpack";
-import { WebpackOptions } from "../index";
+import { CliDevelopmentOptions, WebpackOptions } from "../index";
 
 /**
  * 获取相对于项目目录的绝对路径。

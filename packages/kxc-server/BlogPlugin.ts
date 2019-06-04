@@ -60,12 +60,15 @@ export default class BlogPlugin implements ClassCliServerPligun {
 
 		api.useBeforeFilter(serviceWorkerToggle(true));
 		api.useBeforeFilter(createImageMiddleware(options)); // 图片太大不计算etag
-		api.useBeforeFilter(CSRReportListener);
 
-		api.useFilter(intercept(/\.(?:js|css)\.map$/));
+		api.useFilter(intercept([
+			/\.(?:js|css)\.map$/,
+			/^\/index\.template|vue-ssr/,
+		]));
 		api.useFilter(compress({ threshold: 1024 }));
 		api.useFilter(etag());
 
+		api.useResource(CSRReportListener);
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 	}
 }
