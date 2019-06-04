@@ -3,18 +3,18 @@ import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
-import { CliDevelopmentOptions, WebpackOptions } from "..";
+import { CliDevelopmentOptions } from "..";
 import ServerConfiguration from "../webpack/server.config";
 import { PromiseCompleteionSource } from "../utils";
 
 
 /**
- * 读取并保存 VueSSRClientPlugin 输出的清单文件的 Webpack 插件。
+ * 读取并保存 VueSSRClientPlugin 输出的清单文件和HTML模板的插件。
  * 该插件需要被添加到客户端的构建配置里。
  */
-class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
+class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
-	readonly id = "ClientManifestUpdatePlugin";
+	static readonly ID = "ClientSSRHotUpdatePlugin";
 
 	private readonly manifestFile: string;
 	private readonly templateFile: string;
@@ -35,7 +35,7 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 			throw new Error("请将 vue-server-renderer/client-plugin 加入到客户端的构建中");
 		}
 
-		compiler.hooks.afterEmit.tap(this.id, (compilation) => {
+		compiler.hooks.afterEmit.tap(ClientSSRHotUpdatePlugin.ID, (compilation) => {
 			if (compilation.getStats().hasErrors()) {
 				return;
 			}
@@ -51,7 +51,7 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 	}
 }
 
-interface ClientManifestUpdatePlugin {
+interface ClientSSRHotUpdatePlugin {
 	on(event: "update", listener: (manifest: any, template: any) => void): this;
 }
 
@@ -64,7 +64,7 @@ interface ClientManifestUpdatePlugin {
 export default class VueSSRHotReloader {
 
 	public static create(clientConfig: Configuration, options: CliDevelopmentOptions) {
-		const plugin = new ClientManifestUpdatePlugin();
+		const plugin = new ClientSSRHotUpdatePlugin();
 		if (!clientConfig.plugins) {
 			clientConfig.plugins = []; // 我觉得不太可能一个插件都没有
 		}
@@ -74,7 +74,7 @@ export default class VueSSRHotReloader {
 		return new VueSSRHotReloader(plugin, serverConfig);
 	}
 
-	private readonly clientPlugin: ClientManifestUpdatePlugin;
+	private readonly clientPlugin: ClientSSRHotUpdatePlugin;
 	private readonly serverConfig: Configuration;
 
 	private template: any;
@@ -83,7 +83,7 @@ export default class VueSSRHotReloader {
 
 	private renderer!: BundleRenderer;
 
-	constructor(clientPlugin: ClientManifestUpdatePlugin, serverConfig: Configuration) {
+	constructor(clientPlugin: ClientSSRHotUpdatePlugin, serverConfig: Configuration) {
 		clientPlugin.on("update", (manifest, template) => {
 			this.template = template;
 			this.clientManifest = manifest;
@@ -96,10 +96,8 @@ export default class VueSSRHotReloader {
 	/**
 	 * 对服务端构建的监听，使用 wabpack.watch 来监视文件的变更，并输出到内存文件系统中，还会在每次
 	 * 构建完成后更新 serverBundle。
-	 *
-	 * @param options 配置
 	 */
-	async rendererFactory(options: WebpackOptions) {
+	async getRendererFactory() {
 		const compiler = webpack(this.serverConfig);
 		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
@@ -125,7 +123,7 @@ export default class VueSSRHotReloader {
 	/**
 	 * 更新Vue的服务端渲染器，在客户端或服务端构建完成后调用。
 	 */
-	updateVueSSR() {
+	private updateVueSSR() {
 		const { serverBundle, template, clientManifest } = this;
 		this.renderer = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
 	}

@@ -81,7 +81,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	api.addPlugin(new BlogPlugin(options.blog));
 
 	api.useBeforeFilter(await hotReloadMiddleware(options.dev.useHotClient, clientConfig));
-	api.useFallBack(ssrMiddleware({ renderer: await ssrPlugin.rendererFactory(options.webpack) }));
+	api.useFallBack(ssrMiddleware({ renderer: await ssrPlugin.getRendererFactory() }));
 
 	await runServer(api.createApp().callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);
