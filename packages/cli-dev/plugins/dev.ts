@@ -104,7 +104,7 @@ async function createHotMiddleware(config: any) {
 	};
 }
 
-export default function(useHotClient: boolean, webpackConfig: Configuration): Promise<Middleware> {
+export default function (useHotClient: boolean, webpackConfig: Configuration): Promise<Middleware> {
 	// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();

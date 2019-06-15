@@ -22,3 +22,7 @@ rules:
   member-access: false
   max-classes-per-file: false
   no-empty: false
+
+  space-before-function-paren:
+    options:
+      anonymous: always
