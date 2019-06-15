@@ -5,7 +5,7 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { CliDevelopmentOptions } from "..";
 import ServerConfiguration from "../webpack/server.config";
-import { PromiseCompleteionSource } from "../utils";
+import { PromiseCompletionSource } from "../utils";
 
 
 /**
@@ -18,13 +18,13 @@ class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
 	private readonly manifestFile: string;
 	private readonly templateFile: string;
-	private readonly readyPromiseSource: PromiseCompleteionSource<void>;
+	private readonly readyPromiseSource: PromiseCompletionSource<void>;
 
 	constructor(manifestFile: string = "vue-ssr-client-manifest.json", templateFile: string = "index.template.html") {
 		super();
 		this.manifestFile = manifestFile;
 		this.templateFile = templateFile;
-		this.readyPromiseSource = new PromiseCompleteionSource();
+		this.readyPromiseSource = new PromiseCompletionSource();
 	}
 
 	apply(compiler: Compiler): void {
@@ -101,7 +101,7 @@ export default class VueSSRHotReloader {
 		const compiler = webpack(this.serverConfig);
 		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
-		const readyPromise = new PromiseCompleteionSource();
+		const readyPromise = new PromiseCompletionSource();
 		compiler.watch({}, (err, stats) => {
 			if (err) {
 				throw err;

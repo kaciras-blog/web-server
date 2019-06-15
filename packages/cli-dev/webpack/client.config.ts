@@ -35,17 +35,15 @@ function setupBabel(config: any, options: CliDevelopmentOptions) {
 		config.module = { rules: [] };
 	}
 
+	// 【坑】webpack-hot-client 不能放进来，否则报错 module.exports is read-only
 	config.module.rules.push({
 		test: /\.(mjs|jsx?)$/,
 		use: loaders,
 		include: [
 			resolve("node_modules/kx-ui/src"),
-			/"node_modules\/markdown-it-anchor"/,
 			resolve("src"),
 			resolve("test"),
-
 			/node_modules\/webpack-hot-middleware\/client/,
-			resolve("node_modules/webpack-hot-client/client"),
 		],
 		exclude: [
 			resolve("src/service-worker"),
