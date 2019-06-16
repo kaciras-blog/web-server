@@ -24,10 +24,11 @@ function cssLoaders(options: WebpackOptions, isServer: boolean, modules: boolean
 		loader: "css-loader",
 		options: {
 			sourceMap,
-			modules,
-			localIdentName: options.mode === "production"
-				? "[hash:base64:8]"
-				: "[local]_[hash:base64:8]",
+			modules: {
+				localIdentName: options.mode === "production"
+					? "[hash:base64:8]"
+					: "[local]_[hash:base64:8]",
+			},
 		},
 	};
 

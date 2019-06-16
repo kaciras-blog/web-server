@@ -30,7 +30,7 @@
 		"@types/execa": "^0.9.0",
 		"@types/fs-extra": "^7.0.0",
 		"@types/hash-sum": "^1.0.0",
-		"@types/jest": "^24.0.13",
+		"@types/jest": "^24.0.14",
 		"@types/koa": "^2.0.48",
 		"@types/koa-compress": "^2.0.9",
 		"@types/koa-conditional-get": "^2.0.0",
@@ -48,20 +48,20 @@
 		"bytes": "^3.1.0",
 		"execa": "^1.0.0",
 		"globby": "^9.2.0",
-		"husky": "^2.3.0",
+		"husky": "^2.4.1",
 		"inquirer": "^6.3.1",
 		"jest": "^24.8.0",
-		"lerna": "^3.14.1",
-		"lint-staged": "^8.1.7",
+		"lerna": "^3.15.0",
+		"lint-staged": "^8.2.1",
 		"memfs": "^2.15.4",
 		"semver": "^6.1.1",
 		"supertest": "^4.0.2",
 		"ts-jest": "^24.0.2",
 		"tslint": "^5.17.0",
-		"typescript": "^3.5.1"
+		"typescript": "^3.5.2"
 	},
 	"optionalDependencies": {
-		"ts-loader": "^6.0.1",
+		"ts-loader": "^6.0.2",
 		"webpack-node-externals": "^1.7.2"
 	},
 	"peerDependencies": {
