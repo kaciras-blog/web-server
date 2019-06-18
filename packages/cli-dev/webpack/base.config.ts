@@ -132,11 +132,14 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 			],
 		},
 		plugins: [
-			new CaseSensitivePathsPlugin(),
+			new DefinePlugin({
+				"process.env.CONFIG": JSON.stringify(options.envConfig),
+			}),
 			new DefinePlugin({
 				"process.env.DEPLOY": JSON.stringify(parseArgs(process.argv.slice(2)).deploy),
 			}),
 			new VueLoaderPlugin(),
+			new CaseSensitivePathsPlugin(),
 		],
 		optimization: {
 			noEmitOnErrors: true,

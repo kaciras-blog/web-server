@@ -1,7 +1,7 @@
 import path from "path";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import { RuleSetUseItem } from "webpack";
-import { CliDevelopmentOptions, WebpackOptions } from "../index";
+import { WebpackOptions } from "../index";
 
 /**
  * 获取相对于项目目录的绝对路径。
@@ -24,7 +24,7 @@ function cssLoaders(options: WebpackOptions, isServer: boolean, modules: boolean
 		loader: "css-loader",
 		options: {
 			sourceMap,
-			modules: {
+			modules: modules && {
 				localIdentName: options.mode === "production"
 					? "[hash:base64:8]"
 					: "[local]_[hash:base64:8]",

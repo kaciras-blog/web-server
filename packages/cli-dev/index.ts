@@ -41,9 +41,16 @@ export interface DevServerOptions {
 	useHotClient: boolean;
 }
 
+export interface EnvConfig {
+	contentServerUri: string;
+	sentryDSN?: string;
+	googleTagManager?: string;
+}
+
 export interface CliDevelopmentOptions extends CliServerOptions {
-	webpack: WebpackOptions;
 	dev: DevServerOptions;
+	webpack: WebpackOptions;
+	envConfig: EnvConfig;
 }
 
 const service = new KacirasService<CliDevelopmentOptions>();
@@ -87,10 +94,10 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	console.info(`\n- Local URL: https://localhost/\n`);
 });
 
-service.registerCommand("build", async (config) => {
-	await fs.remove(config.outputDir);
-	await invokeWebpack(ClientConfiguration(config));
-	await invokeWebpack(ServerConfiguration(config));
+service.registerCommand("build", async (options: CliDevelopmentOptions) => {
+	await fs.remove(options.outputDir);
+	await invokeWebpack(ClientConfiguration(options));
+	await invokeWebpack(ServerConfiguration(options));
 
 	console.log(chalk.cyan("Build complete.\n"));
 });

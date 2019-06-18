@@ -9,6 +9,8 @@ import { CliDevelopmentOptions } from "../index";
 
 export default (options: CliDevelopmentOptions) => {
 
+	options.envConfig.contentServerUri = options.blog.serverAddress;
+
 	return merge(baseConfig(options, "server"), {
 		entry: "./src/entry-server.js",
 		target: "node",
