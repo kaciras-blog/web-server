@@ -100,14 +100,23 @@ export default class KacirasService<T extends CliServerOptions> {
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 		const args = parseArgs(process.argv.slice(2));
-		const env = args.profile ? ("." + args.profile) : "";
-		const config = require(path.join(process.cwd(), `config/webserver${env}`));
+
+		let configFile = path.join(process.cwd(), "config");
+		if (args.profile) {
+			configFile = path.join(configFile, args.profile);
+		}
+
+		// 使用 require.resolve 而不是直接 require，以便把配置文件内部的异常区分开
+		try {
+			require.resolve(configFile);
+		} catch (e) {
+			return logger.fatal("找不到配置文件：" + configFile);
+		}
 
 		const handler = this.commands.get(args._[0]);
 		if (!handler) {
-			return logger.error("No command specified"); // print command help
+			return logger.error("未知的命令：" + args._[0]);
 		}
-
-		handler(config);
+		handler(require(configFile));
 	}
 }
