@@ -17,7 +17,7 @@ const logger = log4js.getLogger();
 export interface AppOptions extends ImageMiddlewareOptions {
 	cors?: CorsOptions;
 	serverAddress: string;
-	serverCert: string;
+	serverCert: string | true;
 }
 
 async function AdvancedSecurityFilter(ctx: ParameterizedContext, next: () => Promise<any>) {

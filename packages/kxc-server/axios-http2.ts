@@ -5,9 +5,10 @@
 import Axios, { AxiosInstance } from "axios";
 import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader, SecureClientSessionOptions } from "http2";
 import fs from "fs-extra";
+import { type } from "os";
 
 /**
- * 修改指定 Axios 实例的 transport 配置，使其使用 NodeJS 的 http 2模块发送请求。
+ * 修改指定 Axios 实例的 transport 配置，使其使用 NodeJS 的 http2 模块发送请求。
  *
  * @param axios Axios实例
  * @param https transport 的参数里竟然不带协议？还得手动指定下
@@ -45,14 +46,16 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 /**
  * 配置全局Axios实例的便捷函数。
  *
- * @param cert 信任的证书
+ * @param trusted 信任的证书，或是true忽略证书检查
  */
-export async function configureGlobalAxios(cert?: string) {
-	if (cert) {
-		const ca = await fs.readFile(cert);
+export async function configureGlobalAxios(trusted?: string | true) {
+	if (typeof trusted === "string") {
+		const ca = await fs.readFile(trusted);
 		adaptAxiosHttp2(Axios, true, { ca });
 	} else {
+		if (trusted) {
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+		}
 		adaptAxiosHttp2(Axios, true);
-		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 	}
 }
