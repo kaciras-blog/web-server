@@ -7,11 +7,8 @@ import ServerAPI, { ClassCliServerPligun } from "./infra/ServerAPI";
 import { intercept, serviceWorkerToggle } from "./infra/middlewares";
 import { createSitemapMiddleware } from "./sitemap";
 import multer = require("koa-multer");
-import { ParameterizedContext } from "koa";
-import log4js from "log4js";
 import bodyParser from "koa-bodyparser";
-
-const logger = log4js.getLogger();
+import installCSPPlugin from "./csp-plugin";
 
 
 export interface AppOptions extends ImageMiddlewareOptions {
@@ -20,25 +17,6 @@ export interface AppOptions extends ImageMiddlewareOptions {
 	serverAddress: string;
 	https?: boolean;
 	serverCert: string | true;
-}
-
-async function AdvancedSecurityFilter(ctx: ParameterizedContext, next: () => Promise<any>) {
-	await next();
-	ctx.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; " +
-		"object-src 'none'; block-all-mixed-content; report-uri /csp-report");
-}
-
-function CSRReportListener(ctx: ParameterizedContext, next: () => Promise<any>) {
-	if (ctx.path !== "/csp-report") {
-		return next();
-	}
-	if (ctx.request.body) {
-		logger.warn("CSP Violation: ", ctx.request.body);
-	} else {
-		logger.warn("CSP Violation: No data received!");
-	}
-	ctx.status = 204;
 }
 
 export default class BlogPlugin implements ClassCliServerPligun {
@@ -51,8 +29,8 @@ export default class BlogPlugin implements ClassCliServerPligun {
 
 	configureCliServer(api: ServerAPI) {
 		const { options } = this;
+		installCSPPlugin(api);
 
-		api.useBeforeAll(AdvancedSecurityFilter);
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(cors(options.cors));
 		api.useBeforeAll(bodyParser());
@@ -70,7 +48,6 @@ export default class BlogPlugin implements ClassCliServerPligun {
 		api.useFilter(compress({ threshold: 1024 }));
 		api.useFilter(etag());
 
-		api.useResource(CSRReportListener);
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 	}
 }
