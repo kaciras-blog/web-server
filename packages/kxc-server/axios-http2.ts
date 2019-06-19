@@ -46,9 +46,10 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 /**
  * 配置全局Axios实例的便捷函数。
  *
+ * @param https 因为Axios的蛋疼设计，必须在这里指定是否用HTTPS
  * @param trusted 信任的证书，或是true忽略证书检查
  */
-export async function configureGlobalAxios(trusted?: string | true) {
+export async function configureGlobalAxios(https?: boolean, trusted?: string | true) {
 	if (typeof trusted === "string") {
 		const ca = await fs.readFile(trusted);
 		adaptAxiosHttp2(Axios, true, { ca });

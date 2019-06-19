@@ -79,7 +79,7 @@ async function invokeWebpack(config: Configuration) {
 }
 
 service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
-	await configureGlobalAxios(options.blog.serverCert);
+	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
 	const clientConfig = ClientConfiguration(options);
 	const ssrPlugin = VueSSRHotReloader.create(clientConfig, options);

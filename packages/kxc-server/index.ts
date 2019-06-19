@@ -60,7 +60,7 @@ async function runProd(options: CliServerOptions) {
 	await compressStaticDirectory(staticResources);
 	logger.info("静态资源压缩完成");
 
-	await configureGlobalAxios(options.blog.serverCert);
+	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
 	const api = new ServerAPI();
 	api.addPlugin(new BlogPlugin(options.blog));

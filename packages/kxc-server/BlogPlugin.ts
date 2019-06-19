@@ -16,7 +16,9 @@ const logger = log4js.getLogger();
 
 export interface AppOptions extends ImageMiddlewareOptions {
 	cors?: CorsOptions;
+
 	serverAddress: string;
+	https?: boolean;
 	serverCert: string | true;
 }
 
