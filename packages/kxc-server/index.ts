@@ -110,7 +110,7 @@ export default class KacirasService<T extends CliServerOptions> {
 		try {
 			require.resolve(configFile);
 		} catch (e) {
-			return logger.fatal("找不到配置文件：" + configFile);
+			return logger.error("找不到配置文件：" + configFile);
 		}
 
 		const handler = this.commands.get(args._[0]);

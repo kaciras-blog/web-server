@@ -94,7 +94,8 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 		const portPart = port === 443 ? "" : ":" + port;
 
 		const server = http.createServer((req, res) => {
-			res.writeHead(301, { Location: `https://${req.headers.host}${portPart}${req.url}` }).end();
+			const Location = `https://${req.headers.host}${portPart}${req.url}`;
+			res.writeHead(301, { Location }).end();
 		});
 		servers.push(await listenAsync(server, rPort));
 		logger.info(`重定向来自端口：${rPort}的请求至：${port}`);
