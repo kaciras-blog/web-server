@@ -42,7 +42,11 @@ export interface DevServerOptions {
 }
 
 export interface EnvConfig {
-	contentServerUri: string;
+	contentServerUri: string | {
+		http: string;
+		https: string;
+	};
+	webHost?: string;
 	sentryDSN?: string;
 	googleTagManager?: string;
 }

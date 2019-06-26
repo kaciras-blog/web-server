@@ -9,6 +9,7 @@ import { CliDevelopmentOptions } from "../index";
 
 export default (options: CliDevelopmentOptions) => {
 
+	// 服务端构建时页面内的请求走内部地址
 	options.envConfig.contentServerUri = options.blog.serverAddress;
 
 	return merge(baseConfig(options, "server"), {
