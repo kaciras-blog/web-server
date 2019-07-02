@@ -3,7 +3,7 @@ type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | undefined | null;
 type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | undefined | null;
 
 
-export class PromiseCompleteionSource<T> implements Promise<T> {
+export class PromiseCompletionSource<T> implements Promise<T> {
 
 	public resolve!: (value?: T | PromiseLike<T>) => void;
 	public reject!: (reason?: any) => void;
@@ -11,25 +11,25 @@ export class PromiseCompleteionSource<T> implements Promise<T> {
 	protected readonly promise: Promise<T>;
 
 	constructor() {
-		this.promise = new Promise((reslove, reject) => {
+		this.promise = new Promise((resolve, reject) => {
 			this.reject = reject;
-			this.resolve = reslove;
+			this.resolve = resolve;
 		});
 	}
 
 	get [Symbol.toStringTag]() {
-		return "PromiseCompleteionSource";
+		return "PromiseCompletionSource";
 	}
 
-	then<R0 = T, R1 = never>(onfulfilled?: OnFulfilled<T, R0>, onrejected?: OnRejected<R1>) {
-		return this.promise.then(onfulfilled, onrejected);
+	then<R0 = T, R1 = never>(onFulfilled?: OnFulfilled<T, R0>, onRejected?: OnRejected<R1>) {
+		return this.promise.then(onFulfilled, onRejected);
 	}
 
-	catch<R = never>(onrejected?: OnRejected<R>) {
-		return this.promise.catch(onrejected);
+	catch<R = never>(onRejected?: OnRejected<R>) {
+		return this.promise.catch(onRejected);
 	}
 
-	finally(onfinally?: (() => void) | undefined | null) {
-		return this.promise.finally(onfinally);
+	finally(onFinally?: (() => void) | undefined | null) {
+		return this.promise.finally(onFinally);
 	}
 }

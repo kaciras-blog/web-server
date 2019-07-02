@@ -15,15 +15,20 @@ interface CssLoadersMap {
 	[name: string]: RuleSetUseItem[];
 }
 
-function cssLoaders(options: any, modules: boolean, isServer: boolean): CssLoadersMap {
+function cssLoaders(options: WebpackOptions, isServer: boolean, modules: boolean): CssLoadersMap {
+	const sourceMap = isServer
+		? options.server.cssSourceMap
+		: options.client.cssSourceMap;
+
 	const cssLoader = {
 		loader: "css-loader",
 		options: {
-			sourceMap: options.cssSourceMap,
-			modules,
-			localIdentName: options.mode === "production"
-				? "[hash:base64:8]"
-				: "[local]_[hash:base64:8]",
+			sourceMap,
+			modules: modules && {
+				localIdentName: options.mode === "production"
+					? "[hash:base64:8]"
+					: "[local]_[hash:base64:8]",
+			},
 		},
 	};
 
@@ -34,9 +39,7 @@ function cssLoaders(options: any, modules: boolean, isServer: boolean): CssLoade
 		if (loader) {
 			loaders.push({
 				loader: loader + "-loader",
-				options: Object.assign({}, loaderOptions, {
-					sourceMap: options.cssSourceMap,
-				}),
+				options: Object.assign({}, loaderOptions, { sourceMap }),
 			});
 		}
 
@@ -66,8 +69,8 @@ function cssLoaders(options: any, modules: boolean, isServer: boolean): CssLoade
  */
 export function styleLoaders(options: WebpackOptions, isServer: boolean = false) {
 	const output = [];
-	const loaders = cssLoaders(options, false, isServer);
-	const moduleLoaders = cssLoaders(options, true, isServer);
+	const loaders = cssLoaders(options, isServer, false);
+	const moduleLoaders = cssLoaders(options, isServer, true);
 
 	for (const extension in loaders) {
 		output.push({

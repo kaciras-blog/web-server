@@ -8,7 +8,7 @@ import mime from "mime-types";
 import path from "path";
 import koaSend from "koa-send";
 import crypto from "crypto";
-import { compress } from "./image-converter";
+
 
 const logger = getLogger("Blog");
 
@@ -65,7 +65,7 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 			return ctx.status = 400;
 		}
 
-		const buffer = await compress(file.buffer);
+		const buffer = file.buffer;
 
 		const sha3_256 = crypto.createHash("sha3-256");
 		const name = sha3_256.update(buffer).digest("hex") + "." + ext;

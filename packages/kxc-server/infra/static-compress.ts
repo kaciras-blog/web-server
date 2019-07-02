@@ -51,10 +51,10 @@ export async function precompress(resources: string[], period: number) {
 
 /**
  * 按大小均分文件，实际情况下分得还是比较均匀，但不一定是最优解。
- * 求最优解是 3-Partition 问题，该问题是NP难题。对于实际情况来说，有点误差并不会造成多大影响。
+ * 求最优解是 3-Partition 问题，该问题是NP难题，对于实际使用来说，有点误差并不会造成多大影响。
  *
  * @param infos 待均分的文件集合
- * @param count 需要均分成多少份？
+ * @param count 需要均分成多少份
  * @return 均分后的结果
  */
 function partition(infos: FileInfo[], count: number) {

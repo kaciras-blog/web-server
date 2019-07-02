@@ -18,22 +18,17 @@ import { CliServerOptions } from "kxc-server";
 
 export interface WebpackOptions {
 	mode: "development" | "production" | "none";
-
-	outputPath: string;	// webpack的输出目录
-	publicPath: string;	// 公共资源的URL前缀，可以设为外部服务器等
-	assetsDirectory: string;	// 公共资源输出目录，是outputPath的子目录
-
+	publicPath: string; // 公共资源的URL前缀，可以设为外部服务器等
+	parallel: boolean; // 多线程编译JS文件
 	bundleAnalyzerReport: any;
 
 	client: {
 		useBabel: boolean,
-		parallel: boolean, // 多线程编译JS文件
 		devtool: Options.Devtool;
 		cssSourceMap: boolean,
 	};
 
 	server: {
-		template: string;
 		devtool: Options.Devtool; // 服务端没有eval模式
 		cssSourceMap: boolean,
 	};
@@ -42,13 +37,24 @@ export interface WebpackOptions {
 }
 
 export interface DevServerOptions {
-	slient: boolean;
+	silent: boolean;
 	useHotClient: boolean;
 }
 
+export interface EnvConfig {
+	contentServerUri: string | {
+		http: string;
+		https: string;
+	};
+	webHost?: string;
+	sentryDSN?: string;
+	googleTagManager?: string;
+}
+
 export interface CliDevelopmentOptions extends CliServerOptions {
-	webpack: WebpackOptions;
 	dev: DevServerOptions;
+	webpack: WebpackOptions;
+	envConfig: EnvConfig;
 }
 
 const service = new KacirasService<CliDevelopmentOptions>();
@@ -77,25 +83,25 @@ async function invokeWebpack(config: Configuration) {
 }
 
 service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
-	await configureGlobalAxios(options.blog.serverCert);
+	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
-	const clientConfig = ClientConfiguration(options.webpack);
-	const ssrPlugin = VueSSRHotReloader.create(clientConfig, options.webpack);
+	const clientConfig = ClientConfiguration(options);
+	const ssrPlugin = VueSSRHotReloader.create(clientConfig, options);
 
 	const api = new ServerAPI();
 	api.addPlugin(new BlogPlugin(options.blog));
 
-	api.useBeforeFilter(await hotReloadMiddleware(false, clientConfig));
-	api.useFallBack(ssrMiddleware({ renderer: await ssrPlugin.rendererFactory(options.webpack) }));
+	api.useBeforeFilter(await hotReloadMiddleware(options.dev.useHotClient, clientConfig));
+	api.useFallBack(ssrMiddleware({ renderer: await ssrPlugin.getRendererFactory() }));
 
 	await runServer(api.createApp().callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);
 });
 
-service.registerCommand("build", async (config) => {
-	await fs.remove(config.webpack.outputPath);
-	await invokeWebpack(ClientConfiguration(config.webpack));
-	await invokeWebpack(ServerConfiguration(config.webpack));
+service.registerCommand("build", async (options: CliDevelopmentOptions) => {
+	await fs.remove(options.outputDir);
+	await invokeWebpack(ClientConfiguration(options));
+	await invokeWebpack(ServerConfiguration(options));
 
 	console.log(chalk.cyan("Build complete.\n"));
 });

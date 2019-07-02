@@ -6,22 +6,24 @@ import supertest from "supertest";
 describe("intercept middleware", () => {
 	const app = new Koa();
 	app.use(intercept([
-		new RegExp("^/(?:index\\.template|vue-ssr)"),
-		new RegExp("\\.(?:js|css)\\.map$"),
+		/\.(?:js|css)\.map$/,
+		new RegExp("^/index\\.template|vue-ssr"),
 	]));
 	app.use((ctx) => ctx.status = 200);
 	const server = app.listen();
 
-	it("should accept", (done) => {
-		supertest(server)
-			.get("/foo.js")
-			.expect(200, done);
+	it("should accept", async () => {
+		await supertest(server).get("/vendors.js").expect(200);
+		await supertest(server).get("/index.html").expect(200);
 	});
 
-	it("should reject file", (done) => {
-		supertest(server)
+	it("should reject file", async () => {
+		await supertest(server)
+			.get("/index.template.html")
+			.expect(404);
+		await supertest(server)
 			.get("/vue-ssr-client-manifest.json")
-			.expect(404, done);
+			.expect(404);
 	});
 
 	it("should check only path", (done) => {

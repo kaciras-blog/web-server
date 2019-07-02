@@ -1,18 +1,18 @@
 import http from "http";
 import path from "path";
 import tls from "tls";
-import { createSNICallback, runServer } from "../infra/create-server";
+import { createSNICallback, runServer, ServerOptions } from "../infra/create-server";
 
 
 const HTTP_URL = "http://localhost/";
 const HTTPS_URL = "https://localhost/";
 
-const OPTIONS = {
-	tls: {
+const OPTIONS: ServerOptions = {
+	https: {
 		certFile: "D:/Coding/Utils/dev.pem",
 		keyFile: "D:/Coding/Utils/dev.pvk",
 	},
-	httpRedirect: 80,
+	http: { redirect: true },
 };
 
 describe("app.runServer", () => {

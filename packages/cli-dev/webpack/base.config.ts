@@ -4,8 +4,8 @@ import parseArgs from "minimist";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
-import { WebpackOptions } from "..";
-import { resolve } from "./style-loaders";
+import { CliDevelopmentOptions, WebpackOptions } from "..";
+import { resolve } from "./share";
 
 
 /**
@@ -25,18 +25,19 @@ const vueCacheIdenifier = (options: WebpackOptions) => {
 };
 
 
-export default (options: WebpackOptions, side: "client" | "server"): Configuration => {
+export default (options: CliDevelopmentOptions, side: "client" | "server"): Configuration => {
+	const webpackOpts = options.webpack;
 
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
-	const assetsPath = (path_: string) => path.posix.join(options.assetsDirectory, path_);
+	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
 	return {
-		mode: options.mode,
+		mode: webpackOpts.mode,
 		context: process.cwd(),
 		output: {
-			filename: "static/js/[name].js",
-			path: options.outputPath,
-			publicPath: options.publicPath,
+			filename: assetsPath("js/[name].js"),
+			path: options.outputDir,
+			publicPath: webpackOpts.publicPath,
 		},
 		resolve: {
 			extensions: [
@@ -78,9 +79,9 @@ export default (options: WebpackOptions, side: "client" | "server"): Configurati
 					test: /\.vue$/,
 					loader: "vue-loader",
 					options: {
-						...options.vueLoader,
+						...webpackOpts.vueLoader,
 						cacheDirectory: resolve("node_modules/.cache/vue-loader-" + side),
-						cacheIdentifier: vueCacheIdenifier(options),
+						cacheIdentifier: vueCacheIdenifier(webpackOpts),
 					},
 				},
 				{
@@ -131,11 +132,11 @@ export default (options: WebpackOptions, side: "client" | "server"): Configurati
 			],
 		},
 		plugins: [
-			new CaseSensitivePathsPlugin(),
 			new DefinePlugin({
-				"process.env.DEPLOY": JSON.stringify(parseArgs(process.argv.slice(2)).deploy),
+				"process.env.CONFIG": JSON.stringify(options.envConfig),
 			}),
 			new VueLoaderPlugin(),
+			new CaseSensitivePathsPlugin(),
 		],
 		optimization: {
 			noEmitOnErrors: true,

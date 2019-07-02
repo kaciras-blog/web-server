@@ -1,45 +1,48 @@
 import { EventEmitter } from "events";
-import fs from "fs-extra";
 import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
-import { WebpackOptions } from "..";
+import { CliDevelopmentOptions } from "..";
 import ServerConfiguration from "../webpack/server.config";
-import { PromiseCompleteionSource } from "../utils";
+import { PromiseCompletionSource } from "../utils";
 
 
 /**
- * 读取并保存 VueSSRClientPlugin 输出的清单文件的 Webpack 插件。
+ * 读取并保存 VueSSRClientPlugin 输出的清单文件和HTML模板的插件。
  * 该插件需要被添加到客户端的构建配置里。
  */
-class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
+class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
-	readonly id = "ClientManifestUpdatePlugin";
+	static readonly ID = "ClientSSRHotUpdatePlugin";
 
-	private readonly filename: string;
-	private readonly readyPromiseSource: PromiseCompleteionSource<void>;
+	private readonly manifestFile: string;
+	private readonly templateFile: string;
+	private readonly readyPromiseSource: PromiseCompletionSource<void>;
 
-	constructor(filename: string = "vue-ssr-client-manifest.json") {
+	constructor(manifestFile: string = "vue-ssr-client-manifest.json", templateFile: string = "index.template.html") {
 		super();
-		this.filename = filename;
-		this.readyPromiseSource = new PromiseCompleteionSource();
+		this.manifestFile = manifestFile;
+		this.templateFile = templateFile;
+		this.readyPromiseSource = new PromiseCompletionSource();
 	}
 
 	apply(compiler: Compiler): void {
 		const plugins = compiler.options.plugins || [];
 
+		// noinspection SuspiciousTypeOfGuard 这是Vue自己的类型定义没写
 		if (!plugins.some((plugin) => plugin instanceof VueSSRClientPlugin)) {
 			throw new Error("请将 vue-server-renderer/client-plugin 加入到客户端的构建中");
 		}
 
-		compiler.hooks.afterEmit.tap(this.id, (compilation) => {
+		compiler.hooks.afterEmit.tap(ClientSSRHotUpdatePlugin.ID, (compilation) => {
 			if (compilation.getStats().hasErrors()) {
 				return;
 			}
 			this.readyPromiseSource.resolve();
-			const source = compilation.assets[this.filename].source();
-			this.emit("update", JSON.parse(source));
+			const source = compilation.assets[this.manifestFile].source();
+			const template = compilation.assets[this.templateFile].source();
+			this.emit("update", JSON.parse(source), template);
 		});
 	}
 
@@ -48,8 +51,8 @@ class ClientManifestUpdatePlugin extends EventEmitter implements Plugin {
 	}
 }
 
-interface ClientManifestUpdatePlugin {
-	on(event: "update", listener: (manifest: any) => void): this;
+interface ClientSSRHotUpdatePlugin {
+	on(event: "update", listener: (manifest: any, template: any) => void): this;
 }
 
 /**
@@ -60,48 +63,45 @@ interface ClientManifestUpdatePlugin {
  */
 export default class VueSSRHotReloader {
 
-	public static create(clientConfig: Configuration, options: WebpackOptions) {
-		const plugin = new ClientManifestUpdatePlugin();
+	public static create(clientConfig: Configuration, options: CliDevelopmentOptions) {
+		const plugin = new ClientSSRHotUpdatePlugin();
 		if (!clientConfig.plugins) {
 			clientConfig.plugins = []; // 我觉得不太可能一个插件都没有
 		}
 		clientConfig.plugins.push(plugin);
 
 		const serverConfig = ServerConfiguration(options);
-		const template = fs.readFileSync(options.server.template, "utf-8");
-		return new VueSSRHotReloader(plugin, serverConfig, template);
+		return new VueSSRHotReloader(plugin, serverConfig);
 	}
 
-	private readonly clientPlugin: ClientManifestUpdatePlugin;
-	private readonly template: any;
+	private readonly clientPlugin: ClientSSRHotUpdatePlugin;
 	private readonly serverConfig: Configuration;
 
-	private serverBundle: any;
+	private template: any;
 	private clientManifest: any;
+	private serverBundle: any;
 
 	private renderer!: BundleRenderer;
 
-	constructor(clientPlugin: ClientManifestUpdatePlugin, serverConfig: Configuration, template: any) {
-		clientPlugin.on("update", (manifest) => {
+	constructor(clientPlugin: ClientSSRHotUpdatePlugin, serverConfig: Configuration) {
+		clientPlugin.on("update", (manifest, template) => {
+			this.template = template;
 			this.clientManifest = manifest;
 			this.updateVueSSR();
 		});
 		this.clientPlugin = clientPlugin;
-		this.template = template;
 		this.serverConfig = serverConfig;
 	}
 
 	/**
 	 * 对服务端构建的监听，使用 wabpack.watch 来监视文件的变更，并输出到内存文件系统中，还会在每次
 	 * 构建完成后更新 serverBundle。
-	 *
-	 * @param options 配置
 	 */
-	async rendererFactory(options: WebpackOptions) {
+	async getRendererFactory() {
 		const compiler = webpack(this.serverConfig);
 		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
-		const readyPromise = new PromiseCompleteionSource();
+		const readyPromise = new PromiseCompletionSource();
 		compiler.watch({}, (err, stats) => {
 			if (err) {
 				throw err;
@@ -123,7 +123,7 @@ export default class VueSSRHotReloader {
 	/**
 	 * 更新Vue的服务端渲染器，在客户端或服务端构建完成后调用。
 	 */
-	updateVueSSR() {
+	private updateVueSSR() {
 		const { serverBundle, template, clientManifest } = this;
 		this.renderer = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
 	}

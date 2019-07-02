@@ -7,6 +7,7 @@ import ServerAPI from "./infra/ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
 import { compressStaticDirectory } from "./infra/static-compress";
 import { configureGlobalAxios } from "./axios-http2";
+import serve from "koa-static";
 
 const logger = log4js.getLogger();
 
@@ -45,20 +46,30 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 }
 
 export interface CliServerOptions {
+	outputDir: string;	// webpack的输出目录
+	assetsDir: string;	// 公共资源的URL前缀，可以设为外部服务器等
+
 	blog: AppOptions;
 	server: ServerOptions;
 }
 
 async function runProd(options: CliServerOptions) {
+	const staticResources = path.join(options.outputDir, options.assetsDir);
+
 	logger.info("预压缩静态资源...");
-	await compressStaticDirectory(options.blog.staticRoot);
+	await compressStaticDirectory(staticResources);
 	logger.info("静态资源压缩完成");
 
-	await configureGlobalAxios(options.blog.serverCert);
+	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
 	const api = new ServerAPI();
 	api.addPlugin(new BlogPlugin(options.blog));
-	api.addPlugin(await createSSRProductionPlugin(options.blog.staticRoot));
+	api.addPlugin(await createSSRProductionPlugin(options.outputDir));
+
+	api.useResource(serve(staticResources, {
+		index: false,
+		maxAge: 31536000,
+	}));
 
 	return runServer(api.createApp().callback(), options.server);
 }
@@ -89,14 +100,23 @@ export default class KacirasService<T extends CliServerOptions> {
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 		const args = parseArgs(process.argv.slice(2));
-		const env = args.profile ? ("." + args.profile) : "";
-		const config = require(path.join(process.cwd(), `config/webserver${env}`));
+
+		let configFile = path.join(process.cwd(), "config");
+		if (args.profile) {
+			configFile = path.join(configFile, args.profile);
+		}
+
+		// 使用 require.resolve 而不是直接 require，以便把配置文件内部的异常区分开
+		try {
+			require.resolve(configFile);
+		} catch (e) {
+			return logger.error("找不到配置文件：" + configFile);
+		}
 
 		const handler = this.commands.get(args._[0]);
 		if (!handler) {
-			return logger.error("No command specified"); // print command help
+			return logger.error("未知的命令：" + args._[0]);
 		}
-
-		handler(config);
+		handler(require(configFile));
 	}
 }

@@ -35,38 +35,22 @@ export default class ServerAPI {
 		return app;
 	}
 
-	/**
-	 * 做一些全局处理的中间件，比如CORS、访问日志。
-	 *
-	 * @param middleware 中间件
-	 */
+	/** 做一些全局处理的中间件，比如CORS、访问日志 */
 	useBeforeAll(middleware: Middleware) {
 		this.beforeAll.push(middleware);
 	}
 
-	/**
-	 * 不希望被其他插件干涉的中间件，比如webpack的热更新不能被压缩。
-	 *
-	 * @param middleware 中间件
-	 */
+	/** 不希望被其他插件干涉的中间件，比如webpack的热更新不能被压缩 */
 	useBeforeFilter(middleware: Middleware) {
 		this.beforeFilter.push(middleware);
 	}
 
-	/**
-	 * 拦截和资源优化的中间件，比如压缩、屏蔽、权限。
-	 *
-	 * @param middleware 中间件
-	 */
+	/** 拦截和资源优化的中间件，比如压缩、屏蔽、权限 */
 	useFilter(middleware: Middleware) {
 		this.filter.push(middleware);
 	}
 
-	/**
-	 * 资源中间件，比如静态文件、图片存储服务。
-	 *
-	 * @param middleware 中间件
-	 */
+	/** 资源中间件，比如静态文件、图片存储服务 */
 	useResource(middleware: Middleware) {
 		this.resource.push(middleware);
 	}
@@ -74,8 +58,6 @@ export default class ServerAPI {
 	/**
 	 * 用于处理之前中间件没处理的请求。
 	 * 这个中间件只能设置一次，多次调用说明插件有冲突。
-	 *
-	 * @param middleware 中间件
 	 */
 	useFallBack(middleware: Middleware) {
 		if (this.fallBack) {
