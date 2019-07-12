@@ -18,12 +18,13 @@ interface FileInfo {
  * 使用 bortli 和 gzip 算法预压缩一些静态资源，分别生成文件名尾部附加 .br 和 .gz 的压缩文件。
  * 该模块应当在静态资源打包完成后或服务器启动前调用一次，然后配合 Koa-Send 之类的中间件自动发送压缩的资源。
  *
+ * 【注意】经测试 brotli 压缩等级设置并没有什么卵用。
  * 【更新】内置库的压缩使用底层的 libuv 线程池，直接启动多个压缩任务就是多线程的，无需使用WorkerThreads。
  *
  * @param resources 要压缩的文件列表
  * @param period 小于此大小（字节）的不压缩
  */
-export async function precompress(resources: string[], period: number) {
+export async function compressFiles(resources: string[], period: number) {
 	const infos: FileInfo[] = [];
 	let totalSize = 0;
 
@@ -70,5 +71,5 @@ export async function precompress(resources: string[], period: number) {
  */
 export function compressStaticDirectory(directory: string) {
 	const pattern = [directory + "/**/*.{js,css,svg,html,xml}"];
-	return globby(pattern).then((files) => precompress(files, 1024));
+	return globby(pattern).then((files) => compressFiles(files, 1024));
 }

@@ -6,6 +6,7 @@ import { Configuration, DefinePlugin, RuleSetRule, RuleSetUseItem } from "webpac
 import { CliDevelopmentOptions, WebpackOptions } from "..";
 import { resolve } from "./share";
 import ExternalWebpPlugin from "./ExternalWebpPlugin";
+import CompressionPlugin from "compression-webpack-plugin";
 
 /**
  * 生成一个标识字符串，当 cache-loader 使用默认的读写选项时，这个字符串将
@@ -154,6 +155,17 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 	];
 
 	if (options.webpack.mode === "production" && side === "client") {
+		configuraion.plugins!.push(new CompressionPlugin({
+			test: /\.(js|css|html|svg)$/,
+			threshold: 1024,
+		}));
+		// @ts-ignore 用别人的库就是这么坑爹，类型定义跟不上版本
+		configuraion.plugins!.push(new CompressionPlugin({
+			filename: "[path].br[query]",
+			test: /\.(js|css|html|svg)$/,
+			threshold: 1024,
+			algorithm: "brotliCompress",
+		}));
 		configuraion.plugins!.push(new ExternalWebpPlugin());
 		imageLoaders.forEach((loader) => (loader.use as RuleSetUseItem[]).push("image-webpack-loader"));
 	}
