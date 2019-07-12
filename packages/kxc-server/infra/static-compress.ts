@@ -1,3 +1,4 @@
+// 已经改为webpack构建时压缩，这个模块没用了准备删除
 import bytes from "bytes";
 import fs from "fs-extra";
 import { promisify } from "util";
@@ -18,7 +19,7 @@ interface FileInfo {
  * 使用 bortli 和 gzip 算法预压缩一些静态资源，分别生成文件名尾部附加 .br 和 .gz 的压缩文件。
  * 该模块应当在静态资源打包完成后或服务器启动前调用一次，然后配合 Koa-Send 之类的中间件自动发送压缩的资源。
  *
- * 【注意】经测试 brotli 压缩等级设置并没有什么卵用。
+ * 【注意】经测试 brotli 压缩等级设置了也没什么卵用。
  * 【更新】内置库的压缩使用底层的 libuv 线程池，直接启动多个压缩任务就是多线程的，无需使用WorkerThreads。
  *
  * @param resources 要压缩的文件列表
