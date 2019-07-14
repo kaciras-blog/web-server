@@ -1,8 +1,22 @@
-import log4js from "log4js";
+import chalk, { Chalk } from "chalk";
 import { Compiler, Plugin } from "webpack";
 import { Hook, HookMap } from "tapable";
 
-const logger = log4js.getLogger();
+
+class StopWatch {
+
+	private startSecond!: number;
+	private startNano!: number;
+
+	start() {
+		[this.startSecond, this.startNano] = process.hrtime();
+	}
+
+	milliseconds() {
+		const [second, nano] = process.hrtime();
+		return (second - this.startSecond) * 1000 + (nano - this.startNano) / 1000000;
+	}
+}
 
 function simpleTypeName(value: any): string {
 	switch (typeof value) {
@@ -17,48 +31,52 @@ function simpleTypeName(value: any): string {
 	}
 }
 
-function oneShotLog(message: string) {
-	let logged = false;
-	return function logHook(...args: any[]) {
-		if (logged) {
-			return;
-		}
-		const argInfo = args.map(simpleTypeName).join(", ");
-		logged = true;
-		logger.warn(`${message}(${argInfo})`);
-	};
-}
-
 function isHook(tabable: Hook | HookMap): tabable is Hook {
 	return tabable.tap.length === 2;
 }
 
 export default class HooksInspectPlugin implements Plugin {
 
+	private stopWatch = new StopWatch();
+
 	apply(compiler: Compiler): void {
-		this.installHooks("Compiler", compiler);
-		this.setupTapable("NormalModuleFactory", compiler.hooks.normalModuleFactory);
-		this.setupTapable("ContextModuleFactory", compiler.hooks.contextModuleFactory);
-		this.setupTapable("Compilation", compiler.hooks.thisCompilation);
+		this.stopWatch.start();
+		this.installHooks("Compiler", chalk.cyanBright, compiler);
+		this.setupTapable("NormalModuleFactory", chalk.blueBright, compiler.hooks.normalModuleFactory);
+		this.setupTapable("ContextModuleFactory", chalk.blueBright, compiler.hooks.contextModuleFactory);
+		this.setupTapable("Compilation", chalk.yellowBright, compiler.hooks.thisCompilation);
 	}
 
-	private setupTapable(namespace: string, tapable: Hook) {
+	private setupTapable(namespace: string, color: Chalk, tapable: Hook) {
 		let installed = false;
 		tapable.tap("HookInspectSetup", (value) => {
 			if (installed) return;
 			installed = true;
-			this.installHooks(namespace, value);
+			this.installHooks(namespace, color, value);
 		});
 	}
 
-	private installHooks(namespace: string, hookable: any) {
+	private installHooks(namespace: string, color: Chalk, hookable: any) {
 		const hooks = Object.entries(hookable.hooks) as Array<[string, Hook | HookMap]>;
 		hooks.forEach(([name, hook]) => {
-			const logHook = oneShotLog(`${namespace}: ${name}`);
+			const logHook = this.logHook(`${namespace}: ${name}`, color);
 			if (isHook(hook)) {
 				return hook.tap(HooksInspectPlugin.name, logHook);
 			}
 			hook.tap(HooksInspectPlugin.name, "logHook", logHook);
 		});
+	}
+
+	private logHook(message: string, color: Chalk) {
+		let logged = false;
+		return (...args: any[]) => {
+			if (logged) {
+				return;
+			}
+			logged = true;
+			const argInfo = args.map(simpleTypeName).join(", ");
+			const offset = this.stopWatch.milliseconds().toFixed(2);
+			console.log(offset + " - " + color(`${message}(${argInfo})`));
+		};
 	}
 }
