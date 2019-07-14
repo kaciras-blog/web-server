@@ -3,31 +3,37 @@ import { Compiler, Plugin } from "webpack";
 import { Hook, HookMap } from "tapable";
 
 
+type SecondAndNano = [number, number];
+
+function offsetMillisecond(from: SecondAndNano, to: SecondAndNano) {
+	return (to[0] - from[0]) * 1000 + (to[1] - from[1]) / 1000000;
+}
+
 class StopWatch {
 
-	private startSecond!: number;
-	private startNano!: number;
+	private init!: SecondAndNano;
+	private last!: SecondAndNano;
 
 	start() {
-		[this.startSecond, this.startNano] = process.hrtime();
+		this.init = this.last = process.hrtime();
 	}
 
-	milliseconds() {
-		const [second, nano] = process.hrtime();
-		return (second - this.startSecond) * 1000 + (nano - this.startNano) / 1000000;
+	time() {
+		const now = process.hrtime();
+		const { init, last } = this;
+		this.last = now;
+		return [offsetMillisecond(init, now), offsetMillisecond(last, now)];
 	}
 }
 
 function simpleTypeName(value: any): string {
 	switch (typeof value) {
-		case "string":
-			return "string";
 		case "object":
 			return value.__proto__.constructor.name;
 		case "function":
 			return value.name;
 		default:
-			return value.toString();
+			return typeof value;
 	}
 }
 
@@ -40,11 +46,11 @@ export default class HooksInspectPlugin implements Plugin {
 	private stopWatch = new StopWatch();
 
 	apply(compiler: Compiler): void {
-		this.stopWatch.start();
 		this.installHooks("Compiler", chalk.cyanBright, compiler);
 		this.setupTapable("NormalModuleFactory", chalk.blueBright, compiler.hooks.normalModuleFactory);
 		this.setupTapable("ContextModuleFactory", chalk.blueBright, compiler.hooks.contextModuleFactory);
 		this.setupTapable("Compilation", chalk.yellowBright, compiler.hooks.thisCompilation);
+		this.stopWatch.start();
 	}
 
 	private setupTapable(namespace: string, color: Chalk, tapable: Hook) {
@@ -75,8 +81,10 @@ export default class HooksInspectPlugin implements Plugin {
 			}
 			logged = true;
 			const argInfo = args.map(simpleTypeName).join(", ");
-			const offset = this.stopWatch.milliseconds().toFixed(2);
-			console.log(offset + " - " + color(`${message}(${argInfo})`));
+			const [time, duration] = this.stopWatch.time();
+
+			const timeLabel = `${time.toFixed(0)} [${duration.toFixed(3)}] - `;
+			console.log(timeLabel + color(`${message}(${argInfo})`));
 		};
 	}
 }
