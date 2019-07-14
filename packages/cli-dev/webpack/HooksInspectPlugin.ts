@@ -1,53 +1,8 @@
 import chalk, { Chalk } from "chalk";
 import { Compiler, Plugin } from "webpack";
 import { Hook, HookMap } from "tapable";
+import { StopWatch, once } from "../utils";
 
-
-/**
- * process.hrtime() 返回的时间二元组的类型，第一个是秒，第二个是纳秒。
- * 这个数组仅用于打包两个数，不应该被修改，所以加上一个 readonly 修饰符。
- */
-type SecondAndNano = readonly [number, number];
-
-function offsetMS(from: SecondAndNano, to: SecondAndNano) {
-	return (to[0] - from[0]) * 1000 + (to[1] - from[1]) / 1000000;
-}
-
-class StopWatch {
-
-	private init!: SecondAndNano;
-	private last!: SecondAndNano;
-
-	start() {
-		this.init = this.last = process.hrtime();
-	}
-
-	/**
-	 * 获取计时时间和离上次调用此方法又过了多久的时间，必须先调用 start()。
-	 *
-	 * @return [计时时间, 两次time()的时差]
-	 */
-	time(): [number, number] {
-		const { init, last } = this;
-		if (!init) {
-			throw new Error("请先调用 start() 启动计时器");
-		}
-		const now = this.last = process.hrtime();
-		return [offsetMS(init, now), offsetMS(last, now)];
-	}
-}
-
-/* tslint:disable:ban-types */
-function once(func: Function) {
-	let called = false;
-	return function wrapped(...args: any[]) {
-		if (called) {
-			return;
-		}
-		called = true;
-		func(...args);
-	};
-}
 
 function simpleTypeName(value: any): string {
 	switch (typeof value) {
