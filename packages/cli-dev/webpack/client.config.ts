@@ -9,6 +9,7 @@ import { resolve, styleLoaders } from "./share";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin, { Hooks } from "html-webpack-plugin";
 import { CliDevelopmentOptions } from "../index";
+import HooksInspectPlugin from "./HooksInspectPlugin";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
@@ -114,6 +115,7 @@ export default (options: CliDevelopmentOptions) => {
 		}),
 		new HashedModuleIdsPlugin(),
 		new VueSSRClientPlugin(),
+		new HooksInspectPlugin(),
 	];
 
 	const config: Configuration = {
