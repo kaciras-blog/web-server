@@ -139,7 +139,12 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 						name: assetsPath("img/[name].[hash:8].[ext]"),
 					},
 				},
-				require.resolve("./advance-image-loader"),
+				{
+					loader: require.resolve("./advance-image-loader"),
+					options: {
+						name: assetsPath("img/[name].[hash:8].webp"),
+					},
+				},
 			],
 		},
 		{

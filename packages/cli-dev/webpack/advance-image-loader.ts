@@ -51,6 +51,8 @@ async function crop(this: loader.LoaderContext, content: Buffer) {
 
 export default async function advanceImageLoader(this: loader.LoaderContext, content: Buffer) {
 	this.cacheable(true);
+	const options = loaderUtils.getOptions(this);
+
 	const loaderCallback = this.async()!;
 	let image: Sharp;
 
@@ -65,8 +67,8 @@ export default async function advanceImageLoader(this: loader.LoaderContext, con
 
 	const rawPath = this.resourcePath;
 	if (/\.(jpe?g|png)$/.test(rawPath)) {
-		const webpPath = rawPath.substring(0, rawPath.lastIndexOf(".")) + ".webp";
-		this.emitFile(webpPath, await image.webp().toBuffer(), null);
+		const webpPath = loaderUtils.interpolateName(this, options.name, { content });
+		this.emitFile(webpPath, await image.webp().toBuffer(), undefined);
 	}
 
 	loaderCallback(null, content);
