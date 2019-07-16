@@ -1,6 +1,18 @@
 import { loader } from "webpack";
 import * as loaderUtils from "loader-utils";
-import sharp, { Metadata, Region, Sharp } from "sharp";
+import sharp from "sharp";
+import imagemin from "imagemin";
+import gifsicle from "imagemin-gifsicle";
+import mozjpeg from "imagemin-mozjpeg";
+import pngquant from "imagemin-pngquant";
+import optipng from "imagemin-optipng";
+
+const plugins = [
+	gifsicle(),
+	mozjpeg(),
+	pngquant(),
+	optipng(),
+];
 
 /**
  * module.exports.raw 可以用来设置加载器处理数据的类型，为 true 时处理原始字节，默认处理字符串。
@@ -8,65 +20,31 @@ import sharp, { Metadata, Region, Sharp } from "sharp";
  */
 export const raw = true;
 
-function IndexBannerMobile(metadata: Metadata) {
-	const region = {} as Region;
-	const WIDTH = 560;
-	region.left = Math.round((metadata.width! - WIDTH) / 2);
-	region.width = WIDTH;
-	region.top = 0;
-	region.height = metadata.height!;
-	return region;
-}
-
 /**
+ * 压缩优化图片的加载器，能够转换图片格式、压缩图片、生成额外的webp格式文件。
  *
+ * 该加载器仅支持位图，矢量图不适用于上述功能。
+ * 该加载器已经包含了 image-webpack-loader 的功能，不要再添加它。
+ *
+ * @param content 图片数据
  */
-type Preset = (metadata: Metadata) => Region;
-
-interface Presets {
-	[key: string]: Preset;
-}
-
-async function crop(this: loader.LoaderContext, content: Buffer) {
-	if (!this.resourceQuery) {
-		return content;
-	}
-	let image = sharp(content);
-	const query = loaderUtils.parseQuery(this.resourceQuery);
-	const metadata = await image.metadata();
-
-	// TEMP
-	const PRESET: Presets = { IndexBannerMobile };
-
-	if (query.size) {
-		const preset = PRESET[query.size];
-		if (!preset) {
-			throw new Error("Undefined crop preset: " + query.size);
-		}
-		image = image.extract(preset(metadata));
-	}
-
-	return query.format === "jpg" ? image.jpeg() : image;
-}
-
 export default async function advanceImageLoader(this: loader.LoaderContext, content: Buffer) {
 	this.cacheable(true);
 	const options = loaderUtils.getOptions(this);
 
 	const loaderCallback = this.async()!;
-	let image: Sharp;
+	const image = sharp(content);
 
-	const rv = await crop.call(this, content);
-	if (Buffer.isBuffer(rv)) {
-		content = rv;
-		image = sharp(rv);
-	} else {
-		image = rv;
-		content = await rv.toBuffer();
+	const query = loaderUtils.parseQuery(this.resourceQuery);
+	if (query.format === "jpg") {
+		content = await image.jpeg().toBuffer();
 	}
+	content = await imagemin.buffer(content, { plugins });
 
 	const rawPath = this.resourcePath;
-	if (/\.(jpe?g|png)$/.test(rawPath)) {
+	if (options.name && /\.(jpe?g|png)$/.test(rawPath)) {
+
+		// 输出文件的 HASH 值是由这里传递的 content 计算的，使用传递给下一个加载器
 		const webpPath = loaderUtils.interpolateName(this, options.name, { content });
 		this.emitFile(webpPath, await image.webp().toBuffer(), undefined);
 	}

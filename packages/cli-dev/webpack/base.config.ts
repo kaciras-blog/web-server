@@ -145,6 +145,9 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 						name: assetsPath("img/[name].[hash:8].webp"),
 					},
 				},
+				{
+					loader: require.resolve("./crop-image-loader"),
+				},
 			],
 		},
 		{
@@ -172,8 +175,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 			threshold: 1024,
 			algorithm: "brotliCompress",
 		}));
-		configuraion.plugins!.push(new ExternalWebpPlugin());
-		imageLoaders.forEach((loader) => (loader.use as RuleSetUseItem[]).push("image-webpack-loader"));
+		(imageLoaders[1] as RuleSetUseItem[]).push("image-webpack-loader");
 	}
 	configuraion.module!.rules.push(...imageLoaders);
 
