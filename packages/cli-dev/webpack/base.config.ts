@@ -1,12 +1,12 @@
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
-import parseArgs from "minimist";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
-import { Configuration, DefinePlugin } from "webpack";
+import { Configuration, DefinePlugin, RuleSetRule, RuleSetUseItem } from "webpack";
 import { CliDevelopmentOptions, WebpackOptions } from "..";
 import { resolve } from "./share";
-
+import ExternalWebpPlugin from "./ExternalWebpPlugin";
+import CompressionPlugin from "compression-webpack-plugin";
 
 /**
  * 生成一个标识字符串，当 cache-loader 使用默认的读写选项时，这个字符串将
@@ -31,7 +31,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
-	return {
+	const configuraion: Configuration = {
 		mode: webpackOpts.mode,
 		context: process.cwd(),
 		output: {
@@ -85,35 +85,6 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 					},
 				},
 				{
-					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-					use: [
-						{
-							loader: "url-loader",
-							options: {
-								limit: 2048,
-								name: assetsPath("img/[name].[hash:8].[ext]"),
-							},
-						},
-						{
-							loader: "image-webpack-loader",
-						},
-					],
-				},
-				{
-					test: /\.(svg)(\?.*)?$/,
-					use: [
-						{
-							loader: "file-loader",
-							options: {
-								name: assetsPath("img/[name].[hash:8].[ext]"),
-							},
-						},
-						{
-							loader: "image-webpack-loader",
-						},
-					],
-				},
-				{
 					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
 					loader: "url-loader",
 					options: {
@@ -156,4 +127,57 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 		},
 		performance: false, // 不提示资源过大等没啥用的信息
 	};
+
+	const imageLoaders: RuleSetRule[] = [
+		{
+			test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
+			use: [
+				{
+					loader: "url-loader",
+					options: {
+						limit: 2048,
+						name: assetsPath("img/[name].[hash:8].[ext]"),
+					},
+				},
+				{
+					loader: require.resolve("./advance-image-loader"),
+					options: {
+						name: assetsPath("img/[name].[hash:8].webp"),
+					},
+				},
+				{
+					loader: require.resolve("./crop-image-loader"),
+				},
+			],
+		},
+		{
+			test: /\.(svg)(\?.*)?$/,
+			use: [
+				{
+					loader: "file-loader",
+					options: {
+						name: assetsPath("img/[name].[hash:8].[ext]"),
+					},
+				},
+			],
+		},
+	];
+
+	if (options.webpack.mode === "production" && side === "client") {
+		configuraion.plugins!.push(new CompressionPlugin({
+			test: /\.(js|css|html|svg)$/,
+			threshold: 1024,
+		}));
+		// @ts-ignore 用别人的库就是这么坑爹，类型定义跟不上版本
+		configuraion.plugins!.push(new CompressionPlugin({
+			filename: "[path].br[query]",
+			test: /\.(js|css|html|svg)$/,
+			threshold: 1024,
+			algorithm: "brotliCompress",
+		}));
+		(imageLoaders[1] as RuleSetUseItem[]).push("image-webpack-loader");
+	}
+	configuraion.module!.rules.push(...imageLoaders);
+
+	return configuraion;
 };

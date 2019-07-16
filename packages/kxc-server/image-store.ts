@@ -18,6 +18,7 @@ export interface ImageMiddlewareOptions {
 }
 
 const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
+const CONTEXT_PATH = "/image/";
 
 /**
  * 根据指定的选项创建中间件。
@@ -30,7 +31,7 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 	fs.ensureDirSync(options.imageRoot);
 
 	async function getImage(ctx: Context): Promise<void> {
-		const name = ctx.path.substring("/image/".length);
+		const name = ctx.path.substring(CONTEXT_PATH.length);
 		if (!name || /[\\/]/.test(name)) {
 			ctx.status = 404;
 		} else {
@@ -80,13 +81,15 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 		}
 
 		// 保存的文件名通过 Location 响应头来传递
-		ctx.set("Location", "/image/" + name);
+		ctx.set("Location", CONTEXT_PATH + name);
 	}
 
+	// 【修复】CONTEXT_PATH 要统一，以免发生判断条件不一致的问题
 	return (ctx, next) => {
-		if (!ctx.path.startsWith("/image")) {
+		if (!ctx.path.startsWith(CONTEXT_PATH)) {
 			return next();
-		} else if (ctx.method === "GET") {
+		}
+		if (ctx.method === "GET") {
 			return getImage(ctx);
 		} else if (ctx.method === "POST") {
 			return uploadImage(ctx);

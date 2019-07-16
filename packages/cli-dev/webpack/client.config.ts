@@ -2,13 +2,14 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
 import path from "path";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
-import { Compiler, Configuration, HashedModuleIdsPlugin, Plugin, RuleSetLoader } from "webpack";
+import { Configuration, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
 import merge from "webpack-merge";
 import baseWebpackConfig from "./base.config";
 import { resolve, styleLoaders } from "./share";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import HtmlWebpackPlugin, { Hooks } from "html-webpack-plugin";
+import HtmlWebpackPlugin from "html-webpack-plugin";
 import { CliDevelopmentOptions } from "../index";
+import VueSSRTemplatePlugin from "./VueSSRTemplatePlugin";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
@@ -49,34 +50,6 @@ function setupBabel(config: any, options: CliDevelopmentOptions) {
 			resolve("src/service-worker"),
 		],
 	});
-}
-
-
-class SSRTemplatePlugin implements Plugin {
-
-	static readonly ID = "SSRTemplatePlugin";
-
-	private readonly filename: string;
-	private readonly el: string;
-
-	constructor(filename: string, el: string) {
-		this.filename = filename;
-		this.el = el;
-	}
-
-	apply(compiler: Compiler): void {
-		compiler.hooks.compilation.tap(SSRTemplatePlugin.ID, (compilation) => {
-			const hook = (compilation.hooks as Hooks).htmlWebpackPluginAfterHtmlProcessing;
-			hook.tapAsync(SSRTemplatePlugin.ID, this.AfterHtmlProcessing.bind(this));
-		});
-	}
-
-	AfterHtmlProcessing(data: any, callback: any) {
-		if (data.outputName === this.filename) {
-			data.html = data.html.replace(this.el, "<!--vue-ssr-outlet-->");
-		}
-		callback(null, data);
-	}
 }
 
 export default (options: CliDevelopmentOptions) => {
@@ -170,7 +143,7 @@ export default (options: CliDevelopmentOptions) => {
 		filename: templateFile,
 		minify: htmlMinifyOptions,
 	}));
-	plugins.push(new SSRTemplatePlugin(templateFile, "<div id=app></div>"));
+	plugins.push(new VueSSRTemplatePlugin(templateFile, "<div id=app></div>"));
 
 
 	/** 默认文件名不带hash，生产模式带上以便区分不同版本的文件 */

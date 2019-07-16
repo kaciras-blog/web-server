@@ -5,7 +5,6 @@ import { runServer, ServerOptions } from "./infra/create-server";
 import BlogPlugin, { AppOptions } from "./BlogPlugin";
 import ServerAPI from "./infra/ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
-import { compressStaticDirectory } from "./infra/static-compress";
 import { configureGlobalAxios } from "./axios-http2";
 import serve from "koa-static";
 
@@ -54,18 +53,13 @@ export interface CliServerOptions {
 }
 
 async function runProd(options: CliServerOptions) {
-	const staticResources = path.join(options.outputDir, options.assetsDir);
-
-	logger.info("预压缩静态资源...");
-	await compressStaticDirectory(staticResources);
-	logger.info("静态资源压缩完成");
-
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
 	const api = new ServerAPI();
 	api.addPlugin(new BlogPlugin(options.blog));
 	api.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
+	const staticResources = path.join(options.outputDir, options.assetsDir);
 	api.useResource(serve(staticResources, {
 		index: false,
 		maxAge: 31536000,
