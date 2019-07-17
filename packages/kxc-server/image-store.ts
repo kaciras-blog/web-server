@@ -9,6 +9,7 @@ import path from "path";
 import koaSend from "koa-send";
 import crypto from "crypto";
 import { LocalImageStore } from "./image-converter";
+import { MulterIncomingMessage } from "koa-multer";
 
 
 const logger = getLogger("ImageService");
@@ -48,13 +49,13 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 	 * @param ctx 请求上下文
 	 */
 	async function uploadImage(ctx: Context) {
-		logger.trace("有图片正在上传");
 
-		// Multer 库直接修改ctx.req
-		const file = (ctx.req as any).file;
+		// Multer 库直接修改 ctx.req
+		const file = (ctx.req as MulterIncomingMessage).file;
 		if (!file) {
 			return ctx.status = 400;
 		}
+		logger.trace("有图片正在上传:" + file.filename);
 
 		// mime.extension() 对 undefined 以及不支持的返回 false
 		let ext = mime.extension(file.mimetype);
