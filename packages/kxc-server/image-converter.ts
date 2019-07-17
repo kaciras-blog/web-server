@@ -10,15 +10,9 @@ import path from "path";
 import { getLogger } from "log4js";
 
 
-export interface ImageEntity {
-	hash: string;
-	type: string;
-	buffer: Buffer;
-}
-
 const logger = getLogger("ImageService");
 
-const pngquant = PngQuant();
+const pngQuant = PngQuant();
 const gifScile = GifScile();
 const svgOptimizer = new SVGO();
 
@@ -31,15 +25,13 @@ export class LocalImageStore {
 		this.directory = directory;
 	}
 
-	async save(input: ImageEntity): Promise<string> {
-		const { hash, buffer, type } = input;
+	async save(hash: string, type: string, buffer: Buffer) {
 		logger.debug("保存上传的图片:", hash);
 
-		// 矢量图没有压缩和缩放，单独处理
+		// 矢量图没有转码，单独处理
 		if (type === "svg") {
 			const optimized = await svgOptimizer.optimize(buffer.toString());
-			await fs.writeFile(this.originPath(hash, type), optimized.data);
-			return `${hash}.${type}`;
+			return await fs.writeFile(this.originPath(hash, type), optimized.data);
 		}
 
 		const image = sharp(buffer);
@@ -59,19 +51,15 @@ export class LocalImageStore {
 		// imagemin 的 mozjpeg 没有类型定义，我也懒得折腾，sharp 默认构建使用的 libjpeg-turbo 也不差吧。
 		switch (type) {
 			case "gif":
-				await fs.writeFile(this.cachePath(hash, type), await gifScile(buffer));
-				break;
+				return fs.writeFile(this.cachePath(hash, type), await gifScile(buffer));
 			case "jpg":
 			case "bmp":
-				await fs.writeFile(this.cachePath(hash, type), await image.jpeg().toBuffer());
-				break;
+				return image.jpeg().toFile(this.cachePath(hash, type));
 			case "png":
-				await fs.writeFile(this.cachePath(hash, type), await pngquant(buffer));
-				break;
+				return fs.writeFile(this.cachePath(hash, type), await pngQuant(buffer));
 			default:
-				throw new Error("不支持的图片格式：" + input.type);
+				throw new Error("不支持的图片格式：" + type);
 		}
-		return `${hash}.${type}`;
 	}
 
 	async select(hash: string, type: string, webpSupport: boolean): Promise<string> {
@@ -87,11 +75,12 @@ export class LocalImageStore {
 			logger.debug(`webp转码缓存未命中：${hash}.${type}`);
 		}
 
-		const cache = this.cachePath(hash, type);
+		// 同样的转换，bmp 缓存为 jpg，原图为 png
+		const cache = this.cachePath(hash, type === "bmp" ? "jpg" : type);
 		if (await fs.pathExists(cache)) {
 			return cache;
 		}
-		return this.originPath(hash, type);
+		return this.originPath(hash, type === "bmp" ? "png" : type);
 	}
 
 	private cachePath(hash: string, type: string) {
