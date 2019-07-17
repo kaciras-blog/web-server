@@ -35,9 +35,11 @@ export default async function advanceImageLoader(this: loader.LoaderContext, con
 	const loaderCallback = this.async()!;
 	const image = sharp(content);
 
-	const query = loaderUtils.parseQuery(this.resourceQuery);
-	if (query.format === "jpg") {
-		content = await image.jpeg().toBuffer();
+	if (this.resourceQuery) {
+		const query = loaderUtils.parseQuery(this.resourceQuery);
+		if (query.format === "jpg") {
+			content = await image.jpeg().toBuffer();
+		}
 	}
 	content = await imagemin.buffer(content, { plugins });
 

@@ -3,7 +3,7 @@
  */
 import sharp from "sharp";
 import PngQuant from "imagemin-pngquant";
-import GifScile from "imagemin-gifsicle;
+import GifScile from "imagemin-gifsicle";
 import SVGO from "svgo";
 import fs from "fs-extra";
 import path from "path";

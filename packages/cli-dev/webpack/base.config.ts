@@ -175,7 +175,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 			threshold: 1024,
 			algorithm: "brotliCompress",
 		}));
-		(imageLoaders[1] as RuleSetUseItem[]).push("image-webpack-loader");
+		(imageLoaders[1].use as RuleSetUseItem[]).push("image-webpack-loader");
 	}
 	configuraion.module!.rules.push(...imageLoaders);
 
