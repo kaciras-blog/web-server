@@ -1,17 +1,14 @@
 /**
  * imagemin 对某些格式会将图片缓冲写入到临时文件，然后启动进程执行相关的图片处理程序，这方法很低效。
  */
-import sharp, { Sharp } from "sharp";
+import sharp from "sharp";
 import PngQuant from "imagemin-pngquant";
+import GifScile from "imagemin-gifsicle;
 import SVGO from "svgo";
 import fs from "fs-extra";
 import path from "path";
+import { getLogger } from "log4js";
 
-export interface ResizeOptions {
-	readonly width?: number;
-	readonly height?: number;
-	readonly force?: boolean;
-}
 
 export interface ImageEntity {
 	hash: string;
@@ -19,24 +16,13 @@ export interface ImageEntity {
 	buffer: Buffer;
 }
 
-const svgOptimizer = new SVGO();
+const logger = getLogger("ImageService");
+
 const pngquant = PngQuant();
+const gifScile = GifScile();
+const svgOptimizer = new SVGO();
 
-async function applyResize(image: Sharp, options: ResizeOptions) {
-	const { width, height, force } = options;
-	if (force) {
-		return image.resize(width, height, { fit: "outside" });
-	}
-	const source = await image.metadata();
-	if (width && source.width! > width) {
-		return image.resize(width, null, { fit: "outside" });
-	}
-	if (height && source.height! > height) {
-		return image.resize(null, height, { fit: "outside" });
-	}
-	return image;
-}
-
+// 暂时不支持 webp 作为原始图片
 export class LocalImageStore {
 
 	private readonly directory: string;
@@ -45,16 +31,18 @@ export class LocalImageStore {
 		this.directory = directory;
 	}
 
-	async save(input: ImageEntity) {
+	async save(input: ImageEntity): Promise<string> {
 		const { hash, buffer, type } = input;
+		logger.debug("保存上传的图片:", hash);
 
 		// 矢量图没有压缩和缩放，单独处理
 		if (type === "svg") {
 			const optimized = await svgOptimizer.optimize(buffer.toString());
-			return await fs.writeFile(this.originPath(hash, type), optimized.data);
+			await fs.writeFile(this.originPath(hash, type), optimized.data);
+			return `${hash}.${type}`;
 		}
 
-		let image = sharp(buffer);
+		const image = sharp(buffer);
 
 		// 保存原图，BMP 图片保存为无损 PNG
 		if (type === "bmp") {
@@ -63,30 +51,51 @@ export class LocalImageStore {
 			await fs.writeFile(this.originPath(hash, type), buffer);
 		}
 
-		// 保存转换后的图片
-		if (type !== "webp") {
-			await image.webp().toFile(this.cachePath(hash, "origin", "webp"));
+		// 保存转换后的webp图片，TODO: sharp 0.22.1 还不支持webp动画
+		if (type !== "gif") {
+			await image.webp().toFile(this.cachePath(hash, "webp"));
 		}
 
-		switch (input.type) {
+		// imagemin 的 mozjpeg 没有类型定义，我也懒得折腾，sharp 默认构建使用的 libjpeg-turbo 也不差吧。
+		switch (type) {
+			case "gif":
+				await fs.writeFile(this.cachePath(hash, type), await gifScile(buffer));
+				break;
 			case "jpg":
 			case "bmp":
-				image = image.jpeg();
+				await fs.writeFile(this.cachePath(hash, type), await image.jpeg().toBuffer());
 				break;
 			case "png":
-				image = await image.png();
-				// pngquant
+				await fs.writeFile(this.cachePath(hash, type), await pngquant(buffer));
 				break;
+			default:
+				throw new Error("不支持的图片格式：" + input.type);
 		}
-		// TODO
+		return `${hash}.${type}`;
 	}
 
-	select(hash: string): Buffer {
-		throw new Error();
+	async select(hash: string, type: string, webpSupport: boolean): Promise<string> {
+		if (type === "svg") {
+			return this.originPath(hash, type);
+		}
+
+		if (webpSupport) {
+			const webp = this.cachePath(hash, "webp");
+			if (await fs.pathExists(webp)) {
+				return webp;
+			}
+			logger.debug(`webp转码缓存未命中：${hash}.${type}`);
+		}
+
+		const cache = this.cachePath(hash, type);
+		if (await fs.pathExists(cache)) {
+			return cache;
+		}
+		return this.originPath(hash, type);
 	}
 
-	private cachePath(hash: string, scale: string, type: string) {
-		return path.join(this.directory, scale, type, `${hash}.${type}`);
+	private cachePath(hash: string, type: string) {
+		return path.join(this.directory, "cache", type, `${hash}.${type}`);
 	}
 
 	private originPath(hash: string, type: string) {

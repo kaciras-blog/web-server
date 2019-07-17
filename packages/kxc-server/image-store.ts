@@ -8,9 +8,10 @@ import mime from "mime-types";
 import path from "path";
 import koaSend from "koa-send";
 import crypto from "crypto";
+import { LocalImageStore } from "./image-converter";
 
 
-const logger = getLogger("Blog");
+const logger = getLogger("ImageService");
 
 export interface ImageMiddlewareOptions {
 	imageRoot: string;
@@ -29,6 +30,7 @@ const CONTEXT_PATH = "/image/";
  */
 export function createImageMiddleware(options: ImageMiddlewareOptions): Middleware {
 	fs.ensureDirSync(options.imageRoot);
+	const store = new LocalImageStore(options.imageRoot);
 
 	async function getImage(ctx: Context): Promise<void> {
 		const name = ctx.path.substring(CONTEXT_PATH.length);
@@ -69,16 +71,16 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 		const buffer = file.buffer;
 
 		const sha3_256 = crypto.createHash("sha3-256");
-		const name = sha3_256.update(buffer).digest("hex") + "." + ext;
-		const store = path.join(options.imageRoot, name);
+		const hash = sha3_256.update(buffer).digest("hex") + "." + ext;
 
-		if (await fs.pathExists(store)) {
-			ctx.status = 200;
-		} else {
-			logger.debug("保存上传的图片:", name);
-			await fs.writeFile(store, buffer);
-			ctx.status = 201;
-		}
+		const name = await store.save({ hash, type: ext, buffer });
+
+		// if (await fs.pathExists(store)) {
+		// 	ctx.status = 200;
+		// } else {
+		// 	await fs.writeFile(store, buffer);
+		// 	ctx.status = 201;
+		// }
 
 		// 保存的文件名通过 Location 响应头来传递
 		ctx.set("Location", CONTEXT_PATH + name);
