@@ -2,7 +2,7 @@ import cors, { Options as CorsOptions } from "@koa/cors";
 import compress from "koa-compress";
 import conditional from "koa-conditional-get";
 import etag from "koa-etag";
-import { createImageMiddleware, ImageMiddlewareOptions } from "./image-store";
+import { createImageMiddleware, ImageMiddlewareOptions } from "./image-service";
 import ServerAPI, { ClassCliServerPligun } from "./infra/ServerAPI";
 import { intercept, serviceWorkerToggle } from "./infra/middlewares";
 import { createSitemapMiddleware } from "./sitemap";
