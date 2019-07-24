@@ -59,8 +59,7 @@ async function runProd(options: CliServerOptions) {
 	api.addPlugin(new BlogPlugin(options.blog));
 	api.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
-	const staticResources = path.join(options.outputDir, options.assetsDir);
-	api.useResource(serve(staticResources, {
+	api.useResource(serve(options.outputDir, {
 		index: false,
 		maxAge: 31536000,
 	}));
