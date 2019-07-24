@@ -65,7 +65,8 @@ async function runProd(options: CliServerOptions) {
 		maxAge: 31536000,
 	}));
 
-	return runServer(api.createApp().callback(), options.server);
+	await runServer(api.createApp().callback(), options.server);
+	logger.info("启动完毕");
 }
 
 type CommandHandler<T> = (options: T) => void | Promise<any>;

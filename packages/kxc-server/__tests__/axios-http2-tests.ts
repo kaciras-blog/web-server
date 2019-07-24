@@ -62,6 +62,7 @@ describe("certificate verification", () => {
 
 	afterAll((done) => server.close(done));
 
+	// TODO: 自签证书的错误如何捕获？
 	// it("should reject self signed certificate", () => {
 	// 	const axios = Axios.create();
 	// 	adaptAxiosHttp2(axios, true);

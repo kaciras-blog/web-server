@@ -11,6 +11,7 @@ import http2, {
 	SecureClientSessionOptions,
 } from "http2";
 
+type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
 /**
  * 修改指定 Axios 实例的 transport 配置，使其使用 NodeJS 的 http2 模块发送请求。
@@ -23,7 +24,7 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 	const schema = https ? "https" : "http";
 	const cache = new Map<string, ClientHttp2Session>();
 
-	function request(options: any, callback: any) {
+	function request(options: any, callback: (res: any) => void) {
 		let origin = `${schema}://${options.hostname}`;
 		if (options.port) {
 			origin += ":" + options.port;
@@ -42,12 +43,11 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 			":method": options.method.toUpperCase(),
 			":path": options.path,
 		});
-		stream.on("response", (headers: IncomingHttpHeaders & IncomingHttpStatusHeader) => {
+		return stream.on("response", (headers: ResHeaders) => {
 			stream.headers = headers;
 			stream.statusCode = headers[":status"];
 			callback(stream);
 		});
-		return stream;
 	}
 
 	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里

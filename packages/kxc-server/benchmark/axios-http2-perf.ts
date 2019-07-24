@@ -3,7 +3,11 @@ import Axios from "axios";
 import { adaptAxiosHttp2 } from "../axios-http2";
 import { AddressInfo } from "net";
 
-// 450 ms 1368 ms
+/*
+ * 测试 axios-http2 的性能：
+ * 不缓存 ClientHttp2Session - 1368 毫秒 / 1000次请求
+ * 缓存 ClientHttp2Session - 450 毫秒 / 1000次请求
+ */
 const axios = Axios.create();
 adaptAxiosHttp2(axios);
 const server = http2.createServer(((request, response) => response.end("benchmark")));
@@ -21,6 +25,7 @@ async function iterate() {
 	return (to[0] - from[0]) * 1000 + (to[1] - from[1]) / 1000000;
 }
 
+/** 除了测试性能之外，还测试了ClientHttp2Session的超时时间 */
 async function run() {
 	let timeUsage = 0;
 	for (let i = 0; i < 5; i++) {
