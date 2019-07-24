@@ -67,25 +67,15 @@ function cssLoaders(options: WebpackOptions, isServer: boolean, modules: boolean
  * @param options 选项
  * @param isServer 是否服务端构建
  */
-export function styleLoaders(options: WebpackOptions, isServer: boolean = false) {
-	const output = [];
+export function styleLoaders(options: WebpackOptions, isServer = false) {
 	const loaders = cssLoaders(options, isServer, false);
-	const moduleLoaders = cssLoaders(options, isServer, true);
+	const modular = cssLoaders(options, isServer, true);
 
-	for (const extension in loaders) {
-		output.push({
-			test: new RegExp("\\." + extension + "$"),
-			oneOf: [
-				{
-					resourceQuery: /module/,
-					use: moduleLoaders[extension],
-				},
-				{
-					use: loaders[extension],
-				},
-			],
-		});
-	}
-
-	return output;
+	return Object.keys(loaders).map((ext) => ({
+		test: new RegExp("\\." + ext + "$"),
+		oneOf: [
+			{ resourceQuery: /module/, use: modular[ext] },
+			{ use: loaders[ext] },
+		],
+	}));
 }
