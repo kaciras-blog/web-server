@@ -5,7 +5,6 @@ import fs from "fs-extra";
 import { Context, Middleware } from "koa";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import koaSend from "koa-send";
 import crypto from "crypto";
 import { LocalImageStore } from "./image-converter";
 import { MulterIncomingMessage } from "koa-multer";
@@ -22,6 +21,11 @@ export interface ImageMiddlewareOptions {
 const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
 const CONTEXT_PATH = "/image/";
 
+function splitName(filename: string) {
+	const i = filename.lastIndexOf(".");
+	return [filename.substring(0, i), filename.substring(i + 1, filename.length)];
+}
+
 /**
  * 根据指定的选项创建中间件。
  * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
@@ -36,16 +40,28 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 	async function getImage(ctx: Context) {
 		const name = ctx.path.substring(CONTEXT_PATH.length);
 		if (!name || /[\\/]/.test(name)) {
-			ctx.status = 404;
-		} else {
-			const ext = path.extname(name);
-			if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
-				return ctx.status = 400;
-			}
-			const webpSupport = Boolean(ctx.accept.type("image/webp"));
-			const file = await store.select(path.basename(name), ext, webpSupport);
-			await koaSend(ctx, file, { maxAge: 31536000 });
+			return ctx.status = 404;
 		}
+
+		const [hash, ext] = splitName(name);
+		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
+			return ctx.status = 400;
+		}
+
+		const webpSupport = Boolean(ctx.accept.type("image/webp"));
+		const file = await store.select(hash, ext, webpSupport);
+		if (file === null) {
+			return ctx.status = 404;
+		}
+
+		// TODO: 当前的类型选择不依赖url，不要再中间件里缓存它，故把Cache-Control设为private
+		const stats = await fs.stat(file);
+		ctx.set("Content-Length", stats.size.toString());
+		ctx.set("Last-Modified", stats.mtime.toUTCString());
+		ctx.set("Cache-Control", "private, max-age=31536000");
+
+		ctx.type = path.extname(file);
+		ctx.body = fs.createReadStream(file);
 	}
 
 	/**
@@ -81,13 +97,6 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 			.digest("hex");
 
 		await store.save(hash, ext, file.buffer);
-
-		// if (await fs.pathExists(store)) {
-		// 	ctx.status = 200;
-		// } else {
-		// 	await fs.writeFile(store, buffer);
-		// 	ctx.status = 201;
-		// }
 
 		// 保存的文件名通过 Location 响应头来传递
 		ctx.set("Location", `${CONTEXT_PATH}${hash}.${ext}`);

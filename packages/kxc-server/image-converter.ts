@@ -58,11 +58,11 @@ export class LocalImageStore {
 			case "png":
 				return fs.writeFile(this.cachePath(hash, type), await pngQuant(buffer));
 			default:
-				throw new Error("不支持的图片格式：" + type);
+				throw new Error("传入了不支持的图片格式：" + type);
 		}
 	}
 
-	async select(hash: string, type: string, webpSupport: boolean): Promise<string> {
+	async select(hash: string, type: string, webpSupport: boolean): Promise<string | null> {
 		if (type === "svg") {
 			return this.originPath(hash, type);
 		}
@@ -80,7 +80,8 @@ export class LocalImageStore {
 		if (await fs.pathExists(cache)) {
 			return cache;
 		}
-		return this.originPath(hash, type === "bmp" ? "png" : type);
+		const origin = this.originPath(hash, type === "bmp" ? "png" : type);
+		return (await fs.pathExists(origin)) ? origin : null;
 	}
 
 	private cachePath(hash: string, type: string) {
