@@ -3,9 +3,14 @@
  * 【警告】Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
 import Axios, { AxiosInstance } from "axios";
-import http2, { IncomingHttpHeaders, IncomingHttpStatusHeader, SecureClientSessionOptions } from "http2";
 import fs from "fs-extra";
-import { type } from "os";
+import http2, {
+	IncomingHttpHeaders,
+	IncomingHttpStatusHeader,
+	ClientHttp2Session,
+	SecureClientSessionOptions,
+} from "http2";
+
 
 /**
  * 修改指定 Axios 实例的 transport 配置，使其使用 NodeJS 的 http2 模块发送请求。
@@ -16,6 +21,7 @@ import { type } from "os";
  */
 export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOptions?: SecureClientSessionOptions) {
 	const schema = https ? "https" : "http";
+	const cache = new Map<string, ClientHttp2Session>();
 
 	function request(options: any, callback: any) {
 		let origin = `${schema}://${options.hostname}`;
@@ -23,20 +29,25 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 			origin += ":" + options.port;
 		}
 
-		const client = http2.connect(origin, connectOptions);
-		const req: any = client.request({
+		// 缓存会话链接，会话默认有120秒超时，超时后触发close事件删除缓存
+		let client = cache.get(origin);
+		if (!client) {
+			client = http2.connect(origin, connectOptions);
+			cache.set(origin, client);
+			client.on("close", () => cache.delete(origin));
+		}
+
+		const stream: any = client.request({
 			...options.headers,
 			":method": options.method.toUpperCase(),
 			":path": options.path,
 		});
-
-		req.on("response", (headers: IncomingHttpHeaders & IncomingHttpStatusHeader) => {
-			req.headers = headers;
-			req.statusCode = headers[":status"];
-			callback(req);
+		stream.on("response", (headers: IncomingHttpHeaders & IncomingHttpStatusHeader) => {
+			stream.headers = headers;
+			stream.statusCode = headers[":status"];
+			callback(stream);
 		});
-		req.on("end", () => client.close());
-		return req;
+		return stream;
 	}
 
 	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里
