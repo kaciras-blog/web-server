@@ -7,7 +7,7 @@ import ServerAPI from "./infra/ServerAPI";
 
 const logger = log4js.getLogger("app");
 
-
+/** 传递给服务端入口的上下文信息 */
 export interface RenderContext {
 	url: string;
 	title: string;
@@ -51,6 +51,11 @@ export interface SSRMiddlewareOptions {
 	include?: RegExp | ((request: Request) => boolean);
 }
 
+/**
+ * 使用指定的渲染器和过滤规则创建服务端渲染的中间件。
+ *
+ * @param options 选项
+ */
 export function ssrMiddleware(options: SSRMiddlewareOptions): Middleware {
 	const { renderer, include } = options;
 
@@ -62,22 +67,15 @@ export function ssrMiddleware(options: SSRMiddlewareOptions): Middleware {
 		return handler;
 	}
 
-	const filter = typeof include === "function"
+	const accept = typeof include === "function"
 		? include
 		: (request: Request) => include.test(request.path);
 
-	return (ctx, next) => {
-		if (filter(ctx.request)) {
-			handler(ctx, next);
-		} else {
-			return next();
-		}
-	};
+	return (ctx, next) => accept(ctx.request) ? handler(ctx, next) : next();
 }
 
 /**
- * 使用指定目录下的 vue-ssr-server-bundle.json，vue-ssr-client-manifest.json 和 index.template.html
- * 来创建渲染器。
+ * 使用指定目录下的 vue-ssr-server-bundle.json，vue-ssr-client-manifest.json 和 index.template.html 来创建渲染器。
  *
  * @param workingDir 指定的目录
  */

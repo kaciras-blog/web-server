@@ -18,11 +18,15 @@ import WebpackHotMiddlewareType from "webpack-hot-middleware";
  *
  * @param config webpack的配置
  */
-async function createKoaWebpack(config: any) {
+async function createKoaWebpack(config: Configuration) {
 	try {
 		require("webpack-hot-client");
 	} catch (e) {
 		throw new Error("You should install `webpack-hot-client`, try `npm i -D webpack-hot-client`");
+	}
+
+	if (!config.output || !config.output.publicPath) {
+		throw new Error("Webpack 配置中的 output.publicPath 必须设置");
 	}
 
 	config.output.filename = "[name].js";
@@ -45,19 +49,25 @@ async function createKoaWebpack(config: any) {
  * 使用 webpack-hot-middleware，webpack 官方的开发服务器也使用这个库。
  * webpack-hot-middleware 使用 Server-Sent-Event 来通知前端更新资源，兼容性比WebpackHotClient好。
  *
+ * TODO: config.entry 情况太复杂，暂时用any作为config类型
+ *
  * @param config webpack的配置
  */
-async function createHotMiddleware(config: any) {
+async function createHotMiddleware(config: any): Promise<Middleware> {
 	if (!config.entry) {
 		throw new Error("No entry specified.");
 	}
+	if (!config.output || !config.output.publicPath) {
+		throw new Error("Webpack 配置中的 output.publicPath 必须设置");
+	}
+
 	if (!Array.isArray(config.entry)) {
 		config.entry = [config.entry];
 	}
 
 	config.entry.unshift("webpack-hot-middleware/client");
 	config.output.filename = "[name].js";
-	config.plugins.push(new webpack.HotModuleReplacementPlugin());
+	config.plugins!.push(new webpack.HotModuleReplacementPlugin());
 
 	const compiler = webpack(config);
 	const devMiddleware = require("webpack-dev-middleware")(compiler, {
@@ -104,7 +114,7 @@ async function createHotMiddleware(config: any) {
 	};
 }
 
-export default function (useHotClient: boolean, webpackConfig: Configuration): Promise<Middleware> {
+export default function hotReloadMiddleware(useHotClient: boolean, webpackConfig: Configuration) {
 	// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();
