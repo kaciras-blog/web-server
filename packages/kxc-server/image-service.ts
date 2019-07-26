@@ -41,8 +41,10 @@ export function createImageMiddleware(store: LocalImageStore): Middleware {
 		const file = await store.select(hash, ext, webpSupport);
 
 		if (file === null) {
+			logger.warn("请求了不存在的图片：" + ctx.path);
 			return ctx.status = 404;
 		}
+
 		const stats = await fs.stat(file);
 		ctx.set("Content-Length", stats.size.toString());
 		ctx.set("Last-Modified", stats.mtime.toUTCString());

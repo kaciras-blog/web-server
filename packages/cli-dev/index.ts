@@ -85,14 +85,14 @@ async function invokeWebpack(config: Configuration) {
 service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
-	const clientConfig = ClientConfiguration(options);
-	const ssrPlugin = VueSSRHotReloader.create(clientConfig, options);
-
 	const api = new ServerAPI();
 	api.addPlugin(new BlogPlugin(options.blog));
 
+	const clientConfig = ClientConfiguration(options);
 	api.useBeforeFilter(await hotReloadMiddleware(options.dev.useHotClient, clientConfig));
-	api.useFallBack(ssrMiddleware({ renderer: await ssrPlugin.getRendererFactory() }));
+
+	const vueSSRHotReloader = VueSSRHotReloader.create(clientConfig, options);
+	api.useFallBack(ssrMiddleware({ renderer: await vueSSRHotReloader.getRendererFactory() }));
 
 	await runServer(api.createApp().callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);

@@ -26,6 +26,13 @@ export class LocalImageStore {
 		fs.ensureDirSync(directory);
 	}
 
+	/**
+	 * 优化并保存图片文件到本地。
+	 *
+	 * @param hash 图片散列值
+	 * @param type 图片类型
+	 * @param buffer 图片数据
+	 */
 	async save(hash: string, type: string, buffer: Buffer) {
 		logger.debug("保存上传的图片:", hash);
 
@@ -63,6 +70,14 @@ export class LocalImageStore {
 		}
 	}
 
+	/**
+	 * 根据散列值选择最佳优化的图片
+	 *
+	 * @param hash 图片的散列值
+	 * @param type 图片格式
+	 * @param webpSupport 是否接受webp格式
+	 * @return 文件路径，如果找不到则为null
+	 */
 	async select(hash: string, type: string, webpSupport: boolean): Promise<string | null> {
 		if (type === "svg") {
 			return this.originPath(hash, type);

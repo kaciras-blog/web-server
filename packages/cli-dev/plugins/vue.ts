@@ -6,7 +6,10 @@ import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { CliDevelopmentOptions } from "..";
 import ServerConfiguration from "../webpack/server.config";
 import { PromiseCompletionSource } from "../utils";
+import log4js from "log4js";
 
+
+const logger = log4js.getLogger("dev");
 
 /**
  * 读取并保存 VueSSRClientPlugin 输出的清单文件和HTML模板的插件。
@@ -107,7 +110,7 @@ export default class VueSSRHotReloader {
 				throw err;
 			}
 			if (stats.hasErrors()) {
-				return console.error(stats.toString());
+				return logger.error(stats.toString());
 			}
 			this.serverBundle = JSON.parse(stats.compilation.assets["vue-ssr-server-bundle.json"].source());
 			this.updateVueSSR();
@@ -116,7 +119,7 @@ export default class VueSSRHotReloader {
 
 		await Promise.all([readyPromise, this.clientPlugin.readyPromise]);
 
-		console.log("Vue server side renderer created.");
+		logger.info("Vue server side renderer created.");
 		return () => this.renderer;
 	}
 

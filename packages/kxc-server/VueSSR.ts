@@ -5,7 +5,7 @@ import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import ServerAPI from "./infra/ServerAPI";
 
-const logger = log4js.getLogger("app");
+const logger = log4js.getLogger("SSR");
 
 /** 传递给服务端入口的上下文信息 */
 export interface RenderContext {
