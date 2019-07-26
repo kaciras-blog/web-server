@@ -2,16 +2,19 @@ import cors, { Options as CorsOptions } from "@koa/cors";
 import compress from "koa-compress";
 import conditional from "koa-conditional-get";
 import etag from "koa-etag";
-import { createImageMiddleware, ImageMiddlewareOptions } from "./image-service";
+import { createImageMiddleware } from "./image-service";
 import ServerAPI, { ClassCliServerPligun } from "./infra/ServerAPI";
 import { intercept, serviceWorkerToggle } from "./infra/middlewares";
 import { createSitemapMiddleware } from "./sitemap";
-import multer = require("koa-multer");
+import multer from "koa-multer";
 import bodyParser from "koa-bodyparser";
 import installCSPPlugin from "./csp-plugin";
+import { LocalImageStore } from "./image-converter";
 
 
-export interface AppOptions extends ImageMiddlewareOptions {
+/** 对应配置的 blog 属性 */
+export interface AppOptions {
+	imageRoot: string;
 	cors?: CorsOptions;
 
 	serverAddress: string;
@@ -39,14 +42,14 @@ export default class BlogPlugin implements ClassCliServerPligun {
 		api.useBeforeAll(uploader.single("file"));
 
 		api.useBeforeFilter(serviceWorkerToggle(true));
-		api.useBeforeFilter(createImageMiddleware(options)); // 图片太大不计算etag
+		api.useBeforeFilter(createImageMiddleware(new LocalImageStore(options.imageRoot)));
 
 		api.useFilter(intercept([
 			/\.(?:js|css)\.map$/,
 			/^\/index\.template|vue-ssr/,
 		]));
 		api.useFilter(compress({ threshold: 1024 }));
-		api.useFilter(etag());
+		api.useFilter(etag());  // 图片太大不计算etag
 
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 	}

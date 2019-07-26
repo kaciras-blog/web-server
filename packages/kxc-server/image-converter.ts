@@ -23,6 +23,7 @@ export class LocalImageStore {
 
 	constructor(directory: string) {
 		this.directory = directory;
+		fs.ensureDirSync(directory);
 	}
 
 	async save(hash: string, type: string, buffer: Buffer) {

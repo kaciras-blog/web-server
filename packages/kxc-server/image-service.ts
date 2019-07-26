@@ -13,51 +13,41 @@ import * as path from "path";
 
 const logger = getLogger("ImageService");
 
-export interface ImageMiddlewareOptions {
-	imageRoot: string;
-	cacheMaxAge: number;
-}
-
 const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
-const CONTEXT_PATH = "/image/";
 
-function splitName(filename: string) {
-	const i = filename.lastIndexOf(".");
-	return [filename.substring(0, i), filename.substring(i + 1, filename.length)];
-}
+const CONTEXT_PATH = "/image";
+const FILE_PATH_PATTERN = /\/image\/(\w+)\.(\w+)$/;
 
 /**
  * 根据指定的选项创建中间件。
  * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
  *
- * @param options 选项
+ * @param store 图片存储
  * @return Koa的中间件函数
  */
-export function createImageMiddleware(options: ImageMiddlewareOptions): Middleware {
-	fs.ensureDirSync(options.imageRoot);
-	const store = new LocalImageStore(options.imageRoot);
+export function createImageMiddleware(store: LocalImageStore): Middleware {
 
 	async function getImage(ctx: Context) {
-		const name = ctx.path.substring(CONTEXT_PATH.length);
-		if (!name || /[\\/]/.test(name)) {
+		const match = FILE_PATH_PATTERN.exec(ctx.path);
+		if (!match) {
 			return ctx.status = 404;
 		}
+		const [_, hash, ext] = match;
 
-		const [hash, ext] = splitName(name);
 		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
 			return ctx.status = 400;
 		}
-
 		const webpSupport = Boolean(ctx.accept.type("image/webp"));
 		const file = await store.select(hash, ext, webpSupport);
+
 		if (file === null) {
 			return ctx.status = 404;
 		}
-
-		// TODO: 当前的类型选择不依赖url，不要再中间件里缓存它，故把Cache-Control设为private
 		const stats = await fs.stat(file);
 		ctx.set("Content-Length", stats.size.toString());
 		ctx.set("Last-Modified", stats.mtime.toUTCString());
+
+		// TODO: 当前的类型选择不依赖url，不要再中间件里缓存它，故把Cache-Control设为private
 		ctx.set("Cache-Control", "private, max-age=31536000");
 
 		ctx.type = path.extname(file);
@@ -99,7 +89,8 @@ export function createImageMiddleware(options: ImageMiddlewareOptions): Middlewa
 		await store.save(hash, ext, file.buffer);
 
 		// 保存的文件名通过 Location 响应头来传递
-		ctx.set("Location", `${CONTEXT_PATH}${hash}.${ext}`);
+		ctx.status = 200;
+		ctx.set("Location", `${CONTEXT_PATH}/${hash}.${ext}`);
 	}
 
 	// 【修复】CONTEXT_PATH 要统一，以免发生判断条件不一致的问题
