@@ -3,7 +3,7 @@ import { Context, Middleware, Request } from "koa";
 import log4js from "log4js";
 import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
-import ServerAPI from "./infra/ServerAPI";
+import ServerAPI from "./ServerAPI";
 
 const logger = log4js.getLogger("SSR");
 

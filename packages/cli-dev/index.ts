@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import KacirasService from "kxc-server";
-import { runServer } from "kxc-server/infra/create-server";
+import { runServer } from "kxc-server/create-server";
 import BlogPlugin from "kxc-server/BlogPlugin";
-import ServerAPI from "kxc-server/infra/ServerAPI";
+import ServerAPI from "kxc-server/ServerAPI";
 import { ssrMiddleware } from "kxc-server/VueSSR";
 import { promisify } from "util";
 import webpack, { Configuration, Stats } from "webpack";

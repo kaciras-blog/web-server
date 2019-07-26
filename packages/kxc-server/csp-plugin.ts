@@ -1,6 +1,6 @@
 import { ParameterizedContext } from "koa";
 import log4js from "log4js";
-import ServerAPI from "./infra/ServerAPI";
+import ServerAPI from "./ServerAPI";
 
 const logger = log4js.getLogger();
 

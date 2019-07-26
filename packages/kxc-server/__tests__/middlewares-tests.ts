@@ -1,5 +1,5 @@
 import Koa from "koa";
-import { intercept } from "../infra/middlewares";
+import { intercept } from "../middlewares";
 import supertest from "supertest";
 
 

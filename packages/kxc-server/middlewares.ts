@@ -5,8 +5,8 @@ import { Middleware } from "koa";
 import koaSend from "koa-send";
 import { getLogger } from "log4js";
 
-const logger = getLogger("Blog");
 
+const logger = getLogger("Blog");
 
 /**
  * 前端页面是否注册 ServiceWorker 的检查点，该URI返回200状态码时表示注册，否则应当注销。

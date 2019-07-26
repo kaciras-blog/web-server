@@ -1,9 +1,9 @@
 import log4js from "log4js";
 import parseArgs from "minimist";
 import path from "path";
-import { runServer, ServerOptions } from "./infra/create-server";
+import { runServer, ServerOptions } from "./create-server";
 import BlogPlugin, { AppOptions } from "./BlogPlugin";
-import ServerAPI from "./infra/ServerAPI";
+import ServerAPI from "./ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
 import { configureGlobalAxios } from "./axios-http2";
 import serve from "koa-static";
