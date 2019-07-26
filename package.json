@@ -1,8 +1,4 @@
 {
-	"name": "web-server",
-	"version": "1.0.0",
-	"description": "Kaciras Bolg v10 frontend server.",
-	"author": "Kaciras",
 	"private": true,
 	"workspaces": [
 		"packages/*"
@@ -59,12 +55,5 @@
 		"ts-jest": "^24.0.2",
 		"tslint": "^5.18.0",
 		"typescript": "^3.5.2"
-	},
-	"optionalDependencies": {
-		"ts-loader": "^6.0.4",
-		"webpack-node-externals": "^1.7.2"
-	},
-	"peerDependencies": {
-		"@babel/polyfill": "^7.0.0"
 	}
 }
