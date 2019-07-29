@@ -81,14 +81,14 @@ export function ssrMiddleware(options: SSRMiddlewareOptions): Middleware {
  */
 export async function createSSRProductionPlugin(workingDir: string) {
 
-	function reslove(file: string) {
+	function resolve(file: string) {
 		return path.resolve(workingDir, file);
 	}
 
-	const renderer = createBundleRenderer(reslove("vue-ssr-server-bundle.json"), {
+	const renderer = createBundleRenderer(resolve("vue-ssr-server-bundle.json"), {
 		runInNewContext: false,
-		template: await fs.readFile(reslove("index.template.html"), { encoding: "utf-8" }),
-		clientManifest: require(reslove("vue-ssr-client-manifest.json")),
+		template: await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" }),
+		clientManifest: require(resolve("vue-ssr-client-manifest.json")),
 	});
 
 	return (api: ServerAPI) => api.useFallBack(ssrMiddleware({ renderer }));

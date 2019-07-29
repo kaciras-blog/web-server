@@ -14,14 +14,14 @@ import CompressionPlugin from "compression-webpack-plugin";
  *
  * @param options 选项
  */
-const vueCacheIdenifier = (options: WebpackOptions) => {
-	const varibles = {
+const vieCacheIdentifier = (options: WebpackOptions) => {
+	const variables = {
 		"cache-loader": require("cache-loader/package.json").version,
 		"vue-loader": require("vue-loader/package.json").version,
 		"vue-template-compiler": require("vue-template-compiler/package.json").version,
 		"mode": options.mode,
 	};
-	return hash(varibles);
+	return hash(variables);
 };
 
 
@@ -31,7 +31,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
-	const configuraion: Configuration = {
+	const configuration: Configuration = {
 		mode: webpackOpts.mode,
 		context: process.cwd(),
 		output: {
@@ -42,7 +42,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 		resolve: {
 			extensions: [
 				".js", ".jsx",		// JavaScript
-				".wasm",			// WebAssenbly
+				".wasm",			// WebAssembly
 				".mjs",				// ES Module JavaScript
 				".ts", ".tsx",		// TypeScript
 				".vue", ".json",	// Others
@@ -81,7 +81,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 					options: {
 						...webpackOpts.vueLoader,
 						cacheDirectory: resolve("node_modules/.cache/vue-loader-" + side),
-						cacheIdentifier: vueCacheIdenifier(webpackOpts),
+						cacheIdentifier: vieCacheIdentifier(webpackOpts),
 					},
 				},
 				{
@@ -164,12 +164,12 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 	];
 
 	if (options.webpack.mode === "production" && side === "client") {
-		configuraion.plugins!.push(new CompressionPlugin({
+		configuration.plugins!.push(new CompressionPlugin({
 			test: /\.(js|css|html|svg)$/,
 			threshold: 1024,
 		}));
 		// @ts-ignore 用别人的库就是这么坑爹，类型定义跟不上版本
-		configuraion.plugins!.push(new CompressionPlugin({
+		configuration.plugins!.push(new CompressionPlugin({
 			filename: "[path].br[query]",
 			test: /\.(js|css|html|svg)$/,
 			threshold: 1024,
@@ -177,7 +177,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 		}));
 		(imageLoaders[1].use as RuleSetUseItem[]).push("image-webpack-loader");
 	}
-	configuraion.module!.rules.push(...imageLoaders);
+	configuration.module!.rules.push(...imageLoaders);
 
-	return configuraion;
+	return configuration;
 };

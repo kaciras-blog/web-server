@@ -1,7 +1,7 @@
 import Koa, { Middleware } from "koa";
 
 
-export interface ClassCliServerPligun {
+export interface ClassCliServerPlugin {
 	configureCliServer(api: ServerAPI): void;
 }
 
@@ -66,7 +66,7 @@ export default class ServerAPI {
 		this.fallBack = middleware;
 	}
 
-	addPlugin(plugin: FunctionCliServerPlugin | ClassCliServerPligun) {
+	addPlugin(plugin: FunctionCliServerPlugin | ClassCliServerPlugin) {
 		if (typeof plugin === "function") {
 			plugin(this);
 		} else {

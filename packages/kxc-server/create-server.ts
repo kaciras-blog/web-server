@@ -79,11 +79,11 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 		}
 
 		const omitPort = (schema === "http" && toPort === 80) || (schema === "https" && toPort === 443);
-		const getLocatoin = omitPort
+		const getLocation = omitPort
 			? (req: RequestMessage) => `${schema}://${req.headers.host}${req.url}`
 			: (req: RequestMessage) => `${schema}://${req.headers.host}:${toPort}${req.url}`;
 
-		return (req, res) => res.writeHead(301, { Location: getLocatoin(req) }).end();
+		return (req, res) => res.writeHead(301, { Location: getLocation(req) }).end();
 	}
 
 	if (httpsConfig) {

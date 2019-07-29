@@ -6,8 +6,8 @@ import fs from "fs-extra";
 import path from "path";
 
 
-function hellowHandler(req: Http2ServerRequest, res: Http2ServerResponse) {
-	res.writeHead(200, { "Content-Type": "text/plain" }).end("Hellow");
+function helloHandler(req: Http2ServerRequest, res: Http2ServerResponse) {
+	res.writeHead(200, { "Content-Type": "text/plain" }).end("Hello");
 }
 
 describe("h2c", () => {
@@ -17,7 +17,7 @@ describe("h2c", () => {
 
 	// 创建一个仅支持HTTP2的服务器来测试
 	beforeAll((done) => {
-		server = http2.createServer(hellowHandler);
+		server = http2.createServer(helloHandler);
 		server.listen(0, () => {
 			done();
 			url = "http://localhost:" + (server.address() as AddressInfo).port;
@@ -35,7 +35,7 @@ describe("h2c", () => {
 		adaptAxiosHttp2(axios);
 
 		const response = await axios.get(url);
-		expect(response.data).toBe("Hellow");
+		expect(response.data).toBe("Hello");
 	});
 });
 
@@ -57,7 +57,7 @@ describe("certificate verification", () => {
 			done();
 			url = "http://localhost:" + (server.address() as AddressInfo).port;
 		});
-		server.on("request", hellowHandler);
+		server.on("request", helloHandler);
 	});
 
 	afterAll((done) => server.close(done));
@@ -75,6 +75,6 @@ describe("certificate verification", () => {
 		adaptAxiosHttp2(axios, true, { ca: loadResource("localhost.pem") });
 
 		const res = await axios.get(url);
-		expect(res.data).toBe("Hellow");
+		expect(res.data).toBe("Hello");
 	});
 });

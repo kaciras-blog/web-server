@@ -11,7 +11,7 @@ const logger = getLogger("Blog");
 /**
  * 前端页面是否注册 ServiceWorker 的检查点，该URI返回200状态码时表示注册，否则应当注销。
  *
- * @param register 是否注册 erviceWorker
+ * @param register 是否注册 ServiceWorker
  */
 export function serviceWorkerToggle(register: boolean): Middleware {
 	return (ctx, next) => {
@@ -50,12 +50,12 @@ export function staticFile(path_: string, root: string): Middleware {
  */
 export function intercept(patterns: RegExp | RegExp[]): Middleware {
 
-	const combied = Array.isArray(patterns)
+	const combined = Array.isArray(patterns)
 		? new RegExp(patterns.map((p) => `(?:${p.source})`).join("|"))
 		: patterns;
 
 	return (ctx, next) => {
-		if (!combied.test(ctx.path)) {
+		if (!combined.test(ctx.path)) {
 			return next();
 		}
 		ctx.status = 404;

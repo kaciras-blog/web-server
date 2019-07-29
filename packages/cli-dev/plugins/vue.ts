@@ -97,7 +97,7 @@ export default class VueSSRHotReloader {
 	}
 
 	/**
-	 * 对服务端构建的监听，使用 wabpack.watch 来监视文件的变更，并输出到内存文件系统中，还会在每次
+	 * 对服务端构建的监听，使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，还会在每次
 	 * 构建完成后更新 serverBundle。
 	 */
 	async getRendererFactory() {

@@ -3,7 +3,7 @@ import compress from "koa-compress";
 import conditional from "koa-conditional-get";
 import etag from "koa-etag";
 import { createImageMiddleware } from "./image-service";
-import ServerAPI, { ClassCliServerPligun } from "./ServerAPI";
+import ServerAPI, { ClassCliServerPlugin } from "./ServerAPI";
 import { intercept, serviceWorkerToggle } from "./middlewares";
 import { createSitemapMiddleware } from "./sitemap";
 import multer from "koa-multer";
@@ -22,7 +22,7 @@ export interface AppOptions {
 	serverCert: string | true;
 }
 
-export default class BlogPlugin implements ClassCliServerPligun {
+export default class BlogPlugin implements ClassCliServerPlugin {
 
 	private readonly options: AppOptions;
 

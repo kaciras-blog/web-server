@@ -19,7 +19,7 @@ describe("app.runServer", () => {
 	let close: () => void;
 
 	beforeAll(async () => {
-		close = await runServer((req, res: any) => res.end("hellow"), OPTIONS);
+		close = await runServer((req, res: any) => res.end("hello"), OPTIONS);
 	});
 
 	afterAll(() => close());
@@ -36,7 +36,7 @@ describe("app.runServer", () => {
 describe("SNI callback", () => {
 	let server: tls.Server;
 
-	function resloveResource(name: string) {
+	function resolveResource(name: string) {
 		return path.join(__dirname, "resources", name);
 	}
 
@@ -44,18 +44,18 @@ describe("SNI callback", () => {
 	beforeAll((done) => {
 		const sniCallback = createSNICallback([{
 			hostname: "localhost",
-			cert: resloveResource("localhost.pem"),
-			key: resloveResource("localhost.pvk"),
+			cert: resolveResource("localhost.pem"),
+			key: resolveResource("localhost.pvk"),
 		}, {
 			hostname: "anotherhost",
-			cert: resloveResource("anotherhost.pem"),
-			key: resloveResource("anotherhost.pvk"),
+			cert: resolveResource("anotherhost.pem"),
+			key: resolveResource("anotherhost.pvk"),
 		}]);
 
 		server = tls.createServer({
 			SNICallback: sniCallback,
 		}, (socket) => {
-			socket.write("HELLOW");
+			socket.write("HELLO");
 			socket.end();
 		});
 		server.listen(41000, done);
@@ -82,7 +82,7 @@ describe("SNI callback", () => {
 				expect(cert.subject.CN).toEqual(servername);
 			});
 			socket.on("data", (data) => {
-				expect(data.length).toBe(6);
+				expect(data.length).toBe(5);
 				resolve();
 				socket.end();
 			});
@@ -103,7 +103,7 @@ describe("SNI callback", () => {
 		return verifyCertCN("localhost");
 	});
 
-	it("should accept mutiple times", async () => {
+	it("should accept multiple times", async () => {
 		await verifyCertCN("anotherhost");
 		await verifyCertCN("anotherhost");
 		await verifyCertCN("anotherhost");
