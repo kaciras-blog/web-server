@@ -35,12 +35,13 @@ export function createImageMiddleware(store: LocalImageStore): Middleware {
 		const [_, hash, ext] = match;
 
 		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
-			return ctx.status = 400;
+			return ctx.status = 404;
 		}
 		const webpSupport = Boolean(ctx.accept.type("image/webp"));
 		const file = await store.select(hash, ext, webpSupport);
 
-		if (file === null) {
+		// 【更新】考虑到便于存储实现，undefined 也算文件不存在
+		if (!file) {
 			logger.warn("请求了不存在的图片：" + ctx.path);
 			return ctx.status = 404;
 		}
