@@ -12,10 +12,15 @@ function sha3_256(buffer: string | Buffer) {
 	return crypto.createHash("sha3-256").update(buffer).digest("hex");
 }
 
-// TODO: types
-const select = jest.fn<any, any>(() => null);
-const save = jest.fn(() => Promise.resolve());
+const select = jest.fn();
+const save = jest.fn();
 
+beforeEach(() => {
+	select.mockReturnValue(null);
+	save.mockReturnValue(Promise.resolve());
+});
+
+// 创建测试应用，图片服务依赖multer解析multipart请求，后面加个418状态码的用于测试非图片请求
 const app = new Koa();
 const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
 app.use(uploader.single("file"));
