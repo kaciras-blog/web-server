@@ -6,7 +6,8 @@
 	"scripts": {
 		"lint": "tslint -p tsconfig.json --fix",
 		"test": "jest",
-		"bump": "lerna version --no-push --no-git-tag-version"
+		"test:coverage": "yarn test --coverage",
+		"bump-version": "lerna version --no-push --no-git-tag-version"
 	},
 	"husky": {
 		"hooks": {
