@@ -1,3 +1,4 @@
+import log4js from "log4js";
 import { EventEmitter } from "events";
 import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
@@ -6,7 +7,6 @@ import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { CliDevelopmentOptions } from "..";
 import ServerConfiguration from "../webpack/server.config";
 import { PromiseCompletionSource } from "../utils";
-import log4js from "log4js";
 
 
 const logger = log4js.getLogger("dev");

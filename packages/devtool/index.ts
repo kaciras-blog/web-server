@@ -1,19 +1,17 @@
+import { promisify } from "util";
 import chalk from "chalk";
 import fs from "fs-extra";
-import KacirasService from "kxc-server";
-import { runServer } from "server/create-server";
-import BlogPlugin from "server/BlogPlugin";
-import ServerAPI from "server/ServerAPI";
-import { ssrMiddleware } from "server/VueSSR";
-import { promisify } from "util";
-import webpack, { Configuration, Stats } from "webpack";
+import webpack, { Configuration, Options, Stats } from "webpack";
 import hotReloadMiddleware from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./webpack/client.config";
 import ServerConfiguration from "./webpack/server.config";
-import { configureGlobalAxios } from "server/axios-http2";
-import { Options } from "webpack";
-import { CliServerOptions } from "kxc-server";
+import { configureGlobalAxios } from "@kaciras-blog/server/axios-http2";
+import KacirasService, { CliServerOptions } from "@kaciras-blog/server";
+import { runServer } from "@kaciras-blog/server/create-server";
+import BlogPlugin from "@kaciras-blog/server/BlogPlugin";
+import ServerAPI from "@kaciras-blog/server/ServerAPI";
+import { ssrMiddleware } from "@kaciras-blog/server/VueSSR";
 
 
 export interface WebpackOptions {
