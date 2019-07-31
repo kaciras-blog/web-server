@@ -1,9 +1,14 @@
 {
 	"private": true,
+	"author": {
+		"name": "Kaciras",
+		"email": "Kaciras@outlook.com"
+	},
 	"workspaces": [
 		"packages/*"
 	],
 	"scripts": {
+		"compile": "tsc",
 		"lint": "tslint -p tsconfig.json --fix",
 		"test": "jest",
 		"test:coverage": "yarn test --coverage",

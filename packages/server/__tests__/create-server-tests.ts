@@ -82,7 +82,7 @@ describe("SNI callback", () => {
 				expect(cert.subject.CN).toEqual(servername);
 			});
 			socket.on("data", (data) => {
-				expect(data.length).toBe(5);
+				expect(data.toString()).toBe("HELLO");
 				resolve();
 				socket.end();
 			});

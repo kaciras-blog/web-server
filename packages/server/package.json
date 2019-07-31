@@ -1,13 +1,14 @@
 {
-	"name": "kxc-server",
-	"version": "0.0.1",
+	"name": "@kaciras-blog/server",
+	"version": "0.1.0",
+	"description": "Web page and assets server of Kaciras blog",
 	"license": "MIT",
 	"main": "index.js",
 	"engines": {
-		"node": ">=12.1.0"
+		"node": ">=12.7.0"
 	},
 	"bin": {
-		"kxc-server": "bin/kxc-server.js"
+		"kxc-server": "bin/blog-server.js"
 	},
 	"dependencies": {
 		"@koa/cors": "^3.0.0",
