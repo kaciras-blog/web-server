@@ -1,9 +1,11 @@
-import Axios from "axios";
+import Axios, { AxiosRequestConfig } from "axios";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { AddressInfo, Server } from "net";
-import { adaptAxiosHttp2 } from "../axios-http2";
+import { adaptAxiosHttp2, configureForProxy } from "../axios-http2";
 import fs from "fs-extra";
 import path from "path";
+import Koa from "koa";
+import supertest from "supertest";
 
 
 function helloHandler(req: Http2ServerRequest, res: Http2ServerResponse) {
@@ -77,4 +79,27 @@ describe("certificate verification", () => {
 		const res = await axios.get(url);
 		expect(res.data).toBe("Hello");
 	});
+});
+
+describe("configureForProxy", () => {
+	let config: AxiosRequestConfig = {};
+	const app = new Koa();
+	const server = app.callback();
+
+	app.use((context) => {
+		config = {};
+		configureForProxy(config, context);
+	});
+
+	it("should set proxy headers", async () => {
+		await supertest(server).get("/");
+
+		// 检查不要添加多余的头部
+		expect(Object.keys(config.headers)).toHaveLength(2);
+
+		expect(config.headers["X-Forwarded-For"]).toBe("::ffff:127.0.0.1");
+		expect(config.headers["User-Agent"]).toMatch("superagent");
+	});
+
+	// TODO: 其他的以后再说
 });

@@ -2,8 +2,9 @@
  * 修改 Axios 使其支持内置 Node 的 http2 模块。
  * 【警告】Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
-import Axios, { AxiosInstance } from "axios";
+import { Context } from "koa";
 import fs from "fs-extra";
+import Axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import http2, {
 	IncomingHttpHeaders,
 	IncomingHttpStatusHeader,
@@ -11,7 +12,46 @@ import http2, {
 	SecureClientSessionOptions,
 } from "http2";
 
+
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
+
+export const CSRF_COOKIE_NAME = "CSRF-Token";
+export const CSRF_PARAMETER_NAME = "csrf";
+export const CSRF_HEADER_NAME = "X-CSRF-Token";
+
+/**
+ * 复制请求的身份相关信息，以及一些其他必要的头部。该函数只能在服务端使用。
+ *
+ * @param source Koa接受到的源请求
+ * @param config 代理到后端的Axios请求
+ */
+export function configureForProxy(config: AxiosRequestConfig, source: Context) {
+	const srcHeaders = source.headers;
+	const distHeaders = (config.headers = config.headers || {});
+
+	// 转发请求记得带上 X-Forwarded-For
+	distHeaders["X-Forwarded-For"] = source.ip;
+
+	// UA可以随便改，没啥实际用，还不如穿透了统计下客户端类型
+	if (srcHeaders["user-agent"]) {
+		distHeaders["User-Agent"] = srcHeaders["user-agent"];
+	}
+
+	if (srcHeaders.cookie) {
+		distHeaders.Cookie = srcHeaders.cookie;
+	}
+
+	const csrfHeader = srcHeaders[CSRF_HEADER_NAME];
+	if (csrfHeader) {
+		distHeaders[CSRF_HEADER_NAME] = csrfHeader;
+	}
+
+	const csrfQuery = source.query[CSRF_PARAMETER_NAME];
+	if (csrfQuery) {
+		config.headers = config.headers || {};
+		config.headers[CSRF_PARAMETER_NAME] = csrfQuery;
+	}
+}
 
 /**
  * 修改指定 Axios 实例的 transport 配置，使其使用 NodeJS 的 http2 模块发送请求。
