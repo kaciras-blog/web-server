@@ -22,12 +22,12 @@ export const CSRF_HEADER_NAME = "X-CSRF-Token";
 /**
  * 复制请求的身份相关信息，以及一些其他必要的头部。该函数只能在服务端使用。
  *
+ * @param requestConfig 代理到后端的Axios请求
  * @param source Koa接受到的源请求
- * @param config 代理到后端的Axios请求
  */
-export function configureForProxy(config: AxiosRequestConfig, source: Context) {
+export function configureForProxy(requestConfig: AxiosRequestConfig, source: Context) {
 	const srcHeaders = source.headers;
-	const distHeaders = (config.headers = config.headers || {});
+	const distHeaders = (requestConfig.headers = requestConfig.headers || {});
 
 	// 转发请求记得带上 X-Forwarded-For
 	distHeaders["X-Forwarded-For"] = source.ip;
@@ -48,9 +48,11 @@ export function configureForProxy(config: AxiosRequestConfig, source: Context) {
 
 	const csrfQuery = source.query[CSRF_PARAMETER_NAME];
 	if (csrfQuery) {
-		config.headers = config.headers || {};
-		config.headers[CSRF_PARAMETER_NAME] = csrfQuery;
+		requestConfig.headers = requestConfig.headers || {};
+		requestConfig.headers[CSRF_PARAMETER_NAME] = csrfQuery;
 	}
+
+	return requestConfig;
 }
 
 /**
