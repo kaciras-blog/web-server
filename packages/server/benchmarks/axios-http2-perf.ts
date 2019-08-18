@@ -1,6 +1,6 @@
 import http2 from "http2";
 import Axios from "axios";
-import { adaptAxiosHttp2 } from "../axios-http2";
+import { adaptAxiosHttp2 } from "../axios-helper";
 import { AddressInfo } from "net";
 
 /*

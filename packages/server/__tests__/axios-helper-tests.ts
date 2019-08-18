@@ -1,7 +1,7 @@
 import Axios, { AxiosRequestConfig } from "axios";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { AddressInfo, Server } from "net";
-import { adaptAxiosHttp2, configureForProxy } from "../axios-http2";
+import { adaptAxiosHttp2, configureForProxy } from "../axios-helper";
 import fs from "fs-extra";
 import path from "path";
 import Koa from "koa";

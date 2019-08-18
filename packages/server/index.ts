@@ -5,7 +5,7 @@ import { runServer, ServerOptions } from "./create-server";
 import BlogPlugin, { AppOptions } from "./BlogPlugin";
 import ServerAPI from "./ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
-import { configureGlobalAxios } from "./axios-http2";
+import { configureGlobalAxios } from "./axios-helper";
 import serve from "koa-static";
 
 const logger = log4js.getLogger();

@@ -1,5 +1,5 @@
 /*
- * 修改 Axios 使其支持内置 Node 的 http2 模块。
+ * 自定义Axios，使其更好地支持本博客系统。
  * 【警告】Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
 import { Context } from "koa";

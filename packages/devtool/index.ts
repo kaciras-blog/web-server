@@ -6,7 +6,7 @@ import hotReloadMiddleware from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./webpack/client.config";
 import ServerConfiguration from "./webpack/server.config";
-import { configureGlobalAxios } from "@kaciras-blog/server/axios-http2";
+import { configureGlobalAxios } from "@kaciras-blog/server/axios-helper";
 import KacirasService, { CliServerOptions } from "@kaciras-blog/server";
 import { runServer } from "@kaciras-blog/server/create-server";
 import BlogPlugin from "@kaciras-blog/server/BlogPlugin";
