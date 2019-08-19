@@ -34,8 +34,8 @@ export default (options: CliDevelopmentOptions) => {
 		}),
 
 		plugins: [
+			new VueSSRServerPlugin(),
 			new DefinePlugin({ "process.env.VUE_ENV": "'server'" }),
-			new VueSSRServerPlugin(), // 将输出打包成单个 JSON 文件，默认文件名`vue-ssr-server-bundle.json`
 		],
 	});
 };

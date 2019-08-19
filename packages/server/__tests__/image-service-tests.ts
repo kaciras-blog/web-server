@@ -28,24 +28,25 @@ app.use(createImageMiddleware({ save, select } as any));
 app.use((ctx) => ctx.status = 418);
 const server = app.callback();
 
+const FILE_NAME = "/test.gif";
+const IMAGE_DATA = Buffer.from("R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==", "base64");
+
 it("should response image", async () => {
-	select.mockReturnValue("/abcd.jpg");
-	fs.writeFileSync("/abcd.jpg", "test data");
+	select.mockReturnValue(FILE_NAME);
+	fs.writeFileSync(FILE_NAME, IMAGE_DATA);
 
 	await supertest(server)
-		.get("/image/abcd.jpg")
+		.get("/image" + FILE_NAME)
 		.expect(200)
-		.expect(Buffer.from("test data"));
+		.expect(Buffer.from(IMAGE_DATA));
 });
 
 it("should save a new file", async () => {
-	const buffer = Buffer.from("TEST CONTENT");
-
 	await supertest(server)
 		.post("/image")
-		.attach("file", buffer, { filename: "asd.png", contentType: "image/png" })
+		.attach("file", IMAGE_DATA, { filename: FILE_NAME, contentType: "image/gif" })
 		.expect(200)
-		.expect("Location", "/image/" + sha3_256(buffer) + ".png");
+		.expect("Location", "/image/" + sha3_256(IMAGE_DATA) + ".gif");
 
 	expect(save.mock.calls.length).toBe(1);
 });
@@ -58,7 +59,7 @@ it("should fail with invalid method", async () => {
 });
 
 it("should fail on non exists file", async () => {
-	await supertest(server).get("/image/FFFF0000.jpg").expect(404);
+	await supertest(server).get("/image/notfound.jpg").expect(404);
 	expect(select.mock.calls.length).toBe(1);
 });
 

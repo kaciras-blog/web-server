@@ -15,6 +15,10 @@ import http2, {
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
+// 用于防止CSRF攻击的一些字段，方法是读取Cookie里的值并带在请求里。
+//   CSRF_COOKIE_NAME		Cookie名
+//   CSRF_PARAMETER_NAME	将值加入请求参数中的参数名
+//   CSRF_HEADER_NAME		将值加入该请求头
 export const CSRF_COOKIE_NAME = "CSRF-Token";
 export const CSRF_PARAMETER_NAME = "csrf";
 export const CSRF_HEADER_NAME = "X-CSRF-Token";
@@ -92,7 +96,8 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 		});
 	}
 
-	// 修改Axios默认的transport属性，注意该属性是内部使用没有定义在接口里
+	// 修改Axios默认的transport属性，注意该属性是内部使用的，没有定义在接口里。
+	// Axios 0.19.0 修改了相关逻辑，导致该字段无法合并到最终的请求中。
 	(axios.defaults as any).transport = { request };
 }
 
