@@ -1,9 +1,9 @@
 import axios from "axios";
 import { Middleware } from "koa";
-import { getLogger } from "log4js";
+import log4js from "log4js";
 import xml2js from "xml2js";
 
-const logger = getLogger("Blog");
+const logger = log4js.getLogger();
 
 /** 文章列表响应的一部分字段 */
 interface ArticlePreview {

@@ -4,6 +4,7 @@
  */
 import { Context } from "koa";
 import fs from "fs-extra";
+import log4js from "log4js";
 import Axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import http2, {
 	IncomingHttpHeaders,
@@ -22,6 +23,8 @@ type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 export const CSRF_COOKIE_NAME = "CSRF-Token";
 export const CSRF_PARAMETER_NAME = "csrf";
 export const CSRF_HEADER_NAME = "X-CSRF-Token";
+
+const logger = log4js.getLogger();
 
 /**
  * 复制请求的身份相关信息，以及一些其他必要的头部。该函数只能在服务端使用。
@@ -76,12 +79,13 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 			origin += ":" + options.port;
 		}
 
-		// 缓存会话链接，会话默认有120秒超时，超时后触发close事件删除缓存
+		// 创建并缓存会话链接，会话默认有120秒超时，超时后触发close事件删除缓存
 		let client = cache.get(origin);
 		if (!client) {
 			client = http2.connect(origin, connectOptions);
 			cache.set(origin, client);
 			client.on("close", () => cache.delete(origin));
+			logger.trace(`创建新的Http2会话 -> ${origin}`);
 		}
 
 		const stream: any = client.request({

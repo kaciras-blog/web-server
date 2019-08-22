@@ -6,7 +6,7 @@ import koaSend from "koa-send";
 import { getLogger } from "log4js";
 
 
-const logger = getLogger("Blog");
+const logger = getLogger();
 
 /**
  * 前端页面是否注册 ServiceWorker 的检查点，该URI返回200状态码时表示注册，否则应当注销。
@@ -59,6 +59,6 @@ export function intercept(patterns: RegExp | RegExp[]): Middleware {
 			return next();
 		}
 		ctx.status = 404;
-		logger.debug("客户端请求了被拦截的文件：" + ctx.url);
+		logger.debug(`客户端请求了被拦截的文件：${ctx.url}`);
 	};
 }
