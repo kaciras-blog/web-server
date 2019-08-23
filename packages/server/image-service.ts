@@ -32,7 +32,7 @@ export function createImageMiddleware(store: LocalImageStore): Middleware {
 		if (!match) {
 			return ctx.status = 404;
 		}
-		const [_, hash, ext] = match;
+		const [, hash, ext] = match;
 
 		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
 			return ctx.status = 404;
