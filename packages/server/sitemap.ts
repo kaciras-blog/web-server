@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Middleware } from "koa";
 import log4js from "log4js";
-import xml2js from "xml2js";
+import { createSitemap, Sitemap, EnumChangefreq } from "sitemap";
 
 const logger = log4js.getLogger();
 
@@ -9,25 +9,12 @@ const logger = log4js.getLogger();
 interface ArticlePreview {
 	id: number;
 	urlTitle: string;
-	update: string;  // 格式：yyyy-MM-dd HH:mm
+	update: string;  // yyyy-MM-dd HH:mm
 }
 
 class ArticleCollection {
 
-	public static convert(art: ArticlePreview) {
-		const parts = art.update.split(/[- :]/g);
-		const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1,
-			parseInt(parts[2]), parseInt(parts[3]), parseInt(parts[4]));
-
-		return {
-			loc: `https://blog.kaciras.net/article/${art.id}/${art.urlTitle}`,
-			changefreq: "monthly",
-			lastmod: date.toISOString().split(".")[0] + "Z",
-			priority: 0.5,
-		};
-	}
-
-	private readonly urlPrefix: string;
+	private readonly url: string;
 
 	/**
 	 * 创建一个文章集合，从指定的服务器上获取文章列表。
@@ -35,38 +22,52 @@ class ArticleCollection {
 	 * @param urlPrefix 后端服务器URL前缀
 	 */
 	constructor(urlPrefix: string) {
-		this.urlPrefix = urlPrefix;
+		this.url = urlPrefix + "/articles";
 	}
 
-	public async getItems() {
-		const res = await axios.get(this.urlPrefix + "/articles", {
+	public async addItems(sitemap: Sitemap) {
+		const response = await axios.get(this.url, {
 			params: {
 				count: 20,
 				sort: "update_time",
 				desc: true,
 			},
 		});
-		if (res.status !== 200) {
-			throw new Error("Api server response status: " + res.status);
+
+		if (response.status !== 200) {
+			throw new Error("Api server response status: " + response.status);
 		}
-		return res.data.items.map(ArticleCollection.convert);
+
+		for (const article of response.data.items as ArticlePreview[]) {
+
+			// TODO: 在后端格式化了日期是一个设计失误
+			const parts = article.update.split(/[- :]/g);
+			const date = new Date(
+				parseInt(parts[0]),
+				parseInt(parts[1]) - 1,
+				parseInt(parts[2]),
+				parseInt(parts[3]),
+				parseInt(parts[4]));
+
+			sitemap.add({
+				url: `/article/${article.id}/${article.urlTitle}`,
+				priority: 0.5,
+				changefreq: EnumChangefreq.MONTHLY,
+				lastmod: date.toISOString().split(".")[0] + "Z",
+			});
+		}
 	}
 }
 
-
 /** 由资源集合构建 sitemap.xml 的内容 */
 async function buildSitemap(resources: ArticleCollection[]) {
-	const sitemapBuilder = new xml2js.Builder({
-		rootName: "urlset",
-		xmldec: { version: "1.0", encoding: "UTF-8" },
+	const sitemap = createSitemap({
+		hostname: "https://blog.kaciras.net",
 	});
-
-	const urlset: string[] = [];
 	for (const res of resources) {
-		urlset.push.apply(urlset, await res.getItems());
+		await res.addItems(sitemap);
 	}
-
-	return sitemapBuilder.buildObject(urlset.map((item) => ({ url: item })));
+	return sitemap.toXML(process.env.NODE_ENV !== "production");
 }
 
 export function createSitemapMiddleware(serverAddress: string): Middleware {
@@ -77,7 +78,7 @@ export function createSitemapMiddleware(serverAddress: string): Middleware {
 
 	function updateCache() {
 		buildSitemap(resources)
-			.then((siteMap) => cached = siteMap)
+			.then((sitemap) => cached = sitemap)
 			.catch((err) => logger.error("创建站点地图失败：", err.message));
 	}
 
