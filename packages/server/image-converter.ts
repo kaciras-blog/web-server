@@ -80,7 +80,8 @@ export class LocalImageStore {
 	 */
 	async select(hash: string, type: string, webpSupport: boolean): Promise<string | null> {
 		if (type === "svg") {
-			return this.originPath(hash, type);
+			const file = this.originPath(hash, type);
+			return (await fs.pathExists(file)) ? file : null;
 		}
 
 		if (webpSupport) {
