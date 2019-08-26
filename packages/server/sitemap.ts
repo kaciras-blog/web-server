@@ -9,7 +9,7 @@ const logger = log4js.getLogger();
 interface ArticlePreview {
 	id: number;
 	urlTitle: string;
-	update: string;  // yyyy-MM-dd HH:mm
+	update: number;
 }
 
 class ArticleCollection {
@@ -27,11 +27,7 @@ class ArticleCollection {
 
 	public async addItems(sitemap: Sitemap) {
 		const response = await axios.get(this.url, {
-			params: {
-				count: 20,
-				sort: "update_time",
-				desc: true,
-			},
+			params: { count: 20, sort: "update_time", desc: true },
 		});
 
 		if (response.status !== 200) {
@@ -39,21 +35,11 @@ class ArticleCollection {
 		}
 
 		for (const article of response.data.items as ArticlePreview[]) {
-
-			// TODO: 在后端格式化了日期是一个设计失误
-			const parts = article.update.split(/[- :]/g);
-			const date = new Date(
-				parseInt(parts[0]),
-				parseInt(parts[1]) - 1,
-				parseInt(parts[2]),
-				parseInt(parts[3]),
-				parseInt(parts[4]));
-
 			sitemap.add({
 				url: `/article/${article.id}/${article.urlTitle}`,
-				priority: 0.5,
+				priority: 1.0,
 				changefreq: EnumChangefreq.MONTHLY,
-				lastmod: date.toISOString().split(".")[0] + "Z",
+				lastmod: new Date(article.update).toISOString(),
 			});
 		}
 	}
