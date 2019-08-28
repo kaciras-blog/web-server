@@ -1,7 +1,8 @@
 import chalk, { Chalk } from "chalk";
 import { Compiler, Plugin } from "webpack";
 import { Hook, HookMap } from "tapable";
-import { StopWatch, once } from "../utils";
+import { once } from "@kaciras-blog/common/functions";
+import StopWatch from "../StopWatch";
 
 
 function simpleTypeName(value: any): string {
@@ -15,8 +16,8 @@ function simpleTypeName(value: any): string {
 	}
 }
 
-function isHook(tabable: Hook | HookMap): tabable is Hook {
-	return tabable.tap.length === 2;
+function isHook(tapable: Hook | HookMap): tapable is Hook {
+	return tapable.tap.length === 2;
 }
 
 /** 定义命名空间的Hooks在控制台中的颜色，未定义的使用默认颜色 */
