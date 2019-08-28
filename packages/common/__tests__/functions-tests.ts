@@ -52,3 +52,44 @@ describe("debounceFirst", () => {
 	});
 });
 
+describe("once", () => {
+
+	it("should pass context", () => {
+		const obj = {
+			value: 333,
+			func() { return this.value; },
+		};
+
+		obj.func = once(obj.func);
+		expect(obj.func()).toBe(333);
+	});
+
+	it("should skip subsequent calls", () => {
+		let counter = 0;
+
+		const func = jest.fn(() => counter++);
+		const wrapped = once(func);
+
+		expect(wrapped()).toBe(0);
+		expect(wrapped()).toBe(0);
+
+		expect(func.mock.calls).toHaveLength(1);
+	});
+
+	it("should allow calls after exception", () => {
+		function testFn(throws: boolean) {
+			if (throws) {
+				throw new Error();
+			}
+			return 123456;
+		}
+		const func = jest.fn(testFn);
+		const wrapped = once(func);
+
+		expect(() => wrapped(true)).toThrow();
+		expect(() => wrapped(true)).toThrow();
+		expect(wrapped(false)).toBe(123456);
+
+		expect(func.mock.calls).toHaveLength(3);
+	});
+});
