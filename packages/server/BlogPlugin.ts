@@ -6,6 +6,7 @@ import { createImageMiddleware } from "./image-service";
 import ServerAPI, { ClassCliServerPlugin } from "./ServerAPI";
 import { intercept, serviceWorkerToggle } from "./middlewares";
 import { createSitemapMiddleware } from "./sitemap";
+import { feedMiddleware } from "./feed";
 import multer from "koa-multer";
 import bodyParser from "koa-bodyparser";
 import installCSPPlugin from "./csp-plugin";
@@ -52,5 +53,6 @@ export default class BlogPlugin implements ClassCliServerPlugin {
 		api.useFilter(etag());  // 图片太大不计算etag
 
 		api.useResource(createSitemapMiddleware(options.serverAddress));
+		api.useResource(feedMiddleware(options.serverAddress));
 	}
 }
