@@ -23,7 +23,7 @@ export default class VueSSRTemplatePlugin implements Plugin {
 
 	apply(compiler: Compiler): void {
 		compiler.hooks.compilation.tap(VueSSRTemplatePlugin.name, (compilation) => {
-			const hook = (compilation.hooks as Hooks).htmlWebpackPluginAfterHtmlProcessing;
+			const hook = (compilation.hooks as unknown as Hooks).htmlWebpackPluginAfterHtmlProcessing;
 			hook.tap(VueSSRTemplatePlugin.name, this.AfterHtmlProcessing.bind(this));
 		});
 	}

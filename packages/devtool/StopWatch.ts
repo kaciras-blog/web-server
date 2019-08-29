@@ -14,6 +14,7 @@ export default class StopWatch {
 	private init!: SecondAndNano;
 	private last!: SecondAndNano;
 
+	/** 开始计时 */
 	start() {
 		this.init = this.last = process.hrtime();
 	}

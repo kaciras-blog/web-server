@@ -4,12 +4,12 @@ import { RuleSetUseItem } from "webpack";
 import { WebpackOptions } from "../index";
 
 /**
- * 获取相对于项目目录的绝对路径。
+ * 将相对于项目目录的路径转换为绝对路径。
  *
- * @param dir 相对路径
+ * @param relativePath 相对路径
  * @return 绝对路径
  */
-export const resolve = (dir: string) => path.join(process.cwd(), dir);
+export const resolve = (relativePath: string) => path.join(process.cwd(), relativePath);
 
 interface CssLoadersMap {
 	[name: string]: RuleSetUseItem[];
