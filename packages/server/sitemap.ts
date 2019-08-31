@@ -57,29 +57,30 @@ async function buildSitemap(resources: ArticleCollection[]) {
 }
 
 export function createSitemapMiddleware(serverAddress: string): Middleware {
-	let cached: string;
+	let lastBuilt: string;
 
 	const resources: ArticleCollection[] = [];
 	resources.push(new ArticleCollection(serverAddress));
 
-	function updateCache() {
-		buildSitemap(resources)
-			.then((sitemap) => cached = sitemap)
+	function getSitemap() {
+		return buildSitemap(resources).then((sitemap) => lastBuilt = sitemap)
 			.catch((err) => logger.error("创建站点地图失败：", err.message));
 	}
 
-	updateCache(); // 启动时先创建一个存着
+	// noinspection JSIgnoredPromiseFromCall 启动时先创建一个
+	getSitemap();
 
-	return function handle(ctx, next) {
+	return async function handle(ctx, next) {
 		if (ctx.path !== "/sitemap.xml") {
 			return next();
 		}
-		updateCache();
-		if (cached == null) {
+		logger.info("客户端请求了SiteMap");
+
+		if (lastBuilt == null) {
 			ctx.status = 404;
 		} else {
 			ctx.type = "application/xml; charset=utf-8";
-			ctx.body = cached;
+			ctx.body = await getSitemap();
 		}
 	};
 }
