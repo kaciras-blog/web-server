@@ -2,8 +2,38 @@ import { Feed } from "feed";
 import { FeedOptions } from "feed/lib/typings";
 import { Middleware } from "koa";
 import { markdown } from "@kaciras-blog/common/markdown";
-import Axios from "axios";
+import Axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
+/**
+ * Feed里包含了文章的内容，其需要从Markdown转换成Html比较费时，所以在这里缓存一下。
+ */
+class CachedFetcher<T> {
+
+	private readonly fetcher: (response: AxiosResponse) => T;
+
+	private feed!: T;
+	private lastUpdate?: Date;
+
+	constructor(fetcher: (response: AxiosResponse) => T) {
+		this.fetcher = fetcher;
+	}
+
+	async get(url: string, config: AxiosRequestConfig = {}) {
+		if (this.lastUpdate) {
+			config.headers = config.headers || {};
+			config.headers["If-Modified-Since"] = this.lastUpdate.toUTCString();
+			config.validateStatus = (status) => status >= 200 && status < 400;
+		}
+		const response = await Axios.get(url, config);
+		if (response.status === 304) {
+			return this.feed;
+		}
+		this.lastUpdate = new Date();
+		return this.feed = this.fetcher(response);
+	}
+}
+
+// TODO: 可自定义
 const BASE_ATTRS: FeedOptions = {
 	title: "Kaciras的博客",
 	description: "没有简介，自己看内容吧",
@@ -21,10 +51,7 @@ const BASE_ATTRS: FeedOptions = {
 
 export function feedMiddleware(apiServer: string): Middleware {
 
-	async function getFeed() {
-		const response = await Axios.get(apiServer + "/articles", {
-			params: { count: 20, sort: "update_time", desc: true, content: true },
-		});
+	function buildFeed(response: AxiosResponse) {
 		const feed = new Feed(BASE_ATTRS);
 		feed.items = response.data.items.map((article: any) => ({
 			title: article.title,
@@ -38,11 +65,15 @@ export function feedMiddleware(apiServer: string): Middleware {
 		return feed;
 	}
 
+	const fetcher = new CachedFetcher(buildFeed);
+
 	return async (ctx, next) => {
 		if (!ctx.path.startsWith("/feed/")) {
 			return next();
 		}
-		const feed = await getFeed();
+		const feed = await fetcher.get(apiServer + "/articles", {
+			params: { count: 20, sort: "update_time", desc: true, content: true },
+		});
 		switch (ctx.path.substring(6)) {
 			case "rss":
 				ctx.body = feed.rss2();
