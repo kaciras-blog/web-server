@@ -2,6 +2,7 @@ import { Feed } from "feed";
 import { FeedOptions } from "feed/lib/typings";
 import { Middleware } from "koa";
 import { markdown } from "@kaciras-blog/common/markdown";
+import { once } from "@kaciras-blog/common/functions";
 import Axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 /**
@@ -18,13 +19,13 @@ class CachedFetcher<T> {
 		this.fetcher = fetcher;
 	}
 
-	async get(url: string, config: AxiosRequestConfig = {}) {
+	async request(config: AxiosRequestConfig) {
 		if (this.lastUpdate) {
 			config.headers = config.headers || {};
 			config.headers["If-Modified-Since"] = this.lastUpdate.toUTCString();
 			config.validateStatus = (status) => status >= 200 && status < 400;
 		}
-		const response = await Axios.get(url, config);
+		const response = await Axios.request(config);
 		if (response.status === 304) {
 			return this.feed;
 		}
@@ -33,7 +34,7 @@ class CachedFetcher<T> {
 	}
 }
 
-// TODO: 可自定义
+// TODO: 这个对象可自定义的属性太多，还需考虑重新组织配置文件，暂时就这样写死
 const BASE_ATTRS: FeedOptions = {
 	title: "Kaciras的博客",
 	description: "没有简介，自己看内容吧",
@@ -62,6 +63,11 @@ export function feedMiddleware(apiServer: string): Middleware {
 			content: markdown.render(article.content),
 			link: `https://blog.kaciras.net/article/${article.id}/${article.urlTitle}`,
 		}));
+
+		// 几个输出的结果也缓存一下，经统计一个大约占60K内存
+		feed.json1 = once(feed.json1);
+		feed.rss2 = once(feed.rss2);
+		feed.atom1 = once(feed.atom1);
 		return feed;
 	}
 
@@ -71,8 +77,9 @@ export function feedMiddleware(apiServer: string): Middleware {
 		if (!ctx.path.startsWith("/feed/")) {
 			return next();
 		}
-		const feed = await fetcher.get(apiServer + "/articles", {
-			params: { count: 20, sort: "update_time", desc: true, content: true },
+		const feed = await fetcher.request({
+			url: apiServer + "/articles",
+			params: { count: 10, sort: "update_time", desc: true, content: true },
 		});
 		switch (ctx.path.substring(6)) {
 			case "rss":
