@@ -2,7 +2,7 @@ import { Compiler, Plugin } from "webpack";
 import { Hooks } from "html-webpack-plugin";
 
 /**
- * 生成额外的HTML文件，该文件把HTML模板中的挂载点替换为服务端渲染的 <!--vue-ssr-outlet--> 注释。
+ * 生成额外的HTML文件，把其中的挂载点替换为 <!--vue-ssr-outlet--> 注释。
  * 该插件依赖于 html-webpack-plugin，必须先加入它。
  */
 export default class VueSSRTemplatePlugin implements Plugin {

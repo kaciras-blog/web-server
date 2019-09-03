@@ -12,7 +12,7 @@ class CachedFetcher<T> {
 
 	private readonly fetcher: (response: AxiosResponse) => T;
 
-	private feed!: T;
+	private cached!: T;
 	private lastUpdate?: Date;
 
 	constructor(fetcher: (response: AxiosResponse) => T) {
@@ -27,10 +27,10 @@ class CachedFetcher<T> {
 		}
 		const response = await Axios.request(config);
 		if (response.status === 304) {
-			return this.feed;
+			return this.cached;
 		}
 		this.lastUpdate = new Date();
-		return this.feed = this.fetcher(response);
+		return this.cached = this.fetcher(response);
 	}
 }
 

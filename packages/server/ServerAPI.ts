@@ -7,9 +7,8 @@ export interface ClassCliServerPlugin {
 
 export type FunctionCliServerPlugin = (api: ServerAPI) => void;
 
-
 /**
- * 把中间件按顺序分下组，便于解耦。
+ * 把 Koa 的中间件分下组，便于解耦。
  */
 export default class ServerAPI {
 

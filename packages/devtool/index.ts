@@ -59,10 +59,9 @@ export interface CliDevelopmentOptions extends CliServerOptions {
 const service = new KacirasService<CliDevelopmentOptions>();
 
 /**
- * 调用webpack，并输出更友好的信息。
+ * 调用 webpack，并输出更友好的信息。
  *
- * @param config 配置
- * @return {Promise<void>} 指示构建状态
+ * @param config webpack的配置
  */
 async function invokeWebpack(config: Configuration) {
 	const stats = await promisify<Configuration, Stats>(webpack)(config);
@@ -81,6 +80,9 @@ async function invokeWebpack(config: Configuration) {
 	}
 }
 
+/**
+ * 启动开发服务器，它提供了热重载功能。
+ */
 service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
@@ -101,7 +103,6 @@ service.registerCommand("build", async (options: CliDevelopmentOptions) => {
 	await fs.remove(options.outputDir);
 	await invokeWebpack(ClientConfiguration(options));
 	await invokeWebpack(ServerConfiguration(options));
-
 	console.log(chalk.cyan("Build complete.\n"));
 });
 
