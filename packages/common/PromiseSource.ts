@@ -3,7 +3,7 @@
 type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | undefined | null;
 type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | undefined | null;
 
-export default class PromiseCompletionSource<T> implements Promise<T> {
+export default class PromiseSource<T> implements Promise<T> {
 
 	public resolve!: (value?: T | PromiseLike<T>) => void;
 	public reject!: (reason?: any) => void;

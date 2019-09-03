@@ -1,5 +1,5 @@
-import {debounceFirst, once } from "../functions";
-import PromiseCompletionSource from "../PromiseCompletionSource";
+import { debounceFirst, once } from "../functions";
+import PromiseSource from "../PromiseSource";
 
 describe("debounceFirst", () => {
 
@@ -14,8 +14,8 @@ describe("debounceFirst", () => {
 	});
 
 	it("should avoid multiple calls", (done) => {
-		let task!: PromiseCompletionSource<number>;
-		const func = (a: number, b: number) => task = new PromiseCompletionSource();
+		let task!: PromiseSource<number>;
+		const func = (a: number, b: number) => task = new PromiseSource();
 		const debounced = debounceFirst(func);
 
 		expect(debounced(5, 6)).toBe(debounced(3, 4));
