@@ -3,8 +3,10 @@ import * as loaderUtils from "loader-utils";
 import sharp from "sharp";
 import imagemin from "imagemin";
 import gifsicle from "imagemin-gifsicle";
-import mozjpeg from "imagemin-mozjpeg";
 import pngquant from "imagemin-pngquant";
+// @ts-ignore
+import mozjpeg from "imagemin-mozjpeg";
+// @ts-ignore
 import optipng from "imagemin-optipng";
 
 const plugins = [
