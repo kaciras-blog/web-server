@@ -23,7 +23,6 @@
 		"fs-extra": "^8.1.0",
 		"hash-sum": "^2.0.0",
 		"html-webpack-plugin": "^3.2.0",
-		"image-webpack-loader": "^5.0.0",
 		"koa": "^2.8.1",
 		"koa-webpack": "^5.2.3",
 		"less": "^3.10.3",
@@ -60,7 +59,6 @@
 		"@types/webpack": "^4.39.1",
 		"@types/webpack-hot-middleware": "^2.16.5",
 		"@types/webpack-merge": "^4.1.5",
-		"@types/webpack-node-externals": "^1.6.3",
-		"@types/webpack-sources": "^0.1.5"
+		"@types/webpack-node-externals": "^1.6.3"
 	}
 }

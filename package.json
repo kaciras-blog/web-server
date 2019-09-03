@@ -26,7 +26,6 @@
 		]
 	},
 	"devDependencies": {
-		"@types/bytes": "^3.0.0",
 		"@types/case-sensitive-paths-webpack-plugin": "^2.1.2",
 		"@types/copy-webpack-plugin": "^5.0.0",
 		"@types/execa": "^2.0.0",
@@ -47,7 +46,6 @@
 		"@types/minimist": "^1.2.0",
 		"@types/optimize-css-assets-webpack-plugin": "^5.0.0",
 		"@types/supertest": "^2.0.8",
-		"bytes": "^3.1.0",
 		"execa": "^2.0.4",
 		"globby": "^10.0.0",
 		"husky": "^3.0.4",
