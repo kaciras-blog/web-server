@@ -86,9 +86,9 @@ describe("configureForProxy", () => {
 	const app = new Koa();
 	const server = app.callback();
 
-	app.use((context) => {
+	app.use((ctx) => {
 		config = {};
-		configureForProxy(config, context);
+		configureForProxy(ctx, config);
 	});
 
 	it("should set proxy headers", async () => {
