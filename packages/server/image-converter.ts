@@ -1,10 +1,9 @@
 /**
  * imagemin 对某些格式会将图片缓冲写入到临时文件，然后启动进程执行相关的图片处理程序，这方法很低效。
  */
-import sharp from "sharp";
+import sharp, { Metadata, Region, ResizeOptions } from "sharp";
 import PngQuant from "imagemin-pngquant";
 import GifScile from "imagemin-gifsicle";
-import SVGO from "svgo";
 import fs from "fs-extra";
 import path from "path";
 import { getLogger } from "log4js";
@@ -12,100 +11,132 @@ import { getLogger } from "log4js";
 
 const logger = getLogger("ImageService");
 
-const pngQuant = PngQuant();
-const gifScile = GifScile();
-const svgOptimizer = new SVGO();
+const pngquant = PngQuant();
+const gifscile = GifScile();
 
-// 暂时不支持 webp 作为原始图片
-export class LocalImageStore {
+export interface ImageTags {
+	readonly [key: string]: string;
+}
 
-	private readonly directory: string;
+export interface ImageInfo {
+	readonly rawHash: string;
+	readonly rawType: string;
+}
 
-	constructor(directory: string) {
-		this.directory = directory;
-		fs.ensureDirSync(directory);
+export class ImageData {
+
+	private readonly value: sharp.Sharp | Buffer;
+
+	constructor(value: sharp.Sharp | Buffer) {
+		this.value = value;
 	}
 
-	/**
-	 * 优化并保存图片文件到本地。
-	 *
-	 * @param hash 图片散列值
-	 * @param type 图片类型
-	 * @param buffer 图片数据
-	 */
-	async save(hash: string, type: string, buffer: Buffer) {
-		logger.debug("保存上传的图片:", hash);
-
-		// 矢量图没有转码，单独处理
-		if (type === "svg") {
-			const optimized = await svgOptimizer.optimize(buffer.toString());
-			return await fs.writeFile(this.originPath(hash, type), optimized.data);
-		}
-
-		const image = sharp(buffer);
-
-		// 保存原图，BMP 图片保存为无损 PNG
-		if (type === "bmp") {
-			await image.png().toFile(this.originPath(hash, "png"));
-		} else {
-			await fs.writeFile(this.originPath(hash, type), buffer);
-		}
-
-		// 保存转换后的webp图片，TODO: sharp 0.22.1 还不支持webp动画
-		if (type !== "gif") {
-			await image.webp().toFile(this.cachePath(hash, "webp"));
-		}
-
-		// imagemin 的 mozjpeg 没有类型定义，我也懒得折腾，sharp 默认构建使用的 libjpeg-turbo 也不差吧。
-		switch (type) {
-			case "gif":
-				return fs.writeFile(this.cachePath(hash, type), await gifScile(buffer));
-			case "jpg":
-			case "bmp":
-				return image.jpeg().toFile(this.cachePath(hash, type));
-			case "png":
-				return fs.writeFile(this.cachePath(hash, type), await pngQuant(buffer));
-			default:
-				throw new Error("传入了不支持的图片格式：" + type);
-		}
+	async sharp() {
+		return Buffer.isBuffer(this.value) ? sharp(this.value) : this.value;
 	}
 
-	/**
-	 * 根据散列值选择最佳优化的图片
-	 *
-	 * @param hash 图片的散列值
-	 * @param type 图片格式
-	 * @param webpSupport 是否接受webp格式
-	 * @return 文件路径，如果找不到则为null
-	 */
-	async select(hash: string, type: string, webpSupport: boolean): Promise<string | null> {
-		if (type === "svg") {
-			const file = this.originPath(hash, type);
-			return (await fs.pathExists(file)) ? file : null;
-		}
+	async buffer() {
+		return Buffer.isBuffer(this.value) ? this.value : await this.value.toBuffer();
+	}
+}
 
-		if (webpSupport) {
-			const webp = this.cachePath(hash, "webp");
-			if (await fs.pathExists(webp)) {
-				return webp;
-			}
-			logger.debug(`webp转码缓存未命中：${hash}.${type}`);
-		}
+export type ImageProcessResult = Promise<ImageData | sharp.Sharp | Buffer>;
+export type ImageProcessor = (info: ImageInfo, tags: ImageTags, input: ImageData) => ImageProcessResult;
 
-		// 同样的转换，bmp 缓存为 jpg，原图为 png
-		const cache = this.cachePath(hash, type === "bmp" ? "jpg" : type);
-		if (await fs.pathExists(cache)) {
-			return cache;
-		}
-		const origin = this.originPath(hash, type === "bmp" ? "png" : type);
-		return (await fs.pathExists(origin)) ? origin : null;
+export async function codecProcessor(info: ImageInfo, tags: ImageTags, input: ImageData): ImageProcessResult {
+	if (!tags.type) {
+		return input;
 	}
 
-	private cachePath(hash: string, type: string) {
-		return path.join(this.directory, "cache", type, `${hash}.${type}`);
+	// imagemin 的 mozjpeg 没有类型定义，我也懒得折腾。
+	// 另外 sharp 默认构建使用的 libjpeg-turbo 虽不如 mozjpeg 但也不差吧。
+	switch (tags.type) {
+		case "gif":
+			return await gifscile(await input.buffer());
+		case "jpg":
+		case "bmp":
+			return (await input.sharp()).jpeg();
+		case "png":
+			return await pngquant(await input.buffer());
+		case "webp":
+			return (await input.sharp()).webp();
+		default:
+			throw new Error("传入了不支持的图片格式：" + tags.type);
+	}
+}
+
+function IndexBannerMobile(metadata: Metadata) {
+	const region = {} as Region;
+	const WIDTH = 560;
+	region.left = Math.round((metadata.width! - WIDTH) / 2);
+	region.width = WIDTH;
+	region.top = 0;
+	region.height = metadata.height!;
+	return { region };
+}
+
+/**
+ * 定义一个配置，指定了这类图片要怎样裁剪和缩放。
+ * 在URL里写这些参数实在把我恶心到了，常用的分隔符全TM是保留字符。
+ */
+interface CropConfig {
+	region?: Region;
+	resize?: ResizeOptions;
+}
+
+interface Presets {
+	[key: string]: (metadata: Metadata) => CropConfig;
+}
+
+
+// 图片的裁剪具有响应性，不是仅靠几个坐标就能描述的
+export async function cropProcessor(info: ImageInfo, tags: ImageTags, input: ImageData): ImageProcessResult {
+	if (!tags.size) {
+		return input;
+	}
+	let image = await input.sharp();
+	const metadata = await image.metadata();
+
+	// TEMP
+	const PRESET: Presets = { IndexBannerMobile };
+
+	const preset = PRESET[tags.size];
+	if (!preset) {
+		throw new Error("Undefined crop preset: " + tags.size);
+	}
+	const { resize, region } = preset(metadata);
+	if (region) {
+		image = image.extract(region);
+	}
+	if (resize) {
+		image = image.resize(null, null, resize);
+	}
+	return image;
+}
+
+export class LocalFileSystemCache {
+
+	private readonly root: string;
+
+	constructor(root: string) {
+		this.root = root;
 	}
 
-	private originPath(hash: string, type: string) {
-		return path.join(this.directory, "origin", `${hash}.${type}`);
+	// save(tags: ImageTags, buffer: Buffer) {
+	// 	return fs.writeFile(path.join(this.root, "original", `${tags.rawHash}.${tags.type}`), buffer);
+	// }
+
+	async get(info: ImageInfo, tags: ImageTags) {
+		const file = this.cachePath(info, tags);
+		return (await fs.pathExists(file)) ? file : null;
+	}
+
+	put(info: ImageInfo, tags: ImageTags, buffer: Buffer) {
+		return fs.writeFile(this.cachePath(info, tags), buffer);
+	}
+
+	private cachePath(info: ImageInfo, tags: ImageTags) {
+		const tagValues = Object.keys(tags).sort().map((key) => tags[key]);
+		return path.join(this.root, "cache", ...tagValues, `${info.rawHash}.${info.rawType}`);
 	}
 }
