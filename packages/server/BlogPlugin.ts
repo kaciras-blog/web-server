@@ -2,15 +2,15 @@ import cors, { Options as CorsOptions } from "@koa/cors";
 import compress from "koa-compress";
 import conditional from "koa-conditional-get";
 import etag from "koa-etag";
-import { createImageMiddleware } from "./image-service";
 import ServerAPI, { ClassCliServerPlugin } from "./ServerAPI";
 import { intercept, serviceWorkerToggle } from "./middlewares";
 import { createSitemapMiddleware } from "./sitemap";
 import { feedMiddleware } from "./feed";
-import multer from "koa-multer";
+import multer from "@koa/multer";
 import bodyParser from "koa-bodyparser";
 import installCSPPlugin from "./csp-plugin";
 import { LocalImageStore } from "./image-converter";
+import { createImageMiddleware } from "./image-service";
 
 
 /** 对应配置的 blog 属性 */

@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@kaciras-blog/common": "^0.1.0",
 		"@koa/cors": "^3.0.0",
+		"@koa/multer": "^2.0.0",
 		"axios": "~0.18.1",
 		"feed": "^4.0.0",
 		"fs-extra": "^8.1.0",
@@ -23,23 +24,22 @@
 		"koa-compress": "^3.0.0",
 		"koa-conditional-get": "^2.0.0",
 		"koa-etag": "^3.0.0",
-		"koa-multer": "^1.0.2",
 		"koa-send": "^5.0.0",
 		"koa-static": "^5.0.0",
 		"log4js": "^5.1.0",
 		"minimist": "^1.2.0",
+		"multer": "^1.4.2",
 		"sharp": "^0.23.0",
 		"sitemap": "^4.1.1",
 		"svgo": "^1.2.2",
 		"vue-server-renderer": "2.6.10"
 	},
 	"devDependencies": {
-		"@types/imagemin": "^6.0.0",
+		"@types/imagemin": "^7.0.0",
 		"@types/imagemin-gifsicle": "^5.2.0",
 		"@types/imagemin-pngquant": "^7.0.0",
 		"@types/koa-bodyparser": "^4.3.0",
 		"@types/sharp": "^0.22.2",
-		"@types/svgo": "^1.2.1",
-		"@types/xml2js": "^0.4.4"
+		"@types/svgo": "^1.2.1"
 	}
 }
