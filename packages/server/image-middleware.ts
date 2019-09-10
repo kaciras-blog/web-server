@@ -28,14 +28,14 @@ interface MiddlewareOptions {
 
 function checkUploadPermission(url: string, ctx: Context) {
 	return Axios.get(url + "/session/user", configureForProxy(ctx))
-		.then((response) => response.status === 200).catch(() => false);
+		.then((response) => response.data.id === 2).catch(() => false);
 }
 
 /**
  * 根据指定的选项创建中间件。
  * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
  *
- * @param options 图片存储
+ * @param options 选项
  * @return Koa的中间件函数
  */
 export function imageMiddleware(options: MiddlewareOptions): Middleware {
