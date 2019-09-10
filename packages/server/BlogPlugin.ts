@@ -1,4 +1,4 @@
-import cors, { Options as CorsOptions } from "@koa/cors";
+import cors from "@koa/cors";
 import compress from "koa-compress";
 import conditional from "koa-conditional-get";
 import etag from "koa-etag";
@@ -9,19 +9,9 @@ import { feedMiddleware } from "./feed";
 import multer from "@koa/multer";
 import bodyParser from "koa-bodyparser";
 import installCSPPlugin from "./csp-plugin";
-import { LocalImageStore } from "./image-converter";
-import { createImageMiddleware } from "./image-service";
+import { imageMiddleware } from "./image-middleware";
+import { AppOptions } from "./options";
 
-
-/** 对应配置的 blog 属性 */
-export interface AppOptions {
-	imageRoot: string;
-	cors?: CorsOptions;
-
-	serverAddress: string;
-	https?: boolean;
-	serverCert: string | true;
-}
 
 export default class BlogPlugin implements ClassCliServerPlugin {
 
@@ -42,8 +32,11 @@ export default class BlogPlugin implements ClassCliServerPlugin {
 		const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
 		api.useBeforeAll(uploader.single("file"));
 
+		api.useBeforeFilter(imageMiddleware({
+			directory: options.imageRoot,
+			serverAddress: options.serverAddress,
+		}));
 		api.useBeforeFilter(serviceWorkerToggle(true));
-		api.useBeforeFilter(createImageMiddleware(new LocalImageStore(options.imageRoot)));
 
 		api.useFilter(intercept([
 			/\.(?:js|css)\.map$/,

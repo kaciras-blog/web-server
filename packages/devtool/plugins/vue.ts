@@ -1,10 +1,10 @@
-import log4js from "log4js";
 import { EventEmitter } from "events";
+import log4js from "log4js";
 import MFS from "memory-fs";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
-import { CliDevelopmentOptions } from "..";
+import { CliDevelopmentOptions } from "../options";
 import ServerConfiguration from "../webpack/server.config";
 import PromiseSource from "@kaciras-blog/common/PromiseSource";
 

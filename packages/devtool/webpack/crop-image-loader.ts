@@ -1,7 +1,6 @@
 import { loader } from "webpack";
-import sharp from "sharp";
+import sharp, { Metadata, Region, ResizeOptions } from "sharp";
 import * as loaderUtils from "loader-utils";
-import { Metadata, Region, ResizeOptions } from "sharp";
 
 // noinspection JSUnusedGlobalSymbols
 export const raw = true;

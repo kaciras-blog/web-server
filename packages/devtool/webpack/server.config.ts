@@ -4,7 +4,7 @@ import merge from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
 import baseConfig from "./base.config";
 import { styleLoaders } from "./share";
-import { CliDevelopmentOptions } from "../index";
+import { CliDevelopmentOptions } from "../options";
 
 
 export default (options: CliDevelopmentOptions) => {

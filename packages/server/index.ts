@@ -1,12 +1,13 @@
-import log4js from "log4js";
-import parseArgs from "minimist";
 import path from "path";
-import { runServer, ServerOptions } from "./create-server";
-import BlogPlugin, { AppOptions } from "./BlogPlugin";
+import parseArgs from "minimist";
+import log4js from "log4js";
+import serve from "koa-static";
+import { runServer } from "./create-server";
+import { configureGlobalAxios } from "./axios-helper";
+import BlogPlugin from "./BlogPlugin";
 import ServerAPI from "./ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
-import { configureGlobalAxios } from "./axios-helper";
-import serve from "koa-static";
+import { CliServerOptions } from "./options";
 
 const logger = log4js.getLogger();
 
@@ -42,14 +43,6 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 		logConfig.categories.default.appenders = ["file"];
 	}
 	log4js.configure(logConfig);
-}
-
-export interface CliServerOptions {
-	outputDir: string;	// webpack的输出目录
-	assetsDir: string;	// 公共资源的URL前缀，可以设为外部服务器等
-
-	blog: AppOptions;
-	server: ServerOptions;
 }
 
 async function runProd(options: CliServerOptions) {

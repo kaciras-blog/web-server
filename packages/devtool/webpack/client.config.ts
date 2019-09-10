@@ -8,7 +8,7 @@ import baseWebpackConfig from "./base.config";
 import { resolve, styleLoaders } from "./share";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import { CliDevelopmentOptions } from "../index";
+import { CliDevelopmentOptions } from "../options";
 import VueSSRTemplatePlugin from "./VueSSRTemplatePlugin";
 
 // 这个没有类型定义

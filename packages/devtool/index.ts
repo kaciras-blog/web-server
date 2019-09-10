@@ -1,10 +1,9 @@
 import { promisify } from "util";
 import chalk from "chalk";
 import fs from "fs-extra";
-import { VueLoaderOptions } from "vue-loader";
-import webpack, { Configuration, Options, Stats } from "webpack";
+import webpack, { Configuration, Stats } from "webpack";
 import { configureGlobalAxios } from "@kaciras-blog/server/axios-helper";
-import KacirasService, { CliServerOptions } from "@kaciras-blog/server";
+import KacirasService from "@kaciras-blog/server";
 import { runServer } from "@kaciras-blog/server/create-server";
 import BlogPlugin from "@kaciras-blog/server/BlogPlugin";
 import ServerAPI from "@kaciras-blog/server/ServerAPI";
@@ -13,48 +12,8 @@ import hotReloadMiddleware from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./webpack/client.config";
 import ServerConfiguration from "./webpack/server.config";
+import { CliDevelopmentOptions } from "./options";
 
-
-export interface WebpackOptions {
-	mode: "development" | "production" | "none";
-	publicPath: string; // 公共资源的URL前缀，可以设为外部服务器等
-	parallel: boolean; // 多线程编译JS文件
-	bundleAnalyzerReport: any;
-
-	client: {
-		useBabel: boolean,
-		devtool: Options.Devtool;
-		cssSourceMap: boolean,
-	};
-
-	server: {
-		devtool: Options.Devtool; // 服务端没有eval模式
-		cssSourceMap: boolean,
-	};
-
-	vueLoader?: VueLoaderOptions;
-}
-
-export interface DevServerOptions {
-	silent: boolean;
-	useHotClient: boolean;
-}
-
-export interface EnvConfig {
-	contentServerUri: string | {
-		http: string;
-		https: string;
-	};
-	webHost?: string;
-	sentryDSN?: string;
-	googleTagManager?: string;
-}
-
-export interface CliDevelopmentOptions extends CliServerOptions {
-	dev: DevServerOptions;
-	webpack: WebpackOptions;
-	envConfig: EnvConfig;
-}
 
 const service = new KacirasService<CliDevelopmentOptions>();
 

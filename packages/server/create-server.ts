@@ -3,28 +3,8 @@ import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { Server } from "net";
 import { createSecureContext, SecureContext } from "tls";
+import { ServerOptions, SNIProperties } from "./options";
 
-export interface ServerOptions {
-	http?: HttpServerOptions;
-	https?: HttpsServerOptions;
-}
-
-export interface HttpServerOptions {
-	port?: number;
-	redirect?: number | true;
-}
-
-export interface HttpsServerOptions extends HttpServerOptions {
-	keyFile: string;
-	certFile: string;
-	sni?: SNIProperties[];
-}
-
-export interface SNIProperties {
-	hostname: string;
-	key: string;
-	cert: string;
-}
 
 // app.callback() 的定义，比较长不方便直接写在参数里
 type RequestMessage = IncomingMessage | Http2ServerRequest;

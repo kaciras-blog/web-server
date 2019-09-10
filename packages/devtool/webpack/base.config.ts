@@ -3,9 +3,8 @@ import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin, RuleSetRule, RuleSetUseItem } from "webpack";
-import { CliDevelopmentOptions, WebpackOptions } from "..";
+import { CliDevelopmentOptions, WebpackOptions } from "../options";
 import { resolve } from "./share";
-import ExternalWebpPlugin from "./ExternalWebpPlugin";
 import CompressionPlugin from "compression-webpack-plugin";
 
 /**

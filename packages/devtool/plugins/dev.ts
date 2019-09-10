@@ -3,9 +3,8 @@
  */
 import path from "path";
 import webpack, { Configuration } from "webpack";
-import { Context } from "koa";
+import { Context, Middleware } from "koa";
 import { NextHandleFunction } from "connect";
-import { Middleware } from "koa";
 import koaWebpack from "koa-webpack";
 import WebpackHotMiddlewareType from "webpack-hot-middleware";
 
