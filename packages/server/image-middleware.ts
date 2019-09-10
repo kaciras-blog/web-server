@@ -1,14 +1,17 @@
 /*
  * 简单的图片存储服务
  */
+import crypto from "crypto";
+import path from "path";
 import fs from "fs-extra";
 import { Context, Middleware } from "koa";
+import { MulterIncomingMessage } from "@koa/multer";
+import Axios from "axios";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import crypto from "crypto";
 import { ImageService } from "./image-service";
-import { MulterIncomingMessage } from "@koa/multer";
-import * as path from "path";
+import { LocalFileSystemCache } from "./image-converter";
+import { configureForProxy } from "./axios-helper";
 
 
 const logger = getLogger("ImageService");
@@ -18,14 +21,28 @@ const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
 const CONTEXT_PATH = "/image";
 const FILE_PATH_PATTERN = /\/image\/(\w+)\.(\w+)$/;
 
+interface MiddlewareOptions {
+	directory: string;
+	serverAddress: string;
+}
+
+function checkUploadPermission(url: string, ctx: Context) {
+	return Axios.get(url + "/session/user", configureForProxy(ctx))
+		.then((response) => response.status === 200).catch(() => false);
+}
+
 /**
  * 根据指定的选项创建中间件。
  * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
  *
- * @param store 图片存储
+ * @param options 图片存储
  * @return Koa的中间件函数
  */
-export function createImageMiddleware(store: LocalImageStore): Middleware {
+export function imageMiddleware(options: MiddlewareOptions): Middleware {
+
+	const proto = path.join(options.directory, "origin");
+	const cache = path.join(options.directory, "cache");
+	const service = new ImageService(proto, new LocalFileSystemCache(cache));
 
 	async function getImage(ctx: Context) {
 		const match = FILE_PATH_PATTERN.exec(ctx.path);
@@ -63,6 +80,9 @@ export function createImageMiddleware(store: LocalImageStore): Middleware {
 	 * @param ctx 请求上下文
 	 */
 	async function uploadImage(ctx: Context) {
+		if (!await checkUploadPermission(options.serverAddress, ctx)) {
+			return ctx.status = 403;
+		}
 		const file = (ctx.req as MulterIncomingMessage).file;
 		if (!file) {
 			return ctx.status = 400;
