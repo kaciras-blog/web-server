@@ -1,35 +1,23 @@
 import crypto from "crypto";
-import {
-	codecProcessor,
-	cropProcessor,
-	ImageData,
-	ImageInfo,
-	ImageProcessor,
-	ImageTags,
-	LocalFileSystemCache,
-} from "./image-converter";
+import { codecFilter, cropFilter, ImageFilter, ImageTags, runFilters } from "./image-filter";
 import sharp from "sharp";
 import * as path from "path";
 import fs from "fs-extra";
 
 
-const processors: ImageProcessor[] = [
-	cropProcessor,
-	codecProcessor,
-];
+const filters = new Map<string, ImageFilter>();
+filters.set("type", codecFilter);
+filters.set("size", cropFilter);
 
 export class ImageService {
 
-	private readonly store: string;
-	private readonly cache: LocalFileSystemCache;
+	private readonly store: LocalFileSystemCache;
 
-	constructor(store: string, cache: LocalFileSystemCache) {
+	constructor(store: LocalFileSystemCache) {
 		this.store = store;
-		this.cache = cache;
 	}
 
 	async save(buffer: Buffer, type: string, rawTags: ImageTags) {
-
 		if (type === "bmp") {
 			type = "png";
 			buffer = await sharp(buffer).png().toBuffer();
@@ -40,36 +28,61 @@ export class ImageService {
 			.update(buffer)
 			.digest("hex");
 
-		const info: ImageInfo = { rawHash: hash, rawType: type };
-		const filename = `${hash}.${type}`;
-
 		const tasks: Array<Promise<void>> = [
-			fs.writeFile(path.join(this.store, filename), buffer),
+			this.store.save(hash, type, buffer),
 		];
 
-		// TODO: sharp 0.22.1 还不支持 webp 动画
-		if (type !== "gif") {
-			const tags = Object.assign({}, rawTags, { type: "webp" });
-			tasks.push(buildCache(info, tags, buffer).then((buf) => this.cache.put(info, tags, buf)));
-		}
+		const buildCache = async (tags: ImageTags) => {
+			const merged = Object.assign({}, rawTags, tags);
+			const output = await runFilters(buffer, filters, merged);
+			return this.store.putCache(hash, type, merged, output);
+		};
 
-		const tags1 = Object.assign({}, rawTags, { type });
-		tasks.push(buildCache(info, tags1, buffer).then((buf) => this.cache.put(info, tags1, buf)));
+		tasks.push(buildCache({ type: "webp" }));
+		tasks.push(buildCache({ type }));
 
-		return Promise.all(tasks).then(() => filename);
+		return Promise.all(tasks).then(() => `${hash}.${type}`);
 	}
 
-	get(hash: string) {
-
+	get(hash: string, type: string, tags: ImageTags) {
+		return this.store.getCache(hash, type, tags);
 	}
 }
 
-export async function buildCache(info: ImageInfo, tags: ImageTags, buffer: Buffer) {
-	let data = new ImageData(buffer);
+export class LocalFileSystemCache {
 
-	for (const processor of processors) {
-		const output = await processor(info, tags, data);
-		data = output instanceof ImageData ? output : new ImageData(output);
+	private readonly root: string;
+
+	constructor(root: string) {
+		this.root = root;
 	}
-	return data.buffer();
+
+	save(hash: string, type: string, buffer: Buffer) {
+		return fs.writeFile(this.originPath(hash, type), buffer);
+	}
+
+	load(hash: string, type: string) {
+		return fs.readFile(this.originPath(hash, type));
+	}
+
+	getCache(hash: string, type: string, tags: ImageTags) {
+		const file = this.cachePath(hash, type, tags);
+		return fs.pathExists(file).then((exists) => exists ? file : null);
+	}
+
+	putCache(hash: string, type: string, tags: ImageTags, buffer: Buffer) {
+		return fs.writeFile(this.cachePath(hash, type, tags), buffer);
+	}
+
+	private originPath(hash: string, type: string) {
+		return path.join(this.root, "origin", `${hash}.${type}`);
+	}
+
+	private cachePath(hash: string, type: string, tags: ImageTags) {
+		const tagValues = Object.keys(tags).sort().map((key) => tags[key]);
+		if (tags.type) {
+			type = tags.type;
+		}
+		return path.join(this.root, "cache", ...tagValues, `${hash}.${type}`);
+	}
 }

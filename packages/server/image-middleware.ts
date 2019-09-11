@@ -1,7 +1,6 @@
 /*
  * 简单的图片存储服务
  */
-import crypto from "crypto";
 import path from "path";
 import fs from "fs-extra";
 import { Context, Middleware } from "koa";
@@ -9,8 +8,7 @@ import { MulterIncomingMessage } from "@koa/multer";
 import Axios from "axios";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import { ImageService } from "./image-service";
-import { LocalFileSystemCache } from "./image-converter";
+import { ImageService, LocalFileSystemCache } from "./image-service";
 import { configureForProxy } from "./axios-helper";
 
 
@@ -32,17 +30,14 @@ function checkUploadPermission(url: string, ctx: Context) {
 }
 
 /**
- * 根据指定的选项创建中间件。
- * 返回Koa的中间件函数，用法举例：app.use(require("./image")(options));
+ * 根据指定的选项创建图片存储中间件。
  *
  * @param options 选项
  * @return Koa的中间件函数
  */
 export function imageMiddleware(options: MiddlewareOptions): Middleware {
 
-	const proto = path.join(options.directory, "origin");
-	const cache = path.join(options.directory, "cache");
-	const service = new ImageService(proto, new LocalFileSystemCache(cache));
+	const service = new ImageService(new LocalFileSystemCache(options.directory));
 
 	async function getImage(ctx: Context) {
 		const match = FILE_PATH_PATTERN.exec(ctx.path);
@@ -54,8 +49,14 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
 			return ctx.status = 404;
 		}
+
+		const tags: any = {};
+
 		const webpSupport = Boolean(ctx.accept.type("image/webp"));
-		const file = await store.select(hash, ext, webpSupport);
+		if (webpSupport) {
+			tags.type = "webp";
+		}
+		const file = await service.get(hash, ext, tags);
 
 		// 【更新】考虑到便于存储实现，undefined 也算文件不存在
 		if (!file) {
@@ -101,16 +102,11 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 			return ctx.status = 400;
 		}
 
-		const hash = crypto
-			.createHash("sha3-256")
-			.update(file.buffer)
-			.digest("hex");
-
-		await store.save(hash, ext, file.buffer);
+		const filename = await service.save(file.buffer, ext, {});
 
 		// 保存的文件名通过 Location 响应头来传递
 		ctx.status = 200;
-		ctx.set("Location", `${CONTEXT_PATH}/${hash}.${ext}`);
+		ctx.set("Location", `${CONTEXT_PATH}/${filename}`);
 	}
 
 	// 【修复】CONTEXT_PATH 要统一，以免发生判断条件不一致的问题
