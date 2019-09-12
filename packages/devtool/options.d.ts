@@ -11,8 +11,8 @@ export interface CliDevelopmentOptions extends CliServerOptions {
 
 export interface WebpackOptions {
 	mode: "development" | "production" | "none";
-	publicPath: string; // 公共资源的URL前缀，可以设为外部服务器等
-	parallel: boolean; // 多线程编译JS文件
+	publicPath: string;
+	parallel: boolean;
 	bundleAnalyzerReport: any;
 
 	client: {
@@ -22,7 +22,7 @@ export interface WebpackOptions {
 	};
 
 	server: {
-		devtool: Options.Devtool; // 服务端没有eval模式
+		devtool: Options.Devtool;
 		cssSourceMap: boolean,
 	};
 

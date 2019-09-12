@@ -39,6 +39,14 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 
 	const service = new ImageService(new LocalFileSystemCache(options.directory));
 
+	/*
+	 * 关于防盗链问题：
+	 *
+	 * 不能依赖 Referer 来做，因为 Referrer-Policy 可以禁止发送该头部，很多盗版站已经这么做了。
+	 * 也不能要求必须有 Referer 头，因为 RSS 阅读器不发送 Referer 头。
+	 *
+	 * 正确的方式是使用 Cookie 来做域名限制，经测试 Feedbro 插件能够发送 Cookie。
+	 */
 	async function getImage(ctx: Context) {
 		const match = FILE_PATH_PATTERN.exec(ctx.path);
 		if (!match) {
