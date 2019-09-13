@@ -10,11 +10,10 @@ import { getLogger } from "log4js";
 import mime from "mime-types";
 import { ImageService, LocalFileSystemCache } from "./image-service";
 import { configureForProxy } from "./axios-helper";
+import { ImageError } from "./image-filter";
 
 
 const logger = getLogger("ImageService");
-
-const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
 
 const CONTEXT_PATH = "/image";
 const FILE_PATH_PATTERN = /\/image\/(\w+)\.(\w+)$/;
@@ -40,12 +39,12 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 	const service = new ImageService(new LocalFileSystemCache(options.directory));
 
 	/*
-	 * 关于防盗链问题：
+	 * 关于防盗链的问题：
 	 *
 	 * 不能依赖 Referer 来做，因为 Referrer-Policy 可以禁止发送该头部，很多盗版站已经这么做了。
 	 * 也不能要求必须有 Referer 头，因为 RSS 阅读器不发送 Referer 头。
 	 *
-	 * 正确的方式是使用 Cookie 来做域名限制，经测试 Feedbro 插件能够发送 Cookie。
+	 * 浏览器里的 RSS 阅读器使用的插件内部地址也属于第三方站点，如果做防盗链则会影响它们。
 	 */
 	async function getImage(ctx: Context) {
 		const match = FILE_PATH_PATTERN.exec(ctx.path);
@@ -53,10 +52,6 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 			return ctx.status = 404;
 		}
 		const [, hash, ext] = match;
-
-		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
-			return ctx.status = 404;
-		}
 
 		const tags: any = {};
 
@@ -92,27 +87,20 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		if (!await checkUploadPermission(options.serverAddress, ctx)) {
 			return ctx.status = 403;
 		}
-		const file = (ctx.req as MulterIncomingMessage).file;
+
+		const { file } = (ctx.req as MulterIncomingMessage);
 		if (!file) {
 			return ctx.status = 400;
 		}
 		logger.trace("有图片正在上传:" + file.filename);
 
 		// mime.extension() 对 undefined 以及不支持的返回 false
-		let ext = mime.extension(file.mimetype);
-		if (ext === "jpeg") {
-			ext = "jpg"; // 统一使用JPG
-		} else if (!ext) {
+		const type = mime.extension(file.mimetype);
+		if (!type) {
 			return ctx.status = 400;
 		}
 
-		if (SUPPORTED_FORMAT.indexOf(ext) < 0) {
-			return ctx.status = 400;
-		}
-
-		const filename = await service.save(file.buffer, ext, {});
-
-		// 保存的文件名通过 Location 响应头来传递
+		const filename = await service.save(file.buffer, type);
 		ctx.status = 200;
 		ctx.set("Location", `${CONTEXT_PATH}/${filename}`);
 	}
@@ -122,10 +110,18 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		if (!ctx.path.startsWith(CONTEXT_PATH)) {
 			return next();
 		}
-		if (ctx.method === "GET") {
-			return getImage(ctx);
-		} else if (ctx.method === "POST") {
-			return uploadImage(ctx);
+		try {
+			if (ctx.method === "GET") {
+				return getImage(ctx);
+			} else if (ctx.method === "POST") {
+				return uploadImage(ctx);
+			}
+		} catch (err) {
+			if (err instanceof ImageError) {
+				ctx.body = err.message;
+				return ctx.status = 400;
+			}
+			throw err;
 		}
 		ctx.status = 405;
 	};

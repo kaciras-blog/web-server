@@ -1,13 +1,28 @@
 import crypto from "crypto";
-import { codecFilter, cropFilter, ImageFilter, ImageTags, runFilters } from "./image-filter";
+import { codecFilter, cropFilter, ImageError, ImageFilter, ImageTags, runFilters } from "./image-filter";
 import sharp from "sharp";
 import * as path from "path";
 import fs from "fs-extra";
+import { brotliCompress, InputType } from "zlib";
+import { promisify } from "util";
+import SVGO from "svgo";
 
 
-const filters = new Map<string, ImageFilter>();
-filters.set("type", codecFilter);
-filters.set("size", cropFilter);
+const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
+const svgo = new SVGO();
+
+const rasterFilters = new Map<string, ImageFilter>();
+rasterFilters.set("type", codecFilter);
+rasterFilters.set("size", cropFilter);
+
+/** 能够处理的图片格式 */
+const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
+
+interface ImageSource {
+	hash: string;
+	type: string;
+	buffer: Buffer;
+}
 
 export class ImageService {
 
@@ -17,7 +32,14 @@ export class ImageService {
 		this.store = store;
 	}
 
-	async save(buffer: Buffer, type: string, rawTags: ImageTags) {
+	async save(buffer: Buffer, type: string) {
+		if (type === "jpeg") {
+			type = "jpg";
+		}
+		if (SUPPORTED_FORMAT.indexOf(type) < 0) {
+			throw new ImageError("不支持的图片格式" + type);
+		}
+
 		if (type === "bmp") {
 			type = "png";
 			buffer = await sharp(buffer).png().toBuffer();
@@ -28,24 +50,43 @@ export class ImageService {
 			.update(buffer)
 			.digest("hex");
 
-		const tasks: Array<Promise<void>> = [
-			this.store.save(hash, type, buffer),
-		];
+		const source = { hash, type, buffer };
+		let tasks: Array<Promise<void>>;
 
-		const buildCache = async (tags: ImageTags) => {
-			const merged = Object.assign({}, rawTags, tags);
-			const output = await runFilters(buffer, filters, merged);
-			return this.store.putCache(hash, type, merged, output);
-		};
+		if (type === "svg") {
+			tasks = await this.handleSvg(source);
+		} else {
+			tasks = this.handleRaster(source);
+		}
 
-		tasks.push(buildCache({ type: "webp" }));
-		tasks.push(buildCache({ type }));
-
+		tasks.push(this.store.save(hash, type, buffer));
 		return Promise.all(tasks).then(() => `${hash}.${type}`);
 	}
 
 	get(hash: string, type: string, tags: ImageTags) {
 		return this.store.getCache(hash, type, tags);
+	}
+
+	private async handleSvg(src: ImageSource) {
+		const { data } = await svgo.optimize(src.buffer.toString());
+		const brotli = await brotliCompressAsync(data);
+
+		return [
+			this.store.putCache(src.hash, src.type, {}, data),
+			this.store.putCache(src.hash, src.type, { type: "br" }, brotli),
+		];
+	}
+
+	private handleRaster(src: ImageSource) {
+		return [
+			this.buildCache(src, rasterFilters, { type: "webp" }),
+			this.buildCache(src, rasterFilters, { type: src.type }),
+		];
+	}
+
+	private async buildCache(src: ImageSource, filters: Map<string, ImageFilter>, tags: ImageTags) {
+		const output = await runFilters(src.buffer, filters, tags);
+		return this.store.putCache(src.hash, src.type, tags, output);
 	}
 }
 
@@ -57,7 +98,7 @@ export class LocalFileSystemCache {
 		this.root = root;
 	}
 
-	save(hash: string, type: string, buffer: Buffer) {
+	save(hash: string, type: string, buffer: Buffer | string) {
 		return fs.writeFile(this.originPath(hash, type), buffer);
 	}
 
@@ -70,7 +111,7 @@ export class LocalFileSystemCache {
 		return fs.pathExists(file).then((exists) => exists ? file : null);
 	}
 
-	putCache(hash: string, type: string, tags: ImageTags, buffer: Buffer) {
+	putCache(hash: string, type: string, tags: ImageTags, buffer: Buffer | string) {
 		return fs.writeFile(this.cachePath(hash, type, tags), buffer);
 	}
 

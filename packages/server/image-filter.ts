@@ -6,7 +6,12 @@ import Pngquant from "imagemin-pngquant";
 import Gifscile from "imagemin-gifsicle";
 import Mozjpeg from "imagemin-mozjpeg";
 import Gif2webp from "imagemin-gif2webp";
+import { BaseError } from "make-error";
 
+
+export class ImageError extends BaseError {
+	constructor(message?: string) { super(message); }
+}
 
 export interface ImageTags {
 	readonly [key: string]: string;
