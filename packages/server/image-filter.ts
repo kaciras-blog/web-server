@@ -3,12 +3,15 @@
  */
 import sharp, { Metadata, Region, ResizeOptions } from "sharp";
 import Pngquant from "imagemin-pngquant";
-import Gifscile from "imagemin-gifsicle";
+import Gifsicle from "imagemin-gifsicle";
 import Mozjpeg from "imagemin-mozjpeg";
-import Gif2webp from "imagemin-gif2webp";
 import { BaseError } from "make-error";
 
-
+/**
+ * 图片处理时出现的异常，表示无效的图片数据，或图片的编码不受支持。
+ *
+ * 【实现】JS 这垃圾语言实现个自定义异常坑真是多……
+ */
 export class ImageError extends BaseError {
 	constructor(message?: string) { super(message); }
 }
@@ -28,19 +31,20 @@ export function runFilters(buffer: Buffer, filters: Map<string, ImageFilter>, ta
 }
 
 const pngquant = Pngquant();
-const gifscile = Gifscile();
+const gifsicle = Gifsicle({ optimizationLevel: 3 });
 const mozjpeg = Mozjpeg();
-const gif2webp = Gif2webp();
 
-// imagemin 的 mozjpeg 没有类型定义，我也懒得折腾。
-// 另外 sharp 默认构建使用的 libjpeg-turbo 虽不如 mozjpeg 但也不差吧。
-// TODO: sharp 0.22.1 还不支持 webp 动画
 export async function codecFilter(buffer: Buffer, targetType: string): Promise<Buffer> {
 	switch (targetType) {
 		case "webp":
-			return isGif(buffer) ? gif2webp(buffer) : sharp(buffer).webp().toBuffer();
+			// TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败
+			if (isGif(buffer)) {
+				throw new Error("暂不支持GIF转WEBP");
+			}
+			// Google 官网说 libwebp 默认的质量是75，但 sharp 默认80，这里还是用 Google 的
+			return sharp(buffer).webp({ quality: 75 }).toBuffer();
 		case "gif":
-			return gifscile(buffer);
+			return gifsicle(buffer);
 		case "jpg":
 			return mozjpeg(buffer);
 		case "png":
@@ -50,6 +54,7 @@ export async function codecFilter(buffer: Buffer, targetType: string): Promise<B
 	}
 }
 
+// GIF 图片有 MagicNumber，前三字节为 GIF 这三个字
 function isGif(buffer: Buffer) {
 	return buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
 }
