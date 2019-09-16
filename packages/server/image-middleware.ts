@@ -8,9 +8,10 @@ import { MulterIncomingMessage } from "@koa/multer";
 import Axios from "axios";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import { ImageService, LocalFileSystemCache } from "./image-service";
 import { configureForProxy } from "./axios-helper";
 import { ImageError } from "./image-filter";
+import { LocalFileStore } from "./image-store";
+import { WebImageService } from "./image-service";
 
 
 const logger = getLogger("ImageService");
@@ -36,10 +37,10 @@ function checkUploadPermission(url: string, ctx: Context) {
  */
 export function imageMiddleware(options: MiddlewareOptions): Middleware {
 
-	const service = new ImageService(new LocalFileSystemCache(options.directory));
+	const service = new WebImageService(new LocalFileStore(options.directory));
 
 	/*
-	 * 关于防盗链的问题：
+	 * 1) 关于防盗链的问题：
 	 *
 	 * 不能依赖 Referer 来做，因为 Referrer-Policy 可以禁止发送该头部，很多盗版站已经这么做了。
 	 * 也不能要求必须有 Referer 头，因为 RSS 阅读器不发送 Referer 头。
@@ -53,28 +54,30 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		}
 		const [, hash, ext] = match;
 
-		const tags: any = {};
+		const acceptWebp = Boolean(ctx.accept.type("image/webp"));
+		const acceptBrotli = Boolean(ctx.accept.encoding("br"));
 
-		const webpSupport = Boolean(ctx.accept.type("image/webp"));
-		if (webpSupport) {
-			tags.type = "webp";
-		}
-		const file = await service.get(hash, ext, tags);
+		const result = await service.get(hash, ext, acceptWebp, acceptBrotli);
 
-		// 【更新】考虑到便于存储实现，undefined 也算文件不存在
-		if (!file) {
+		if (!result) {
 			logger.warn("请求了不存在的图片：" + ctx.path);
 			return ctx.status = 404;
 		}
 
-		const stats = await fs.stat(file);
+		const stats = await fs.stat(result.path);
 
 		// TODO: 当前的类型选择不依赖url，不要再中间件里缓存它，故把Cache-Control设为private
 		ctx.set("Cache-Control", "private, max-age=31536000");
-		ctx.set("Content-Length", stats.size.toString());
 		ctx.set("Last-Modified", stats.mtime.toUTCString());
-		ctx.type = path.extname(file);
-		ctx.body = fs.createReadStream(file);
+
+		if (result.encoding) {
+			ctx.set("Content-Encoding", result.encoding);
+		} else {
+			ctx.set("Content-Length", stats.size.toString());
+		}
+
+		ctx.type = path.extname(result.path);
+		ctx.body = fs.createReadStream(result.path);
 	}
 
 	/**
