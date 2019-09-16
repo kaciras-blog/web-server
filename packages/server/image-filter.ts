@@ -4,7 +4,8 @@
 import sharp, { Metadata, Region, ResizeOptions } from "sharp";
 import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
-import Mozjpeg from "imagemin-mozjpeg";
+import mozjpeg from "mozjpeg";
+import execa from "execa";
 import { BaseError } from "make-error";
 
 /**
@@ -32,7 +33,6 @@ export function runFilters(buffer: Buffer, filters: Map<string, ImageFilter>, ta
 
 const pngquant = Pngquant();
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
-const mozjpeg = Mozjpeg();
 
 export async function codecFilter(buffer: Buffer, targetType: string): Promise<Buffer> {
 	switch (targetType) {
@@ -46,7 +46,12 @@ export async function codecFilter(buffer: Buffer, targetType: string): Promise<B
 		case "gif":
 			return gifsicle(buffer);
 		case "jpg":
-			return mozjpeg(buffer);
+			const options = {
+				maxBuffer: Infinity,
+				input: buffer,
+				encoding: null,
+			};
+			return (await execa(mozjpeg, options)).stdout;
 		case "png":
 			return pngquant(buffer);
 		default:

@@ -18,9 +18,7 @@
 		"feed": "^4.0.0",
 		"fs-extra": "^8.1.0",
 		"imagemin-gifsicle": "^6.0.1",
-		"imagemin-mozjpeg": "^8.0.0",
 		"imagemin-pngquant": "^8.0.0",
-		"imagemin-webp": "^5.1.0",
 		"koa": "^2.8.1",
 		"koa-bodyparser": "^4.2.1",
 		"koa-compress": "^3.0.0",
@@ -38,7 +36,6 @@
 		"vue-server-renderer": "2.6.10"
 	},
 	"devDependencies": {
-		"@types/imagemin": "^7.0.0",
 		"@types/imagemin-gifsicle": "^5.2.0",
 		"@types/imagemin-pngquant": "^7.0.0",
 		"@types/koa-bodyparser": "^4.3.0",
