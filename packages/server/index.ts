@@ -11,10 +11,22 @@ import { CliServerOptions } from "./options";
 
 const logger = log4js.getLogger();
 
+interface SimpleLogConfig {
+	level: string;
+	file?: string;
+
+	/**
+	 * 即使用了文件日志，还是保持控制台输出，使用此选项可以关闭控制台的输出。
+	 * 【注意】很多日志处理系统默认读取标准流，所以尽量不要取消。
+	 */
+	noConsole?: boolean;
+}
+
 /**
- * 配置日志功能，先于其他模块执行保证日志系统的完整。
+ * 简单地配置一下日志，文档见：
+ * https://log4js-node.github.io/log4js-node/appenders.html
  */
-function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: string | boolean }) {
+function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 	const logConfig: log4js.Configuration = {
 		appenders: {
 			console: {
@@ -26,13 +38,16 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 			},
 		},
 		categories: {
-			default: { appenders: ["console"], level: logLevel },
+			default: { appenders: ["console"], level },
 		},
 	};
-	if (logFile) {
+	if (noConsole) {
+		logConfig.categories.default.appenders = [];
+	}
+	if (file) {
 		logConfig.appenders.file = {
 			type: "file",
-			filename: logFile,
+			filename: file,
 			flags: "w",
 			encoding: "utf-8",
 			layout: {
@@ -40,7 +55,7 @@ function configureLog4js({ logLevel, logFile }: { logLevel: string, logFile: str
 				pattern: "%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %m",
 			},
 		};
-		logConfig.categories.default.appenders = ["file"];
+		logConfig.categories.default.appenders.push("file");
 	}
 	log4js.configure(logConfig);
 }
@@ -80,7 +95,7 @@ export default class KacirasService<T extends CliServerOptions> {
 	}
 
 	run() {
-		configureLog4js({ logFile: false, logLevel: "info" });
+		configureLog4js({ level: "info" });
 
 		// 捕获全局异常记录到日志中。
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
