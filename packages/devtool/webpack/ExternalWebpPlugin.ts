@@ -1,7 +1,7 @@
 import { Compiler, Plugin } from "webpack";
 import sharp from "sharp";
 
-/** webpack-sources：又一个类型定义跟不上版本的，还得我自己搞个 */
+/** webpack-sources：又一个类型定义跟不上版本的，还得我自己搞 */
 // @formatter:off
 class WebpAssets {
 	constructor(private readonly buffer: Buffer) {}

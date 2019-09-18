@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Middleware } from "koa";
 import log4js from "log4js";
-import { createSitemap, Sitemap, EnumChangefreq } from "sitemap";
+import { createSitemap, EnumChangefreq, Sitemap } from "sitemap";
 
 const logger = log4js.getLogger();
 
@@ -45,7 +45,6 @@ class ArticleCollection {
 	}
 }
 
-/** 由资源集合构建 sitemap.xml 的内容 */
 async function buildSitemap(resources: ArticleCollection[]) {
 	const sitemap = createSitemap({
 		hostname: "https://blog.kaciras.net",

@@ -97,13 +97,13 @@ export default class KacirasService<T extends CliServerOptions> {
 	run() {
 		configureLog4js({ level: "info" });
 
-		// 捕获全局异常记录到日志中。
+		// 捕获全局异常
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 		const args = parseArgs(process.argv.slice(2));
-
 		let configFile = path.join(process.cwd(), "config");
+
 		if (args.profile) {
 			configFile = path.join(configFile, args.profile);
 		}
@@ -116,9 +116,9 @@ export default class KacirasService<T extends CliServerOptions> {
 		}
 
 		const handler = this.commands.get(args._[0]);
-		if (!handler) {
-			return logger.error("未知的命令：" + args._[0]);
+		if (handler) {
+			return handler(require(configFile));
 		}
-		handler(require(configFile));
+		logger.error(`未知的命令：${args._[0]}`);
 	}
 }

@@ -22,7 +22,7 @@ export default class StopWatch {
 	/**
 	 * 获取计时时间和离上次调用此方法又过了多久的时间，必须先调用 start()。
 	 *
-	 * @return [计时时间, 两次time()的时差] 单位毫秒
+	 * @return [计时时间, 两次time()的时差] 二元组，单位毫秒
 	 */
 	time(): [number, number] {
 		const { init, last } = this;

@@ -5,20 +5,30 @@ import { markdown } from "@kaciras-blog/common/markdown";
 import { once } from "@kaciras-blog/common/functions";
 import Axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
+
+type ResponseHandler<T> = (response: AxiosResponse) => T;
+
 /**
- * Feed里包含了文章的内容，其需要从Markdown转换成Html比较费时，所以在这里缓存一下。
+ * 为 Axios 请求增加缓存的类，能够缓存解析后的内容，并在远程端返回 304 时使用缓存以避免解析过程的消耗。
  */
 class CachedFetcher<T> {
 
-	private readonly fetcher: (response: AxiosResponse) => T;
+	private readonly fetcher: ResponseHandler<T>;
 
-	private cached!: T;
+	private cache!: T;
 	private lastUpdate?: Date;
 
-	constructor(fetcher: (response: AxiosResponse) => T) {
+	constructor(fetcher: ResponseHandler<T>) {
 		this.fetcher = fetcher;
 	}
 
+	/**
+	 * 调用 Axios.request 发送请求，并尽量使用缓存来避免解析。
+	 *
+	 * 【注意】Axios 默认下载全部的响应体，如果要避免下载响应体需要把 responseType 设为 "stream"。
+	 *
+	 * @param config Axios请求配置
+	 */
 	async request(config: AxiosRequestConfig) {
 		if (this.lastUpdate) {
 			config.headers = config.headers || {};
@@ -27,14 +37,14 @@ class CachedFetcher<T> {
 		}
 		const response = await Axios.request(config);
 		if (response.status === 304) {
-			return this.cached;
+			return this.cache;
 		}
 		this.lastUpdate = new Date();
-		return this.cached = this.fetcher(response);
+		return this.cache = this.fetcher(response);
 	}
 }
 
-// TODO: 这个对象可自定义的属性太多，还需考虑重新组织配置文件，暂时就这样写死
+// TODO: 这个对象可自定义的属性太多，还需考虑重新组织配置文件，暂时这样写死
 const BASE_ATTRS: FeedOptions = {
 	title: "Kaciras的博客",
 	description: "没有简介，自己看内容吧",
@@ -54,6 +64,7 @@ export function feedMiddleware(apiServer: string): Middleware {
 
 	function buildFeed(response: AxiosResponse) {
 		const feed = new Feed(BASE_ATTRS);
+
 		feed.items = response.data.items.map((article: any) => ({
 			title: article.title,
 			image: "https://blog.kaciras.net" + article.cover,
@@ -71,6 +82,7 @@ export function feedMiddleware(apiServer: string): Middleware {
 		return feed;
 	}
 
+	// Feed 里包含了文章的内容，其需要从 Markdown 转换成 HTML 比较费时，所以在这里缓存一下。
 	const fetcher = new CachedFetcher(buildFeed);
 
 	return async (ctx, next) => {

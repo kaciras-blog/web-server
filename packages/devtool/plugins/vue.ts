@@ -59,7 +59,7 @@ interface ClientSSRHotUpdatePlugin {
 }
 
 /**
- * 提供Vue服务端渲染的热重载功能。
+ * 提供 Vue 服务端渲染的热重载功能。
  *
  * 该类需要调用 configureWebpackSSR 配置客户端构建，以便更新ClientManifest。
  * 该类将以监视模式构建服务端，在更新后重新构建渲染器。
@@ -97,8 +97,8 @@ export default class VueSSRHotReloader {
 	}
 
 	/**
-	 * 对服务端构建的监听，使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，还会在每次
-	 * 构建完成后更新 serverBundle。
+	 * 对服务端构建的监听，使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，在每次
+	 * 构建完成后会更新 serverBundle 以实现服务端构建的热重载。
 	 */
 	async getRendererFactory() {
 		const compiler = webpack(this.serverConfig);

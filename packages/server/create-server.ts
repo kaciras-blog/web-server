@@ -50,7 +50,14 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 	const httpPort = httpConfig && httpConfig.port || 80;
 	const httpsPort = httpsConfig && httpsConfig.port || 443;
 
-	function selectHandler(redirect: number | true | undefined, schema: string, toPort: number): OnRequestHandler {
+	/**
+	 * 获取请求处理器，如果 redirect 参数不为 undefined 则返回重定向的处理器，否则返回正常的请求处理器。
+	 *
+	 * @param redirect 重定向设置，数值为重定向端口，true使用默认端口
+	 * @param schema 重定向目标的schema
+	 * @param toPort 重定向目标的端口
+	 */
+	function getHandler(redirect: number | true | undefined, schema: string, toPort: number): OnRequestHandler {
 		if (!redirect) {
 			return requestHandler;
 		}
@@ -74,12 +81,12 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 			SNICallback: sni && createSNICallback(sni),
 			allowHTTP1: true,
 		};
-		const server = http2.createSecureServer(config, selectHandler(redirect, "http", httpPort));
+		const server = http2.createSecureServer(config, getHandler(redirect, "http", httpPort));
 		servers.push(await listenAsync(server, httpsPort));
 	}
 
 	if (httpConfig) {
-		const server = http.createServer(selectHandler(httpConfig.redirect, "https", httpsPort));
+		const server = http.createServer(getHandler(httpConfig.redirect, "https", httpsPort));
 		servers.push(await listenAsync(server, httpPort));
 	}
 
