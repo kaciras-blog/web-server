@@ -3,7 +3,7 @@
  */
 import path from "path";
 import webpack, { Configuration } from "webpack";
-import { Context, Middleware } from "koa";
+import { Middleware } from "koa";
 import { NextHandleFunction } from "connect";
 import koaWebpack from "koa-webpack";
 import WebpackHotMiddlewareType from "webpack-hot-middleware";
@@ -48,11 +48,9 @@ async function createKoaWebpack(config: Configuration) {
  * 使用 webpack-hot-middleware，webpack 官方的开发服务器也使用这个库。
  * webpack-hot-middleware 使用 Server-Sent-Event 来通知前端更新资源，兼容性比WebpackHotClient好。
  *
- * TODO: config.entry 情况太复杂，暂时用any作为config类型
- *
  * @param config webpack的配置
  */
-async function createHotMiddleware(config: any): Promise<Middleware> {
+async function createHotMiddleware(config: Configuration): Promise<Middleware> {
 	if (!config.entry) {
 		throw new Error("No entry specified.");
 	}
@@ -61,7 +59,8 @@ async function createHotMiddleware(config: any): Promise<Middleware> {
 	}
 
 	if (!Array.isArray(config.entry)) {
-		config.entry = [config.entry];
+		// TODO: config.entry 情况太复杂，但目前项目里只有string
+		config.entry = [config.entry as string];
 	}
 
 	config.entry.unshift("webpack-hot-middleware/client");
@@ -84,28 +83,29 @@ async function createHotMiddleware(config: any): Promise<Middleware> {
 		throw new Error("You need install `webpack-hot-middleware`, try `npm i -D webpack-hot-middleware`");
 	}
 
-	return (ctx: Context, next: () => Promise<any>) => {
+	// 这下面的部分抄自 koa-webpack https://github.com/shellscape/koa-webpack/blob/master/lib/middleware.js
+	return (ctx, next) => {
 		const innerNext = () => {
 			return new Promise((resolve) => hotMiddleware(ctx.req, ctx.res, () => resolve(next())));
 		};
-
-		// wait for webpack-dev-middleware to signal that the build is ready
 		return Promise.all([
+
+			// wait for webpack-dev-middleware to signal that the build is ready
 			new Promise((resolve, reject) => {
 				compiler.hooks.failed.tap("KoaWebpack", reject);
 				devMiddleware.waitUntilValid(() => resolve(true));
 			}),
+
 			new Promise((resolve) => {
 				const resAdapter = {
 					end: (content: any) => {
-						ctx.body = content;
 						resolve();
+						ctx.body = content;
 					},
 					setHeader: ctx.set.bind(ctx),
 					getHeader: ctx.get.bind(ctx),
 					locals: ctx.state,
 				};
-
 				// devMiddleware 里只用了上面那几个属性，这里直接强制转换了
 				devMiddleware(ctx.req, resAdapter, () => resolve(innerNext()));
 			}),
