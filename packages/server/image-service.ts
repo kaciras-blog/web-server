@@ -5,7 +5,6 @@ import { promisify } from "util";
 import SVGO from "svgo";
 import {
 	codecFilter,
-	cropFilter,
 	ImageFilter,
 	ImageTags,
 	ImageUnhandlableError,
@@ -23,7 +22,6 @@ const svgo = new SVGO();
 
 const filters = new Map<string, ImageFilter>();
 filters.set("type", codecFilter);
-filters.set("size", cropFilter);
 
 /** 能够处理的图片格式 */
 const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
