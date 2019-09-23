@@ -3,16 +3,27 @@ import sharp from "sharp";
 import { brotliCompress, InputType } from "zlib";
 import { promisify } from "util";
 import SVGO from "svgo";
-import { codecFilter, cropFilter, ImageError, ImageFilter, ImageTags, runFilters } from "./image-filter";
+import {
+	codecFilter,
+	cropFilter,
+	ImageFilter,
+	ImageTags,
+	ImageUnhandlableError,
+	InvalidImageError,
+	runFilters,
+} from "./image-filter";
 import { ImageName, LocalFileStore } from "./image-store";
+import { getLogger } from "log4js";
 
+
+const logger = getLogger("Image");
 
 const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
 const svgo = new SVGO();
 
-const rasterFilters = new Map<string, ImageFilter>();
-rasterFilters.set("type", codecFilter);
-rasterFilters.set("size", cropFilter);
+const filters = new Map<string, ImageFilter>();
+filters.set("type", codecFilter);
+filters.set("size", cropFilter);
 
 /** 能够处理的图片格式 */
 const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
@@ -36,7 +47,7 @@ export class WebImageService {
 		}
 
 		if (SUPPORTED_FORMAT.indexOf(type) < 0) {
-			throw new ImageError("不支持的图片格式" + type);
+			throw new InvalidImageError("不支持的图片格式" + type);
 		}
 
 		if (type === "bmp") {
@@ -85,8 +96,16 @@ export class WebImageService {
 	private async saveNewImage(name: ImageName, buffer: Buffer) {
 
 		const buildCache = async (tags: ImageTags) => {
-			const output = await runFilters(buffer, rasterFilters, tags);
-			return this.store.putCache(name, tags, output);
+			try {
+				const output = await runFilters(buffer, filters, tags);
+				return await this.store.putCache(name, tags, output);
+			} catch (e) {
+				if (e instanceof ImageUnhandlableError) {
+					logger.warn(e.message);
+				} else {
+					throw e;
+				}
+			}
 		};
 
 		const tasks: Array<Promise<void>> = [
@@ -102,11 +121,8 @@ export class WebImageService {
 				tasks.push(this.store.putCache(name, { encoding: "brotli" }, brotli));
 			}
 		} else {
+			tasks.push(buildCache({ type: "webp" }));
 			tasks.push(buildCache({ type: name.type }));
-
-			if (name.type !== "gif") {
-				tasks.push(buildCache({ type: "webp" }));
-			}
 		}
 
 		return Promise.all(tasks);

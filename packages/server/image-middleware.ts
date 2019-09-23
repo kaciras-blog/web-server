@@ -9,12 +9,12 @@ import Axios from "axios";
 import { getLogger } from "log4js";
 import mime from "mime-types";
 import { configureForProxy } from "./axios-helper";
-import { ImageError } from "./image-filter";
+import { InvalidImageError } from "./image-filter";
 import { LocalFileStore } from "./image-store";
 import { WebImageService } from "./image-service";
 
 
-const logger = getLogger("ImageService");
+const logger = getLogger("Image");
 
 const CONTEXT_PATH = "/image";
 const FILE_PATH_PATTERN = /\/image\/(\w+)\.(\w+)$/;
@@ -120,7 +120,7 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 				return uploadImage(ctx);
 			}
 		} catch (err) {
-			if (err instanceof ImageError) {
+			if (err instanceof InvalidImageError) {
 				ctx.body = err.message;
 				return ctx.status = 400;
 			}
