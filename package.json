@@ -53,7 +53,7 @@
 		"inquirer": "^7.0.0",
 		"jest": "^24.9.0",
 		"lerna": "^3.16.4",
-		"lint-staged": "^9.2.5",
+		"lint-staged": "^9.3.0",
 		"memfs": "^2.15.5",
 		"semver": "^6.3.0",
 		"supertest": "^4.0.2",
