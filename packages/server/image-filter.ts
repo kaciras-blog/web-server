@@ -42,7 +42,7 @@ const gifsicle = Gifsicle({ optimizationLevel: 3 });
 /** webp 转码的最低压缩比，达不到的认为无法压缩 */
 const WEBP_MIN_COMPRESS_RATE = 0.9;
 
-export async function codecFilter(buffer: Buffer, targetType: string): Promise<Buffer> {
+export async function codecFilter(buffer: Buffer, targetType: string) {
 	switch (targetType) {
 		case "webp":
 			// TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败
@@ -81,9 +81,10 @@ export async function codecFilter(buffer: Buffer, targetType: string): Promise<B
 			};
 			return (await execa(mozjpeg, options)).stdout;
 		case "png":
+			// pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
 			return pngquant(buffer);
 		default:
-			throw new Error("传入了不支持的图片格式：" + targetType);
+			throw new Error("不支持的输出格式：" + targetType);
 	}
 }
 
