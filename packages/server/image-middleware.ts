@@ -66,11 +66,9 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 
 		const stats = await fs.stat(result.path);
 
-		// TODO: 当前的类型选择不依赖url，不要再中间件里缓存它，故把Cache-Control设为private
-		ctx.set("Cache-Control", "private, max-age=31536000");
-
 		// 修改时间要以被请求的图片为准，而不是原图，因为处理器可能修改并重新生成了缓存图
 		ctx.set("Last-Modified", stats.mtime.toUTCString());
+		ctx.set("Cache-Control", "max-age=31536000");
 
 		if (result.encoding) {
 			ctx.set("Content-Encoding", result.encoding);
