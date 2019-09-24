@@ -49,9 +49,9 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	api.addPlugin(new BlogPlugin(options.blog));
 
 	const clientConfig = ClientConfiguration(options);
-	api.useBeforeFilter(await hotReloadMiddleware(options.dev.useHotClient, clientConfig));
-
 	const vueSSRHotReloader = VueSSRHotReloader.create(clientConfig, options);
+
+	api.useBeforeFilter(await hotReloadMiddleware(options.dev.useHotClient, clientConfig));
 	api.useFallBack(ssrMiddleware({ renderer: await vueSSRHotReloader.getRendererFactory() }));
 
 	await runServer(api.createApp().callback(), options.server);

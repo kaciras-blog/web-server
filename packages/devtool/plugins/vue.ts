@@ -19,6 +19,8 @@ class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
 	static readonly ID = "ClientSSRHotUpdatePlugin";
 
+	applied = false;
+
 	private readonly manifestFile: string;
 	private readonly templateFile: string;
 	private readonly readyPromiseSource: PromiseSource<void>;
@@ -32,8 +34,9 @@ class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
 	apply(compiler: Compiler): void {
 		const plugins = compiler.options.plugins || [];
+		this.applied = true;
 
-		// noinspection SuspiciousTypeOfGuard 这是Vue自己的类型定义没写
+		// noinspection SuspiciousTypeOfGuard 这是 Vue 内部的类型
 		if (!plugins.some((plugin) => plugin instanceof VueSSRClientPlugin)) {
 			throw new Error("请将 vue-server-renderer/client-plugin 加入到客户端的构建中");
 		}
@@ -97,10 +100,20 @@ export default class VueSSRHotReloader {
 	}
 
 	/**
-	 * 对服务端构建的监听，使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，在每次
-	 * 构建完成后会更新 serverBundle 以实现服务端构建的热重载。
+	 * 对服务端构建的监听，使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，
+	 * 在每次构建完成后会更新 serverBundle 以实现服务端构建的热重载。
 	 */
 	async getRendererFactory() {
+		/*
+		 * 检查 ClientSSRHotUpdatePlugin 是否被正确地加入客户端构建，因为该插件如过忘了添加
+		 * 或是客户端的构建在此方法之后运行则会造成程序死锁。
+		 * 但这么检查的话就不允许客户端构建异步启动，要完美解决可能得重新设计下API。
+		 */
+		if (!this.clientPlugin.applied) {
+			throw new Error("ClientSSRHotUpdatePlugin未被应用，" +
+				"请确保该插件加入到了客户端的构建配置，且客户端已开始构建");
+		}
+
 		const compiler = webpack(this.serverConfig);
 		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
