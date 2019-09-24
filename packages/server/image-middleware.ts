@@ -31,6 +31,7 @@ function checkUploadPermission(url: string, ctx: Context) {
 
 /**
  * 根据指定的选项创建图片存储中间件。
+ * TODO: 因为要返回完整的路径，所以无法与CONTEXT_PATH分离
  *
  * @param options 选项
  * @return Koa的中间件函数
@@ -60,7 +61,7 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		const result = await service.get(hash, ext, acceptWebp, acceptBrotli);
 
 		if (!result) {
-			logger.warn("请求了不存在的图片：" + ctx.path);
+			logger.warn(`请求了不存在的图片：${hash}.${ext}`);
 			return ctx.status = 404;
 		}
 
@@ -107,7 +108,6 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		ctx.set("Location", `${CONTEXT_PATH}/${filename}`);
 	}
 
-	// 【修复】CONTEXT_PATH 要统一，以免发生判断条件不一致的问题
 	return (ctx, next) => {
 		if (!ctx.path.startsWith(CONTEXT_PATH)) {
 			return next();
