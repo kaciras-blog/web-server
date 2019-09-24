@@ -51,7 +51,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	const clientConfig = ClientConfiguration(options);
 	const vueSSRHotReloader = VueSSRHotReloader.create(clientConfig, options);
 
-	api.useBeforeFilter(await hotReloadMiddleware(options.dev.useHotClient, clientConfig));
+	api.useBeforeFilter(await hotReloadMiddleware(clientConfig, options.dev.useHotClient));
 	api.useFallBack(ssrMiddleware({ renderer: await vueSSRHotReloader.getRendererFactory() }));
 
 	await runServer(api.createApp().callback(), options.server);

@@ -31,7 +31,7 @@ export interface WebpackOptions {
 
 export interface DevServerOptions {
 	silent: boolean;
-	useHotClient: boolean;
+	useHotClient?: boolean;
 }
 
 export interface EnvConfig {
