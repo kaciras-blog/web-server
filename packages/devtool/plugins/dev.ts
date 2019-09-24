@@ -109,10 +109,10 @@ async function createHotMiddleware(config: Configuration): Promise<Middleware> {
 	};
 }
 
-export default function hotReloadMiddleware(useHotClient: boolean, webpackConfig: Configuration) {
+export default function hotReloadMiddleware(configuration: Configuration, useHotClient?: boolean) {
 	// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 	process.env.NODE_PATH = path.resolve("node_modules");
 	require("module").Module._initPaths();
 
-	return useHotClient ? createKoaWebpack(webpackConfig) : createHotMiddleware(webpackConfig);
+	return useHotClient === false ? createHotMiddleware(configuration) : createKoaWebpack(configuration);
 }
