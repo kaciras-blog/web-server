@@ -1,6 +1,3 @@
-/*
- * Webpack 热更新的 Koa 中间件，webpack-hot-middleware 和 koa-webpack 都支持
- */
 import path from "path";
 import webpack, { Configuration } from "webpack";
 import { Middleware } from "koa";
@@ -32,7 +29,7 @@ async function createKoaWebpack(config: Configuration) {
 
 	/*
 	 * 【坑】Firefox 默认禁止从HTTPS页面访问WS连接，又有Http2模块不存在upgrade事件导致 webpack-hot-client
-	 * 无法创建 websocket。当前做法是关闭 Firefox 的 network.websocket.allowInsecureFromHTTPS 设为true。
+	 * 无法创建 websocket。当前做法是把 Firefox 的 network.websocket.allowInsecureFromHTTPS 设为true。
 	 */
 	return await koaWebpack({
 		compiler: webpack(config),
@@ -83,33 +80,32 @@ async function createHotMiddleware(config: Configuration): Promise<Middleware> {
 		throw new Error("You need install `webpack-hot-middleware`, try `npm i -D webpack-hot-middleware`");
 	}
 
-	// 这下面的部分抄自 koa-webpack https://github.com/shellscape/koa-webpack/blob/master/lib/middleware.js
+	// 这下面的部分参考了 koa-webpack https://github.com/shellscape/koa-webpack/blob/master/lib/middleware.js
 	return (ctx, next) => {
-		const innerNext = () => {
-			return new Promise((resolve) => hotMiddleware(ctx.req, ctx.res, () => resolve(next())));
-		};
-		return Promise.all([
 
-			// wait for webpack-dev-middleware to signal that the build is ready
-			new Promise((resolve, reject) => {
-				compiler.hooks.failed.tap("KoaWebpack", reject);
-				devMiddleware.waitUntilValid(() => resolve(true));
-			}),
+		// wait for webpack-dev-middleware to signal that the build is ready
+		const ready = new Promise((resolve, reject) => {
+			compiler.hooks.failed.tap("KoaWebpack", reject);
+			devMiddleware.waitUntilValid(resolve);
+		});
 
-			new Promise((resolve) => {
-				const resAdapter = {
-					end: (content: any) => {
-						resolve();
-						ctx.body = content;
-					},
-					setHeader: ctx.set.bind(ctx),
-					getHeader: ctx.get.bind(ctx),
-					locals: ctx.state,
-				};
-				// devMiddleware 里只用了上面那几个属性，这里直接强制转换了
-				devMiddleware(ctx.req, resAdapter, () => resolve(innerNext()));
-			}),
-		]);
+		const handling = new Promise((resolve) => {
+			const innerNext = () => {
+				hotMiddleware(ctx.req, ctx.res, () => resolve(next()));
+			};
+			const resAdapter = {
+				end: (content: any) => {
+					resolve();
+					ctx.body = content;
+				},
+				setHeader: ctx.set.bind(ctx),
+				getHeader: ctx.get.bind(ctx),
+				locals: ctx.state,
+			};
+			devMiddleware(ctx.req, resAdapter, innerNext);
+		});
+
+		return Promise.all([ready, handling]);
 	};
 }
 
