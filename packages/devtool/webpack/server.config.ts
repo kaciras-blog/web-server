@@ -3,8 +3,8 @@ import { DefinePlugin } from "webpack";
 import merge from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
 import baseConfig from "./base.config";
-import { styleLoaders } from "./share";
 import { CliDevelopmentOptions } from "../options";
+import generateCssLoaders from "./css";
 
 
 export default (options: CliDevelopmentOptions) => {
@@ -23,7 +23,11 @@ export default (options: CliDevelopmentOptions) => {
 		},
 
 		module: {
-			rules: styleLoaders(options.webpack, true),
+			rules: generateCssLoaders({
+				production: options.webpack.mode === "production",
+				extract: false,
+				sourceMap: options.webpack.server.cssSourceMap,
+			}),
 		},
 
 		// 外置化应用程序依赖模块，可以使服务器构建速度更快，并生成较小的 bundle 文件。

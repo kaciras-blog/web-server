@@ -1,13 +1,14 @@
-import CopyWebpackPlugin from "copy-webpack-plugin";
-import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
 import path from "path";
-import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import { Configuration, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
 import merge from "webpack-merge";
-import baseWebpackConfig from "./base.config";
-import { resolve, styleLoaders } from "./share";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
+import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
+import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import baseWebpackConfig from "./base.config";
+import { resolve } from "./share";
+import generateCssLoaders from "./css";
 import { CliDevelopmentOptions } from "../options";
 import VueSSRTemplatePlugin from "./VueSSRTemplatePlugin";
 
@@ -116,7 +117,11 @@ export default (options: CliDevelopmentOptions) => {
 			},
 		},
 		module: {
-			rules: styleLoaders(webpackOpts),
+			rules: generateCssLoaders({
+				production: webpackOpts.mode === "production",
+				extract: webpackOpts.mode === "production",
+				sourceMap: webpackOpts.client.cssSourceMap,
+			}),
 		},
 	};
 
