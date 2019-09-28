@@ -9,6 +9,6 @@
 		"markdown-it-toc-done-right": "^4.0.2"
 	},
 	"devDependencies": {
-		"@types/markdown-it": "^0.0.8"
+		"@types/markdown-it": "^0.0.9"
 	}
 }
