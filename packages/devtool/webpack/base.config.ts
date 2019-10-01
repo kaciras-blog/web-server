@@ -2,10 +2,20 @@ import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
-import { Configuration, DefinePlugin, RuleSetRule, RuleSetUseItem } from "webpack";
+import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
 import { CliDevelopmentOptions, WebpackOptions } from "../options";
-import { resolve } from "./share";
 import CompressionPlugin from "compression-webpack-plugin";
+
+
+/**
+ * 将相对于 process.cwd 的路径转换为绝对路径。
+ *
+ * @param relativePath 相对路径
+ * @return 对应的绝对路径
+ */
+export function resolve(relativePath: string) {
+	return path.join(process.cwd(), relativePath);
+}
 
 /**
  * 生成一个标识字符串，当 cache-loader 使用默认的读写选项时，这个字符串将
@@ -174,7 +184,7 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 			threshold: 1024,
 			algorithm: "brotliCompress",
 		}));
-		(imageLoaders[1].use as RuleSetUseItem[]).push("image-webpack-loader");
+		// (imageLoaders[1].use as RuleSetUseItem[]).push("image-webpack-loader");
 	}
 	configuration.module!.rules.push(...imageLoaders);
 
