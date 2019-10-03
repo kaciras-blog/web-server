@@ -1,16 +1,21 @@
 import http from "http";
 import path from "path";
 import tls from "tls";
-import { createSNICallback, runServer, ServerOptions } from "../create-server";
+import { createSNICallback, runServer } from "../create-server";
+import { ServerOptions } from "../options";
 
 
 const HTTP_URL = "http://localhost/";
 const HTTPS_URL = "https://localhost/";
 
+function resolveResource(name: string) {
+	return path.join(__dirname, "resources", name);
+}
+
 const OPTIONS: ServerOptions = {
 	https: {
-		certFile: "D:/Coding/Utils/dev.pem",
-		keyFile: "D:/Coding/Utils/dev.pvk",
+		certFile: resolveResource("localhost.pem"),
+		keyFile: resolveResource("localhost.pvk"),
 	},
 	http: { redirect: true },
 };
@@ -35,10 +40,6 @@ describe("app.runServer", () => {
 
 describe("SNI callback", () => {
 	let server: tls.Server;
-
-	function resolveResource(name: string) {
-		return path.join(__dirname, "resources", name);
-	}
 
 	// 创建一个TLS服务器，没有默认证书而是使用SNI回调
 	beforeAll((done) => {
