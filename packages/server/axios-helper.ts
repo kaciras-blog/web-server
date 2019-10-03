@@ -7,9 +7,9 @@ import fs from "fs-extra";
 import log4js from "log4js";
 import Axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import http2, {
+	ClientHttp2Session,
 	IncomingHttpHeaders,
 	IncomingHttpStatusHeader,
-	ClientHttp2Session,
 	SecureClientSessionOptions,
 } from "http2";
 
@@ -50,15 +50,16 @@ export function configureForProxy(source: Context, axiosConfig: AxiosRequestConf
 		distHeaders.Cookie = srcHeaders.cookie;
 	}
 
-	const csrfHeader = srcHeaders[CSRF_HEADER_NAME];
+	// HTTP 头是不区分大小写的，但是 Node 的 http 模块里会将其全部转换为小写
+	const csrfHeader = srcHeaders[CSRF_HEADER_NAME.toLowerCase()];
 	if (csrfHeader) {
 		distHeaders[CSRF_HEADER_NAME] = csrfHeader;
 	}
 
 	const csrfQuery = source.query[CSRF_PARAMETER_NAME];
 	if (csrfQuery) {
-		axiosConfig.headers = axiosConfig.headers || {};
-		axiosConfig.headers[CSRF_PARAMETER_NAME] = csrfQuery;
+		axiosConfig.params = axiosConfig.params || {};
+		axiosConfig.params[CSRF_PARAMETER_NAME] = csrfQuery;
 	}
 
 	return axiosConfig;
@@ -81,7 +82,7 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 			origin += ":" + options.port;
 		}
 
-		// 创建并缓存会话链接，会话默认有120秒超时，超时后触发close事件删除缓存
+		// 创建并缓存会话链接，后端会在20秒空闲后关闭连接，被关闭后触发close事件删除缓存
 		let client = cache.get(origin);
 		if (!client) {
 			client = http2.connect(origin, connectOptions);

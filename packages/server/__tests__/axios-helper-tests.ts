@@ -1,7 +1,7 @@
 import Axios, { AxiosRequestConfig } from "axios";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { AddressInfo, Server } from "net";
-import { adaptAxiosHttp2, configureForProxy } from "../axios-helper";
+import { adaptAxiosHttp2, configureForProxy, CSRF_HEADER_NAME, CSRF_PARAMETER_NAME } from "../axios-helper";
 import fs from "fs-extra";
 import path from "path";
 import Koa from "koa";
@@ -13,9 +13,8 @@ function helloHandler(req: Http2ServerRequest, res: Http2ServerResponse) {
 }
 
 describe("h2c", () => {
-
-	let server: Server;
 	let url: string;
+	let server: Server;
 
 	// 创建一个仅支持HTTP2的服务器来测试
 	beforeAll((done) => {
@@ -42,13 +41,12 @@ describe("h2c", () => {
 });
 
 describe("certificate verification", () => {
+	let url: string;
+	let server: Server;
 
 	function loadResource(name: string) {
 		return fs.readFileSync(path.join(__dirname, "resources", name));
 	}
-
-	let server: Server;
-	let url: string;
 
 	beforeAll((done) => {
 		server = http2.createSecureServer({
@@ -91,7 +89,7 @@ describe("configureForProxy", () => {
 		configureForProxy(ctx, config);
 	});
 
-	it("should set proxy headers", async () => {
+	it("should set forwarded headers", async () => {
 		await supertest(server).get("/");
 
 		// 检查不要添加多余的头部
@@ -101,5 +99,14 @@ describe("configureForProxy", () => {
 		expect(config.headers["User-Agent"]).toMatch("superagent");
 	});
 
-	// TODO: 其他的以后再说
+	it("should add principal info", async () => {
+		await supertest(server).get("/")
+			.query({ [CSRF_PARAMETER_NAME]: "csrf_parameter" })
+			.set("Cookie", ["test_cookie"])
+			.set(CSRF_HEADER_NAME, "csrf_header");
+
+		expect(config.headers[CSRF_HEADER_NAME]).toBe("csrf_header");
+		expect(config.headers.Cookie).toBe("test_cookie");
+		expect(config.params[CSRF_PARAMETER_NAME]).toBe("csrf_parameter");
+	});
 });
