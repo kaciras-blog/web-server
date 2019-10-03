@@ -1,18 +1,12 @@
 import crypto from "crypto";
+import { promisify } from "util";
 import sharp from "sharp";
 import { brotliCompress, InputType } from "zlib";
-import { promisify } from "util";
 import SVGO from "svgo";
-import {
-	codecFilter,
-	ImageFilter,
-	ImageTags,
-	ImageUnhandlableError,
-	InvalidImageError,
-	runFilters,
-} from "./image-filter";
-import { ImageName, LocalFileStore } from "./image-store";
 import { getLogger } from "log4js";
+import { codingFilter } from "./coding-filter";
+import { ImageFilter, ImageTags, ImageUnhandlableError, InvalidImageError, runFilters } from "./image-filter";
+import { ImageName, LocalFileStore } from "./image-store";
 
 
 const logger = getLogger("Image");
@@ -21,7 +15,7 @@ const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
 const svgo = new SVGO();
 
 const filters = new Map<string, ImageFilter>();
-filters.set("type", codecFilter);
+filters.set("type", codingFilter);
 
 /** 能够处理的图片格式 */
 const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
