@@ -1,5 +1,12 @@
 /*
  * 简单的图片存储服务
+ *
+ * 1) 关于防盗链的问题：
+ *
+ * 不能依赖 Referer 来做，因为 Referrer-Policy 可以禁止发送该头部，很多盗版站已经这么做了。
+ * 也不能要求必须有 Referer 头，因为 RSS 阅读器不发送 Referer 头。
+ *
+ * 浏览器里的 RSS 阅读器使用的插件内部地址也属于第三方站点，如果做防盗链则会影响它们。
  */
 import path from "path";
 import fs from "fs-extra";
@@ -10,7 +17,6 @@ import { getLogger } from "log4js";
 import mime from "mime-types";
 import { configureForProxy } from "./axios-helper";
 import { InvalidImageError } from "./image-filter";
-import { LocalFileStore } from "./image-store";
 import { WebImageService } from "./image-service";
 
 
@@ -20,13 +26,15 @@ const CONTEXT_PATH = "/image";
 const FILE_PATH_PATTERN = /\/image\/(\w+)\.(\w+)$/;
 
 interface MiddlewareOptions {
-	directory: string;
-	serverAddress: string;
+	service: WebImageService;
 }
 
-function checkUploadPermission(url: string, ctx: Context) {
-	return Axios.get(url + "/session/user", configureForProxy(ctx))
-		.then((response) => response.data.id === 2).catch(() => false);
+function checkPermission(apiServer: string): Middleware {
+	const url = apiServer + "/session/user";
+	return async (ctx, next) => {
+		const res = await Axios.get(url, configureForProxy(ctx));
+		res.data.id === 2 ? await next() : (ctx.status = 403);
+	};
 }
 
 /**
@@ -37,17 +45,8 @@ function checkUploadPermission(url: string, ctx: Context) {
  * @return Koa的中间件函数
  */
 export function imageMiddleware(options: MiddlewareOptions): Middleware {
+	const { service } = options;
 
-	const service = new WebImageService(new LocalFileStore(options.directory));
-
-	/*
-	 * 1) 关于防盗链的问题：
-	 *
-	 * 不能依赖 Referer 来做，因为 Referrer-Policy 可以禁止发送该头部，很多盗版站已经这么做了。
-	 * 也不能要求必须有 Referer 头，因为 RSS 阅读器不发送 Referer 头。
-	 *
-	 * 浏览器里的 RSS 阅读器使用的插件内部地址也属于第三方站点，如果做防盗链则会影响它们。
-	 */
 	async function getImage(ctx: Context) {
 		const match = FILE_PATH_PATTERN.exec(ctx.path);
 		if (!match) {
@@ -67,7 +66,7 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 
 		const stats = await fs.stat(result.path);
 
-		// 修改时间要以被请求的图片为准，而不是原图，因为处理器可能修改并重新生成了缓存图
+		// 修改时间要以被请求的图片为准而不是原图，因为处理器可能被修改并重新生成了缓存
 		ctx.set("Last-Modified", stats.mtime.toUTCString());
 		ctx.set("Cache-Control", "max-age=31536000");
 
@@ -87,15 +86,10 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 	 * @param ctx 请求上下文
 	 */
 	async function uploadImage(ctx: Context) {
-		if (!await checkUploadPermission(options.serverAddress, ctx)) {
-			return ctx.status = 403;
-		}
-
 		const { file } = (ctx.req as MulterIncomingMessage);
 		if (!file) {
 			return ctx.status = 400;
 		}
-		logger.trace("有图片正在上传:" + file.filename);
 
 		// mime.extension() 对 undefined 以及不支持的返回 false
 		const type = mime.extension(file.mimetype);
@@ -103,27 +97,30 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 			return ctx.status = 400;
 		}
 
-		const filename = await service.save(file.buffer, type);
-		ctx.status = 200;
-		ctx.set("Location", `${CONTEXT_PATH}/${filename}`);
+		try {
+			const name = await service.save(file.buffer, type);
+			ctx.status = 200;
+			ctx.set("Location", `${CONTEXT_PATH}/${name}`);
+		} catch (err) {
+			if (!(err instanceof InvalidImageError)) {
+				throw err;
+			}
+			ctx.status = 400;
+			ctx.body = err.message;
+
+			// 虽然在请求中返回了错误信息，但还是记录一下日志
+			logger.warn(err.message, err);
+		}
 	}
 
 	return (ctx, next) => {
 		if (!ctx.path.startsWith(CONTEXT_PATH)) {
 			return next();
 		}
-		try {
-			if (ctx.method === "GET") {
-				return getImage(ctx);
-			} else if (ctx.method === "POST") {
-				return uploadImage(ctx);
-			}
-		} catch (err) {
-			if (err instanceof InvalidImageError) {
-				ctx.body = err.message;
-				return ctx.status = 400;
-			}
-			throw err;
+		if (ctx.method === "GET") {
+			return getImage(ctx);
+		} else if (ctx.method === "POST") {
+			return uploadImage(ctx);
 		}
 		ctx.status = 405;
 	};
