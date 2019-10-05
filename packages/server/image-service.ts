@@ -17,8 +17,11 @@ const svgo = new SVGO();
 const filters = new Map<string, ImageFilter>();
 filters.set("type", codingFilter);
 
-/** 能够处理的图片格式 */
-const SUPPORTED_FORMAT = ["jpg", "png", "gif", "bmp", "svg", "webp"];
+/**
+ * 能够处理的输入图片格式。
+ * 不支持WebP作为输入，因为很难从WebP转换回传统格式。
+ */
+const INPUT_FORMATS = ["jpg", "png", "gif", "bmp", "svg"];
 
 interface WebImageOutput {
 	path: string;
@@ -38,7 +41,7 @@ export class WebImageService {
 			type = "jpg";
 		}
 
-		if (SUPPORTED_FORMAT.indexOf(type) < 0) {
+		if (INPUT_FORMATS.indexOf(type) < 0) {
 			throw new InvalidImageError("不支持的图片格式" + type);
 		}
 
