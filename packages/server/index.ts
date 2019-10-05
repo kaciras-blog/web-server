@@ -17,7 +17,7 @@ interface SimpleLogConfig {
 
 	/**
 	 * 即使用了文件日志，还是保持控制台输出，使用此选项可以关闭控制台的输出。
-	 * 【注意】很多日志处理系统默认读取标准流，所以尽量不要取消。
+	 * 【注意】很多日志处理系统默认读取标准流，所以不建议关闭。
 	 */
 	noConsole?: boolean;
 }
@@ -97,7 +97,7 @@ export default class KacirasService<T extends CliServerOptions> {
 	run() {
 		configureLog4js({ level: "info" });
 
-		// 捕获全局异常
+		// TODO: 听说 Node 以后会移除 unhandledRejection
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 

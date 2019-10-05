@@ -75,7 +75,7 @@ export function feedMiddleware(apiServer: string): Middleware {
 			link: `https://blog.kaciras.net/article/${article.id}/${article.urlTitle}`,
 		}));
 
-		// 几个输出的结果也缓存一下，经统计一个大约占60K内存
+		// 几个输出的结果也缓存一下，一个大约占60K内存
 		feed.json1 = once(feed.json1);
 		feed.rss2 = once(feed.rss2);
 		feed.atom1 = once(feed.atom1);

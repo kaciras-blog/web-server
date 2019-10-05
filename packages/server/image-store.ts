@@ -2,10 +2,10 @@ import fs from "fs-extra";
 import path from "path";
 import { ImageTags } from "./image-filter";
 
-// 好像常见格式的图片都能够从数据里读取出格式，那么文件名里的type就不在需要，
+// 好像常见格式的图片都能够从数据里读取出格式，那么文件名里的type就不需要，
 // 但我有时候会从资源管理器直接看看图片目录，所以还是把type带上作为扩展名。
 export interface ImageName {
-	hash: string;
+	name: string;
 	type: string;
 }
 
@@ -51,15 +51,15 @@ export class LocalFileStore {
 	}
 
 	private originPath(name: ImageName) {
-		return path.join(this.root, "origin", `${name.hash}.${name.type}`);
+		return path.join(this.root, "origin", `${name.name}.${name.type}`);
 	}
 
-	private cachePath({ hash, type }: ImageName, tags: ImageTags) {
+	private cachePath({ name, type }: ImageName, tags: ImageTags) {
 		// Object.keys(tags) 对于非ASCII字符串返回的顺序不确定，必须排序一下
 		const tagValues = Object.keys(tags).sort().map((key) => tags[key]);
 		if (tags.type) {
 			type = tags.type;
 		}
-		return path.join(this.root, "cache", ...tagValues, `${hash}.${type}`);
+		return path.join(this.root, "cache", ...tagValues, `${name}.${type}`);
 	}
 }

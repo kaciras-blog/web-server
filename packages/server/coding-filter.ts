@@ -1,6 +1,3 @@
-/**
- * imagemin 对某些格式会将图片缓冲写入到临时文件，然后启动进程执行相关的图片处理程序，这方法很低效。
- */
 import sharp from "sharp";
 import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
