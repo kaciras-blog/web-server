@@ -18,7 +18,7 @@ import mime from "mime-types";
 import { configureForProxy } from "./axios-helper";
 import { InvalidImageError } from "./image-filter";
 import { WebImageService } from "./image-service";
-
+import compose from "koa-compose";
 
 const logger = getLogger("Image");
 
@@ -27,26 +27,30 @@ const FILE_PATH_PATTERN = /\/image\/(\w+)\.(\w+)$/;
 
 interface MiddlewareOptions {
 	service: WebImageService;
-}
-
-function checkPermission(apiServer: string): Middleware {
-	const url = apiServer + "/session/user";
-	return async (ctx, next) => {
-		const res = await Axios.get(url, configureForProxy(ctx));
-		res.data.id === 2 ? await next() : (ctx.status = 403);
-	};
+	apiServer: string;
 }
 
 /**
  * 根据指定的选项创建图片存储中间件。
- * TODO: 因为要返回完整的路径，所以无法与CONTEXT_PATH分离
  *
  * @param options 选项
  * @return Koa的中间件函数
  */
 export function imageMiddleware(options: MiddlewareOptions): Middleware {
-	const { service } = options;
+	const { service, apiServer } = options;
+	const url = apiServer + "/session/user";
 
+	// 限制上传用户，仅博主能上传（如果要支持评论插入图片呢？）
+	const checkPermission: Middleware = async (ctx, next) => {
+		const response = await Axios.get(url, configureForProxy(ctx));
+		response.data.id === 2 ? await next() : (ctx.status = 403);
+	};
+
+	/**
+	 * 根据请求中携带的Accept信息，自动下载最佳的图片
+	 *
+	 * @param ctx 请求上下文
+	 */
 	async function getImage(ctx: Context) {
 		const match = FILE_PATH_PATTERN.exec(ctx.path);
 		if (!match) {
@@ -83,6 +87,8 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 	 * 接收上传的图片，文件名为图片内容的SHA3值，扩展名取决于内容的 MIME-TYPE。
 	 * 如果图片已存在则直接返回，否则将保存文件，保存的文件的URL由Location响应头返回。
 	 *
+	 * TODO: 因为要返回完整的路径，所以无法与CONTEXT_PATH分离
+	 *
 	 * @param ctx 请求上下文
 	 */
 	async function uploadImage(ctx: Context) {
@@ -113,6 +119,8 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		}
 	}
 
+	const filteredUpload = compose<Context>([checkPermission, uploadImage]);
+
 	return (ctx, next) => {
 		if (!ctx.path.startsWith(CONTEXT_PATH)) {
 			return next();
@@ -120,7 +128,7 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 		if (ctx.method === "GET") {
 			return getImage(ctx);
 		} else if (ctx.method === "POST") {
-			return uploadImage(ctx);
+			return filteredUpload(ctx);
 		}
 		ctx.status = 405;
 	};

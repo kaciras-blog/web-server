@@ -11,6 +11,8 @@ import bodyParser from "koa-bodyparser";
 import installCSPPlugin from "./csp-plugin";
 import { imageMiddleware } from "./image-middleware";
 import { AppOptions } from "./options";
+import { LocalFileStore } from "./image-store";
+import { WebImageService } from "./image-service";
 
 
 export default class BlogPlugin implements ClassCliServerPlugin {
@@ -33,9 +35,10 @@ export default class BlogPlugin implements ClassCliServerPlugin {
 		api.useBeforeAll(uploader.single("file"));
 
 		api.useBeforeFilter(imageMiddleware({
-			directory: options.imageRoot,
-			serverAddress: options.serverAddress,
+			service: new WebImageService(new LocalFileStore(options.imageRoot)),
+			apiServer: options.serverAddress,
 		}));
+
 		api.useBeforeFilter(serviceWorkerToggle(true));
 
 		api.useFilter(intercept([
