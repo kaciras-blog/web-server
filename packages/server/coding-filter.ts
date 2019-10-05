@@ -6,6 +6,7 @@ import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
+import isPng from "is-png";
 import { ImageUnhandlableError, InvalidImageError } from "./image-filter";
 
 const pngquant = Pngquant();
@@ -20,7 +21,8 @@ function throwInvalidData(error: Error): never {
 }
 
 /**
- * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这三个字
+ * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这三个字。
+ * 【替代】有个 is-gif 包提供同样的功能，但它使用 file-type 很多余，反观 is-png 倒是直接读取 MagicNumber。
  *
  * @param buffer 图片数据
  * @return 如果是GIF格式返回true，否则false
@@ -72,6 +74,9 @@ async function encodeWebp(buffer: Buffer) {
 export async function codingFilter(buffer: Buffer, targetType: string) {
 	switch (targetType) {
 		case "gif":
+			if (!isGif(buffer)) {
+				throw new InvalidImageError("无效的图片数据");
+			}
 			return gifsicle(buffer).catch(throwInvalidData);
 		case "jpg":
 			const options = {
@@ -82,6 +87,9 @@ export async function codingFilter(buffer: Buffer, targetType: string) {
 			return (await execa(mozjpeg, options).catch(throwInvalidData)).stdout;
 		case "png":
 			// pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
+			if (!isPng(buffer)) {
+				throw new InvalidImageError("无效的图片数据");
+			}
 			return pngquant(buffer).catch(throwInvalidData);
 		case "webp":
 			return encodeWebp(buffer);
