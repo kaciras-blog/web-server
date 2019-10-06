@@ -23,9 +23,12 @@ filters.set("type", codingFilter);
  */
 const INPUT_FORMATS = ["jpg", "png", "gif", "bmp", "svg"];
 
-interface WebImageOutput {
-	path: string;
+interface WebImageAttribute {
 	encoding?: string;
+}
+
+interface WebImageOutput extends WebImageAttribute {
+	path: string;
 }
 
 export class WebImageService {
@@ -55,7 +58,7 @@ export class WebImageService {
 			.update(buffer)
 			.digest("hex");
 
-		const name = { hash, type };
+		const name: ImageName = { name: hash, type };
 		if (!await this.store.exists(name)) {
 			await this.saveNewImage(name, buffer);
 		}
@@ -64,8 +67,8 @@ export class WebImageService {
 	}
 
 	async get(hash: string, type: string, webp: boolean, brotli: boolean): Promise<WebImageOutput | null> {
-		const name = { hash, type };
-		const list = [];
+		const name: ImageName = { name: hash, type };
+		const list: Array<{ tags: ImageTags; attrs?: WebImageAttribute }> = [];
 
 		if (type === "svg") {
 			if (brotli) {
@@ -94,12 +97,11 @@ export class WebImageService {
 			try {
 				const output = await runFilters(buffer, filters, tags);
 				return await this.store.putCache(name, tags, output);
-			} catch (e) {
-				if (e instanceof ImageUnhandlableError) {
-					logger.warn(e.message);
-				} else {
-					throw e;
+			} catch (error) {
+				if (error instanceof ImageUnhandlableError) {
+					logger.warn(error.message);
 				}
+				throw error;
 			}
 		};
 
