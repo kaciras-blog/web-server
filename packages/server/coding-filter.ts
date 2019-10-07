@@ -6,7 +6,8 @@ import execa from "execa";
 import isPng from "is-png";
 import { ImageUnhandlableError, InvalidImageError } from "./image-filter";
 
-const pngquant = Pngquant();
+
+const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
 
 /** webp 转码的最低压缩比，达不到的认为无法压缩 */
@@ -19,7 +20,9 @@ function throwInvalidData(error: Error): never {
 
 /**
  * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这三个字。
- * 【替代】有个 is-gif 包提供同样的功能，但它使用 file-type 很多余，反观 is-png 倒是直接读取 MagicNumber。
+ *
+ * 【PS】有个 is-gif 包提供同样的功能，但它使用 file-type 很多余。反观 is-png 倒是直接读取 MagicNumber，
+ * 所以PNG直接用 is-png 包而GIF自己写个函数判断。
  *
  * @param buffer 图片数据
  * @return 如果是GIF格式返回true，否则false
@@ -37,7 +40,7 @@ function isGif(buffer: Buffer) {
  * @param buffer 图片数据
  * @throws 如果转换效果不理想则抛出 ImageUnhandlableError
  */
-async function encodeWebp(buffer: Buffer) {
+export async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
 		throw new ImageUnhandlableError("暂不支持GIF转WEBP");
 	}
@@ -68,6 +71,13 @@ async function encodeWebp(buffer: Buffer) {
 	throw new ImageUnhandlableError("Webp格式无法优化该图片的大小");
 }
 
+/**
+ * 压缩和转码的过滤器，将输入的图片转换为指定的格式，并会应用有损优化来降低图片大小。
+ *
+ * @param buffer 图片数据
+ * @param targetType 目标格式
+ * @return 转码后的图片数据
+ */
 export async function codingFilter(buffer: Buffer, targetType: string) {
 	switch (targetType) {
 		case "gif":
@@ -84,6 +94,7 @@ export async function codingFilter(buffer: Buffer, targetType: string) {
 			return (await execa(mozjpeg, options).catch(throwInvalidData)).stdout;
 		case "png":
 			// pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
+			// 经测试，optipng 难以压缩 pngquant 处理后的图片，故不使用 optipng。
 			if (!isPng(buffer)) {
 				throw new InvalidImageError("无效的图片数据");
 			}
