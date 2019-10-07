@@ -17,7 +17,7 @@ import { getLogger } from "log4js";
 import mime from "mime-types";
 import { configureForProxy } from "./axios-helper";
 import { InvalidImageError } from "./image-filter";
-import { WebImageService } from "./image-service";
+import { PreGenerateImageService } from "./image-service";
 import compose from "koa-compose";
 
 const logger = getLogger("Image");
@@ -26,7 +26,7 @@ const CONTEXT_PATH = "/image";
 const FILE_PATH_PATTERN = /\/image\/(\w+)\.(\w+)$/;
 
 interface MiddlewareOptions {
-	service: WebImageService;
+	service: PreGenerateImageService;
 	apiServer: string;
 }
 

@@ -1,12 +1,17 @@
 const path = require("path");
 const fs = require("fs-extra");
-const { WebImageService } = require("../packages/server/image-service");
-const { LocalFileStore }  = require("../packages/server/image-store");
+const { PreGenerateImageService } = require("../packages/server/image-service");
+const { LocalFileSlot }  = require("../packages/server/image-store");
 
 async function upgrade() {
-	const store = new LocalFileStore(dir);
-	const service = new WebImageService(store);
-	store.save = () => {};
+
+	function upgradeImageStore(key) {
+		const slot = new LocalFileSlot(dir, key);
+		slot.save = () => Promise.resolve();
+		return slot;
+	}
+
+	const service = new PreGenerateImageService(upgradeImageStore);
 
 	for (const file of await fs.readdir(".")) {
 		const buffer = await fs.readFile(file);

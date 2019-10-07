@@ -6,7 +6,7 @@ import SVGO from "svgo";
 import { getLogger } from "log4js";
 import { codingFilter } from "./coding-filter";
 import { ImageFilter, ImageTags, ImageUnhandlableError, InvalidImageError, runFilters } from "./image-filter";
-import { ImageName, LocalFileStore } from "./image-store";
+import { ImageStore, LocalFileSlot } from "./image-store";
 
 
 const logger = getLogger("Image");
@@ -31,11 +31,11 @@ interface WebImageOutput extends WebImageAttribute {
 	path: string;
 }
 
-export class WebImageService {
+export class PreGenerateImageService {
 
-	private readonly store: LocalFileStore;
+	private readonly store: ImageStore;
 
-	constructor(store: LocalFileStore) {
+	constructor(store: ImageStore) {
 		this.store = store;
 	}
 
@@ -58,45 +58,48 @@ export class WebImageService {
 			.update(buffer)
 			.digest("hex");
 
-		const name: ImageName = { name: hash, type };
-		if (!await this.store.exists(name)) {
-			await this.saveNewImage(name, buffer);
+		const slot = this.store({ name: hash, type });
+		if (!await slot.exists()) {
+			await this.saveNewImage(slot, type, buffer);
 		}
 
 		return `${hash}.${type}`;
 	}
 
-	async get(hash: string, type: string, webp: boolean, brotli: boolean): Promise<WebImageOutput | null> {
-		const name: ImageName = { name: hash, type };
-		const list: Array<{ tags: ImageTags; attrs?: WebImageAttribute }> = [];
+	get(name: string, type: string, webp: boolean, brotli: boolean): Promise<WebImageOutput | null> {
+		const slot = this.store({ name, type });
+		let selectTask = Promise.resolve<WebImageOutput | null>(null);
+
+		const addCandidate = (tags: ImageTags, attrs?: WebImageAttribute) => {
+
+			function wrapOutput(file: string | null) {
+				return file ? Object.assign({ path: file }, attrs) : null;
+			}
+
+			selectTask = selectTask.then((file) => file || slot.getCache(tags).then(wrapOutput));
+		};
 
 		if (type === "svg") {
 			if (brotli) {
-				list.push({ tags: { encoding: "brotli" }, attrs: { encoding: "br" } });
+				addCandidate({ encoding: "brotli" }, { encoding: "br" });
 			}
-			list.push({ tags: {} });
+			addCandidate({});
 		} else {
 			if (webp) {
-				list.push({ tags: { type: "webp" } });
+				addCandidate({ type: "webp" });
 			}
-			list.push({ tags: { type } });
+			addCandidate({ type });
 		}
 
-		for (const item of list) {
-			const cache = await this.store.getCache(name, item.tags);
-			if (cache) {
-				return Object.assign({ path: cache }, item.attrs);
-			}
-		}
-		return null;
+		return selectTask;
 	}
 
-	private async saveNewImage(name: ImageName, buffer: Buffer) {
+	private async saveNewImage(slot: LocalFileSlot, type: string, buffer: Buffer) {
 
 		const buildCache = async (tags: ImageTags) => {
 			try {
 				const output = await runFilters(buffer, filters, tags);
-				return await this.store.putCache(name, tags, output);
+				return await slot.putCache(tags, output);
 			} catch (error) {
 				if (error instanceof ImageUnhandlableError) {
 					logger.warn(error.message);
@@ -106,20 +109,20 @@ export class WebImageService {
 		};
 
 		const tasks: Array<Promise<void>> = [
-			this.store.save(name, buffer),
+			slot.save(buffer),
 		];
 
-		if (name.type === "svg") {
+		if (type === "svg") {
 			const { data } = await svgo.optimize(buffer.toString());
-			tasks.push(this.store.putCache(name, {}, data));
+			tasks.push(slot.putCache({}, data));
 
 			if (data.length > 1024) {
 				const brotli = await brotliCompressAsync(data);
-				tasks.push(this.store.putCache(name, { encoding: "brotli" }, brotli));
+				tasks.push(slot.putCache({ encoding: "brotli" }, brotli));
 			}
 		} else {
+			tasks.push(buildCache({ type }));
 			tasks.push(buildCache({ type: "webp" }));
-			tasks.push(buildCache({ type: name.type }));
 		}
 
 		return Promise.all(tasks);
