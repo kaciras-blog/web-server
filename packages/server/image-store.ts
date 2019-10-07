@@ -12,7 +12,7 @@ export interface ImageKey {
 export type ImageStore = (key: ImageKey) => LocalFileSlot;
 
 /**
- * 存储图片及其衍生图（目前叫缓存）的类。
+ * 图片存储槽，控制一张图片及其衍生图（缓存）的存取。
  *
  * 按标签划分目录 vs. 按图片划分目录：
  * 按图片划分的话每个图片跟它的衍生缓存放在一个目录，这样做找一个图片的所有衍生图很容易，而且不同的
@@ -29,25 +29,30 @@ export class LocalFileSlot {
 		this.key = name;
 	}
 
+	/** 保存图片的原图 */
 	async save(buffer: Buffer | string) {
 		const file = this.originPath();
 		await fs.ensureFile(file);
 		return fs.writeFile(file, buffer);
 	}
 
+	/** 读取图片的原图 */
 	load() {
 		return fs.readFile(this.originPath());
 	}
 
+	/** 判断该t图片是否存在 */
 	exists() {
 		return fs.pathExists(this.originPath());
 	}
 
+	/** 读取衍生图 */
 	getCache(tags: ImageTags) {
 		const file = this.cachePath(tags);
 		return fs.pathExists(file).then((exists) => exists ? file : null);
 	}
 
+	/** 保存衍生图 */
 	async putCache(tags: ImageTags, buffer: Buffer | string) {
 		const file = this.cachePath(tags);
 		await fs.ensureFile(file);
@@ -55,8 +60,7 @@ export class LocalFileSlot {
 	}
 
 	private originPath() {
-		const { name, type } = this.key;
-		return path.join(this.root, "origin", `${name}.${type}`);
+		return path.join(this.root, `${this.key.name}.${this.key.type}`);
 	}
 
 	// Object.keys(tags) 对于非ASCII字符串返回的顺序不确定，必须排序一下
