@@ -11,7 +11,7 @@
 import path from "path";
 import fs from "fs-extra";
 import { Context, Middleware } from "koa";
-import { MulterIncomingMessage } from "@koa/multer";
+import { File } from "@koa/multer";
 import Axios from "axios";
 import { getLogger } from "log4js";
 import mime from "mime-types";
@@ -92,7 +92,7 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 	 * @param ctx 请求上下文
 	 */
 	async function uploadImage(ctx: Context) {
-		const { file } = (ctx.req as MulterIncomingMessage);
+		const file: File = ctx.file;
 		if (!file) {
 			return ctx.status = 400;
 		}
