@@ -7,6 +7,7 @@ import { getLogger } from "log4js";
 import { codingFilter } from "./coding-filter";
 import { ImageFilter, ImageTags, ImageUnhandlableError, InvalidImageError, runFilters } from "./image-filter";
 import { ImageStore, LocalFileSlot } from "./image-store";
+import { performance } from "perf_hooks";
 
 
 const logger = getLogger("Image");
@@ -43,7 +44,6 @@ export class PreGenerateImageService {
 		if (type === "jpeg") {
 			type = "jpg";
 		}
-
 		if (INPUT_FORMATS.indexOf(type) < 0) {
 			throw new InvalidImageError("不支持的图片格式" + type);
 		}
@@ -53,17 +53,25 @@ export class PreGenerateImageService {
 			buffer = await sharp(buffer).png().toBuffer();
 		}
 
+		// TODO: 名字好长，要不要换base64截断一下
 		const hash = crypto
 			.createHash("sha3-256")
 			.update(buffer)
 			.digest("hex");
 
 		const slot = this.store({ name: hash, type });
-		if (!await slot.exists()) {
+		const fullName = `${hash}.${type}`;
+
+		if (await slot.exists()) {
+			logger.debug(`图片 ${fullName} 已经存在，跳过处理和保存的步骤`);
+		} else {
+			const start = performance.now();
 			await this.saveNewImage(slot, type, buffer);
+			const time = performance.now() - start;
+			logger.info(`处理图片 ${fullName} 用时 ${time.toFixed()}ms`);
 		}
 
-		return `${hash}.${type}`;
+		return fullName;
 	}
 
 	get(name: string, type: string, webp: boolean, brotli: boolean): Promise<WebImageOutput | null> {
