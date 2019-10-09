@@ -1,5 +1,5 @@
-import { debounceFirst, once } from "../functions";
-import PromiseSource from "../PromiseSource";
+import { debounceFirst, once } from "../lib/functions";
+import PromiseSource from "../lib/PromiseSource";
 
 describe("debounceFirst", () => {
 

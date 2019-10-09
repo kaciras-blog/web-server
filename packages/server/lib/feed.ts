@@ -1,8 +1,8 @@
 import { Feed } from "feed";
 import { FeedOptions } from "feed/lib/typings";
 import { Middleware } from "koa";
-import { markdown } from "@kaciras-blog/common/markdown";
-import { once } from "@kaciras-blog/common/functions";
+import { markdown } from "@kaciras-blog/common/lib/markdown";
+import { once } from "@kaciras-blog/common/lib/functions";
 import Axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 

@@ -1,7 +1,7 @@
 import chalk, { Chalk } from "chalk";
 import { Compiler, Plugin } from "webpack";
 import { Hook, HookMap } from "tapable";
-import { once } from "@kaciras-blog/common/functions";
+import { once } from "@kaciras-blog/common/lib/functions";
 import StopWatch from "../StopWatch";
 
 
