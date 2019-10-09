@@ -8,6 +8,7 @@ import BlogPlugin from "./BlogPlugin";
 import ServerAPI from "./ServerAPI";
 import { createSSRProductionPlugin } from "./VueSSR";
 import { CliServerOptions } from "./options";
+import { buildCache } from "./build-image-cache";
 
 const logger = log4js.getLogger();
 
@@ -60,6 +61,8 @@ function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 	log4js.configure(logConfig);
 }
 
+type CommandHandler<T> = (options: T) => void | Promise<any>;
+
 async function runProd(options: CliServerOptions) {
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
@@ -76,8 +79,6 @@ async function runProd(options: CliServerOptions) {
 	logger.info("启动完毕");
 }
 
-type CommandHandler<T> = (options: T) => void | Promise<any>;
-
 /**
  * 简单的启动器，提供注册命令然后从命令行里调用的功能，并对启动参数做一些处理。
  */
@@ -88,6 +89,7 @@ export default class KacirasService<T extends CliServerOptions> {
 	// 先注册个内置命令
 	constructor() {
 		this.registerCommand("run", runProd);
+		this.registerCommand("build-image-cache", ((options) => buildCache(options.blog.imageRoot)));
 	}
 
 	registerCommand(command: string, handler: CommandHandler<T>) {
