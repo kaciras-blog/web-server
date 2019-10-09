@@ -40,7 +40,7 @@ function isGif(buffer: Buffer) {
  * @param buffer 图片数据
  * @throws 如果转换效果不理想则抛出 ImageUnhandlableError
  */
-export async function encodeWebp(buffer: Buffer) {
+async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
 		throw new ImageUnhandlableError("暂不支持GIF转WEBP");
 	}
