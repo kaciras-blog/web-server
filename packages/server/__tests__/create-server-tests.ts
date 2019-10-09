@@ -1,8 +1,8 @@
 import http from "http";
 import path from "path";
 import tls from "tls";
-import { createSNICallback, runServer } from "../create-server";
-import { ServerOptions } from "../options";
+import { createSNICallback, runServer } from "../lib/create-server";
+import { ServerOptions } from "../lib/options";
 
 
 const HTTP_URL = "http://localhost/";

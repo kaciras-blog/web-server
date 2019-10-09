@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"description": "Web page and assets server of Kaciras blog",
 	"license": "MIT",
-	"main": "index.js",
+	"main": "lib/index.js",
 	"engines": {
 		"node": ">=12.7.0"
 	},

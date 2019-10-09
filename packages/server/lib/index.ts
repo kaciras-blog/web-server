@@ -6,7 +6,7 @@ import { runServer } from "./create-server";
 import { configureGlobalAxios } from "./axios-helper";
 import BlogPlugin from "./BlogPlugin";
 import ServerAPI from "./ServerAPI";
-import { createSSRProductionPlugin } from "./VueSSR";
+import { createSSRProductionPlugin } from "./vue-ssr-middleware";
 import { CliServerOptions } from "./options";
 import { buildCache } from "./build-image-cache";
 

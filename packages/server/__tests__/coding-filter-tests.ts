@@ -1,5 +1,5 @@
-import { codingFilter } from "../coding-filter";
-import { InvalidImageError } from "../image-filter";
+import { codingFilter } from "../lib/coding-filter";
+import { InvalidImageError } from "../lib/image-filter";
 
 describe("Non-image data", () => {
 	const buffer = Buffer.from("invalid");

@@ -6,7 +6,7 @@ const path = require("path");
 /** 删除所有自动生成的文件 */
 async function cleanup() {
 	const files = await globby([
-		"packages/**/*.{js,map,d.ts}",
+		"packages/**/*.{js,map}",
 		"!**/node_modules/**",
 		"!packages/**/__mocks__",
 	]);

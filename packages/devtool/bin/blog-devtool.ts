@@ -1,3 +1,4 @@
-import service from "..";
+import service from "../lib";
+
 require("source-map-support").install();
 service.run();
