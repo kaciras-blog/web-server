@@ -8,6 +8,7 @@ const logger = getLogger("Image");
 
 // @formatter:off
 class IgnoreOriginSlot extends LocalFileSlot {
+	exists() { return Promise.resolve(false); }
 	save(buffer: Buffer | string) { return Promise.resolve(); }
 }
 // @formatter:on
@@ -23,5 +24,5 @@ export async function buildCache(directory: string) {
 		await service.save(buffer, path.extname(name).substring(1));
 	}
 
-	logger.info(`图片缓存生成完毕，一共${names.length}张原图`);
+	logger.info(`一共${names.length}张图片的缓存生成完毕`);
 }

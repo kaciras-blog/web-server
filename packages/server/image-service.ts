@@ -18,6 +18,8 @@ const svgo = new SVGO();
 const filters = new Map<string, ImageFilter>();
 filters.set("type", codingFilter);
 
+const SAG_COMPRESS_THRESHOLD = 1024;
+
 /**
  * 能够处理的输入图片格式。
  * 不支持WebP作为输入，因为很难从WebP转换回传统格式。
@@ -32,6 +34,14 @@ interface WebImageOutput extends WebImageAttribute {
 	path: string;
 }
 
+/**
+ * 预先生成适用于web图片的服务，在保存图片的同时生成针对web优化的缓存图，读取时根据
+ * 选项选择最佳的图片。
+ *
+ * 预先生成的优点是缓存一定命中，没有实时生成的等待时间。而另一种做法时实时生成，
+ * 大多数图片服务像twitter的都是这种，其优点是更加灵活、允许缓存过期节省空间。
+ * 考虑到个人博客不会有太多的图，而且廉价VPS的性能也差，所以暂时选择了预先生成。
+ */
 export class PreGenerateImageService {
 
 	private readonly store: ImageStore;
@@ -66,7 +76,7 @@ export class PreGenerateImageService {
 			logger.debug(`图片 ${fullName} 已经存在，跳过处理和保存的步骤`);
 		} else {
 			const start = performance.now();
-			await this.saveNewImage(slot, type, buffer);
+			await this.saveNewImage(slot, hash, type, buffer);
 			const time = performance.now() - start;
 			logger.info(`处理图片 ${fullName} 用时 ${time.toFixed()}ms`);
 		}
@@ -80,6 +90,7 @@ export class PreGenerateImageService {
 
 		const addCandidate = (tags: ImageTags, attrs?: WebImageAttribute) => {
 
+			// 不能使用 file || ... 因为空字符串也是 falsy 的
 			function wrapOutput(file: string | null) {
 				return file ? Object.assign({ path: file }, attrs) : null;
 			}
@@ -102,17 +113,17 @@ export class PreGenerateImageService {
 		return selectTask;
 	}
 
-	private async saveNewImage(slot: LocalFileSlot, type: string, buffer: Buffer) {
+	private async saveNewImage(slot: LocalFileSlot, hash: string, type: string, buffer: Buffer) {
 
 		const buildCache = async (tags: ImageTags) => {
 			try {
 				const output = await runFilters(buffer, filters, tags);
 				return await slot.putCache(tags, output);
 			} catch (error) {
-				if (error instanceof ImageUnhandlableError) {
-					logger.warn(error.message);
+				if (!(error instanceof ImageUnhandlableError)) {
+					throw error;
 				}
-				throw error;
+				logger.warn(`"忽略转换：${error.message}，hash=${hash}`);
 			}
 		};
 
@@ -124,7 +135,7 @@ export class PreGenerateImageService {
 			const { data } = await svgo.optimize(buffer.toString());
 			tasks.push(slot.putCache({}, data));
 
-			if (data.length > 1024) {
+			if (data.length > SAG_COMPRESS_THRESHOLD) {
 				const brotli = await brotliCompressAsync(data);
 				tasks.push(slot.putCache({ encoding: "brotli" }, brotli));
 			}
