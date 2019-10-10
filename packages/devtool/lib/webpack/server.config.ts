@@ -15,12 +15,13 @@ export default (options: CliDevelopmentOptions) => {
 	return merge(baseConfig(options, "server"), {
 		entry: "./src/entry-server.js",
 		target: "node",
-		devtool: options.webpack.server.devtool, // SourceMap 也会打包进bundle里
-
 		output: {
 			filename: "server-bundle.js",
 			libraryTarget: "commonjs2",
 		},
+
+		// SourceMap 也会打包进 bundle 里
+		devtool: options.webpack.server.devtool,
 
 		module: {
 			rules: generateCssLoaders({

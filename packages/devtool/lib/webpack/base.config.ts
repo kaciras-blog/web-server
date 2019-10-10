@@ -134,7 +134,9 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 			tls: "empty",
 			child_process: "empty",
 		},
-		performance: false, // 不提示资源过大等没啥用的信息
+
+		// 不提示资源过大等没啥用的信息
+		performance: false,
 	};
 
 	const imageLoaders: RuleSetRule[] = [
@@ -177,7 +179,6 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 			test: /\.(js|css|html|svg)$/,
 			threshold: 1024,
 		}));
-		// @ts-ignore 用别人的库就是这么坑爹，类型定义跟不上版本
 		configuration.plugins!.push(new CompressionPlugin({
 			filename: "[path].br[query]",
 			test: /\.(js|css|html|svg)$/,
