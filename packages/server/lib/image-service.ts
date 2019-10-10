@@ -1,13 +1,13 @@
 import crypto from "crypto";
+import { performance } from "perf_hooks";
 import { promisify } from "util";
 import sharp from "sharp";
 import { brotliCompress, InputType } from "zlib";
 import SVGO from "svgo";
 import { getLogger } from "log4js";
-import { codingFilter } from "./coding-filter";
 import { ImageFilter, ImageTags, ImageUnhandlableError, InvalidImageError, runFilters } from "./image-filter";
+import codingFilter from "./coding-filter";
 import { ImageStore, LocalFileSlot } from "./image-store";
-import { performance } from "perf_hooks";
 
 
 const logger = getLogger("Image");

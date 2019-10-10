@@ -2,9 +2,8 @@ import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
-import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
+import { Configuration, DefinePlugin } from "webpack";
 import { CliDevelopmentOptions, WebpackOptions } from "../options";
-import CompressionPlugin from "compression-webpack-plugin";
 
 
 /**
@@ -33,14 +32,13 @@ const vieCacheIdentifier = (options: WebpackOptions) => {
 	return hash(variables);
 };
 
-
-export default (options: CliDevelopmentOptions, side: "client" | "server"): Configuration => {
+export default function (options: CliDevelopmentOptions, side: "client" | "server"): Configuration {
 	const webpackOpts = options.webpack;
 
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
-	const configuration: Configuration = {
+	return {
 		mode: webpackOpts.mode,
 		context: process.cwd(),
 		output: {
@@ -62,14 +60,14 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 			},
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../../node_modules"),
+				path.join(__dirname, "../../../../node_modules"),
 			],
 			symlinks: false,
 		},
 		resolveLoader: {
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../../node_modules"),
+				path.join(__dirname, "../../../../node_modules"),
 			],
 		},
 		module: {
@@ -109,6 +107,32 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 						name: assetsPath("fonts/[name].[hash:8].[ext]"),
 					},
 				},
+				{
+					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
+					use: [
+						{
+							loader: "url-loader",
+							options: {
+								limit: 2048,
+								name: assetsPath("img/[name].[hash:8].[ext]"),
+							},
+						},
+						{
+							loader: require.resolve("./crop-image-loader"),
+						},
+					],
+				},
+				{
+					test: /\.(svg)(\?.*)?$/,
+					use: [
+						{
+							loader: "file-loader",
+							options: {
+								name: assetsPath("img/[name].[hash:8].[ext]"),
+							},
+						},
+					],
+				},
 			],
 		},
 		plugins: [
@@ -138,56 +162,4 @@ export default (options: CliDevelopmentOptions, side: "client" | "server"): Conf
 		// 不提示资源过大等没啥用的信息
 		performance: false,
 	};
-
-	const imageLoaders: RuleSetRule[] = [
-		{
-			test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-			use: [
-				{
-					loader: "url-loader",
-					options: {
-						limit: 2048,
-						name: assetsPath("img/[name].[hash:8].[ext]"),
-					},
-				},
-				{
-					loader: require.resolve("./advance-image-loader"),
-					options: {
-						name: assetsPath("img/[name].[hash:8].webp"),
-					},
-				},
-				{
-					loader: require.resolve("./crop-image-loader"),
-				},
-			],
-		},
-		{
-			test: /\.(svg)(\?.*)?$/,
-			use: [
-				{
-					loader: "file-loader",
-					options: {
-						name: assetsPath("img/[name].[hash:8].[ext]"),
-					},
-				},
-			],
-		},
-	];
-
-	if (options.webpack.mode === "production" && side === "client") {
-		configuration.plugins!.push(new CompressionPlugin({
-			test: /\.(js|css|html|svg)$/,
-			threshold: 1024,
-		}));
-		configuration.plugins!.push(new CompressionPlugin({
-			filename: "[path].br[query]",
-			test: /\.(js|css|html|svg)$/,
-			threshold: 1024,
-			algorithm: "brotliCompress",
-		}));
-		// (imageLoaders[1].use as RuleSetUseItem[]).push("image-webpack-loader");
-	}
-	configuration.module!.rules.push(...imageLoaders);
-
-	return configuration;
-};
+}

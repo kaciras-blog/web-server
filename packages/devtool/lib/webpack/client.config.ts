@@ -10,6 +10,8 @@ import baseWebpackConfig, { resolve } from "./base.config";
 import generateCssLoaders from "./css";
 import { CliDevelopmentOptions } from "../options";
 import VueSSRTemplatePlugin from "./VueSSRTemplatePlugin";
+import ImageOptimizePlugin from "./ImageOptimizePlugin";
+import CompressionPlugin from "compression-webpack-plugin";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
@@ -52,12 +54,11 @@ function setupBabel(config: any, options: CliDevelopmentOptions) {
 	});
 }
 
-export default (options: CliDevelopmentOptions) => {
+export default function (options: CliDevelopmentOptions) {
 	const webpackOpts = options.webpack;
 
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
-	// 这个单独拿出来，防止 typescript 把 config.plugins 识别为 undefined
 	const plugins = [
 		new CopyWebpackPlugin([
 			{
@@ -85,9 +86,50 @@ export default (options: CliDevelopmentOptions) => {
 		new OptimizeCSSPlugin({
 			cssProcessorOptions: { map: { inline: false } },
 		}),
-		new HashedModuleIdsPlugin(),
 		new VueSSRClientPlugin(),
+		new HashedModuleIdsPlugin(),
 	];
+
+	const htmlMinifyOptions = {
+		removeScriptTypeAttributes: true,
+		collapseWhitespace: true,
+		removeComments: true,
+		removeRedundantAttributes: true,
+		removeStyleLinkTypeAttributes: true,
+		useShortDoctype: true,
+		removeAttributeQuotes: true,
+	};
+	plugins.push(new HtmlWebpackPlugin({
+		template: "public/index.html",
+		filename: assetsPath("app-shell.html"),
+		minify: htmlMinifyOptions,
+	}));
+
+	// 服务端渲染的入口，要把 chunks 全部去掉以便渲染器注入资源
+	const templateFile = "index.template.html";
+	plugins.push(new HtmlWebpackPlugin({
+		chunks: [],
+		template: "public/index.html",
+		filename: templateFile,
+		minify: htmlMinifyOptions,
+	}));
+	plugins.push(new VueSSRTemplatePlugin(templateFile, "<div id=app></div>"));
+
+	if (options.webpack.mode === "production") {
+		// 必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
+		plugins.push(new ImageOptimizePlugin());
+
+		const compressSource = {
+			test: /\.(js|css|html|svg)$/,
+			threshold: 1024,
+		};
+		plugins.push(new CompressionPlugin({
+			...compressSource,
+			algorithm: "brotliCompress",
+			filename: "[path].br[query]",
+		}));
+		plugins.push(new CompressionPlugin(compressSource));
+	}
 
 	const config: Configuration = {
 		entry: ["./src/entry-client.js"],
@@ -124,32 +166,6 @@ export default (options: CliDevelopmentOptions) => {
 		},
 	};
 
-	const htmlMinifyOptions = {
-		collapseWhitespace: true,
-		removeComments: true,
-		removeRedundantAttributes: true,
-		removeScriptTypeAttributes: true,
-		removeStyleLinkTypeAttributes: true,
-		useShortDoctype: true,
-		removeAttributeQuotes: true,
-	};
-	plugins.push(new HtmlWebpackPlugin({
-		template: "public/index.html",
-		filename: assetsPath("app-shell.html"),
-		minify: htmlMinifyOptions,
-	}));
-
-	// 服务端渲染的入口，要把 chunks 全部去掉以便渲染器注入资源
-	const templateFile = "index.template.html";
-	plugins.push(new HtmlWebpackPlugin({
-		chunks: [],
-		template: "public/index.html",
-		filename: templateFile,
-		minify: htmlMinifyOptions,
-	}));
-	plugins.push(new VueSSRTemplatePlugin(templateFile, "<div id=app></div>"));
-
-
 	/** 默认文件名不带hash，生产模式带上以便区分不同版本的文件 */
 	if (webpackOpts.mode === "production") {
 		config.output = {
@@ -168,4 +184,4 @@ export default (options: CliDevelopmentOptions) => {
 	}
 
 	return merge(baseWebpackConfig(options, "client"), config);
-};
+}

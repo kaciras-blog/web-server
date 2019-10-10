@@ -78,7 +78,7 @@ async function encodeWebp(buffer: Buffer) {
  * @param targetType 目标格式
  * @return 转码后的图片数据
  */
-export async function codingFilter(buffer: Buffer, targetType: string) {
+export default async function codingFilter(buffer: Buffer, targetType: string) {
 	switch (targetType) {
 		case "gif":
 			if (!isGif(buffer)) {

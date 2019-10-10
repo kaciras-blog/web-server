@@ -7,7 +7,7 @@ import { CliDevelopmentOptions } from "../options";
 import generateCssLoaders from "./css";
 
 
-export default (options: CliDevelopmentOptions) => {
+export default function (options: CliDevelopmentOptions) {
 
 	// 服务端构建时页面内的请求走内部地址
 	options.envConfig.contentServerUri = options.blog.serverAddress;
@@ -43,4 +43,4 @@ export default (options: CliDevelopmentOptions) => {
 			new DefinePlugin({ "process.env.VUE_ENV": "'server'" }),
 		],
 	});
-};
+}
