@@ -1,8 +1,8 @@
 import { Compiler, Plugin } from "webpack";
-import codingFilter from "@kaciras-blog/server/lib/coding-filter";
 import SVGO from "svgo";
+import codingFilter from "@kaciras-blog/server/lib/coding-filter";
 
-/** webpack-sources 类型定义跟不上版本，还得我自己搞 */
+/** webpack-sources 类型定义过时了，还得我自己搞 */
 class MyRawAssets {
 
 	private readonly data: Buffer | string;
@@ -21,6 +21,7 @@ class MyRawAssets {
 }
 
 const svgOptimizer = new SVGO();
+const SVGO_MIN_SIZE = 1024;
 
 /**
  * 优化图片资源的插件，能够压缩图片资源，同时还会为一些图片额外生成WebP格式的转码，
@@ -40,33 +41,34 @@ export default class ImageOptimizePlugin implements Plugin {
 		compiler.hooks.emit.tapPromise(ImageOptimizePlugin.name, this.handleAssets.bind(this));
 	}
 
+	// TODO: 逻辑跟 image-service 一样，怎么整合下
 	private handleAssets({ assets }: any): Promise<any> {
 		const tasks: Array<Promise<any>> = [];
 
-		for (const path of Object.keys(assets)) {
-			const sep = path.lastIndexOf(".");
-			const basename = path.substring(0, sep);
-			const type = path.substring(sep + 1);
+		for (const rawName of Object.keys(assets)) {
+			const sep = rawName.lastIndexOf(".");
+			const basename = rawName.substring(0, sep);
+			const type = rawName.substring(sep + 1);
 
-			if (type === "svg") {
-				const text = assets[path].source().toString();
+			if (type === "svg" && assets[rawName].size() > SVGO_MIN_SIZE) {
+				const text = assets[rawName].source().toString();
 				tasks.push(svgOptimizer.optimize(text)
-					.then((result) => assets[path] = new MyRawAssets(result.data)));
+					.then((result) => assets[rawName] = new MyRawAssets(result.data)));
 			}
 
 			if (!/^(jpe?g|png|gif)$/.test(type)) {
 				continue;
 			}
-			const rawBuffer = assets[path].source();
+			const rawBuffer = assets[rawName].source();
 
-			const putImageAsset = async (name: string, targetType: string) => {
+			const putOptimizedImage = async (name: string, targetType: string) => {
 				assets[name] = new MyRawAssets(await codingFilter(rawBuffer, targetType));
 			};
 
-			tasks.push(putImageAsset(path, type));
+			tasks.push(putOptimizedImage(rawName, type));
 
 			if (/^(jpe?g|png)$/.test(type)) {
-				tasks.push(putImageAsset(basename + ".webp", "webp"));
+				tasks.push(putOptimizedImage(basename + ".webp", "webp"));
 			}
 		}
 

@@ -54,8 +54,8 @@ async function encodeWebp(buffer: Buffer) {
 
 	/*
 	 * 测试中发现黑色背景+彩色文字的图片从PNG转WEBP之后更大了，且失真严重。
-	 * 但是经测试，使用 -lossless 反而对这类图片有较好的效果。
-	 * 目前也不知道怎么检测图像是那种，只能通过大小来判断，以后考虑写个底层的Addon？
+	 * 但是使用 -lossless 反而对这类图片有较好的效果。
+	 * 目前也不知道怎么检测图像是那种，只能通过结果的大小来判断，以后考虑写个底层的Addon？
 	 */
 	if (lossy.info.size < threshold) {
 		return lossy.data;
