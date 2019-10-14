@@ -13,12 +13,12 @@ import { ImageStore, LocalFileSlot } from "./image-store";
 const logger = getLogger("Image");
 
 const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
-const svgo = new SVGO();
+const svgOptimizer = new SVGO();
 
 const filters = new Map<string, ImageFilter>();
 filters.set("type", codingFilter);
 
-const SAG_COMPRESS_THRESHOLD = 1024;
+const SVG_COMPRESS_THRESHOLD = 1024;
 
 /**
  * 能够处理的输入图片格式。
@@ -38,7 +38,7 @@ interface WebImageOutput extends WebImageAttribute {
  * 预先生成适用于web图片的服务，在保存图片的同时生成针对web优化的缓存图，读取时根据
  * 选项选择最佳的图片。
  *
- * 预先生成的优点是缓存一定命中，没有实时生成的等待时间。而另一种做法时实时生成，
+ * 预先生成的优点是缓存一定命中，没有实时生成的等待时间。而另一种做法是实时生成，
  * 大多数图片服务像twitter的都是这种，其优点是更加灵活、允许缓存过期节省空间。
  * 考虑到个人博客不会有太多的图，而且廉价VPS的性能也差，所以暂时选择了预先生成。
  */
@@ -63,7 +63,7 @@ export class PreGenerateImageService {
 			buffer = await sharp(buffer).png().toBuffer();
 		}
 
-		// TODO: 名字好长，要不要换base64截断一下
+		// TODO: hex好长，要不要换base64截断一下
 		const hash = crypto
 			.createHash("sha3-256")
 			.update(buffer)
@@ -84,6 +84,16 @@ export class PreGenerateImageService {
 		return fullName;
 	}
 
+	/**
+	 * 根据提供的选项来获取指定的图片，优先选择最优化的缓存图。
+	 * 如果没有生成缓存则无法获取图片，因为原图不在候选列表中，原图仅用于备份以及生成缓存。
+	 *
+	 * @param name 图片名
+	 * @param type 图片类型
+	 * @param webp 是否支持WebP格式
+	 * @param brotli 是否支持Brotli压缩
+	 * @return 图片信息，如果没有该图的缓存则返回null
+	 */
 	get(name: string, type: string, webp: boolean, brotli: boolean): Promise<WebImageOutput | null> {
 		const slot = this.store({ name, type });
 		let selectTask = Promise.resolve<WebImageOutput | null>(null);
@@ -132,10 +142,10 @@ export class PreGenerateImageService {
 		];
 
 		if (type === "svg") {
-			const { data } = await svgo.optimize(buffer.toString());
+			const { data } = await svgOptimizer.optimize(buffer.toString());
 			tasks.push(slot.putCache({}, data));
 
-			if (data.length > SAG_COMPRESS_THRESHOLD) {
+			if (data.length > SVG_COMPRESS_THRESHOLD) {
 				const brotli = await brotliCompressAsync(data);
 				tasks.push(slot.putCache({ encoding: "brotli" }, brotli));
 			}
