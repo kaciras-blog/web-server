@@ -4,6 +4,10 @@
 	"description": "Web page and assets server of Kaciras blog",
 	"license": "MIT",
 	"main": "lib/index.js",
+	"files": [
+		"bin",
+		"lib"
+	],
 	"engines": {
 		"node": ">=12.7.0"
 	},

@@ -4,6 +4,10 @@
 	"description": "Develop tools for Kaciras blog",
 	"license": "MIT",
 	"main": "lib/index.js",
+	"files": [
+		"bin",
+		"lib"
+	],
 	"engines": {
 		"node": ">=12.7.0"
 	},
@@ -11,6 +15,7 @@
 		"cli-dev": "bin/blog-devtool.js"
 	},
 	"dependencies": {
+		"@kaciras-blog/server": "^0.1.0",
 		"babel-loader": "^8.0.6",
 		"cache-loader": "^4.1.0",
 		"case-sensitive-paths-webpack-plugin": "^2.2.0",
