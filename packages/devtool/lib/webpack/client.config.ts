@@ -43,7 +43,7 @@ function setupBabel(config: any, options: CliDevelopmentOptions) {
 		test: /\.(mjs|jsx?)$/,
 		use: loaders,
 		include: [
-			resolve("node_modules/kx-ui/src"),
+			resolve("node_modules/@kaciras-blog/uikit/src"),
 			resolve("src"),
 			resolve("test"),
 			/node_modules\/webpack-hot-middleware\/client/,
