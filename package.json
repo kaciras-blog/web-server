@@ -12,7 +12,7 @@
 		"lint": "tslint -p tsconfig.json --fix",
 		"test": "jest",
 		"test:coverage": "yarn test --coverage",
-		"bump-version": "lerna version --no-push --no-git-tag-version"
+		"publish": "lerna publish --no-push"
 	},
 	"husky": {
 		"hooks": {
