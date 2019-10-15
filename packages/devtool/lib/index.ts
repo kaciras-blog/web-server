@@ -7,7 +7,6 @@ import KacirasService from "@kaciras-blog/server";
 import { runServer } from "@kaciras-blog/server/lib/create-server";
 import BlogPlugin from "@kaciras-blog/server/lib/BlogPlugin";
 import ServerAPI from "@kaciras-blog/server/lib/ServerAPI";
-import { ssrMiddleware } from "@kaciras-blog/server/lib/vue-ssr-middleware";
 import hotReloadMiddleware from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./webpack/client.config";
@@ -52,7 +51,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	const vueSSRHotReloader = VueSSRHotReloader.create(clientConfig, options);
 
 	api.useBeforeFilter(await hotReloadMiddleware(clientConfig, options.dev.useHotClient));
-	api.useFallBack(ssrMiddleware({ renderer: await vueSSRHotReloader.getRendererFactory() }));
+	api.useFallBack(await vueSSRHotReloader.getKoaMiddleware());
 
 	await runServer(api.createApp().callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);

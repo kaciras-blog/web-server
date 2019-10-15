@@ -1,12 +1,14 @@
 import { EventEmitter } from "events";
 import log4js from "log4js";
 import MFS from "memory-fs";
+import { Context } from "koa";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { CliDevelopmentOptions } from "../options";
 import ServerConfiguration from "../webpack/server.config";
 import PromiseSource from "@kaciras-blog/server/lib/PromiseSource";
+import { renderPage } from "@kaciras-blog/server/lib/vue-ssr-middleware";
 
 
 const logger = log4js.getLogger("dev");
@@ -103,7 +105,7 @@ export default class VueSSRHotReloader {
 	 * 对服务端构建的监听，使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，
 	 * 在每次构建完成后会更新 serverBundle 以实现服务端构建的热重载。
 	 */
-	async getRendererFactory() {
+	async getKoaMiddleware() {
 		/*
 		 * 检查 ClientSSRHotUpdatePlugin 是否被正确地加入客户端构建，因为该插件如过忘了添加
 		 * 或是客户端的构建在此方法之后运行则会造成程序死锁。
@@ -132,8 +134,8 @@ export default class VueSSRHotReloader {
 
 		await Promise.all([readyPromise, this.clientPlugin.readyPromise]);
 
-		logger.info("Vue server side renderer created.");
-		return () => this.renderer;
+		logger.info("创建支持热重载的服务端渲染器");
+		return (ctx: Context) => renderPage(this.renderer, ctx);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 import { URL } from "url";
 import fs from "fs-extra";
-import { Context, Middleware, Request } from "koa";
+import { Context } from "koa";
 import log4js from "log4js";
 import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
@@ -33,12 +33,14 @@ const DEFAULT_CONTEXT = {
 	shellOnly: false,
 };
 
-async function renderPage(ctx: Context, render: BundleRenderer) {
-	const renderContext: RenderContext = Object.assign({}, DEFAULT_CONTEXT, {
+export async function renderPage(render: BundleRenderer, ctx: Context) {
+	const renderContext: RenderContext = {
+		...DEFAULT_CONTEXT,
 		request: ctx,
 		shellOnly: ctx.query.shellOnly,
 		url: new URL(ctx.href),
-	});
+	};
+
 	try {
 		ctx.body = await render.renderToString(renderContext);
 	} catch (err) {
@@ -58,34 +60,6 @@ async function renderPage(ctx: Context, render: BundleRenderer) {
 	}
 }
 
-export interface SSRMiddlewareOptions {
-	renderer: BundleRenderer | (() => BundleRenderer);
-	include?: RegExp | ((request: Request) => boolean);
-}
-
-/**
- * 使用指定的渲染器和过滤规则创建服务端渲染的中间件。
- *
- * @param options 选项
- */
-export function ssrMiddleware(options: SSRMiddlewareOptions): Middleware {
-	const { renderer, include } = options;
-
-	const handler: Middleware = typeof renderer !== "function"
-		? (ctx) => renderPage(ctx, renderer)
-		: (ctx) => renderPage(ctx, renderer());
-
-	if (!include) {
-		return handler;
-	}
-
-	const accept = typeof include === "function"
-		? include
-		: (request: Request) => include.test(request.path);
-
-	return (ctx, next) => accept(ctx.request) ? handler(ctx, next) : next();
-}
-
 /**
  * 使用指定目录下的 vue-ssr-server-bundle.json，vue-ssr-client-manifest.json 和 index.template.html 来创建渲染器。
  *
@@ -103,5 +77,5 @@ export async function createSSRProductionPlugin(workingDir: string) {
 		clientManifest: require(resolve("vue-ssr-client-manifest.json")),
 	});
 
-	return (api: ServerAPI) => api.useFallBack(ssrMiddleware({ renderer }));
+	return (api: ServerAPI) => api.useFallBack((ctx) => renderPage(renderer, ctx));
 }
