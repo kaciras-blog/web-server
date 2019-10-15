@@ -58,6 +58,15 @@ export default function (options: CliDevelopmentOptions, side: "client" | "serve
 				"vue$": "vue/dist/vue.runtime.esm.js",
 				"@": resolve("src"),
 			},
+
+			/*
+			 * 在开发本项目以及用 npm link 方式的安装中，被链接项目的依赖不会被安装。
+			 * 而 webpack 默认只从工作目录的 node_modules 里查找模块和加载器，导致其无法找到
+			 * 在本项目里安装的的加载器。
+			 *
+			 * 这里把本项目的 node_modules 也加入到查找列表中来解决此问题。
+			 * 在正常的（非链接方式）安装中不存在此问题，所以使用 LINK_INSTALL 变量做个开关。
+			 */
 			modules: [
 				"node_modules",
 				path.join(__dirname, "../../../../node_modules"),

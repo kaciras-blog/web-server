@@ -103,6 +103,11 @@ export default class KacirasService<T extends CliServerOptions> {
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
+		// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
+		// TODO: run 还是不能以那头优先
+		process.env.NODE_PATH = path.resolve("node_modules");
+		require("module").Module._initPaths();
+
 		const args = parseArgs(process.argv.slice(2));
 		let configFile = path.join(process.cwd(), "config");
 
@@ -121,6 +126,8 @@ export default class KacirasService<T extends CliServerOptions> {
 		if (handler) {
 			return handler(require(configFile));
 		}
-		logger.error(`未知的命令：${args._[0]}`);
+
+		const names = Array.from(this.commands.keys()).join(",");
+		logger.error(`未知的命令：${args._[0]}，支持的命令有：${names}`);
 	}
 }
