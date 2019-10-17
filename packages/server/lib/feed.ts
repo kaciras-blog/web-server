@@ -1,78 +1,43 @@
+import { AxiosResponse } from "axios";
 import { Feed } from "feed";
 import { FeedOptions } from "feed/lib/typings";
 import { Middleware } from "koa";
 import { markdown } from "./markdown";
 import { once } from "./functions";
-import Axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { CachedFetcher } from "./axios-helper";
 
-
-type ResponseHandler<T> = (response: AxiosResponse) => T;
-
-/**
- * 为 Axios 请求增加缓存的类，能够缓存解析后的内容，并在远程端返回 304 时使用缓存以避免解析过程的消耗。
- */
-class CachedFetcher<T> {
-
-	private readonly fetcher: ResponseHandler<T>;
-
-	private cache!: T;
-	private lastUpdate?: Date;
-
-	constructor(fetcher: ResponseHandler<T>) {
-		this.fetcher = fetcher;
-	}
-
-	/**
-	 * 调用 Axios.request 发送请求，并尽量使用缓存来避免解析。
-	 *
-	 * 【注意】Axios 默认下载全部的响应体，如果要避免下载响应体需要把 responseType 设为 "stream"。
-	 *
-	 * @param config Axios请求配置
-	 */
-	async request(config: AxiosRequestConfig) {
-		if (this.lastUpdate) {
-			config.headers = config.headers || {};
-			config.headers["If-Modified-Since"] = this.lastUpdate.toUTCString();
-			config.validateStatus = (status) => status >= 200 && status < 400;
-		}
-		const response = await Axios.request(config);
-		if (response.status === 304) {
-			return this.cache;
-		}
-		this.lastUpdate = new Date();
-		return this.cache = this.fetcher(response);
-	}
-}
-
-// TODO: 这个对象可自定义的属性太多，还需考虑重新组织配置文件，暂时这样写死
-const BASE_ATTRS: FeedOptions = {
-	title: "Kaciras的博客",
-	description: "没有简介，自己看内容吧",
-	link: "https://blog.kaciras.net",
-	id: "https://blog.kaciras.net",
-	language: "zh",
-	favicon: "https://blog.kaciras.net/favicon.ico",
-	copyright: "All rights reserved 2019, Kaciras",
-	feedLinks: {
-		rss: "https://blog.kaciras.net/feed/rss",
-		json: "https://blog.kaciras.net/feed/json",
-		atom: "https://blog.kaciras.net/feed/atom",
-	},
-};
 
 export function feedMiddleware(apiServer: string): Middleware {
+
+	const origin = "https://blog.kaciras.com";
+
+	// TODO: 这个对象可自定义的属性太多，还需考虑重新组织配置文件，暂时这样写死
+	const BASE_ATTRS: FeedOptions = {
+		title: "Kaciras的博客",
+		description: "没有简介，自己看内容吧",
+		link: origin,
+		id: origin,
+		language: "zh",
+		favicon: `${origin}/favicon.ico`,
+		copyright: "All rights reserved 2019, Kaciras",
+		feedLinks: {
+			rss: `${origin}/feed/rss`,
+			json: `${origin}/feed/json`,
+			atom: `${origin}/feed/atom`,
+		},
+	};
 
 	function buildFeed(response: AxiosResponse) {
 		const feed = new Feed(BASE_ATTRS);
 
 		feed.items = response.data.items.map((article: any) => ({
 			title: article.title,
-			image: "https://blog.kaciras.net" + article.cover,
+			image: origin + article.cover,
 			date: new Date(article.update),
 			published: new Date(article.create),
 			description: article.summary,
 			content: markdown.render(article.content),
-			link: `https://blog.kaciras.net/article/${article.id}/${article.urlTitle}`,
+			link: `${origin}/article/${article.id}/${article.urlTitle}`,
 		}));
 
 		// 几个输出的结果也缓存一下，一个大约占60K内存
@@ -82,17 +47,26 @@ export function feedMiddleware(apiServer: string): Middleware {
 		return feed;
 	}
 
-	// Feed 里包含了文章的内容，其需要从 Markdown 转换成 HTML 比较费时，所以在这里缓存一下。
+	// Feed 里包含了文章的内容，其需要从 Markdown 转换成 HTML 会消耗蚊子大点性能，
+	// 虽然缓存这东西也没啥意义，但是既然写了个 CachedFetcher，怎么也得拿出来用用。
 	const fetcher = new CachedFetcher(buildFeed);
 
 	return async (ctx, next) => {
 		if (!ctx.path.startsWith("/feed/")) {
 			return next();
 		}
+
 		const feed = await fetcher.request({
 			url: apiServer + "/articles",
-			params: { count: 10, sort: "update_time", desc: true, content: true },
+			params: {
+				count: 10,
+				sort: "update_time",
+				desc: true,
+				content: true,
+				category: ctx.query.category,
+			},
 		});
+
 		switch (ctx.path.substring(6)) {
 			case "rss":
 				ctx.body = feed.rss2();

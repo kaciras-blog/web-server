@@ -5,7 +5,7 @@
 import { Context } from "koa";
 import fs from "fs-extra";
 import log4js from "log4js";
-import Axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import http2, {
 	ClientHttp2Session,
 	IncomingHttpHeaders,
@@ -63,6 +63,46 @@ export function configureForProxy(source: Context, axiosConfig: AxiosRequestConf
 	}
 
 	return axiosConfig;
+}
+
+type ResponseHandler<T> = (response: AxiosResponse) => T;
+
+/**
+ * 为 Axios 请求增加缓存的类，能够缓存解析后的内容，并在远程端返回 304 时使用缓存以避免解析过程的消耗。
+ *
+ * 【注意】不要再浏览器端使用，因为浏览器有缓存功能。
+ */
+export class CachedFetcher<T> {
+
+	private readonly fetcher: ResponseHandler<T>;
+
+	private cache!: T;
+	private lastUpdate?: Date;
+
+	constructor(fetcher: ResponseHandler<T>) {
+		this.fetcher = fetcher;
+	}
+
+	/**
+	 * 调用 Axios.request 发送请求，并尽量使用缓存来避免解析。
+	 *
+	 * 【注意】Axios 默认下载全部的响应体，如果要避免下载响应体需要把 responseType 设为 "stream"。
+	 *
+	 * @param config Axios请求配置
+	 */
+	async request(config: AxiosRequestConfig) {
+		if (this.lastUpdate) {
+			config.headers = config.headers || {};
+			config.headers["If-Modified-Since"] = this.lastUpdate.toUTCString();
+			config.validateStatus = (status) => status >= 200 && status < 400;
+		}
+		const response = await Axios.request(config);
+		if (response.status === 304) {
+			return this.cache;
+		}
+		this.lastUpdate = new Date();
+		return this.cache = this.fetcher(response);
+	}
 }
 
 /**
