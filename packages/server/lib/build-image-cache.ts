@@ -13,6 +13,11 @@ class IgnoreOriginSlot extends LocalFileSlot {
 }
 // @formatter:on
 
+/**
+ * 从原图构建图片缓存，用于清理过缓存或是迁移了图片之后生成缓存。
+ *
+ * @param directory 原图所在的目录
+ */
 export async function buildCache(directory: string) {
 
 	const service = new PreGenerateImageService((key) => new IgnoreOriginSlot(directory, key));
