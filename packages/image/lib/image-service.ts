@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { brotliCompress, InputType } from "zlib";
 import SVGO from "svgo";
 import { getLogger } from "log4js";
-import { ImageFilter, ImageTags, ImageUnhandlableError, InvalidImageError, runFilters } from "./image-filter";
+import { ImageFilter, ImageTags, ImageUnhandlableError, InvalidImageError, runFilters } from "./filter-runner";
 import codingFilter from "./coding-filter";
 import { ImageStore, LocalFileSlot } from "./image-store";
 

@@ -6,12 +6,12 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import CompressionPlugin from "compression-webpack-plugin";
 import baseWebpackConfig, { resolve } from "./base.config";
 import generateCssLoaders from "./css";
 import { CliDevelopmentOptions } from "../options";
 import VueSSRTemplatePlugin from "./VueSSRTemplatePlugin";
 import ImageOptimizePlugin from "./ImageOptimizePlugin";
-import CompressionPlugin from "compression-webpack-plugin";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");

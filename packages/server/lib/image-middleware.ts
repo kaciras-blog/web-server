@@ -16,8 +16,8 @@ import Axios from "axios";
 import { getLogger } from "log4js";
 import mime from "mime-types";
 import { configureForProxy } from "./axios-helper";
-import { InvalidImageError } from "./image-filter";
-import { PreGenerateImageService } from "./image-service";
+import { InvalidImageError } from "@kaciras-blog/image/lib/filter-runner";
+import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import compose from "koa-compose";
 
 const logger = getLogger("Image");

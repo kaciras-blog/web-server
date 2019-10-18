@@ -1,6 +1,6 @@
 import { Compiler, Plugin } from "webpack";
 import SVGO from "svgo";
-import codingFilter from "@kaciras-blog/server/lib/coding-filter";
+import codingFilter from "@kaciras-blog/image/lib/coding-filter";
 
 /** webpack-sources 类型定义过时了，还得我自己搞 */
 class MyRawAssets {

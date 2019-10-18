@@ -4,7 +4,7 @@ import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
-import { ImageUnhandlableError, InvalidImageError } from "./image-filter";
+import { ImageUnhandlableError, InvalidImageError } from "./filter-runner";
 
 
 const pngquant = Pngquant({ strip: true });

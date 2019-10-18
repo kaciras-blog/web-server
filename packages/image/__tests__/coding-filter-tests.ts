@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs-extra";
-import { InvalidImageError } from "../lib/image-filter";
+import { InvalidImageError } from "../lib/filter-runner";
 import codingFilter from "../lib/coding-filter";
 
 // 对于非图片数据的输入，应当抛出 InvalidImageError 异常

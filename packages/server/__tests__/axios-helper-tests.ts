@@ -110,3 +110,10 @@ describe("configureForProxy", () => {
 		expect(config.params[CSRF_PARAMETER_NAME]).toBe("csrf_parameter");
 	});
 });
+
+describe("CachedFetcher", () => {
+
+	it("should ", () => {
+		
+	});
+});

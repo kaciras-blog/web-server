@@ -44,7 +44,6 @@
 		"@types/mime-types": "^2.1.0",
 		"@types/mini-css-extract-plugin": "^0.8.0",
 		"@types/minimist": "^1.2.0",
-		"@types/mozjpeg": "^5.0.0",
 		"@types/optimize-css-assets-webpack-plugin": "^5.0.1",
 		"@types/supertest": "^2.0.8",
 		"execa": "^2.1.0",

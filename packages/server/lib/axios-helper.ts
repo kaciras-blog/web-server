@@ -12,6 +12,7 @@ import http2, {
 	IncomingHttpStatusHeader,
 	SecureClientSessionOptions,
 } from "http2";
+import hash from "hash-sum";
 
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
@@ -65,22 +66,28 @@ export function configureForProxy(source: Context, axiosConfig: AxiosRequestConf
 	return axiosConfig;
 }
 
-type ResponseHandler<T> = (response: AxiosResponse) => T;
+type ResponseParser<T> = (response: AxiosResponse) => T;
+
+interface CacheEntry<T> {
+	readonly value: T;
+	readonly time: Date;
+}
 
 /**
  * 为 Axios 请求增加缓存的类，能够缓存解析后的内容，并在远程端返回 304 时使用缓存以避免解析过程的消耗。
  *
  * 【注意】不要再浏览器端使用，因为浏览器有缓存功能。
+ *
+ * TODO: 懒得写超时过期，而且直接用整个requestConfig作为键
  */
 export class CachedFetcher<T> {
 
-	private readonly fetcher: ResponseHandler<T>;
+	private readonly cache = new Map<string, CacheEntry<T>>();
 
-	private cache!: T;
-	private lastUpdate?: Date;
+	private readonly parser: ResponseParser<T>;
 
-	constructor(fetcher: ResponseHandler<T>) {
-		this.fetcher = fetcher;
+	constructor(parser: ResponseParser<T>) {
+		this.parser = parser;
 	}
 
 	/**
@@ -91,17 +98,23 @@ export class CachedFetcher<T> {
 	 * @param config Axios请求配置
 	 */
 	async request(config: AxiosRequestConfig) {
-		if (this.lastUpdate) {
+		const cacheKey = hash(config);
+		const entry = this.cache.get(cacheKey);
+
+		if (entry) {
 			config.headers = config.headers || {};
-			config.headers["If-Modified-Since"] = this.lastUpdate.toUTCString();
+			config.headers["If-Modified-Since"] = entry.time.toUTCString();
 			config.validateStatus = (status) => status >= 200 && status < 400;
 		}
+
 		const response = await Axios.request(config);
 		if (response.status === 304) {
-			return this.cache;
+			return entry!.value;
 		}
-		this.lastUpdate = new Date();
-		return this.cache = this.fetcher(response);
+		const result = this.parser(response);
+		this.cache.set(cacheKey, { value: result, time: new Date() });
+
+		return result;
 	}
 }
 

@@ -11,8 +11,8 @@ import bodyParser from "koa-bodyparser";
 import installCSPPlugin from "./csp-plugin";
 import { imageMiddleware } from "./image-middleware";
 import { AppOptions } from "./options";
-import { localFileStore } from "./image-store";
-import { PreGenerateImageService } from "./image-service";
+import { localFileStore } from "@kaciras-blog/image/lib/image-store";
+import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 
 
 export default class BlogPlugin implements ClassCliServerPlugin {

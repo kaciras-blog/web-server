@@ -8,7 +8,7 @@ import BlogPlugin from "./BlogPlugin";
 import ServerAPI from "./ServerAPI";
 import { createSSRProductionPlugin } from "./vue-ssr-middleware";
 import { CliServerOptions } from "./options";
-import { buildCache } from "./build-image-cache";
+import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
 
 const logger = log4js.getLogger();
 

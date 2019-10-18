@@ -1,5 +1,5 @@
 import { PreGenerateImageService } from "../lib/image-service";
-import { runFilters } from "../lib/image-filter";
+import { runFilters } from "../lib/filter-runner";
 import { LocalFileSlot } from "../lib/image-store";
 
 jest.mock("../image-filter");

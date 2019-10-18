@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import { ImageTags } from "./image-filter";
+import { ImageTags } from "./filter-runner";
 
 // 好像常见格式的图片都能够从数据里读取出格式，那么文件名里的type就不需要，
 // 但我有时候会从资源管理器直接看看图片目录，所以还是把type带上作为扩展名。
