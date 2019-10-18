@@ -7,7 +7,7 @@ import KacirasService from "@kaciras-blog/server";
 import { runServer } from "@kaciras-blog/server/lib/create-server";
 import BlogPlugin from "@kaciras-blog/server/lib/BlogPlugin";
 import ServerAPI from "@kaciras-blog/server/lib/ServerAPI";
-import hotReloadMiddleware from "./plugins/dev";
+import { createHotMiddleware, createKoaWebpack } from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./webpack/client.config";
 import ServerConfiguration from "./webpack/server.config";
@@ -50,7 +50,12 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	const clientConfig = ClientConfiguration(options);
 	const vueSSRHotReloader = VueSSRHotReloader.create(clientConfig, options);
 
-	api.useBeforeFilter(await hotReloadMiddleware(clientConfig, options.dev.useHotClient));
+	if (options.dev.useHotClient !== false) {
+		api.useBeforeFilter(await createKoaWebpack(clientConfig));
+	} else {
+		api.useBeforeFilter(await createHotMiddleware(clientConfig));
+	}
+
 	api.useFallBack(await vueSSRHotReloader.getKoaMiddleware());
 
 	await runServer(api.createApp().callback(), options.server);

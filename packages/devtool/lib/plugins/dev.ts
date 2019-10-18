@@ -13,7 +13,7 @@ import WebpackHotMiddlewareType from "webpack-hot-middleware";
  *
  * @param config webpack的配置
  */
-async function createKoaWebpack(config: Configuration) {
+export async function createKoaWebpack(config: Configuration) {
 	try {
 		require("webpack-hot-client");
 	} catch (e) {
@@ -45,8 +45,9 @@ async function createKoaWebpack(config: Configuration) {
  * webpack-hot-middleware 使用 Server-Sent-Event 来通知前端更新资源，兼容性比WebpackHotClient好。
  *
  * @param config webpack的配置
+ * @deprecated 尽量使用上面的 createKoaWebpack
  */
-async function createHotMiddleware(config: Configuration): Promise<Middleware> {
+export async function createHotMiddleware(config: Configuration): Promise<Middleware> {
 	if (!config.entry) {
 		throw new Error("No entry specified.");
 	}
@@ -106,8 +107,4 @@ async function createHotMiddleware(config: Configuration): Promise<Middleware> {
 
 		return Promise.all([ready, handling]);
 	};
-}
-
-export default function hotReloadMiddleware(configuration: Configuration, useHotClient?: boolean) {
-	return useHotClient === false ? createHotMiddleware(configuration) : createKoaWebpack(configuration);
 }
