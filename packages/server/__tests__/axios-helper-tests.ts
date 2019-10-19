@@ -1,7 +1,13 @@
 import Axios, { AxiosRequestConfig } from "axios";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { AddressInfo, Server } from "net";
-import { adaptAxiosHttp2, configureForProxy, CSRF_HEADER_NAME, CSRF_PARAMETER_NAME } from "../lib/axios-helper";
+import {
+	adaptAxiosHttp2,
+	CachedFetcher,
+	configureForProxy,
+	CSRF_HEADER_NAME,
+	CSRF_PARAMETER_NAME,
+} from "../lib/axios-helper";
 import fs from "fs-extra";
 import path from "path";
 import Koa from "koa";
@@ -112,8 +118,48 @@ describe("configureForProxy", () => {
 });
 
 describe("CachedFetcher", () => {
+	const mockRequest = jest.fn();
 
-	it("should ", () => {
-		
+	const axios = Axios.create();
+	axios.request = mockRequest;
+
+	const fetcher = new CachedFetcher(axios, (res) => res.data);
+
+	function putCache(config: AxiosRequestConfig, data: any) {
+		mockRequest.mockResolvedValueOnce(Promise.resolve({ data, status: 200 }));
+		return fetcher.request(config);
+	}
+
+	it("should cache result", async () => {
+		mockRequest.mockResolvedValueOnce(Promise.resolve({ data: 100, status: 200 }));
+		mockRequest.mockResolvedValueOnce(Promise.resolve({ data: 456, status: 304 }));
+
+		expect(await fetcher.request({})).toBe(100);
+		expect(await fetcher.request({})).toBe(100);
+	});
+
+	it("should isolate difference requests", async () => {
+		await putCache({ url: "A" }, 100);
+		await putCache({ url: "B" }, 200);
+
+		mockRequest.mockResolvedValue({ status: 304 });
+		expect(await fetcher.request({ url: "A" })).toBe(100);
+		expect(await fetcher.request({ url: "B" })).toBe(200);
+	});
+
+	// If-Modified-Since 只精确到秒，需要清除起始时间的毫秒部分
+	it("should set header", async () => {
+		const start = new Date();
+		start.setMilliseconds(0);
+		await putCache({}, 100);
+
+		mockRequest.mockImplementation((config) => {
+			const value = config.headers["If-Modified-Since"];
+			const mtime = new Date(value).getTime();
+			expect(mtime).toBeGreaterThanOrEqual(start.getTime());
+			return { status: 200 };
+		});
+
+		await fetcher.request({});
 	});
 });

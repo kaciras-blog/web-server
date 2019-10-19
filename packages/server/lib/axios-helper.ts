@@ -66,7 +66,7 @@ export function configureForProxy(source: Context, axiosConfig: AxiosRequestConf
 	return axiosConfig;
 }
 
-type ResponseParser<T> = (response: AxiosResponse) => T;
+type ResponseParser<T, R> = (response: AxiosResponse<T>) => R;
 
 interface CacheEntry<T> {
 	readonly value: T;
@@ -78,15 +78,20 @@ interface CacheEntry<T> {
  *
  * 【注意】不要再浏览器端使用，因为浏览器有缓存功能。
  *
+ * 【其它方案】因为 AxiosResponse 里带有请求配置，所以可以用个拦截器来做缓存，但是它的API返回的是 AxiosResponse
+ * 而不是解析后的结果，要做也只能替换其 data 字段，这样的话总感觉怪怪的。
+ *
  * TODO: 懒得写超时过期，而且直接用整个requestConfig作为键
  */
-export class CachedFetcher<T> {
+export class CachedFetcher<T, R> {
 
-	private readonly cache = new Map<string, CacheEntry<T>>();
+	private readonly cache = new Map<string, CacheEntry<R>>();
 
-	private readonly parser: ResponseParser<T>;
+	private readonly axios: AxiosInstance;
+	private readonly parser: ResponseParser<T, R>;
 
-	constructor(parser: ResponseParser<T>) {
+	constructor(axios: AxiosInstance, parser: ResponseParser<T, R>) {
+		this.axios = axios;
 		this.parser = parser;
 	}
 
@@ -107,14 +112,17 @@ export class CachedFetcher<T> {
 			config.validateStatus = (status) => status >= 200 && status < 400;
 		}
 
-		const response = await Axios.request(config);
+		const response = await this.axios.request<T>(config);
 		if (response.status === 304) {
 			return entry!.value;
 		}
-		const result = this.parser(response);
-		this.cache.set(cacheKey, { value: result, time: new Date() });
+		const value = this.parser(response);
 
-		return result;
+		const lastModified = response.headers["last-modified"];
+		const time = lastModified ? new Date(lastModified) : new Date();
+
+		this.cache.set(cacheKey, { value, time });
+		return value;
 	}
 }
 
