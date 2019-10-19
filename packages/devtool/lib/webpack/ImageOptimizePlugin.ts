@@ -30,7 +30,7 @@ const SVGO_MIN_SIZE = 1024;
  * 【使用注意】
  * 1）为了保证质量，图片始终要从原图转换，所以请勿在加载器里优化图片（如使用 image-webpack-loader）。
  * 2）该插件需要注意顺序，应当放在能生成资源文件的插件（如 CopyWebpackPlugin）后面，
- *    这样才能优化其生成的图片；但要放在像 CompressionPlugin 这种能够对压缩后结果处理的插件前面。
+ *    这样才能优化其生成的图片；但要放在像 CompressionPlugin 这种能够对压缩后结果再处理的插件前面。
  *
  * 【为什么使用插件而不是加载器】
  * 加载器无法处理非JS引用的资源，例如由 CopyWebpackPlugin 复制过去的。

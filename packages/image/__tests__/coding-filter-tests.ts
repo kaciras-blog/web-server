@@ -4,7 +4,7 @@ import { InvalidImageError } from "../lib/filter-runner";
 import codingFilter from "../lib/coding-filter";
 
 // 对于非图片数据的输入，应当抛出 InvalidImageError 异常
-describe("Non-image data", () => {
+describe("For non-image data", () => {
 	const buffer = Buffer.from("invalid");
 
 	function testFor(type: string) {
@@ -18,7 +18,7 @@ describe("Non-image data", () => {
 });
 
 // 对于损坏的图片数据，应当抛出 InvalidImageError 异常
-describe("Bad image", () => {
+describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
 		const buffer = await fs.readFile(path.join(__dirname, "resources", "bad_image." + srcType));
@@ -36,7 +36,7 @@ describe("Bad image", () => {
 
 describe("optimization", () => {
 
-	// 这张图片如果默认的参数来转换为webp反而会变大，且失真严重
+	// 这张图片如果用默认的参数转换为webp反而会变大，且失真严重
 	it("should effect on particular image", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "resources", "color_text_black_bg.png"));
 		const result = await codingFilter(buffer, "webp");

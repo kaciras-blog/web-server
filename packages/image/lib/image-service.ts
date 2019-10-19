@@ -133,7 +133,7 @@ export class PreGenerateImageService {
 				if (!(error instanceof ImageUnhandlableError)) {
 					throw error;
 				}
-				logger.warn(`"忽略转换：${error.message}，hash=${hash}`);
+				logger.warn(`忽略转换：${error.message}，hash=${hash}`);
 			}
 		};
 
