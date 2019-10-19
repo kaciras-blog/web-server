@@ -49,7 +49,7 @@ export function feedMiddleware(apiServer: string): Middleware {
 
 	// Feed 里包含了文章的内容，其需要从 Markdown 转换成 HTML 会消耗蚊子大点性能，
 	// 虽然缓存这东西也没啥意义，但是既然写了个 CachedFetcher，怎么也得拿出来用用。
-	const fetcher = new CachedFetcher(Axios, buildFeed);
+	const fetcher = new CachedFetcher(Axios, buildFeed, 7 * 86400 * 1000);
 
 	return async (ctx, next) => {
 		if (!ctx.path.startsWith("/feed/")) {

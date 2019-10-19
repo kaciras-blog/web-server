@@ -13,6 +13,7 @@ import path from "path";
 import Koa from "koa";
 import supertest from "supertest";
 
+jest.useFakeTimers();
 
 function helloHandler(req: Http2ServerRequest, res: Http2ServerResponse) {
 	res.writeHead(200, { "Content-Type": "text/plain" }).end("Hello");
@@ -123,43 +124,66 @@ describe("CachedFetcher", () => {
 	const axios = Axios.create();
 	axios.request = mockRequest;
 
-	const fetcher = new CachedFetcher(axios, (res) => res.data);
+	const instance = new CachedFetcher(axios, (res) => res.data);
 
-	function putCache(config: AxiosRequestConfig, data: any) {
-		mockRequest.mockResolvedValueOnce(Promise.resolve({ data, status: 200 }));
+	function mockResponse(status: number, data?: any, multiple: boolean = false) {
+		const response = Promise.resolve({ status, data, headers: {} });
+		if (multiple) {
+			mockRequest.mockResolvedValue(response);
+		} else {
+			mockRequest.mockResolvedValueOnce(response);
+		}
+	}
+
+	/** 设置缓存，请勿使用 undefined 作为 data 参数 */
+	function putCache(fetcher: CachedFetcher<any, any>, data: any, config: AxiosRequestConfig = {}) {
+		mockResponse(200, data);
+		return fetcher.request(config);
+	}
+
+	/** 获取缓存的值，如果没有缓存则返回 undefined */
+	function getCache(fetcher: CachedFetcher<any, any>, config: AxiosRequestConfig = {}) {
+		mockResponse(304);
 		return fetcher.request(config);
 	}
 
 	it("should cache result", async () => {
-		mockRequest.mockResolvedValueOnce(Promise.resolve({ data: 100, status: 200 }));
-		mockRequest.mockResolvedValueOnce(Promise.resolve({ data: 456, status: 304 }));
-
-		expect(await fetcher.request({})).toBe(100);
-		expect(await fetcher.request({})).toBe(100);
+		mockResponse(200, 100);
+		mockResponse(304, 456);
+		expect(await instance.request({})).toBe(100);
+		expect(await instance.request({})).toBe(100);
 	});
 
 	it("should isolate difference requests", async () => {
-		await putCache({ url: "A" }, 100);
-		await putCache({ url: "B" }, 200);
+		await putCache(instance, 100, { url: "A" });
+		await putCache(instance, 200, { url: "B" });
 
-		mockRequest.mockResolvedValue({ status: 304 });
-		expect(await fetcher.request({ url: "A" })).toBe(100);
-		expect(await fetcher.request({ url: "B" })).toBe(200);
+		mockResponse(304, null, true);
+		expect(await instance.request({ url: "A" })).toBe(100);
+		expect(await instance.request({ url: "B" })).toBe(200);
 	});
 
 	// If-Modified-Since 只精确到秒，需要清除起始时间的毫秒部分
 	it("should set header", async () => {
 		const start = new Date();
 		start.setMilliseconds(0);
-		await putCache({}, 100);
+		await putCache(instance, 100);
 
 		mockRequest.mockImplementation((config) => {
 			const value = config.headers["If-Modified-Since"];
 			const mtime = new Date(value).getTime();
 			expect(mtime).toBeGreaterThanOrEqual(start.getTime());
-			return { status: 200 };
+			return { status: 200, headers: {} };
 		});
 
-		await fetcher.request({});
+		await instance.request({});
+	});
+
+	it("should delete expired cache", async () => {
+		const timeoutFetcher = new CachedFetcher(axios, (res) => res.data, 10 * 1000);
+		await putCache(timeoutFetcher, 100);
+
+		jest.runOnlyPendingTimers();
+		expect(await getCache(timeoutFetcher)).toBeUndefined();
 	});
 });

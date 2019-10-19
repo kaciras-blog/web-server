@@ -6,14 +6,13 @@ import { Context } from "koa";
 import fs from "fs-extra";
 import log4js from "log4js";
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import hash from "hash-sum";
 import http2, {
 	ClientHttp2Session,
 	IncomingHttpHeaders,
 	IncomingHttpStatusHeader,
 	SecureClientSessionOptions,
 } from "http2";
-import hash from "hash-sum";
-
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
@@ -69,8 +68,9 @@ export function configureForProxy(source: Context, axiosConfig: AxiosRequestConf
 type ResponseParser<T, R> = (response: AxiosResponse<T>) => R;
 
 interface CacheEntry<T> {
-	readonly value: T;
-	readonly time: Date;
+	value: T;
+	time: Date;
+	cleaner?: NodeJS.Timeout;
 }
 
 /**
@@ -81,18 +81,27 @@ interface CacheEntry<T> {
  * 【其它方案】因为 AxiosResponse 里带有请求配置，所以可以用个拦截器来做缓存，但是它的API返回的是 AxiosResponse
  * 而不是解析后的结果，要做也只能替换其 data 字段，这样的话总感觉怪怪的。
  *
- * TODO: 懒得写超时过期，而且直接用整个requestConfig作为键
+ * TODO: 直接用整个 requestConfig 作为键会有一些属性多余
  */
 export class CachedFetcher<T, R> {
 
-	private readonly cache = new Map<string, CacheEntry<R>>();
+	private readonly cache = new Map<string, Readonly<CacheEntry<R>>>();
 
 	private readonly axios: AxiosInstance;
 	private readonly parser: ResponseParser<T, R>;
+	private readonly timeToLive?: number;
 
-	constructor(axios: AxiosInstance, parser: ResponseParser<T, R>) {
+	/**
+	 * 创建 CachedFetcher 的实例。
+	 *
+	 * @param axios Axios对象，将使用它发出请求
+	 * @param parser 响应解析函数
+	 * @param timeToLive 缓存超时时间（毫秒），省略则永不超时
+	 */
+	constructor(axios: AxiosInstance, parser: ResponseParser<T, R>, timeToLive?: number) {
 		this.axios = axios;
 		this.parser = parser;
+		this.timeToLive = timeToLive;
 	}
 
 	/**
@@ -103,8 +112,9 @@ export class CachedFetcher<T, R> {
 	 * @param config Axios请求配置
 	 */
 	async request(config: AxiosRequestConfig) {
+		const { cache, timeToLive } = this;
 		const cacheKey = hash(config);
-		const entry = this.cache.get(cacheKey);
+		const entry = cache.get(cacheKey);
 
 		if (entry) {
 			config.headers = config.headers || {};
@@ -113,16 +123,25 @@ export class CachedFetcher<T, R> {
 		}
 
 		const response = await this.axios.request<T>(config);
-		if (response.status === 304) {
-			return entry!.value;
+		if (entry && response.status === 304) {
+			return entry.value;
 		}
-		const value = this.parser(response);
+		const result = this.parser(response);
 
+		// 即使没有 last-modified 头也照样缓存，使用当前时间作为替代
 		const lastModified = response.headers["last-modified"];
 		const time = lastModified ? new Date(lastModified) : new Date();
 
-		this.cache.set(cacheKey, { value, time });
-		return value;
+		const newEntry: CacheEntry<R> = { value: result, time };
+		if (timeToLive) {
+			if (entry) {
+				clearTimeout(entry.cleaner!);
+			}
+			newEntry.cleaner = setTimeout(() => cache.delete(cacheKey), timeToLive);
+		}
+
+		cache.set(cacheKey, newEntry);
+		return result;
 	}
 }
 
