@@ -60,10 +60,11 @@ export function feedMiddleware(apiServer: string): Middleware {
 			url: apiServer + "/articles",
 			params: {
 				count: 10,
-				sort: "update_time",
+				sort: "create_time",
 				desc: true,
 				content: true,
 				category: ctx.query.category,
+				recursive: true,
 			},
 		});
 
