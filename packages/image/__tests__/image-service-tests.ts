@@ -2,7 +2,7 @@ import { PreGenerateImageService } from "../lib/image-service";
 import { runFilters } from "../lib/filter-runner";
 import { LocalFileSlot } from "../lib/image-store";
 
-jest.mock("../image-filter");
+jest.mock("../lib/filter-runner");
 (runFilters as jest.Mock).mockImplementation((buffer) => Promise.resolve(buffer));
 
 const mockSlot = {
