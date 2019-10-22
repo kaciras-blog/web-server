@@ -86,6 +86,7 @@ export default async function codingFilter(buffer: Buffer, targetType: string) {
 			}
 			return gifsicle(buffer).catch(throwInvalidData);
 		case "jpg":
+			// imagemin-mozjpeg 限制输入必须为JPEG格式所以不能用，而且它还没类型定义。
 			const options = {
 				maxBuffer: Infinity,
 				input: buffer,
@@ -94,7 +95,7 @@ export default async function codingFilter(buffer: Buffer, targetType: string) {
 			return (await execa(mozjpeg, options).catch(throwInvalidData)).stdout;
 		case "png":
 			// pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
-			// 经测试，optipng 难以压缩 pngquant 处理后的图片，故不使用 optipng。
+			// 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用 optipng。
 			if (!isPng(buffer)) {
 				throw new InvalidImageError("无效的图片数据");
 			}

@@ -50,6 +50,13 @@ export class PreGenerateImageService {
 		this.store = store;
 	}
 
+	/**
+	 * 保存图片，并生成缓存。
+	 *
+	 * @param buffer 图片数据
+	 * @param type 图片类型
+	 * @return 用于查询该图片的文件名
+	 */
 	async save(buffer: Buffer, type: string) {
 		if (type === "jpeg") {
 			type = "jpg";
@@ -141,6 +148,7 @@ export class PreGenerateImageService {
 			slot.save(buffer),
 		];
 
+		// 过滤器链只用于光栅图，矢量图我还不知道怎么做裁剪、缩放、加水印等操作，只能压缩一下。
 		if (type === "svg") {
 			const { data } = await svgOptimizer.optimize(buffer.toString());
 			tasks.push(slot.putCache({}, data));
