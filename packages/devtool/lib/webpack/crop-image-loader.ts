@@ -5,15 +5,14 @@ import CreateCropFilter from "@kaciras-blog/image/lib/crop-filter";
 
 export const raw = true;
 
-function IndexBannerMobile(metadata: Metadata) {
+function IndexBannerMobile(metadata: Metadata): Region {
 	const WIDTH = 560;
-	const region: Region = {
+	return {
 		top: 0,
 		left: Math.round((metadata.width! - WIDTH) / 2),
 		width: WIDTH,
 		height: metadata.height!,
 	};
-	return { region };
 }
 
 const processor = CreateCropFilter({
