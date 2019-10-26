@@ -4,7 +4,7 @@ import log4js from "log4js";
 import serve from "koa-static";
 import { runServer } from "./create-server";
 import { configureGlobalAxios } from "./axios-helper";
-import BlogPlugin from "./BlogPlugin";
+import getBlogPlugin from "./blog-plugin";
 import ServerAPI from "./ServerAPI";
 import { createSSRProductionPlugin } from "./vue-ssr-middleware";
 import { CliServerOptions } from "./options";
@@ -67,7 +67,7 @@ async function runProd(options: CliServerOptions) {
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
 	const api = new ServerAPI();
-	api.addPlugin(new BlogPlugin(options.blog));
+	api.addPlugin(getBlogPlugin(options.blog));
 	api.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
 	api.useResource(serve(options.outputDir, {

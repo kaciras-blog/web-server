@@ -5,7 +5,7 @@ import webpack, { Configuration, Stats } from "webpack";
 import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper";
 import KacirasService from "@kaciras-blog/server";
 import { runServer } from "@kaciras-blog/server/lib/create-server";
-import BlogPlugin from "@kaciras-blog/server/lib/BlogPlugin";
+import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
 import ServerAPI from "@kaciras-blog/server/lib/ServerAPI";
 import { createHotMiddleware, createKoaWebpack } from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
@@ -45,7 +45,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
 	const api = new ServerAPI();
-	api.addPlugin(new BlogPlugin(options.blog));
+	api.addPlugin(getBlogPlugin(options.blog));
 
 	const clientConfig = ClientConfiguration(options);
 	const vueSSRHotReloader = VueSSRHotReloader.create(clientConfig, options);
