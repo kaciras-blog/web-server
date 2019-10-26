@@ -10,7 +10,7 @@ import { imageMiddleware } from "./image-middleware";
 import { AppOptions } from "./options";
 import { createSitemapMiddleware } from "./sitemap";
 import { feedMiddleware } from "./feed";
-import ServerAPI, { FunctionCliServerPlugin } from "./ServerAPI";
+import ApplicationBuilder, { FunctionCliServerPlugin } from "./ApplicationBuilder";
 import { intercept, serviceWorkerToggle } from "./middlewares";
 
 
@@ -18,7 +18,7 @@ import { intercept, serviceWorkerToggle } from "./middlewares";
 // 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
 export default function getBlogPlugin(options: AppOptions): FunctionCliServerPlugin {
 
-	return (api: ServerAPI) => {
+	return (api: ApplicationBuilder) => {
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(cors(options.cors));
 		api.useBeforeAll(bodyParser());

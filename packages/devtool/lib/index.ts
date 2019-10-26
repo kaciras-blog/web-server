@@ -6,7 +6,7 @@ import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper";
 import KacirasService from "@kaciras-blog/server";
 import { runServer } from "@kaciras-blog/server/lib/create-server";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
-import ServerAPI from "@kaciras-blog/server/lib/ServerAPI";
+import ApplicationBuilder from "@kaciras-blog/server/lib/ApplicationBuilder";
 import { createHotMiddleware, createKoaWebpack } from "./plugins/dev";
 import VueSSRHotReloader from "./plugins/vue";
 import ClientConfiguration from "./webpack/client.config";
@@ -44,7 +44,7 @@ async function invokeWebpack(config: Configuration) {
 service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
-	const api = new ServerAPI();
+	const api = new ApplicationBuilder();
 	api.addPlugin(getBlogPlugin(options.blog));
 
 	const clientConfig = ClientConfiguration(options);
@@ -58,7 +58,7 @@ service.registerCommand("serve", async (options: CliDevelopmentOptions) => {
 
 	api.useFallBack(await vueSSRHotReloader.getKoaMiddleware());
 
-	await runServer(api.createApp().callback(), options.server);
+	await runServer(api.build().callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);
 });
 

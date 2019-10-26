@@ -1,6 +1,6 @@
 import { ParameterizedContext } from "koa";
 import log4js from "log4js";
-import ServerAPI from "./ServerAPI";
+import ApplicationBuilder from "./ApplicationBuilder";
 
 const logger = log4js.getLogger("CSP");
 
@@ -41,7 +41,7 @@ function CSRReportListener(ctx: ParameterizedContext, next: () => Promise<any>) 
 	ctx.status = 204;
 }
 
-export default function installCSPPlugin(api: ServerAPI) {
+export default function installCSPPlugin(api: ApplicationBuilder) {
 	api.useResource(CSRReportListener);
 	api.useBeforeAll(AdvancedSecurityFilter);
 }

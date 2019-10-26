@@ -2,15 +2,15 @@ import Koa, { Middleware } from "koa";
 
 
 export interface ClassCliServerPlugin {
-	configureCliServer(api: ServerAPI): void;
+	configureCliServer(builder: ApplicationBuilder): void;
 }
 
-export type FunctionCliServerPlugin = (api: ServerAPI) => void;
+export type FunctionCliServerPlugin = (builder: ApplicationBuilder) => void;
 
 /**
  * 把 Koa 的中间件分下组，便于解耦。
  */
-export default class ServerAPI {
+export default class ApplicationBuilder {
 
 	private readonly beforeAll: Middleware[] = [];
 	private readonly beforeFilter: Middleware[] = [];
@@ -19,7 +19,7 @@ export default class ServerAPI {
 
 	private fallBack?: Middleware;
 
-	createApp() {
+	build() {
 		const app = new Koa();
 		const setup = app.use.bind(app);
 
@@ -34,7 +34,7 @@ export default class ServerAPI {
 		return app;
 	}
 
-	/** 做一些全局处理的中间件，比如CORS、访问日志 */
+	/** 做一些全局处理的中间件，比如CORS、访问日志，请求体解析 */
 	useBeforeAll(middleware: Middleware) {
 		this.beforeAll.push(middleware);
 	}
@@ -44,7 +44,7 @@ export default class ServerAPI {
 		this.beforeFilter.push(middleware);
 	}
 
-	/** 拦截和资源优化的中间件，比如压缩、屏蔽、权限 */
+	/** 拦截和资源优化的中间件，比如压缩、屏蔽、全局权限 */
 	useFilter(middleware: Middleware) {
 		this.filter.push(middleware);
 	}
@@ -55,7 +55,7 @@ export default class ServerAPI {
 	}
 
 	/**
-	 * 用于处理之前中间件没处理的请求。
+	 * 用于处理之前中间件没处理的请求，这个中间件通常有自己的路由机制，例如服务端渲染。
 	 * 这个中间件只能设置一次，多次调用说明插件有冲突。
 	 */
 	useFallBack(middleware: Middleware) {

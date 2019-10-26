@@ -5,7 +5,7 @@ import serve from "koa-static";
 import { runServer } from "./create-server";
 import { configureGlobalAxios } from "./axios-helper";
 import getBlogPlugin from "./blog-plugin";
-import ServerAPI from "./ServerAPI";
+import ApplicationBuilder from "./ApplicationBuilder";
 import { createSSRProductionPlugin } from "./vue-ssr-middleware";
 import { CliServerOptions } from "./options";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
@@ -66,7 +66,7 @@ type CommandHandler<T> = (options: T) => void | Promise<any>;
 async function runProd(options: CliServerOptions) {
 	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
 
-	const api = new ServerAPI();
+	const api = new ApplicationBuilder();
 	api.addPlugin(getBlogPlugin(options.blog));
 	api.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
@@ -75,7 +75,7 @@ async function runProd(options: CliServerOptions) {
 		maxAge: 31536000,
 	}));
 
-	await runServer(api.createApp().callback(), options.server);
+	await runServer(api.build().callback(), options.server);
 	logger.info("启动完毕");
 }
 
