@@ -1,7 +1,6 @@
 import cors from "@koa/cors";
 import compress from "koa-compress";
 import conditional from "koa-conditional-get";
-import etag from "koa-etag";
 import ServerAPI, { ClassCliServerPlugin } from "./ServerAPI";
 import { intercept, serviceWorkerToggle } from "./middlewares";
 import { createSitemapMiddleware } from "./sitemap";
@@ -46,7 +45,6 @@ export default class BlogPlugin implements ClassCliServerPlugin {
 			/^\/index\.template|vue-ssr/,
 		]));
 		api.useFilter(compress({ threshold: 1024 }));
-		api.useFilter(etag());  // 图片太大不计算etag
 
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 		api.useResource(feedMiddleware(options.serverAddress));
