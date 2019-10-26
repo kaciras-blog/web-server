@@ -1,5 +1,5 @@
 import sharp, { Metadata, ResizeOptions } from "sharp";
-import { FilterArgumentError } from "./exceptions";
+import { BadImageError, FilterArgumentError } from "./exceptions";
 
 export interface Presets {
 	[key: string]: (metadata: Metadata) => ResizeOptions;
@@ -10,15 +10,18 @@ export interface Presets {
  *
  * @param presets 预设集合
  */
-export function PresetResizeFilter(presets: Presets) {
+export function createPresetResizeFilter(presets: Presets) {
 
-	return async (buffer: Buffer, presetName: string) => {
-		const preset = presets[presetName];
+	return async (buffer: Buffer, name: string) => {
+		const preset = presets[name];
 		if (!preset) {
-			throw new FilterArgumentError(`不存在的预设名：${presetName}`);
+			throw new FilterArgumentError(`不存在的预设名：${name}`);
 		}
 		const image = sharp(buffer);
-		const metadata = await image.metadata();
+		const metadata = await image.metadata()
+			.catch(() => {
+				throw new BadImageError();
+			});
 		return image.resize(null, null, preset(metadata)).toBuffer();
 	};
 }
