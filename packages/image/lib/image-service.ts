@@ -5,9 +5,10 @@ import sharp from "sharp";
 import { brotliCompress, InputType } from "zlib";
 import SVGO from "svgo";
 import { getLogger } from "log4js";
-import { ImageFilter, ImageTags, ImageUnhandlableError, InvalidImageError, runFilters } from "./filter-runner";
+import { ImageFilter, ImageTags, runFilters } from "./filter-runner";
 import codingFilter from "./coding-filter";
 import { ImageStore, LocalFileSlot } from "./image-store";
+import { BadImageError, ImageFilterException } from "./exceptions";
 
 
 const logger = getLogger("Image");
@@ -62,7 +63,7 @@ export class PreGenerateImageService {
 			type = "jpg";
 		}
 		if (INPUT_FORMATS.indexOf(type) < 0) {
-			throw new InvalidImageError("不支持的图片格式" + type);
+			throw new BadImageError(`不支持的图片格式：${type}`);
 		}
 
 		if (type === "bmp") {
@@ -137,7 +138,7 @@ export class PreGenerateImageService {
 				const output = await runFilters(buffer, filters, tags);
 				return await slot.putCache(tags, output);
 			} catch (error) {
-				if (!(error instanceof ImageUnhandlableError)) {
+				if (!(error instanceof ImageFilterException)) {
 					throw error;
 				}
 				logger.warn(`忽略转换：${error.message}，hash=${hash}`);

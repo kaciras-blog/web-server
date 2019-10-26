@@ -1,14 +1,14 @@
 import path from "path";
 import fs from "fs-extra";
-import { InvalidImageError } from "../lib/filter-runner";
 import codingFilter from "../lib/coding-filter";
+import { BadImageError } from "../lib/exceptions";
 
-// 对于非图片数据的输入，应当抛出 InvalidImageError 异常
+// 对于非图片数据的输入，应当抛出 InputDataError 异常
 describe("For non-image data", () => {
 	const buffer = Buffer.from("invalid");
 
 	function testFor(type: string) {
-		return expect(codingFilter(buffer, type)).rejects.toBeInstanceOf(InvalidImageError);
+		return expect(codingFilter(buffer, type)).rejects.toBeInstanceOf(BadImageError);
 	}
 
 	it("should throw jpg", () => testFor("jpg"));
@@ -17,12 +17,12 @@ describe("For non-image data", () => {
 	it("should throw webp", () => testFor("webp"));
 });
 
-// 对于损坏的图片数据，应当抛出 InvalidImageError 异常
+// 对于损坏的图片数据，应当抛出 InputDataError 异常
 describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
 		const buffer = await fs.readFile(path.join(__dirname, "resources", "bad_image." + srcType));
-		await expect(codingFilter(buffer, targetType)).rejects.toBeInstanceOf(InvalidImageError);
+		await expect(codingFilter(buffer, targetType)).rejects.toBeInstanceOf(BadImageError);
 	}
 
 	it("should throws on optimize gif", () => testFor("gif", "gif"));

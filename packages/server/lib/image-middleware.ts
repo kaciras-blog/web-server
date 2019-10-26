@@ -11,14 +11,14 @@
 import path from "path";
 import fs from "fs-extra";
 import { Context, Middleware } from "koa";
+import compose from "koa-compose";
 import { File } from "@koa/multer";
 import Axios from "axios";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import { configureForProxy } from "./axios-helper";
-import { InvalidImageError } from "@kaciras-blog/image/lib/filter-runner";
+import { InputDataError } from "@kaciras-blog/image/lib/exceptions";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
-import compose from "koa-compose";
+import { configureForProxy } from "./axios-helper";
 
 const logger = getLogger("Image");
 
@@ -108,7 +108,7 @@ export function imageMiddleware(options: MiddlewareOptions): Middleware {
 			ctx.status = 200;
 			ctx.set("Location", `${CONTEXT_PATH}/${name}`);
 		} catch (err) {
-			if (!(err instanceof InvalidImageError)) {
+			if (!(err instanceof InputDataError)) {
 				throw err;
 			}
 			ctx.status = 400;

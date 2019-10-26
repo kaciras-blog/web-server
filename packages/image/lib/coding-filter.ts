@@ -4,7 +4,7 @@ import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
-import { ImageUnhandlableError, InvalidImageError } from "./filter-runner";
+import { BadImageError, ImageFilterException } from "./exceptions";
 
 
 const pngquant = Pngquant({ strip: true });
@@ -15,7 +15,7 @@ const WEBP_MIN_COMPRESS_RATE = 0.9;
 
 /** 转换一下异常以便上层处理 */
 function throwInvalidData(error: Error): never {
-	throw new InvalidImageError(error.message);
+	throw new BadImageError(error.message);
 }
 
 /**
@@ -38,11 +38,11 @@ function isGif(buffer: Buffer) {
  * TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败
  *
  * @param buffer 图片数据
- * @throws 如果转换效果不理想则抛出 ImageUnhandlableError
+ * @throws 如果转换效果不理想则抛出 ImageFilterException
  */
 async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
-		throw new ImageUnhandlableError("暂不支持GIF转WEBP");
+		throw new ImageFilterException("暂不支持GIF转WEBP");
 	}
 	const threshold = buffer.length * WEBP_MIN_COMPRESS_RATE;
 
@@ -68,7 +68,7 @@ async function encodeWebp(buffer: Buffer) {
 	if (lossless.info.size < threshold) {
 		return lossless.data;
 	}
-	throw new ImageUnhandlableError("Webp格式无法优化该图片的大小");
+	throw new ImageFilterException("Webp格式无法优化该图片的大小");
 }
 
 /**
@@ -82,7 +82,7 @@ export default async function codingFilter(buffer: Buffer, targetType: string) {
 	switch (targetType) {
 		case "gif":
 			if (!isGif(buffer)) {
-				throw new InvalidImageError("无效的图片数据");
+				throw new BadImageError("不支持非GIF图转GIF");
 			}
 			return gifsicle(buffer).catch(throwInvalidData);
 		case "jpg":
@@ -97,7 +97,7 @@ export default async function codingFilter(buffer: Buffer, targetType: string) {
 			// pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
 			// 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用 optipng。
 			if (!isPng(buffer)) {
-				throw new InvalidImageError("无效的图片数据");
+				throw new BadImageError("请先转成PNG再压缩");
 			}
 			return pngquant(buffer).catch(throwInvalidData);
 		case "webp":
