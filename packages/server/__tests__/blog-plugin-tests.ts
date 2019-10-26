@@ -1,5 +1,5 @@
 import Koa from "koa";
-import { intercept } from "../lib/middlewares";
+import { intercept } from "../lib/blog-plugin";
 import supertest from "supertest";
 
 
@@ -10,7 +10,7 @@ describe("intercept middleware", () => {
 		new RegExp("^/index\\.template|vue-ssr"),
 	]));
 	app.use((ctx) => ctx.status = 200);
-	const server = app.listen();
+	const server = app.callback();
 
 	it("should accept", async () => {
 		await supertest(server).get("/vendors.js").expect(200);
@@ -31,7 +31,5 @@ describe("intercept middleware", () => {
 			.get("/foo.js.map?query=0#hash")
 			.expect(404, done);
 	});
-
-	afterAll((done) => server.close(done));
 });
 
