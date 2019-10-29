@@ -1,18 +1,21 @@
-import { Middleware } from "koa";
+import Axios from "axios";
+import { Context, Middleware } from "koa";
 import { getLogger } from "log4js";
 import conditional from "koa-conditional-get";
 import cors from "@koa/cors";
 import compress from "koa-compress";
 import multer from "@koa/multer";
+import bodyParser from "koa-bodyparser";
+import compose from "koa-compose";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import { localFileStore } from "@kaciras-blog/image/lib/image-store";
-import bodyParser from "koa-bodyparser";
 import installCSPPlugin from "./csp-plugin";
-import { imageMiddleware } from "./image-middleware";
+import { downloadImage, route, uploadImage } from "./image-middleware";
 import { AppOptions } from "./options";
 import { createSitemapMiddleware } from "./sitemap";
 import { feedMiddleware } from "./feed";
 import ApplicationBuilder, { FunctionCliServerPlugin } from "./ApplicationBuilder";
+import { configureForProxy } from "./axios-helper";
 
 
 const logger = getLogger();
@@ -53,6 +56,23 @@ export function intercept(patterns: RegExp | RegExp[]): Middleware {
 	};
 }
 
+function createImageMiddleware(options: AppOptions) {
+	const service = new PreGenerateImageService(localFileStore(options.imageRoot));
+	const url = options.serverAddress + "/session/user";
+
+	const downloadFn: Middleware = (ctx) => downloadImage(service, ctx);
+	let uploadFn: Middleware = (ctx) => uploadImage(service, ctx);
+
+	// 限制上传用户，仅博主能上传。TODO: 支持评论插入图片
+	const checkPermission: Middleware = async (ctx, next) => {
+		const response = await Axios.get(url, configureForProxy(ctx));
+		response.data.id === 2 ? await next() : (ctx.status = 403);
+	};
+	uploadFn = compose<Context>([checkPermission, uploadFn]);
+
+	return route("/image", downloadFn, uploadFn);
+}
+
 // 【注意】没有使用 Etag，因为所有资源都可以用时间缓存，而且 koa-etag 内部使用 sha1 计算 Etag，
 // 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
 export default function getBlogPlugin(options: AppOptions): FunctionCliServerPlugin {
@@ -73,10 +93,7 @@ export default function getBlogPlugin(options: AppOptions): FunctionCliServerPlu
 		]));
 		api.useFilter(compress({ threshold: 1024 }));
 
-		api.useResource(imageMiddleware({
-			service: new PreGenerateImageService(localFileStore(options.imageRoot)),
-			apiServer: options.serverAddress,
-		}));
+		api.useResource(createImageMiddleware(options));
 		api.useResource(serviceWorkerToggle(true));
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 		api.useResource(feedMiddleware(options.serverAddress));
