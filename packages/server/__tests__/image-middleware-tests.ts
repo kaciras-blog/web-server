@@ -1,8 +1,9 @@
-import { downloadImage, route, uploadImage } from "../lib/image-middleware";
 import fs from "fs-extra";
 import Koa from "koa";
-import supertest from "supertest";
 import multer from "@koa/multer";
+import supertest from "supertest";
+import { FilterArgumentError } from "@kaciras-blog/image/lib/exceptions";
+import { downloadImage, route, uploadImage } from "../lib/image-middleware";
 
 jest.mock("fs");
 
@@ -39,6 +40,28 @@ describe("downloadImage", () => {
 			.expect(404);
 		expect(mockService.get.mock.calls).toHaveLength(1);
 	});
+
+	it("should resolve Accept-* headers", async () => {
+		await supertest(callback)
+			.get("/notfound.jpg")
+			.set("Accept", "image/webp,*/*")
+			.set("Accept-Encoding", "gzip, deflate, br")
+			.expect(404);
+		const args = mockService.get.mock.calls[0];
+		expect(args[2]).toBe(true);
+		expect(args[3]).toBe(true);
+	});
+
+	it("should set Content-Encoding", async () => {
+		mockService.get.mockResolvedValueOnce({ path: FILE_PATH, encoding: "br" });
+		fs.writeFileSync(FILE_PATH, IMAGE_DATA);
+
+		await supertest(callback)
+			.get(FILE_PATH)
+			.expect(200)
+			.expect("Content-Encoding", "br")
+			.expect(Buffer.from(IMAGE_DATA));
+	});
 });
 
 describe("uploadImage", () => {
@@ -59,6 +82,30 @@ describe("uploadImage", () => {
 			.expect(200)
 			.expect("Location", "/image/saved_file_name");
 	});
+
+	it("should fail without file entity", async () => {
+		await supertest(callback)
+			.post("/image")
+			.expect(400);
+		expect(mockService.save.mock.calls).toHaveLength(0);
+	});
+
+	it("should fail with unsupported file type", async () => {
+		await supertest(callback)
+			.post("/image")
+			.attach("file", IMAGE_DATA, { filename: "test.gif", contentType: "text/json" })
+			.expect(400);
+		expect(mockService.save.mock.calls).toHaveLength(0);
+	});
+
+	it("should fail on InputDataError", async () => {
+		mockService.save.mockRejectedValueOnce(new FilterArgumentError());
+
+		await supertest(callback)
+			.post("/image")
+			.attach("file", IMAGE_DATA, { filename: "test.gif", contentType: "image/gif" })
+			.expect(400);
+	});
 });
 
 describe("route", () => {
@@ -77,6 +124,13 @@ describe("route", () => {
 		expect(uploadFn.mock.calls).toHaveLength(0);
 	});
 
+	it("should fail with invalid path", async () => {
+		await supertest(callback)
+			.get("/image/../secret_file.jpg")
+			.expect(404);
+		expect(uploadFn.mock.calls).toHaveLength(0);
+	});
+
 	it("should fail without filename", async () => {
 		await supertest(callback)
 			.get("/image")
@@ -84,7 +138,20 @@ describe("route", () => {
 		await supertest(callback)
 			.get("/image/")
 			.expect(404);
-		expect(downloadFn.mock.calls.length).toBe(0);
+		expect(downloadFn.mock.calls).toHaveLength(0);
+	});
+
+	it("should set params", async () => {
+		await supertest(callback).get("/image/photo.png");
+		const ctx = downloadFn.mock.calls[0][0];
+		expect(ctx.params.name).toBe("photo.png");
+	});
+
+	it("should fail on post to sub-path", async () => {
+		await supertest(callback)
+			.post("/image/abc")
+			.expect(404);
+		expect(uploadFn.mock.calls).toHaveLength(0);
 	});
 
 	it("should delegate not concerned to next", () => {
