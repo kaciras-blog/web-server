@@ -1,3 +1,4 @@
+// 这个文件本来是用于处理实时生成的，但目前只有预生成，所以没啥用。
 // TODO: 多个输出可以缓存中间结果
 
 export interface ImageTags {

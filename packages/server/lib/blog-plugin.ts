@@ -36,9 +36,9 @@ export function serviceWorkerToggle(register: boolean): Middleware {
 }
 
 /**
- * 拦截文件，path匹配到任一模式串的请求将返回404。
+ * 拦截某些资源，ctx.path 匹配到任一模式串的请求将被拦截，并返回404。
  *
- * @param patterns 匹配被拦截文件路径的模式串
+ * @param patterns 模式串
  * @return Koa 的中间件函数
  */
 export function intercept(patterns: RegExp | RegExp[]): Middleware {
@@ -56,17 +56,27 @@ export function intercept(patterns: RegExp | RegExp[]): Middleware {
 	};
 }
 
+/**
+ * 用 image-middleware 里的函数组合成图片处理中间件。
+ * TODO: 支持评论插入图片
+ *
+ * @param options 选项
+ */
 function createImageMiddleware(options: AppOptions) {
 	const service = new PreGenerateImageService(localFileStore(options.imageRoot));
 	const url = options.serverAddress + "/session/user";
 
-	const downloadFn: Middleware = (ctx) => downloadImage(service, ctx);
+	const downloadFn = (ctx: any) => downloadImage(service, ctx);
 	let uploadFn: Middleware = (ctx) => uploadImage(service, ctx);
 
-	// 限制上传用户，仅博主能上传。TODO: 支持评论插入图片
+	// 限制上传用户，仅博主能上传
 	const checkPermission: Middleware = async (ctx, next) => {
-		const response = await Axios.get(url, configureForProxy(ctx));
-		response.data.id === 2 ? await next() : (ctx.status = 403);
+		const { data } = await Axios.get(url, configureForProxy(ctx));
+		if (data.id === 2) {
+			return next();
+		}
+		ctx.status = 403;
+		ctx.body = "你没有权限上传图片";
 	};
 	uploadFn = compose<Context>([checkPermission, uploadFn]);
 

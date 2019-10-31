@@ -19,9 +19,10 @@ function throwInvalidData(error: Error): never {
 }
 
 /**
- * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这三个字。
+ * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这仨字。
  *
- * 【PS】有个 is-gif 包提供同样的功能，但它使用 file-type 很多余。反观 is-png 倒是直接读取 MagicNumber，
+ * 【实现选择】
+ * 有个 is-gif 包提供同样的功能，但它使用 file-type 很多余。反观 is-png 倒是直接读取 MagicNumber，
  * 所以PNG直接用 is-png 包而GIF自己写个函数判断。
  *
  * @param buffer 图片数据
@@ -32,8 +33,8 @@ function isGif(buffer: Buffer) {
 }
 
 /**
- * 尝试将图片转换为更优化的 WebP 格式。注意 WebP 并不一定比原图的编码更好，它有更高的解码消耗，
- * 所以只有WebP能明显降低图片大小时才有意义。
+ * 尝试将图片转换为更优化的 WebP 格式。
+ * WebP 并不一定比原图的编码更好，它有更高的解码消耗，所以只有 WebP 能明显降低图片大小时才有意义。
  *
  * TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败
  *
@@ -72,7 +73,7 @@ async function encodeWebp(buffer: Buffer) {
 }
 
 /**
- * 压缩和转码的过滤器，将输入的图片转换为指定的格式，并会应用有损优化来降低图片大小。
+ * 压缩和转码的过滤器，将输入的图片转换为指定的格式，并会应用合适的有损压缩来降低图片大小。
  *
  * @param buffer 图片数据
  * @param targetType 目标格式
@@ -94,8 +95,8 @@ export default async function codingFilter(buffer: Buffer, targetType: string) {
 			};
 			return (await execa(mozjpeg, options).catch(throwInvalidData)).stdout;
 		case "png":
-			// pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
-			// 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用 optipng。
+			// 1) pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
+			// 2) 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用。
 			if (!isPng(buffer)) {
 				throw new BadImageError("请先转成PNG再压缩");
 			}

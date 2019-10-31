@@ -12,7 +12,7 @@
 export function once<T, R>(func: (...args: any[]) => R) {
 	let free = true;
 	let returnValue: R;
-	return function wrapped(this: T, ...args: any[]) {
+	return function onceWrapper(this: T, ...args: any[]) {
 		if (free) {
 			returnValue = func.apply(this, args);
 			free = false;

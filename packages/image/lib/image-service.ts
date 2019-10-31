@@ -27,6 +27,9 @@ const SVG_COMPRESS_THRESHOLD = 1024;
  */
 const INPUT_FORMATS = ["jpg", "png", "gif", "bmp", "svg"];
 
+/**
+ * 附加的文件属性，因为SVG可以用Brotli压缩，而HTTP响应需要一些额外的头部来处理。
+ */
 interface WebImageAttribute {
 	encoding?: string;
 }
@@ -52,11 +55,12 @@ export class PreGenerateImageService {
 	}
 
 	/**
-	 * 保存图片，并生成缓存。
+	 * 保存图片并生成缓存，返回保存的文件名。文件名由 HASH 函数生成，无法保留原名。
+	 * 如果已经保存过了，就跳过生成缓存步骤直接返回。
 	 *
 	 * @param buffer 图片数据
 	 * @param type 图片类型
-	 * @return 用于查询该图片的文件名
+	 * @return 返回保存的文件名
 	 */
 	async save(buffer: Buffer, type: string) {
 		if (type === "jpeg") {
@@ -163,6 +167,7 @@ export class PreGenerateImageService {
 			tasks.push(buildCache({ type: "webp" }));
 		}
 
+		// 全部缓存生成完才能返回，不然会漏掉异常，但这也增加了请求处理的时间
 		return Promise.all(tasks);
 	}
 }

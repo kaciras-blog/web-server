@@ -8,7 +8,7 @@
  */
 import pathlib from "path";
 import fs from "fs-extra";
-import { Context, Middleware } from "koa";
+import { Context, ExtendableContext, Middleware } from "koa";
 import { File } from "@koa/multer";
 import { getLogger } from "log4js";
 import mime from "mime-types";
@@ -18,19 +18,26 @@ import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 const logger = getLogger("Image");
 
 /**
- * 根据请求中携带的Accept信息，自动下载最佳的图片。
- * 为了跟 @koa/router 一致，文件名通过 ctx.params.name 来传递。
+ * 下载图片时的 Koa 上下文，文件名通过 ctx.params.name 来传递。
+ * 之所以这么设计是为了跟 @koa/router 一致。
+ */
+export interface DownloadContext extends ExtendableContext {
+	params: { name: string; };
+}
+
+/**
+ * 处理下载图片的请求，自动下载最佳的图片。
  *
- * @param service
+ * @param service 图片服务
  * @param ctx 请求上下文
  */
-export async function downloadImage(service: PreGenerateImageService, ctx: Context) {
-	const name = ctx.params.name as string;
+export async function downloadImage(service: PreGenerateImageService, ctx: DownloadContext) {
+	const name = ctx.params.name;
 	if (!name) {
 		return ctx.status = 404;
 	}
-	const [hash, ext] = name.split(".", 2);
 
+	const [hash, ext] = name.split(".", 2);
 	const acceptWebp = Boolean(ctx.accept.type("image/webp"));
 	const acceptBrotli = Boolean(ctx.accept.encoding("br"));
 
@@ -57,12 +64,11 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Conte
 }
 
 /**
- * 接收上传的图片，文件名为图片内容的SHA3值，扩展名取决于内容的 MIME-TYPE。
- * 如果图片已存在则直接返回，否则将保存文件，保存的文件的URL由Location响应头返回。
+ * 接收并保持上传的图片，保存的文件的路径由 Location 头返回，对不支持的图片返回400。
  *
- * TODO: 因为要返回完整的路径，所以无法与CONTEXT_PATH分离
+ * Location 头的格式为`${ctx.path}/${文件名}`，如果搭配 {@code downloadImage} 就需要保持 ContextPath 一致。
  *
- * @param service
+ * @param service 图片服务
  * @param ctx 请求上下文
  */
 export async function uploadImage(service: PreGenerateImageService, ctx: Context) {
@@ -79,7 +85,7 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
 
 	try {
 		const name = await service.save(file.buffer, type);
-		ctx.status = 200;
+		ctx.status = 201;
 		ctx.set("Location", `${ctx.path}/${name}`);
 	} catch (err) {
 		if (!(err instanceof InputDataError)) {
@@ -94,9 +100,18 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
 }
 
 /**
- * 根据指定的选项创建图片存储中间件。
+ * 该函数的作用类似 @koa/router，组合上传和下载函数，返回新的中间件。
  *
- * @return Koa的中间件函数
+ * 【新的中间件的功能】
+ * 1）GET 方法映射到 downloadFn，并自动设置 ctx.params.name。
+ * 2）POST 方法映射到 uploadFn。
+ * 3）其他方法返回405.
+ * 4）能够指定 contextPath，非此路径下的请求将原样传递给下一个。
+ *
+ * @param contextPath 上下文路径
+ * @param downloadFn 下载请求处理函数
+ * @param uploadFn 上传请求处理函数
+ * @return 组合后的 Koa 的中间件
  */
 export function route(contextPath: string, downloadFn: Middleware, uploadFn: Middleware): Middleware {
 	const regex = new RegExp(contextPath + "/(\\w+\\.\\w+)$");
