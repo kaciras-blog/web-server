@@ -3,7 +3,7 @@ import Koa from "koa";
 import multer from "@koa/multer";
 import supertest from "supertest";
 import { FilterArgumentError } from "@kaciras-blog/image/lib/exceptions";
-import { downloadImage, route, uploadImage } from "../lib/image-middleware";
+import { DownloadContext, downloadImage, route, uploadImage } from "../lib/image-middleware";
 
 jest.mock("fs");
 
@@ -21,7 +21,7 @@ describe("downloadImage", () => {
 		ctx.params = { name: ctx.path.substring(1) };
 		return next();
 	});
-	app.use((ctx) => downloadImage(mockService as any, ctx));
+	app.use((ctx: DownloadContext) => downloadImage(mockService as any, ctx));
 	const callback = app.callback();
 
 	it("should response image", async () => {
