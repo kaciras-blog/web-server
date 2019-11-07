@@ -5,6 +5,19 @@ import { createSitemap, EnumChangefreq, Sitemap } from "sitemap";
 
 const logger = log4js.getLogger();
 
+/**
+ * 需要展示在站点地图里的资源，每个资源可包含多个项目。
+ */
+interface SitemapResource {
+
+	/**
+	 * 将该资源里的项目加入到站点地图里。
+	 *
+	 * @param sitemap 站点地图
+	 */
+	addItems(sitemap: Sitemap): Promise<void>;
+}
+
 /** 文章列表响应的一部分字段 */
 interface ArticlePreview {
 	id: number;
@@ -12,7 +25,7 @@ interface ArticlePreview {
 	update: number;
 }
 
-class ArticleCollection {
+class ArticleCollection implements SitemapResource {
 
 	private readonly url: string;
 
@@ -45,9 +58,16 @@ class ArticleCollection {
 	}
 }
 
-async function buildSitemap(resources: ArticleCollection[]) {
+/**
+ * 由需要展示在站点地图里的资源集合构建站点地图。
+ *
+ * @param resources 资源集合
+ * @param isForBaidu 是否符合百度格式
+ */
+async function buildSitemap(resources: SitemapResource[], isForBaidu: boolean) {
 	const sitemap = createSitemap({
 		hostname: "https://blog.kaciras.net",
+		lastmodDateOnly: isForBaidu,
 	});
 	for (const res of resources) {
 		await res.addItems(sitemap);
@@ -56,30 +76,25 @@ async function buildSitemap(resources: ArticleCollection[]) {
 }
 
 export function createSitemapMiddleware(serverAddress: string): Middleware {
-	let lastBuilt: string;
+	const resources = [
+		new ArticleCollection(serverAddress),
+	];
 
-	const resources: ArticleCollection[] = [];
-	resources.push(new ArticleCollection(serverAddress));
-
-	function getSitemap() {
-		return buildSitemap(resources).then((sitemap) => lastBuilt = sitemap)
-			.catch((err) => logger.error("创建站点地图失败：", err.message));
-	}
-
-	// noinspection JSIgnoredPromiseFromCall 启动时先创建一个
-	getSitemap();
-
-	return async function handle(ctx, next) {
+	return async (ctx, next) => {
 		if (ctx.path !== "/sitemap.xml") {
 			return next();
 		}
-		logger.info("客户端请求了SiteMap");
 
-		if (lastBuilt == null) {
-			ctx.status = 404;
-		} else {
+		// https://ziyuan.baidu.com/wiki/640 百度 SiteMap 的日期格式与通用的有些不同
+		const isForBaidu = ctx.query.type === "baidu"
+			|| ctx.get("user-agent").indexOf("Baidu") >= 0;
+
+		try {
 			ctx.type = "application/xml; charset=utf-8";
-			ctx.body = await getSitemap();
+			ctx.body = await buildSitemap(resources, isForBaidu);
+		} catch (e) {
+			ctx.status = 503;
+			logger.error("创建站点地图失败：", e.message, e);
 		}
 	};
 }
