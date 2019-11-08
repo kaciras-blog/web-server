@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Middleware } from "koa";
 import log4js from "log4js";
-import { createSitemap, EnumChangefreq, Sitemap } from "sitemap";
+import { EnumChangefreq, Sitemap } from "sitemap";
 
 const logger = log4js.getLogger();
 
@@ -65,7 +65,7 @@ class ArticleCollection implements SitemapResource {
  * @param isForBaidu 是否符合百度格式
  */
 async function buildSitemap(resources: SitemapResource[], isForBaidu: boolean) {
-	const sitemap = createSitemap({
+	const sitemap = new Sitemap({
 		hostname: "https://blog.kaciras.net",
 		lastmodDateOnly: isForBaidu,
 	});
@@ -85,7 +85,8 @@ export function createSitemapMiddleware(serverAddress: string): Middleware {
 			return next();
 		}
 
-		// https://ziyuan.baidu.com/wiki/640 百度 SiteMap 的日期格式与通用的有些不同
+		// https://ziyuan.baidu.com/wiki/640 百度 SiteMap 的日期格式与通用的有些不同。
+		// 【注意】ctx.get() 对不存在的头返回空字符串。
 		const isForBaidu = ctx.query.type === "baidu"
 			|| ctx.get("user-agent").indexOf("Baidu") >= 0;
 
