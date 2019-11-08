@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "esnext",
+		"target": "es2020",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"strict": true,
@@ -8,10 +8,9 @@
 		"sourceMap": true,
 		"newLine": "LF",
 
-//		输出到其他目录会导致另外的package引用不到
+//		输出到其他目录会导致另外的包引用不到
 //		"outDir": "dist",
 
-		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"experimentalDecorators": true
 	}

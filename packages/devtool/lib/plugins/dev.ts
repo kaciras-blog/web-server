@@ -20,7 +20,7 @@ export async function createKoaWebpack(config: Configuration) {
 		throw new Error("You should install `webpack-hot-client`, try `npm i -D webpack-hot-client`");
 	}
 
-	if (!config.output || !config.output.publicPath) {
+	if (!config.output?.publicPath) {
 		throw new Error("Webpack 配置中的 output.publicPath 必须设置");
 	}
 
@@ -51,7 +51,7 @@ export async function createHotMiddleware(config: Configuration): Promise<Middle
 	if (!config.entry) {
 		throw new Error("No entry specified.");
 	}
-	if (!config.output || !config.output.publicPath) {
+	if (!config.output?.publicPath) {
 		throw new Error("Webpack 配置中的 output.publicPath 必须设置");
 	}
 
