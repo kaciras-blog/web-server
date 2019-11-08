@@ -5,18 +5,14 @@ module.exports = {
 	coverageDirectory: "coverage", // The directory where Jest should output its coverage files
 
 	moduleFileExtensions: ["js", "json", "jsx", "ts", "mjs"],
+	preset: "ts-jest",
 	testEnvironment: "node",
+
 	testMatch: [
-		"**/__tests__/**/*.+(ts|tsx)",
+		"**/__tests__/**/*-tests.+(ts|tsx)",
 		"**/?(*.)+(spec|test).+(ts|tsx)",
 	],
 	transform: {
 		"^.+\\.(ts|tsx)$": "ts-jest",
 	},
-	globals: {
-		"ts-jest": {
-			"tsConfig": path.join(__dirname, "tsconfig.json"),
-		},
-	},
-	preset: "ts-jest",
 };

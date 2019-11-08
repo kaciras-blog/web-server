@@ -6,7 +6,6 @@ import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import ApplicationBuilder from "./ApplicationBuilder";
 
-
 const logger = log4js.getLogger("SSR");
 
 /** 传递给服务端入口的上下文信息 */
@@ -23,7 +22,7 @@ export interface RenderContext {
 	 */
 	url: URL;
 
-	/** 原始请求，仅用于传递用户身份信息。TODO: 下一版考虑移除，用别的方法传递 */
+	/** 原始请求，仅用于传递用户身份信息。 */
 	request?: Context;
 }
 
@@ -43,20 +42,18 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 
 	try {
 		ctx.body = await render.renderToString(renderContext);
-	} catch (err) {
-		switch (err.code) {
+	} catch (e) {
+		switch (e.code) {
 			case 301:
 			case 302:
-				ctx.status = err.code;
-				ctx.redirect(err.location);
-				break;
-			default:
-				logger.error("服务端渲染出错", err);
-				const errorContext = Object.assign({}, DEFAULT_CONTEXT,
-					{ url: new URL("/error/500", ctx.href) });
-				ctx.status = 503;
-				ctx.body = await render.renderToString(errorContext);
+				ctx.status = e.code;
+				ctx.redirect(e.location);
+				return;
 		}
+		logger.error("服务端渲染出错", e);
+		const errorContext = { ...DEFAULT_CONTEXT, url: new URL("/error/500", ctx.href) };
+		ctx.status = 503;
+		ctx.body = await render.renderToString(errorContext);
 	}
 }
 

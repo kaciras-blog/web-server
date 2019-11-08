@@ -4,7 +4,6 @@ import { NextHandleFunction } from "connect";
 import koaWebpack from "koa-webpack";
 import WebpackHotMiddlewareType from "webpack-hot-middleware";
 
-
 /**
  * koaWebpack 使用 webpack-hot-client，与 webpack-hot-middleware 不同的是它使用 WebSocket 来发送
  * 更新通知。

@@ -85,7 +85,7 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
 
 	try {
 		const name = await service.save(file.buffer, type);
-		ctx.status = 201;
+		ctx.status = 200;
 		ctx.set("Location", `${ctx.path}/${name}`);
 	} catch (err) {
 		if (!(err instanceof InputDataError)) {
