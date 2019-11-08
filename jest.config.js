@@ -1,5 +1,3 @@
-const path = require("path");
-
 module.exports = {
 	clearMocks: true, // Automatically clear mock calls and instances between every test
 	coverageDirectory: "coverage", // The directory where Jest should output its coverage files
@@ -9,10 +7,7 @@ module.exports = {
 	testEnvironment: "node",
 
 	testMatch: [
-		"**/__tests__/**/*-tests.+(ts|tsx)",
 		"**/?(*.)+(spec|test).+(ts|tsx)",
+		"**/__tests__/**/*-tests.+(ts|tsx)",
 	],
-	transform: {
-		"^.+\\.(ts|tsx)$": "ts-jest",
-	},
 };
