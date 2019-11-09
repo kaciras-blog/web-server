@@ -2,13 +2,13 @@ import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
 import serve from "koa-static";
+import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
 import { runServer } from "./create-server";
 import { configureGlobalAxios } from "./axios-helper";
 import getBlogPlugin from "./blog-plugin";
 import ApplicationBuilder from "./ApplicationBuilder";
-import { createSSRProductionPlugin } from "./vue-ssr-middleware";
+import { createSSRProductionPlugin } from "./ssr-middleware";
 import { CliServerOptions } from "./options";
-import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
 
 const logger = log4js.getLogger();
 

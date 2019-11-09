@@ -8,7 +8,7 @@ import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import { CliDevelopmentOptions } from "../options";
 import ServerConfiguration from "../webpack/server.config";
 import PromiseSource from "@kaciras-blog/server/lib/PromiseSource";
-import { renderPage } from "@kaciras-blog/server/lib/vue-ssr-middleware";
+import { renderPage } from "@kaciras-blog/server/lib/ssr-middleware";
 
 const logger = log4js.getLogger("dev");
 

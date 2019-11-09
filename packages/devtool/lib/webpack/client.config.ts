@@ -10,7 +10,7 @@ import CompressionPlugin from "compression-webpack-plugin";
 import baseWebpackConfig, { resolve } from "./base.config";
 import generateCssLoaders from "./css";
 import { CliDevelopmentOptions } from "../options";
-import VueSSRTemplatePlugin from "./VueSSRTemplatePlugin";
+import SSRTemplatePlugin from "./SSRTemplatePlugin";
 import ImageOptimizePlugin from "./ImageOptimizePlugin";
 
 // 这个没有类型定义
@@ -113,7 +113,7 @@ export default function (options: CliDevelopmentOptions) {
 		filename: templateFile,
 		minify: htmlMinifyOptions,
 	}));
-	plugins.push(new VueSSRTemplatePlugin(templateFile, "<div id=app></div>"));
+	plugins.push(new SSRTemplatePlugin(templateFile, "<div id=app></div>"));
 
 	if (options.webpack.mode === "production") {
 		// 必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
