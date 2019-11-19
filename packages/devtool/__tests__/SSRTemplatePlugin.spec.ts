@@ -27,10 +27,10 @@ function runWebpack(config: Configuration) {
 
 it("should inject outlet and {{{meta}}}", async () => {
 	const fs = await runWebpack({
-		entry: path.join(__dirname, "resources/entry.js"),
+		entry: path.join(__dirname, "fixtures/entry.js"),
 		plugins: [
 			new HtmlWebpackPlugin({
-				template: path.join(__dirname, "resources/template.html"),
+				template: path.join(__dirname, "fixtures/template.html"),
 				filename: "/index.html",
 			}),
 			new SSRTemplatePlugin("/index.html", '<div id="app"></div>'),
@@ -43,7 +43,7 @@ it("should inject outlet and {{{meta}}}", async () => {
 
 it("should throw error on html-webpack-plugin found", () => {
 	const task = runWebpack({
-		entry: path.join(__dirname, "resources/entry.js"),
+		entry: path.join(__dirname, "fixtures/entry.js"),
 		plugins: [
 			new SSRTemplatePlugin("/index.html", '<div id="app"></div>'),
 		],
@@ -53,10 +53,10 @@ it("should throw error on html-webpack-plugin found", () => {
 
 it("should throw error on no template matched", () => {
 	const task = runWebpack({
-		entry: path.join(__dirname, "resources/entry.js"),
+		entry: path.join(__dirname, "fixtures/entry.js"),
 		plugins: [
 			new HtmlWebpackPlugin({
-				template: path.join(__dirname, "resources/template.html"),
+				template: path.join(__dirname, "fixtures/template.html"),
 				filename: "/non-match.html",
 			}),
 			new SSRTemplatePlugin("/index.html", '<div id="app"></div>'),

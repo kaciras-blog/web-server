@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs-extra";
 
 export function resolveResource(name: string) {
-	return path.join(__dirname, "resources", name);
+	return path.join(__dirname, "fixtures", name);
 }
 
 export function readResourceText(name: string) {

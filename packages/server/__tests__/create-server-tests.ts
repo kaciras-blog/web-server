@@ -9,7 +9,7 @@ const HTTP_URL = "http://localhost/";
 const HTTPS_URL = "https://localhost/";
 
 function resolveResource(name: string) {
-	return path.join(__dirname, "resources", name);
+	return path.join(__dirname, "fixtures", name);
 }
 
 const OPTIONS: ServerOptions = {

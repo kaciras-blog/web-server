@@ -3,7 +3,7 @@ import path from "path";
 import PresetCropFilter from "../lib/crop-filter";
 import { BadImageError, FilterArgumentError } from "../lib/exceptions";
 
-const buffer = fs.readFileSync(path.join(__dirname, "resources", "tile_16x16.png"));
+const buffer = fs.readFileSync(path.join(__dirname, "fixtures", "tile_16x16.png"));
 
 const transparent8x8 = Buffer.from(
 	"iVBORw0KGgoAAAANSUhEUgAAAAgAAAA" +

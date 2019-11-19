@@ -52,7 +52,7 @@ describe("certificate verification", () => {
 	let server: Server;
 
 	function loadResource(name: string) {
-		return fs.readFileSync(path.join(__dirname, "resources", name));
+		return fs.readFileSync(path.join(__dirname, "fixtures", name));
 	}
 
 	beforeAll((done) => {

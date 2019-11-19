@@ -33,7 +33,6 @@ function setupBabel(config: any, options: CliDevelopmentOptions) {
 		loaders.unshift({ loader: "thread-loader" });
 	}
 
-	// 标准化，处理 module 没有定义的情况
 	if (!config.module) {
 		config.module = { rules: [] };
 	}
