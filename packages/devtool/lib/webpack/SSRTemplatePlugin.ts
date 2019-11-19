@@ -10,6 +10,8 @@ export default class SSRTemplatePlugin implements Plugin {
 	private readonly filename: string;
 	private readonly el: string;
 
+	private triggered = false;
+
 	/**
 	 * 创建该插件的实例
 	 *
@@ -22,6 +24,11 @@ export default class SSRTemplatePlugin implements Plugin {
 	}
 
 	apply(compiler: Compiler): void {
+		compiler.hooks.afterEmit.tap(SSRTemplatePlugin.name, () => {
+			if (!this.triggered) {
+				throw new Error("SSRTemplatePlugin：未找到指定的HTML模板，filename=" + this.filename);
+			}
+		});
 		compiler.hooks.compilation.tap(SSRTemplatePlugin.name, (compilation) => {
 			const hook = (compilation.hooks as Hooks).htmlWebpackPluginAfterHtmlProcessing;
 			if (!hook) {
@@ -34,6 +41,8 @@ export default class SSRTemplatePlugin implements Plugin {
 	afterHtmlProcessing(data: any) {
 		if (data.outputName === this.filename) {
 			let { html } = data;
+			this.triggered = true;
+
 			const headEnd = html.indexOf("</head>");
 			html = html.substring(0, headEnd) + "{{{meta}}}" + html.substring(headEnd);
 			data.html = html.replace(this.el, "<!--vue-ssr-outlet-->");
