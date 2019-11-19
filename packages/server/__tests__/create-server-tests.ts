@@ -1,21 +1,16 @@
 import http from "http";
-import path from "path";
 import tls from "tls";
 import { createSNICallback, runServer } from "../lib/create-server";
 import { ServerOptions } from "../lib/options";
-
+import { resolveFixture } from "./test-util";
 
 const HTTP_URL = "http://localhost/";
 const HTTPS_URL = "https://localhost/";
 
-function resolveResource(name: string) {
-	return path.join(__dirname, "fixtures", name);
-}
-
 const OPTIONS: ServerOptions = {
 	https: {
-		certFile: resolveResource("localhost.pem"),
-		keyFile: resolveResource("localhost.pvk"),
+		certFile: resolveFixture("localhost.pem"),
+		keyFile: resolveFixture("localhost.pvk"),
 	},
 	http: { redirect: true },
 };
@@ -45,12 +40,12 @@ describe("SNI callback", () => {
 	beforeAll((done) => {
 		const sniCallback = createSNICallback([{
 			hostname: "localhost",
-			cert: resolveResource("localhost.pem"),
-			key: resolveResource("localhost.pvk"),
+			cert: resolveFixture("localhost.pem"),
+			key: resolveFixture("localhost.pvk"),
 		}, {
 			hostname: "anotherhost",
-			cert: resolveResource("anotherhost.pem"),
-			key: resolveResource("anotherhost.pvk"),
+			cert: resolveFixture("anotherhost.pem"),
+			key: resolveFixture("anotherhost.pvk"),
 		}]);
 
 		server = tls.createServer({

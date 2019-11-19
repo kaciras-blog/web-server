@@ -1,6 +1,9 @@
-import Axios, { AxiosRequestConfig } from "axios";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { AddressInfo, Server } from "net";
+import Axios, { AxiosRequestConfig } from "axios";
+import Koa from "koa";
+import supertest from "supertest";
+import { readFixtureText } from "./test-util";
 import {
 	adaptAxiosHttp2,
 	CachedFetcher,
@@ -8,10 +11,6 @@ import {
 	CSRF_HEADER_NAME,
 	CSRF_PARAMETER_NAME,
 } from "../lib/axios-helper";
-import fs from "fs-extra";
-import path from "path";
-import Koa from "koa";
-import supertest from "supertest";
 
 jest.useFakeTimers();
 
@@ -51,14 +50,10 @@ describe("certificate verification", () => {
 	let url: string;
 	let server: Server;
 
-	function loadResource(name: string) {
-		return fs.readFileSync(path.join(__dirname, "fixtures", name));
-	}
-
 	beforeAll((done) => {
 		server = http2.createSecureServer({
-			cert: loadResource("localhost.pem"),
-			key: loadResource("localhost.pvk"),
+			cert: readFixtureText("localhost.pem"),
+			key: readFixtureText("localhost.pvk"),
 		});
 		server.listen(0, () => {
 			done();
@@ -79,7 +74,7 @@ describe("certificate verification", () => {
 
 	it("should success with trust", async () => {
 		const axios = Axios.create();
-		adaptAxiosHttp2(axios, true, { ca: loadResource("localhost.pem") });
+		adaptAxiosHttp2(axios, true, { ca: readFixtureText("localhost.pem") });
 
 		const res = await axios.get(url);
 		expect(res.data).toBe("Hello");

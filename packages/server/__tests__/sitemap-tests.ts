@@ -2,18 +2,13 @@ import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { createSitemapMiddleware } from "../lib/sitemap";
-import { readResourceText } from "./test-util";
+import { readFixtureText } from "./test-util";
 import Mock = jest.Mock;
 
 jest.mock("axios");
 
-const BAIDU_UA = "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)";
-
-const BAIDU_UA_MOBILE = "Mozilla/5.0 (Linux;u;Android 4.2.2;zh-cn;) AppleWebKit/534.46 (KHTML,like Gecko) " +
-	"Version/5.1 Mobile Safari/10600.6.3 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)";
-
-const SITEMAP = readResourceText("sitemap.xml");
-const SITEMAP_BAIDU = readResourceText("sitemap-baidu.xml");
+const SITEMAP = readFixtureText("sitemap.xml");
+const SITEMAP_BAIDU = readFixtureText("sitemap-baidu.xml");
 
 const DATA = {
 	items: [
@@ -52,11 +47,13 @@ it("should recognize Baidu spider by User-Agent", async () => {
 			.expect((res) => expect(res.text).toBe(SITEMAP_BAIDU));
 	}
 
-	await _test(BAIDU_UA);
-	await _test(BAIDU_UA_MOBILE);
+	await _test("Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)");
+
+	await _test("Mozilla/5.0 (Linux;u;Android 4.2.2;zh-cn;) AppleWebKit/534.46 (KHTML,like Gecko) " +
+		"Version/5.1 Mobile Safari/10600.6.3 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)");
 });
 
 it("should return 503 on error", () => {
-	(axios.get as Mock).mockRejectedValue(new Error("测试错误"));
+	(axios.get as Mock).mockRejectedValue(new Error());
 	return supertest(callback).get("/sitemap.xml").expect(503);
 });
