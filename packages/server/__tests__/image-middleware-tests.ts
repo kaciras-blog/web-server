@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import Koa from "koa";
+import Koa, { Context } from "koa";
 import multer from "@koa/multer";
 import supertest from "supertest";
 import { FilterArgumentError } from "@kaciras-blog/image/lib/exceptions";
@@ -110,12 +110,23 @@ describe("uploadImage", () => {
 
 describe("route", () => {
 	const downloadFn = jest.fn();
-	const uploadFn = jest.fn();
+	const uploadFn = jest.fn<void, [Context]>((ctx) => ctx.status = 200);
 
 	const app = new Koa();
 	app.use(route("/image", downloadFn, uploadFn));
 	app.use((ctx) => ctx.status = 418);
 	const callback = app.callback();
+
+	it("should route to downloadFn", async () => {
+		await supertest(callback).get("/image/photo.png");
+		const ctx = downloadFn.mock.calls[0][0];
+		expect(ctx.params.name).toBe("photo.png");
+	});
+
+	it("should route to uploadFn", async () => {
+		await supertest(callback).post("/image").expect(200);
+		expect(uploadFn.mock.calls).toHaveLength(1);
+	});
 
 	it("should fail with invalid method", async () => {
 		await supertest(callback)
@@ -139,12 +150,6 @@ describe("route", () => {
 			.get("/image/")
 			.expect(404);
 		expect(downloadFn.mock.calls).toHaveLength(0);
-	});
-
-	it("should set params", async () => {
-		await supertest(callback).get("/image/photo.png");
-		const ctx = downloadFn.mock.calls[0][0];
-		expect(ctx.params.name).toBe("photo.png");
 	});
 
 	it("should fail on post to sub-path", async () => {

@@ -8,7 +8,8 @@ async function cleanup() {
 	const files = await globby([
 		"packages/**/*.{js,map}",
 		"!**/node_modules/**",
-		"!packages/**/__mocks__",
+		"!**/__mocks__",
+		"!**/__tests__/fixtures"
 	]);
 	for (const file of files) {
 		await fs.remove(file);

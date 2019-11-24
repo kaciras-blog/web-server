@@ -18,7 +18,7 @@ export default class PromiseSource<T> implements Promise<T> {
 	}
 
 	get [Symbol.toStringTag]() {
-		return "PromiseCompletionSource";
+		return "PromiseSource";
 	}
 
 	then<R0 = T, R1 = never>(onFulfilled?: OnFulfilled<T, R0>, onRejected?: OnRejected<R1>) {

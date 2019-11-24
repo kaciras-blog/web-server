@@ -1,7 +1,12 @@
 import path from "path";
 import fs from "fs-extra";
 import codingFilter from "../lib/coding-filter";
-import { BadImageError } from "../lib/exceptions";
+import { BadImageError, FilterArgumentError } from "../lib/exceptions";
+
+it("should throw FilterArgumentError on unsupported type", () => {
+	const buffer = Buffer.from("data is unrelated");
+	return expect(codingFilter(buffer, "invalid")).rejects.toBeInstanceOf(FilterArgumentError);
+});
 
 // 对于非图片数据的输入，应当抛出 InputDataError 异常
 describe("For non-image data", () => {

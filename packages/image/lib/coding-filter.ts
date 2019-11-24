@@ -4,7 +4,7 @@ import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
-import { BadImageError, ImageFilterException } from "./exceptions";
+import { BadImageError, FilterArgumentError, ImageFilterException } from "./exceptions";
 
 
 const pngquant = Pngquant({ strip: true });
@@ -104,6 +104,6 @@ export default async function codingFilter(buffer: Buffer, targetType: string) {
 		case "webp":
 			return encodeWebp(buffer);
 		default:
-			throw new Error("不支持的输出格式：" + targetType);
+			throw new FilterArgumentError("不支持的输出格式：" + targetType);
 	}
 }

@@ -32,12 +32,7 @@ export interface DownloadContext extends ExtendableContext {
  * @param ctx 请求上下文
  */
 export async function downloadImage(service: PreGenerateImageService, ctx: DownloadContext) {
-	const name = ctx.params.name;
-	if (!name) {
-		return ctx.status = 404;
-	}
-
-	const [hash, ext] = name.split(".", 2);
+	const [hash, ext] = ctx.params.name.split(".", 2);
 	const acceptWebp = Boolean(ctx.accept.type("image/webp"));
 	const acceptBrotli = Boolean(ctx.accept.encoding("br"));
 

@@ -1,8 +1,13 @@
 module.exports = {
-	clearMocks: true, // Automatically clear mock calls and instances between every test
-	coverageDirectory: "coverage", // The directory where Jest should output its coverage files
+	clearMocks: true,
 
-	moduleFileExtensions: ["js", "json", "jsx", "ts", "mjs"],
+	coverageDirectory: "coverage",
+	collectCoverageFrom: [
+		"packages/*/lib/**/*.ts",
+		"!packages/*/lib/**/*.d.ts",
+	],
+
+	moduleFileExtensions: ["js", "json", "ts", "mjs"],
 	preset: "ts-jest",
 	testEnvironment: "node",
 
