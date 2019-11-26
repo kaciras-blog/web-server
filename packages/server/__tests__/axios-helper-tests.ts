@@ -3,7 +3,7 @@ import { AddressInfo, Server } from "net";
 import Axios, { AxiosRequestConfig } from "axios";
 import Koa from "koa";
 import supertest from "supertest";
-import { readFixtureText } from "./test-util";
+import { readFixtureText } from "./test-utils";
 import {
 	adaptAxiosHttp2,
 	CachedFetcher,

@@ -26,7 +26,7 @@ export default class SSRTemplatePlugin implements Plugin {
 	apply(compiler: Compiler): void {
 		compiler.hooks.afterEmit.tap(SSRTemplatePlugin.name, () => {
 			if (!this.triggered) {
-				throw new Error("SSRTemplatePlugin：未找到指定的HTML模板，filename=" + this.filename);
+				throw new Error("未找到指定的HTML模板，filename=" + this.filename);
 			}
 		});
 		compiler.hooks.compilation.tap(SSRTemplatePlugin.name, (compilation) => {

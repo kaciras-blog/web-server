@@ -2,7 +2,7 @@ import http from "http";
 import tls from "tls";
 import { createSNICallback, runServer } from "../lib/create-server";
 import { ServerOptions } from "../lib/options";
-import { resolveFixture } from "./test-util";
+import { resolveFixture } from "./test-utils";
 
 const HTTP_URL = "http://localhost/";
 const HTTPS_URL = "https://localhost/";

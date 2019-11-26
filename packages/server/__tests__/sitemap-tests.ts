@@ -2,7 +2,7 @@ import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { createSitemapMiddleware } from "../lib/sitemap";
-import { readFixtureText } from "./test-util";
+import { readFixtureText } from "./test-utils";
 import Mock = jest.Mock;
 
 jest.mock("axios");
