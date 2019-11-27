@@ -14,7 +14,7 @@ import { downloadImage, route, uploadImage } from "./image-middleware";
 import { AppOptions } from "./options";
 import { createSitemapMiddleware } from "./sitemap";
 import { feedMiddleware } from "./feed";
-import ApplicationBuilder, { FunctionCliServerPlugin } from "./ApplicationBuilder";
+import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
 import { configureForProxy } from "./axios-helper";
 
 
@@ -85,7 +85,7 @@ function createImageMiddleware(options: AppOptions) {
 
 // 【注意】没有使用 Etag，因为所有资源都可以用时间缓存，而且 koa-etag 内部使用 sha1 计算 Etag，
 // 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
-export default function getBlogPlugin(options: AppOptions): FunctionCliServerPlugin {
+export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 
 	return (api: ApplicationBuilder) => {
 		api.useBeforeAll(conditional());

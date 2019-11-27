@@ -32,6 +32,15 @@ const DEFAULT_CONTEXT = {
 	shellOnly: false,
 };
 
+/**
+ * 处理页面请求，使用指定的渲染器渲染页面，渲染结果直接写入到Koa上下文。
+ *
+ * 如果请求的路径不存在，则发送404错误页。
+ * 页面脚本里出现的异常不会抛出，而是记录到日志，然后发送错误页面。
+ *
+ * @param render 渲染器
+ * @param ctx Koa上下文
+ */
 export async function renderPage(render: BundleRenderer, ctx: Context) {
 	const renderContext: RenderContext = {
 		...DEFAULT_CONTEXT,

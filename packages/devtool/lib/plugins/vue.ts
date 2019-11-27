@@ -5,10 +5,10 @@ import { Context } from "koa";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
-import { CliDevelopmentOptions } from "../options";
-import ServerConfiguration from "../webpack/server.config";
 import PromiseSource from "@kaciras-blog/server/lib/PromiseSource";
 import { renderPage } from "@kaciras-blog/server/lib/ssr-middleware";
+import { CliDevelopmentOptions } from "../options";
+import ServerConfiguration from "../webpack/server.config";
 
 const logger = log4js.getLogger("dev");
 
@@ -53,7 +53,7 @@ class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 		});
 	}
 
-	get readyPromise(): PromiseLike<void> {
+	ready(): PromiseLike<void> {
 		return this.readyPromiseSource;
 	}
 }
@@ -131,7 +131,7 @@ export default class VueSSRHotReloader {
 			readyPromise.resolve();
 		});
 
-		await Promise.all([readyPromise, this.clientPlugin.readyPromise]);
+		await Promise.all([readyPromise, this.clientPlugin.ready()]);
 
 		logger.info("创建支持热重载的服务端渲染器");
 		return (ctx: Context) => renderPage(this.renderer, ctx);

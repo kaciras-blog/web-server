@@ -2,6 +2,12 @@ import path from "path";
 import webpack, { Configuration } from "webpack";
 import MemoryFs from "memory-fs";
 
+/**
+ * 运行webpack，返回输出到内存中的结果。
+ *
+ * @param config webpack的配置
+ * @return 内存文件系统，包含了构建的输出。
+ */
 export function runWebpack(config: Configuration) {
 	return new Promise<MemoryFs>((resolve, reject) => {
 		const outputFs = new MemoryFs();

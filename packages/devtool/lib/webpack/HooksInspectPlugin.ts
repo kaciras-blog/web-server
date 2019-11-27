@@ -4,7 +4,12 @@ import { Hook, HookMap } from "tapable";
 import { once } from "@kaciras-blog/server/lib/functions";
 import StopWatch from "../StopWatch";
 
-
+/**
+ * 返回指定对象易读的类型字符串。
+ * 对象类型将返回类名、函数返回函数名，其它返回类型名。
+ *
+ * @param value 某个对象
+ */
 function simpleTypeName(value: any): string {
 	switch (typeof value) {
 		case "object":
@@ -32,6 +37,8 @@ const COLOR_MAP: Readonly<{ [key: string]: Chalk }> = {
  * 在控制台输出各种Hook用时和完成时间的插件，调试的时候用的。
  *
  * 输出格式：完成时间 [Hook耗时] - Hook命名空间: Hook名(参数...)
+ *
+ * TODO: 新的 Performance API 专门用于测量多个点的时间
  */
 export default class HooksInspectPlugin implements Plugin {
 
@@ -49,18 +56,31 @@ export default class HooksInspectPlugin implements Plugin {
 		tapable.tap("HookInspectSetup", once((value: any) => this.installHooks(namespace, value)));
 	}
 
+	/**
+	 * 给Hook的集合对象中所有的Hook都加上日志记录器。
+	 *
+	 * @param namespace Hook的集合对象的名字
+	 * @param hookable Hook的集合对象
+	 */
 	private installHooks(namespace: string, hookable: any) {
 		const hooks = Object.entries(hookable.hooks) as Array<[string, Hook | HookMap]>;
 		hooks.forEach(([name, hook]) => {
-			const logHook = this.logHook(namespace, name);
+			const logHook = this.hookLogger(namespace, name);
 			if (isHook(hook)) {
 				return hook.tap(HooksInspectPlugin.name, logHook);
 			}
-			hook.tap(HooksInspectPlugin.name, "logHook", logHook);
+			hook.tap(HooksInspectPlugin.name, "hookLogger", logHook);
 		});
 	}
 
-	private logHook(namespace: string, name: string) {
+	/**
+	 * 创建针对指定Hook的日志记录器，在该Hook首次触发时打印一条日志。
+	 *
+	 * @param namespace Hook所在的类名
+	 * @param name Hook名
+	 * @return Hook的处理函数，在首次调用时打印日志
+	 */
+	private hookLogger(namespace: string, name: string) {
 		return once((...args: any[]) => {
 			const argInfo = args.map(simpleTypeName).join(", ");
 			const [time, duration] = this.stopWatch.time();

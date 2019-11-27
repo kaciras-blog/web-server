@@ -11,7 +11,7 @@ function offsetMS(from: SecondAndNano, to: SecondAndNano) {
 /** 简单的计时器，使用 process.hrtime 高精度时间，可用于测试性能 */
 export default class StopWatch {
 
-	private init!: SecondAndNano;
+	private init?: SecondAndNano;
 	private last!: SecondAndNano;
 
 	/** 开始计时 */

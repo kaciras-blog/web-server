@@ -19,7 +19,6 @@ class IgnoreOriginSlot extends LocalFileSlot {
  * @param directory 原图所在的目录
  */
 export async function buildCache(directory: string) {
-
 	const service = new PreGenerateImageService((key) => new IgnoreOriginSlot(directory, key));
 	const names = await fs.readdir(directory);
 

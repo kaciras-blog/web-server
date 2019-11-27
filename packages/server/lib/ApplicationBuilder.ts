@@ -1,11 +1,10 @@
 import Koa, { Middleware } from "koa";
 
-
-export interface ClassCliServerPlugin {
+export interface ClassPlugin {
 	configureCliServer(builder: ApplicationBuilder): void;
 }
 
-export type FunctionCliServerPlugin = (builder: ApplicationBuilder) => void;
+export type FunctionPlugin = (builder: ApplicationBuilder) => void;
 
 /**
  * 把 Koa 的中间件分下组，便于解耦。
@@ -65,7 +64,7 @@ export default class ApplicationBuilder {
 		this.fallBack = middleware;
 	}
 
-	addPlugin(plugin: FunctionCliServerPlugin | ClassCliServerPlugin) {
+	addPlugin(plugin: FunctionPlugin | ClassPlugin) {
 		if (typeof plugin === "function") {
 			plugin(this);
 		} else {

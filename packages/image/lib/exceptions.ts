@@ -7,8 +7,10 @@ export abstract class InputDataError extends BaseError {}
 /** 图片数据已损坏，或是输入了非图片数据 */
 export class BadImageError extends InputDataError {}
 
-/** 输入的参数无法解析 */
+/** 输入的参数无法解析，或是无效的值 */
 export class FilterArgumentError extends InputDataError {}
 
-/** 当出现一些无法继续处理的边界情况时抛出该异常，这些情况是可以预料的 */
+/**
+ * 当出现一些无法继续处理的边界情况时抛出该异常，这些情况是可以预料的，应当在程序中处理。
+ */
 export class ImageFilterException extends BaseError {}

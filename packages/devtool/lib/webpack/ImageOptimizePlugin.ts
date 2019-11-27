@@ -53,21 +53,19 @@ export default class ImageOptimizePlugin implements Plugin {
 				const text = assets[rawName].source().toString();
 				tasks.push(svgOptimizer.optimize(text)
 					.then((result) => assets[rawName] = new MyRawAssets(result.data)));
-			}
 
-			if (!/^(jpe?g|png|gif)$/.test(type)) {
-				continue;
-			}
-			const rawBuffer = assets[rawName].source();
+			} else if (/^(jpe?g|png|gif)$/.test(type)) {
+				const rawBuffer = assets[rawName].source();
 
-			const putOptimizedImage = async (name: string, targetType: string) => {
-				assets[name] = new MyRawAssets(await codingFilter(rawBuffer, targetType));
-			};
+				const putOptimizedImage = async (name: string, targetType: string) => {
+					assets[name] = new MyRawAssets(await codingFilter(rawBuffer, targetType));
+				};
 
-			if (/^(jpe?g|png)$/.test(type)) {
-				tasks.push(putOptimizedImage(basename + ".webp", "webp"));
+				if (type !== "gif") {
+					tasks.push(putOptimizedImage(basename + ".webp", "webp"));
+				}
+				tasks.push(putOptimizedImage(rawName, type));
 			}
-			tasks.push(putOptimizedImage(rawName, type));
 		}
 
 		return Promise.all(tasks);

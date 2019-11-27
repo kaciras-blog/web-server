@@ -128,7 +128,7 @@ export class CachedFetcher<T, R> {
 		}
 		const result = this.parser(response);
 
-		// 即使没有 last-modified 头也照样缓存，使用当前时间作为替代
+		// 即使没有 last-modified 头也缓存，使用当前时间作为替代
 		const lastModified = response.headers["last-modified"];
 		const time = lastModified ? new Date(lastModified) : new Date();
 

@@ -5,7 +5,6 @@ import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
 import { CliDevelopmentOptions, WebpackOptions } from "../options";
 
-
 /**
  * 将相对于 process.cwd 的路径转换为绝对路径。
  *
