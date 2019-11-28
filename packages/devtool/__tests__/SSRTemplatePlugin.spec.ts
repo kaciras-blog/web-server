@@ -3,7 +3,7 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import SSRTemplatePlugin from "../lib/webpack/SSRTemplatePlugin";
 import { resolveFixture, runWebpack } from "./test-utils";
 
-it("should inject outlet and {{{meta}}}", async () => {
+it("should insert inject points", async () => {
 	const fs = await runWebpack({
 		entry: resolveFixture("entry-empty.js"),
 		plugins: [
@@ -16,6 +16,7 @@ it("should inject outlet and {{{meta}}}", async () => {
 	});
 
 	const output = fs.readFileSync("/index.html", "utf8");
+	expect(output).toMatch("<title>{{title}}</title>");
 	expect(output).toMatch("{{{meta}}}");
 	expect(output).toMatch("<!--vue-ssr-outlet-->");
 });

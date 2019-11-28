@@ -3,8 +3,8 @@
 		// 不要设为esnext，因为stage-3及以下的特性也会包含进来
 		"target": "es2020",
 
-//		输出到其他目录会导致另外的包引用不到
-//		"outDir": "dist",
+		// 输出到其他目录会导致另外的包引用不到
+		// "outDir": "dist",
 
 		"newLine": "LF",
 		"esModuleInterop": true,

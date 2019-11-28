@@ -4,6 +4,8 @@ import { Hooks } from "html-webpack-plugin";
 /**
  * 生成额外的HTML文件，把其中的挂载点替换为 <!--vue-ssr-outlet--> 注释，并在<head>部分添加注入点。
  * 该插件依赖于 html-webpack-plugin，必须先加入它。
+ *
+ * TODO: 似乎从模板生成非SSR文件更容易
  */
 export default class SSRTemplatePlugin implements Plugin {
 
@@ -40,12 +42,15 @@ export default class SSRTemplatePlugin implements Plugin {
 
 	afterHtmlProcessing(data: any) {
 		if (data.outputName === this.filename) {
-			let { html } = data;
 			this.triggered = true;
+			let html = data.html as string;
 
 			const headEnd = html.indexOf("</head>");
 			html = html.substring(0, headEnd) + "{{{meta}}}" + html.substring(headEnd);
-			data.html = html.replace(this.el, "<!--vue-ssr-outlet-->");
+
+			data.html = html
+				.replace(/<title>[^<]*<\/title>/, "<title>{{title}}</title>")
+				.replace(this.el, "<!--vue-ssr-outlet-->");
 		}
 		return data;
 	}
