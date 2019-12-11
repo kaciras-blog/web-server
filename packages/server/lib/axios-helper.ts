@@ -3,7 +3,6 @@
  * 【警告】Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
 import { Context } from "koa";
-import fs from "fs-extra";
 import log4js from "log4js";
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import hash from "hash-sum";
@@ -13,6 +12,7 @@ import http2, {
 	IncomingHttpStatusHeader,
 	SecureClientSessionOptions,
 } from "http2";
+import fs from "fs-extra";
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
@@ -146,13 +146,17 @@ export class CachedFetcher<T, R> {
 }
 
 /**
- * 修改指定 Axios 实例的 transport 配置，使其使用 NodeJS 的 http2 模块发送请求。
+ * 修改指定 Axios 实例的 transport 配置，使其使用 http2 模块发送请求。
  *
- * @param axios Axios实例
- * @param https transport 的参数里竟然不带协议？还得手动指定下
+ * @param axios 要配置的Axios实例
+ * @param https 是否使用TLS链接，因为Axios的蛋疼设计，request 的选项里没有协议，必须提前指定
  * @param connectOptions 传递到 http2.connect 的选项
  */
-export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOptions?: SecureClientSessionOptions) {
+export function configureAxiosHttp2(
+	axios: AxiosInstance,
+	https = false,
+	connectOptions?: SecureClientSessionOptions,
+) {
 	const schema = https ? "https" : "http";
 	const cache = new Map<string, ClientHttp2Session>();
 
@@ -176,6 +180,7 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 			":method": options.method.toUpperCase(),
 			":path": options.path,
 		});
+
 		return stream.on("response", (headers: ResHeaders) => {
 			stream.headers = headers;
 			stream.statusCode = headers[":status"];
@@ -191,17 +196,19 @@ export function adaptAxiosHttp2(axios: AxiosInstance, https = false, connectOpti
 /**
  * 配置全局Axios实例的便捷函数。
  *
- * @param https 因为Axios的蛋疼设计，必须在这里指定是否用HTTPS
+ * @param origin 因为A，必须在这里指定是否用HTTPS
  * @param trusted 信任的证书，或是true忽略证书检查
  */
-export async function configureGlobalAxios(https?: boolean, trusted?: string | true) {
+export async function configureGlobalAxios(origin: string, trusted?: string | true) {
+	const https = origin.startsWith("https");
+
 	if (typeof trusted === "string") {
 		const ca = await fs.readFile(trusted);
-		adaptAxiosHttp2(Axios, true, { ca });
+		configureAxiosHttp2(Axios, https, { ca });
 	} else {
 		if (trusted) {
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 		}
-		adaptAxiosHttp2(Axios, true);
+		configureAxiosHttp2(Axios, https);
 	}
 }

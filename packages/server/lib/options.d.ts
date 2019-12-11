@@ -14,7 +14,6 @@ export interface AppOptions {
 	cors?: CorsOptions;
 
 	serverAddress: string;
-	https?: boolean;
 	serverCert: string | true;
 }
 

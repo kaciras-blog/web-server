@@ -30,7 +30,6 @@ export interface WebpackOptions {
 }
 
 export interface DevServerOptions {
-	silent: boolean;
 	useHotClient?: boolean;
 }
 
