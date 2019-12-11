@@ -1,4 +1,4 @@
-import KacirasService from "../lib";
+import Launcher from "../lib/Launcher";
 
 require("source-map-support").install();
-new KacirasService().run();
+new Launcher().run();

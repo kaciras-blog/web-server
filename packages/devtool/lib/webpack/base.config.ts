@@ -3,7 +3,7 @@ import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
-import { CliDevelopmentOptions, WebpackOptions } from "../options";
+import { DevelopmentOptions, WebpackOptions } from "../options";
 
 /**
  * 将相对于 process.cwd 的路径转换为绝对路径。
@@ -31,7 +31,7 @@ const vieCacheIdentifier = (options: WebpackOptions) => {
 	return hash(variables);
 };
 
-export default function (options: CliDevelopmentOptions, side: "client" | "server"): Configuration {
+export default function (options: DevelopmentOptions, side: "client" | "server"): Configuration {
 	const webpackOpts = options.webpack;
 
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致

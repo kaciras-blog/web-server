@@ -1,9 +1,9 @@
 import { Options } from "webpack";
 import { VueLoaderOptions } from "vue-loader";
-import { CliServerOptions } from "@kaciras-blog/server/lib/options";
+import { BlogServerOptions } from "@kaciras-blog/server/lib/options";
 
 
-export interface CliDevelopmentOptions extends CliServerOptions {
+export interface DevelopmentOptions extends BlogServerOptions {
 	dev: DevServerOptions;
 	webpack: WebpackOptions;
 	envConfig: EnvConfig;

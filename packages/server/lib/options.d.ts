@@ -1,8 +1,7 @@
 import { Options as CorsOptions } from "@koa/cors";
 
-// TODO: 通常做法是一套对外的选项，各组件也有自己的选项，在启动类里做转换。可是我懒得再设计了
 // TODO: 注释写在页面项目里，要不要移过来？
-export interface CliServerOptions {
+export interface BlogServerOptions {
 	outputDir: string;
 	assetsDir: string;
 

@@ -3,11 +3,11 @@ import { DefinePlugin } from "webpack";
 import merge from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
 import baseConfig from "./base.config";
-import { CliDevelopmentOptions } from "../options";
+import { DevelopmentOptions } from "../options";
 import generateCssLoaders from "./css";
 
 
-export default function (options: CliDevelopmentOptions) {
+export default function (options: DevelopmentOptions) {
 
 	// 服务端构建时页面内的请求走内部地址
 	options.envConfig.contentServerUri = options.blog.serverAddress;

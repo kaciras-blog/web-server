@@ -5,7 +5,7 @@ import Koa from "koa";
 import supertest from "supertest";
 import { readFixtureText } from "./test-utils";
 import {
-	adaptAxiosHttp2,
+	configureAxiosHttp2,
 	CachedFetcher,
 	configureForProxy,
 	CSRF_HEADER_NAME,
@@ -39,7 +39,7 @@ describe("h2c", () => {
 
 	it("should success with adapt", async () => {
 		const axios = Axios.create();
-		adaptAxiosHttp2(axios);
+		configureAxiosHttp2(axios);
 
 		const response = await axios.get(url);
 		expect(response.data).toBe("Hello");
@@ -67,14 +67,14 @@ describe("certificate verification", () => {
 	// TODO: 自签证书的错误如何捕获？
 	// it("should reject self signed certificate", () => {
 	// 	const axios = Axios.create();
-	// 	adaptAxiosHttp2(axios, true);
+	// 	configureAxiosHttp2(axios, true);
 	//
 	// 	return expect(axios.get(url)).rejects.toBeTruthy();
 	// });
 
 	it("should success with trust", async () => {
 		const axios = Axios.create();
-		adaptAxiosHttp2(axios, true, { ca: readFixtureText("localhost.pem") });
+		configureAxiosHttp2(axios, true, { ca: readFixtureText("localhost.pem") });
 
 		const res = await axios.get(url);
 		expect(res.data).toBe("Hello");

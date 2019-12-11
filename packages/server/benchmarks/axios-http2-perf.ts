@@ -1,6 +1,6 @@
 import http2 from "http2";
 import Axios from "axios";
-import { adaptAxiosHttp2 } from "../lib/axios-helper";
+import { configureAxiosHttp2 } from "../lib/axios-helper";
 import { AddressInfo } from "net";
 
 /*
@@ -9,7 +9,7 @@ import { AddressInfo } from "net";
  * 缓存 ClientHttp2Session - 450 毫秒 / 1000次请求
  */
 const axios = Axios.create();
-adaptAxiosHttp2(axios);
+configureAxiosHttp2(axios);
 const server = http2.createServer(((request, response) => response.end("benchmark")));
 
 async function iterate() {

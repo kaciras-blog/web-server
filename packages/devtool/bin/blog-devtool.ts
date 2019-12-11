@@ -1,4 +1,4 @@
-import service from "../lib";
+import launcher from "../lib";
 
 require("source-map-support").install();
-service.run();
+launcher.run();

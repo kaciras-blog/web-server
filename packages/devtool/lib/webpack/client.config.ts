@@ -9,7 +9,7 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
 import baseWebpackConfig, { resolve } from "./base.config";
 import generateCssLoaders from "./css";
-import { CliDevelopmentOptions } from "../options";
+import { DevelopmentOptions } from "../options";
 import SSRTemplatePlugin from "./SSRTemplatePlugin";
 import ImageOptimizePlugin from "./ImageOptimizePlugin";
 
@@ -20,7 +20,7 @@ interface ServiceWorkerOption {
 	assets: string[];
 }
 
-function setupBabel(config: any, options: CliDevelopmentOptions) {
+function setupBabel(config: any, options: DevelopmentOptions) {
 	const loaders: RuleSetLoader[] = [{
 		loader: "babel-loader",
 		options: {
@@ -53,7 +53,7 @@ function setupBabel(config: any, options: CliDevelopmentOptions) {
 	});
 }
 
-export default function (options: CliDevelopmentOptions) {
+export default function (options: DevelopmentOptions) {
 	const webpackOpts = options.webpack;
 
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);

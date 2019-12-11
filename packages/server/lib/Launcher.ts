@@ -1,70 +1,21 @@
 import path from "path";
 import parseArgs from "minimist";
-import log4js from "log4js";
 import serve from "koa-static";
+import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
-import { runServer } from "./create-server";
-import { configureGlobalAxios } from "./axios-helper";
-import getBlogPlugin from "./blog-plugin";
 import ApplicationBuilder from "./ApplicationBuilder";
+import getBlogPlugin from "./blog-plugin";
 import { createSSRProductionPlugin } from "./ssr-middleware";
-import { CliServerOptions } from "./options";
+import { runServer } from "./create-server";
+import { configureLog4js, configureGlobalAxios } from "./helpers";
+import { BlogServerOptions } from "./options";
 
 const logger = log4js.getLogger();
 
-interface SimpleLogConfig {
-	level: string;
-	file?: string;
-
-	/**
-	 * 即使用了文件日志，还是保持控制台输出，使用此选项可以关闭控制台的输出。
-	 * 【注意】很多日志处理系统默认读取标准流，所以不建议关闭。
-	 */
-	noConsole?: boolean;
-}
-
-/**
- * 简单地配置一下日志，文档见：
- * https://log4js-node.github.io/log4js-node/appenders.html
- */
-function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
-	const logConfig: log4js.Configuration = {
-		appenders: {
-			console: {
-				type: "stdout",
-				layout: {
-					type: "pattern",
-					pattern: "%[%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %]%m",
-				},
-			},
-		},
-		categories: {
-			default: { appenders: ["console"], level },
-		},
-	};
-	if (noConsole) {
-		logConfig.categories.default.appenders = [];
-	}
-	if (file) {
-		logConfig.appenders.file = {
-			type: "file",
-			filename: file,
-			flags: "w",
-			encoding: "utf-8",
-			layout: {
-				type: "pattern",
-				pattern: "%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %m",
-			},
-		};
-		logConfig.categories.default.appenders.push("file");
-	}
-	log4js.configure(logConfig);
-}
-
 type CommandHandler<T> = (options: T) => void | Promise<any>;
 
-async function runProd(options: CliServerOptions) {
-	await configureGlobalAxios(options.blog.https, options.blog.serverCert);
+async function runProd(options: BlogServerOptions) {
+	await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
 
 	const api = new ApplicationBuilder();
 	api.addPlugin(getBlogPlugin(options.blog));
@@ -82,11 +33,11 @@ async function runProd(options: CliServerOptions) {
 /**
  * 简单的启动器，提供注册命令然后从命令行里调用的功能，并对启动参数做一些处理。
  */
-export default class KacirasService<T extends CliServerOptions> {
+export default class Launcher<T extends BlogServerOptions> {
 
 	private commands = new Map<string, CommandHandler<T>>();
 
-	// 先注册个内置命令
+	// 注册几个内置命令
 	constructor() {
 		this.registerCommand("run", runProd);
 		this.registerCommand("build-image-cache", ((options) => buildCache(options.blog.imageRoot)));
@@ -104,7 +55,6 @@ export default class KacirasService<T extends CliServerOptions> {
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 
 		// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
-		// TODO: run 还是不能以那头优先
 		process.env.NODE_PATH = path.resolve("node_modules");
 		require("module").Module._initPaths();
 
@@ -127,7 +77,7 @@ export default class KacirasService<T extends CliServerOptions> {
 			return handler(require(configFile));
 		}
 
-		const names = Array.from(this.commands.keys()).join(",");
+		const names = Array.from(this.commands.keys()).join(", ");
 		logger.error(`未知的命令：${args._[0]}，支持的命令有：${names}`);
 	}
 }

@@ -7,7 +7,7 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import PromiseSource from "@kaciras-blog/server/lib/PromiseSource";
 import { renderPage } from "@kaciras-blog/server/lib/ssr-middleware";
-import { CliDevelopmentOptions } from "../options";
+import { DevelopmentOptions } from "../options";
 import ServerConfiguration from "../webpack/server.config";
 
 const logger = log4js.getLogger("dev");
@@ -70,7 +70,7 @@ interface ClientSSRHotUpdatePlugin {
  */
 export default class VueSSRHotReloader {
 
-	public static create(clientConfig: Configuration, options: CliDevelopmentOptions) {
+	public static create(clientConfig: Configuration, options: DevelopmentOptions) {
 		const plugin = new ClientSSRHotUpdatePlugin();
 		if (!clientConfig.plugins) {
 			clientConfig.plugins = []; // 我觉得不太可能一个插件都没有
