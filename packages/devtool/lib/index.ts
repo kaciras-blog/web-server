@@ -2,7 +2,7 @@ import { promisify } from "util";
 import chalk from "chalk";
 import fs from "fs-extra";
 import webpack, { Configuration, Stats } from "webpack";
-import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper";
+import { configureGlobalAxios } from "@kaciras-blog/server/lib/helpers";
 import Launcher from "@kaciras-blog/server/lib/Launcher";
 import { runServer } from "@kaciras-blog/server/lib/create-server";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";

@@ -51,3 +51,23 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 	}
 	log4js.configure(logConfig);
 }
+
+/**
+ * 配置全局Axios实例的便捷函数。
+ *
+ * @param origin 因为A，必须在这里指定是否用HTTPS
+ * @param trusted 信任的证书，或是true忽略证书检查
+ */
+export async function configureGlobalAxios(origin: string, trusted?: string | true) {
+	const https = origin.startsWith("https");
+
+	if (typeof trusted === "string") {
+		const ca = await fs.readFile(trusted);
+		configureAxiosHttp2(Axios, https, { ca });
+	} else {
+		if (trusted) {
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+		}
+		configureAxiosHttp2(Axios, https);
+	}
+}

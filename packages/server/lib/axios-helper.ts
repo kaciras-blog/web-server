@@ -4,7 +4,7 @@
  */
 import { Context } from "koa";
 import log4js from "log4js";
-import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import hash from "hash-sum";
 import http2, {
 	ClientHttp2Session,
@@ -12,7 +12,6 @@ import http2, {
 	IncomingHttpStatusHeader,
 	SecureClientSessionOptions,
 } from "http2";
-import fs from "fs-extra";
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
@@ -191,24 +190,4 @@ export function configureAxiosHttp2(
 	// 修改Axios默认的transport属性，注意该属性是内部使用的，没有定义在接口里。
 	// Axios 0.19.0 修改了相关逻辑，导致该字段无法合并到最终的请求中。
 	(axios.defaults as any).transport = { request };
-}
-
-/**
- * 配置全局Axios实例的便捷函数。
- *
- * @param origin 因为A，必须在这里指定是否用HTTPS
- * @param trusted 信任的证书，或是true忽略证书检查
- */
-export async function configureGlobalAxios(origin: string, trusted?: string | true) {
-	const https = origin.startsWith("https");
-
-	if (typeof trusted === "string") {
-		const ca = await fs.readFile(trusted);
-		configureAxiosHttp2(Axios, https, { ca });
-	} else {
-		if (trusted) {
-			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-		}
-		configureAxiosHttp2(Axios, https);
-	}
 }
