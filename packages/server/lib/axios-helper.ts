@@ -166,15 +166,19 @@ export function configureAxiosHttp2(
 		}
 
 		// 创建并缓存会话链接，后端会在20秒空闲后关闭连接，被关闭后触发close事件删除缓存
-		let client = cache.get(origin);
-		if (!client) {
-			client = http2.connect(origin, connectOptions);
-			cache.set(origin, client);
-			client.on("close", () => cache.delete(origin));
-			logger.trace(`创建新的Http2会话 -> ${origin}`);
+		let session = cache.get(origin);
+		if (!session) {
+			session = http2.connect(origin, connectOptions);
+			cache.set(origin, session);
+			logger.trace(`新建Http2会话 -> ${origin}`);
+
+			session.on("close", () => {
+				cache.delete(origin);
+				logger.trace("Http2会话过期：" + origin);
+			});
 		}
 
-		const stream: any = client.request({
+		const stream: any = session.request({
 			...options.headers,
 			":method": options.method.toUpperCase(),
 			":path": options.path,
