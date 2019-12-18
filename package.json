@@ -50,11 +50,10 @@
 		"lerna": "^3.19.0",
 		"lint-staged": "^9.5.0",
 		"memfs": "^3.0.1",
-		"semver": "^6.3.0",
 		"supertest": "^4.0.2",
 		"ts-jest": "^24.2.0",
 		"tslint": "^5.20.1",
-		"typescript": "^3.7.2",
-		"vue": "^2.6.10"
+		"typescript": "^3.7.3",
+		"vue": "^2.6.11"
 	}
 }
