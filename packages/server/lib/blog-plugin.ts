@@ -88,8 +88,16 @@ function createImageMiddleware(options: AppOptions) {
 export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 
 	return (api: ApplicationBuilder) => {
+
+		api.useBeforeAll(cors({
+			origin: (ctx) => ctx.protocol + options.host,
+			credentials: true,
+			maxAge: 864000,
+			exposeHeaders: ["Location"],
+			allowHeaders: ["X-CSRF-Token"],
+		}));
+
 		api.useBeforeAll(conditional());
-		api.useBeforeAll(cors(options.cors));
 		api.useBeforeAll(bodyParser());
 
 		const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });

@@ -1,5 +1,3 @@
-import { Options as CorsOptions } from "@koa/cors";
-
 // TODO: 注释写在页面项目里，要不要移过来？
 export interface BlogServerOptions {
 	outputDir: string;
@@ -10,10 +8,9 @@ export interface BlogServerOptions {
 }
 
 export interface AppOptions {
-	imageRoot: string;
-	cors?: CorsOptions;
-
+	host: string;
 	serverAddress: string;
+	imageRoot: string;
 	serverCert: string | true;
 }
 
