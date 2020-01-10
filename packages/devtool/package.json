@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/devtool",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"description": "Develop tools for Kaciras blog",
 	"license": "MIT",
 	"main": "lib/index.js",
