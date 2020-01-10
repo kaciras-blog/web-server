@@ -14,17 +14,6 @@
 		"test:coverage": "yarn test --coverage",
 		"publish": "lerna publish --no-push"
 	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
-	"lint-staged": {
-		"*.ts": [
-			"tslint --fix",
-			"git add"
-		]
-	},
 	"devDependencies": {
 		"@types/case-sensitive-paths-webpack-plugin": "^2.1.4",
 		"@types/copy-webpack-plugin": "^5.0.0",
@@ -45,10 +34,8 @@
 		"@types/supertest": "^2.0.8",
 		"execa": "^4.0.0",
 		"globby": "^10.0.0",
-		"husky": "^3.1.0",
 		"jest": "^24.9.0",
 		"lerna": "^3.20.1",
-		"lint-staged": "^9.5.0",
 		"memfs": "^3.0.3",
 		"supertest": "^4.0.2",
 		"ts-jest": "^24.2.0",
