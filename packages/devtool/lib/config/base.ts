@@ -47,10 +47,10 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		},
 		resolve: {
 			extensions: [
-				".js", ".jsx",		// JavaScript
+				".ts", ".tsx",		// TypeScript
 				".wasm",			// WebAssembly
 				".mjs",				// ES Module JavaScript
-				".ts", ".tsx",		// TypeScript
+				".js", ".jsx",		// JavaScript
 				".vue", ".json",	// Others
 			],
 			alias: {
@@ -99,10 +99,13 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 						cacheIdentifier: vieCacheIdentifier(webpackOpts),
 					},
 				},
+
+				// 下面几个加载器需要设置 esModule: false，因为引用方有使用 CJS require 加载的
 				{
 					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
 					loader: "url-loader",
 					options: {
+						esModule: false,
 						limit: 10000,
 						name: assetsPath("media/[name].[hash:8].[ext]"),
 					},
@@ -111,6 +114,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 					test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
 					loader: "url-loader",
 					options: {
+						esModule: false,
 						limit: 10000,
 						name: assetsPath("fonts/[name].[hash:8].[ext]"),
 					},
@@ -127,7 +131,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 							},
 						},
 						{
-							loader: require.resolve("./crop-image-loader"),
+							loader: require.resolve("../webpack/crop-image-loader"),
 						},
 					],
 				},
