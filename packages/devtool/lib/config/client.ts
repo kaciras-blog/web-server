@@ -7,11 +7,11 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
-import baseWebpackConfig, { resolve } from "./base.config";
+import baseWebpackConfig, { resolve } from "./base";
 import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
-import SSRTemplatePlugin from "./SSRTemplatePlugin";
-import ImageOptimizePlugin from "./ImageOptimizePlugin";
+import SSRTemplatePlugin from "../webpack/SSRTemplatePlugin";
+import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
 
 // 这个没有类型定义
 const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");

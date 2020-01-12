@@ -2,7 +2,7 @@ import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
 import { DefinePlugin } from "webpack";
 import merge from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
-import baseConfig from "./base.config";
+import baseConfig from "./base";
 import { DevelopmentOptions } from "../options";
 import generateCssLoaders from "./css";
 

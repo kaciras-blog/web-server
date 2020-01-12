@@ -7,10 +7,10 @@ import Launcher from "@kaciras-blog/server/lib/Launcher";
 import { runServer } from "@kaciras-blog/server/lib/create-server";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
 import ApplicationBuilder from "@kaciras-blog/server/lib/ApplicationBuilder";
-import { createHotMiddleware, createKoaWebpack } from "./plugins/dev";
-import VueSSRHotReloader from "./plugins/vue";
-import ClientConfiguration from "./webpack/client.config";
-import ServerConfiguration from "./webpack/server.config";
+import { createHotMiddleware, createKoaWebpack } from "./dev-middleware";
+import VueSSRHotReloader from "./ssr-hot-reload";
+import ClientConfiguration from "./config/client";
+import ServerConfiguration from "./config/server";
 import { DevelopmentOptions } from "./options";
 
 const launcher = new Launcher<DevelopmentOptions>();

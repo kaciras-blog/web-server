@@ -7,8 +7,8 @@ import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin } from "webpack";
 import PromiseSource from "@kaciras-blog/server/lib/PromiseSource";
 import { renderPage } from "@kaciras-blog/server/lib/ssr-middleware";
-import { DevelopmentOptions } from "../options";
-import ServerConfiguration from "../webpack/server.config";
+import { DevelopmentOptions } from "./options";
+import ServerConfiguration from "./config/server";
 
 const logger = log4js.getLogger("dev");
 

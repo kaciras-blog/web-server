@@ -121,6 +121,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 						{
 							loader: "url-loader",
 							options: {
+								esModule: false,
 								limit: 2048,
 								name: assetsPath("img/[name].[hash:8].[ext]"),
 							},
@@ -136,6 +137,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 						{
 							loader: "file-loader",
 							options: {
+								esModule: false,
 								name: assetsPath("img/[name].[hash:8].[ext]"),
 							},
 						},
