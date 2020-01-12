@@ -4,7 +4,7 @@
 	"description": "Image processing library for Kaciras blog",
 	"license": "MIT",
 	"engines": {
-		"node": ">=12.7.0"
+		"node": ">=13.6.0"
 	},
 	"dependencies": {
 		"execa": "^4.0.0",

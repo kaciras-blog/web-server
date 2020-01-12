@@ -10,7 +10,7 @@
 		"*.d.ts"
 	],
 	"engines": {
-		"node": ">=12.7.0"
+		"node": ">=13.6.0"
 	},
 	"bin": {
 		"kxc-server": "bin/blog-server.js"
