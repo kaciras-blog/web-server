@@ -30,14 +30,19 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 	 * @param preProcessor 预处理语言的加载器
 	 */
 	function createBaseLoaders(modules: boolean, preProcessor?: RuleSetUseItem) {
+		const { sourceMap } = options;
+
 		const outputLoader = options.extract
 			? MiniCssExtractPlugin.loader
-			: { loader: "vue-style-loader", options: { sourceMap: options.sourceMap } };
+			: { loader: "vue-style-loader", options: { sourceMap } };
 
 		const cssLoader = {
 			loader: "css-loader",
 			options: {
-				sourceMap: options.sourceMap,
+				// importLoaders指定了用CSS的 @import 语法导入文件时需要用 css-loader 前面的几个加载器处理。
+				// 在 css-loader 之前的有 postcss-loader 和一个可选的预处理器。
+				importLoaders: 1,
+				sourceMap,
 				modules: modules && {
 					localIdentName: options.production
 						? "[hash:base64:5]"
@@ -48,9 +53,7 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 
 		const postCssLoader = {
 			loader: "postcss-loader",
-			options: {
-				sourceMap: options.sourceMap,
-			},
+			options: { sourceMap },
 		};
 
 		const loaderChain: RuleSetUseItem[] = [
@@ -60,6 +63,7 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 		];
 		if (preProcessor) {
 			loaderChain.push(preProcessor);
+			cssLoader.options.importLoaders += 1;
 		}
 		return loaderChain;
 	}
