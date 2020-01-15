@@ -114,22 +114,6 @@ export default function (options: DevelopmentOptions) {
 	}));
 	plugins.push(new SSRTemplatePlugin(templateFile, "<div id=app></div>"));
 
-	if (options.webpack.mode === "production") {
-		// 必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
-		plugins.push(new ImageOptimizePlugin());
-
-		const compressSource = {
-			test: /\.(js|css|html|svg)$/,
-			threshold: 1024,
-		};
-		plugins.push(new CompressionPlugin({
-			...compressSource,
-			algorithm: "brotliCompress",
-			filename: "[path].br[query]",
-		}));
-		plugins.push(new CompressionPlugin(compressSource));
-	}
-
 	const config: Configuration = {
 		entry: ["./src/entry-client.js"],
 		devtool: webpackOpts.client.devtool,
@@ -165,14 +149,6 @@ export default function (options: DevelopmentOptions) {
 		},
 	};
 
-	/** 默认文件名不带hash，生产模式带上以便区分不同版本的文件 */
-	if (webpackOpts.mode === "production") {
-		config.output = {
-			filename: assetsPath("js/[name].[contenthash].js"),
-			chunkFilename: assetsPath("js/[name].[contenthash].js"),
-		};
-	}
-
 	if (webpackOpts.client.useBabel) {
 		setupBabel(config, options);
 	}
@@ -180,6 +156,28 @@ export default function (options: DevelopmentOptions) {
 	if (webpackOpts.bundleAnalyzerReport) {
 		const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 		plugins.push(new BundleAnalyzerPlugin());
+	}
+
+	/** 默认文件名不带hash，生产模式带上以便区分不同版本的文件 */
+	if (webpackOpts.mode === "production") {
+		config.output = {
+			filename: assetsPath("js/[name].[contenthash].js"),
+			chunkFilename: assetsPath("js/[name].[contenthash].js"),
+		};
+
+		// 该插件必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
+		plugins.push(new ImageOptimizePlugin());
+
+		const compressSource = {
+			test: /\.(js|css|html|svg)$/,
+			threshold: 1024,
+		};
+		plugins.push(new CompressionPlugin({
+			...compressSource,
+			algorithm: "brotliCompress",
+			filename: "[path].br[query]",
+		}));
+		plugins.push(new CompressionPlugin(compressSource));
 	}
 
 	return merge(baseWebpackConfig(options, "client"), config);
