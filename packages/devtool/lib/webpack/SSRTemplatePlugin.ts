@@ -5,7 +5,7 @@ import { Hooks } from "html-webpack-plugin";
  * 生成额外的HTML文件，把其中的挂载点替换为 <!--vue-ssr-outlet--> 注释，并在<head>部分添加注入点。
  * 该插件依赖于 html-webpack-plugin，必须先加入它。
  *
- * TODO: 似乎从模板生成非SSR文件更容易
+ * TODO: 似乎从模板生成普通HTML更容易
  */
 export default class SSRTemplatePlugin implements Plugin {
 

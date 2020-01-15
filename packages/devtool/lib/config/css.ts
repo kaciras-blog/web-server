@@ -2,8 +2,20 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import { RuleSetRule, RuleSetUseItem } from "webpack";
 
 interface LoaderChainOptions {
+
+	/**
+	 * 是否以生产模式构建，该模式下会执行一些优化措施。
+	 */
 	production: boolean;
+
+	/**
+	 * 是否将生成的样式表输出到文件。
+	 */
 	extract: boolean;
+
+	/**
+	 * 是否生成 SourceMap，其对开发调试时有帮助，但会增加构建时间。
+	 */
 	sourceMap: boolean;
 }
 
@@ -22,9 +34,10 @@ interface LoaderChainOptions {
 export default function generateCssLoaders(options: LoaderChainOptions): RuleSetRule[] {
 
 	/**
-	 * 第三层，生成加载器链
+	 * 第三层，生成加载器链。
 	 *
-	 * 【实现】如果放在 createLoaderConfig 里面就不需要 preProcessor 传参，但我不想嵌套太多层
+	 * 【实现】
+	 * 如果放在 createLoaderConfig 里面就不需要 preProcessor 传参，但我不想嵌套太多层
 	 *
 	 * @param modules 是否开启 CSS Modules
 	 * @param preProcessor 预处理语言的加载器
@@ -91,7 +104,7 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 		return { test, oneOf: selectors };
 	}
 
-	// 第一层，针对不同的预处理器的文件，选择加载器配置
+	// 第一层，针对不同格式的文件，选择合适的加载器配置
 	return [
 		createLoaderConfig(/\.css$/),
 		createLoaderConfig(/\.p(ost)?css$/),

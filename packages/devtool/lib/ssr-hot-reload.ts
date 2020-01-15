@@ -101,8 +101,13 @@ export default class VueSSRHotReloader {
 	}
 
 	/**
-	 * 对服务端构建的监听，使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，
+	 * 创建服务端渲染的中间件，该中间件在webpack重新构建之后会自动重载新的资源。
+	 *
+	 * 【实现】
+	 * 使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，
 	 * 在每次构建完成后会更新 serverBundle 以实现服务端构建的热重载。
+	 *
+	 * @return 一个Promise，在初始化完成后 resolve，返回中间件。
 	 */
 	async getKoaMiddleware() {
 		/*
