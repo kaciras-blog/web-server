@@ -18,19 +18,31 @@ function helloHandler(req: Http2ServerRequest, res: Http2ServerResponse) {
 	res.writeHead(200, { "Content-Type": "text/plain" }).end("Hello");
 }
 
-describe("h2c", () => {
-	let url: string;
+// 使用一个仅支持HTTP2的服务器来测试
+describe("configureAxiosHttp2", () => {
 	let server: Server;
+	let url: string;
+	let cleanSessions: () => void;
 
-	// 创建一个仅支持HTTP2的服务器来测试
-	beforeAll((done) => {
+	async function startServer() {
 		server = http2.createServer(helloHandler);
-		server.listen(0, () => {
-			done();
-			url = "http://localhost:" + (server.address() as AddressInfo).port;
-		});
+		await new Promise((resolve) => server.listen(0, resolve));
+		url = "http://localhost:" + (server.address() as AddressInfo).port;
+	}
+
+	function closeServer() {
+		return new Promise((resolve) => server.close(resolve));
+	}
+
+	beforeEach((done) => {
+		cleanSessions = () => 0;
+		startServer().then(done);
 	});
-	afterAll((done) => server.close(done));
+
+	afterEach((done) => {
+		cleanSessions();
+		server.close(done);
+	});
 
 	it("should fail without adapt", () => {
 		const axios = Axios.create();
@@ -39,8 +51,20 @@ describe("h2c", () => {
 
 	it("should success with adapt", async () => {
 		const axios = Axios.create();
-		configureAxiosHttp2(axios);
+		cleanSessions = configureAxiosHttp2(axios);
 
+		const response = await axios.get(url);
+		expect(response.data).toBe("Hello");
+	});
+
+	it("should eliminate session with error", async () => {
+		const axios = Axios.create();
+		cleanSessions = configureAxiosHttp2(axios);
+
+		await closeServer();
+		await expect(axios.get(url)).rejects.toThrow();
+
+		await startServer();
 		const response = await axios.get(url);
 		expect(response.data).toBe("Hello");
 	});

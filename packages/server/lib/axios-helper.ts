@@ -150,6 +150,7 @@ export class CachedFetcher<T, R> {
  * @param axios 要配置的Axios实例
  * @param https 是否使用TLS链接，因为Axios的蛋疼设计，request 的选项里没有协议，必须提前指定
  * @param connectOptions 传递到 http2.connect 的选项
+ * @return 关闭全部Http2会话连接的函数
  */
 export function configureAxiosHttp2(
 	axios: AxiosInstance,
@@ -172,9 +173,12 @@ export function configureAxiosHttp2(
 			cache.set(origin, session);
 			logger.trace(`新建Http2会话 -> ${origin}`);
 
+			session.on("error", () => {
+				cache.delete(origin);
+			});
 			session.on("close", () => {
 				cache.delete(origin);
-				logger.trace("Http2会话过期：" + origin);
+				logger.trace("Http2会话关闭：" + origin);
 			});
 		}
 
@@ -194,4 +198,6 @@ export function configureAxiosHttp2(
 	// 修改Axios默认的transport属性，注意该属性是内部使用的，没有定义在接口里。
 	// Axios 0.19.0 修改了相关逻辑，导致该字段无法合并到最终的请求中。
 	(axios.defaults as any).transport = { request };
+
+	return () => cache.forEach((session) => session.close());
 }
