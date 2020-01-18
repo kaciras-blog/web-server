@@ -56,6 +56,9 @@ export function feedMiddleware(apiServer: string): Middleware {
 		if (!ctx.path.startsWith("/feed/")) {
 			return next();
 		}
+		if (ctx.method !== "GET") {
+			return ctx.status = 405;
+		}
 
 		const feed = await fetcher.request({
 			url: apiServer + "/articles",
