@@ -1,5 +1,5 @@
 import { Compiler, Plugin } from "webpack";
-import { Hooks } from "html-webpack-plugin";
+import { getHooks } from "html-webpack-plugin";
 
 /**
  * 生成额外的HTML文件，把其中的挂载点替换为 <!--vue-ssr-outlet--> 注释，并在<head>部分添加注入点。
@@ -32,7 +32,7 @@ export default class SSRTemplatePlugin implements Plugin {
 			}
 		});
 		compiler.hooks.compilation.tap(SSRTemplatePlugin.name, (compilation) => {
-			const hook = (compilation.hooks as Hooks).htmlWebpackPluginAfterHtmlProcessing;
+			const hook = getHooks(compilation).beforeEmit;
 			if (!hook) {
 				throw new Error("请将 html-webpack-plugin 加入到构建中");
 			}

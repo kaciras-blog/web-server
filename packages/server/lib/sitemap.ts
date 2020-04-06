@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Middleware } from "koa";
 import log4js from "log4js";
-import { EnumChangefreq, Sitemap } from "sitemap";
+import { EnumChangefreq, SitemapStream, streamToPromise } from "sitemap";
 
 const logger = log4js.getLogger();
 
@@ -15,7 +15,7 @@ interface SitemapResource {
 	 *
 	 * @param sitemap 站点地图
 	 */
-	addItems(sitemap: Sitemap): Promise<void>;
+	addItems(sitemap: SitemapStream): Promise<void>;
 }
 
 /** 文章列表响应的一部分字段 */
@@ -38,7 +38,7 @@ class ArticleCollection implements SitemapResource {
 		this.url = urlPrefix + "/articles";
 	}
 
-	public async addItems(sitemap: Sitemap) {
+	public async addItems(sitemap: SitemapStream) {
 		const response = await axios.get(this.url, {
 			params: { count: 20, sort: "update_time", desc: true },
 		});
@@ -48,7 +48,7 @@ class ArticleCollection implements SitemapResource {
 		}
 
 		for (const article of response.data.items as ArticlePreview[]) {
-			sitemap.add({
+			sitemap.write({
 				url: `/article/${article.id}/${article.urlTitle}`,
 				priority: 1.0,
 				changefreq: EnumChangefreq.MONTHLY,
@@ -65,14 +65,15 @@ class ArticleCollection implements SitemapResource {
  * @param isForBaidu 是否符合百度格式
  */
 async function buildSitemap(resources: SitemapResource[], isForBaidu: boolean) {
-	const sitemap = new Sitemap({
+	const sitemap = new SitemapStream({
 		hostname: "https://blog.kaciras.net",
 		lastmodDateOnly: isForBaidu,
 	});
 	for (const res of resources) {
 		await res.addItems(sitemap);
 	}
-	return sitemap.toXML(process.env.NODE_ENV !== "production");
+	sitemap.end();
+	return streamToPromise(sitemap);
 }
 
 export function createSitemapMiddleware(serverAddress: string): Middleware {
@@ -91,7 +92,7 @@ export function createSitemapMiddleware(serverAddress: string): Middleware {
 			|| ctx.get("user-agent").indexOf("Baidu") >= 0;
 
 		try {
-			ctx.type = "application/xml; charset=utf-8";
+			ctx.type = "application/xml";
 			ctx.body = await buildSitemap(resources, isForBaidu);
 		} catch (e) {
 			ctx.status = 503;
