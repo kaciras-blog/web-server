@@ -13,7 +13,10 @@ export interface WebpackOptions {
 	mode: "development" | "production" | "none";
 	publicPath: string;
 	parallel: boolean;
+
 	bundleAnalyzerReport: any;
+
+	speedMeasure?: boolean;
 
 	client: {
 		useBabel: boolean,

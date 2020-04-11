@@ -13,6 +13,9 @@ import ClientConfiguration from "./config/client";
 import ServerConfiguration from "./config/server";
 import { DevelopmentOptions } from "./options";
 
+// 没有类型定义
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+
 const launcher = new Launcher<DevelopmentOptions>();
 
 /**
@@ -23,13 +26,7 @@ const launcher = new Launcher<DevelopmentOptions>();
 async function invokeWebpack(config: Configuration) {
 	const stats = await promisify<Configuration, Stats>(webpack)(config);
 
-	process.stdout.write(stats.toString({
-		colors: true,
-		modules: false,
-		children: false, // Setting this to true will make TypeScript errors show up during build.
-		chunks: false,
-		chunkModules: false,
-	}) + "\n\n");
+	console.log(stats.toString("errors-warnings"));
 
 	if (stats.hasErrors()) {
 		console.log(chalk.red("Build failed with errors.\n"));
@@ -63,8 +60,17 @@ launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 
 launcher.registerCommand("build", async (options: DevelopmentOptions) => {
 	await fs.remove(options.outputDir);
-	await invokeWebpack(ClientConfiguration(options));
+
+	let clientConfig = ClientConfiguration(options)
+
+	if (options.webpack.speedMeasure) {
+		const smp = new SpeedMeasurePlugin();
+		clientConfig = smp.wrap(clientConfig);
+	}
+
+	await invokeWebpack(clientConfig);
 	await invokeWebpack(ServerConfiguration(options));
+
 	console.log(chalk.cyan("Build complete.\n"));
 });
 
