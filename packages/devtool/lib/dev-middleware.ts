@@ -12,7 +12,7 @@ import WebpackHotMiddlewareType from "webpack-hot-middleware";
  *
  * @param config webpack的配置
  */
-export async function createKoaWebpack(config: Configuration) {
+export function createKoaWebpack(config: Configuration) {
 	try {
 		require("webpack-hot-client");
 	} catch (e) {
@@ -23,14 +23,12 @@ export async function createKoaWebpack(config: Configuration) {
 		throw new Error("Webpack 配置中的 output.publicPath 必须设置");
 	}
 
-	config.output.filename = "[name].js";
-
 	/*
 	 * 【坑】Firefox 默认禁止从HTTPS页面访问WS连接，又有Http2模块不存在upgrade事件导致 webpack-hot-client
 	 * 无法创建 websocket。当前做法是把 Firefox 的 network.websocket.allowInsecureFromHTTPS 设为true。
 	 */
-	return await koaWebpack({
-		compiler: webpack(config),
+	return koaWebpack({
+		config,
 		devMiddleware: {
 			publicPath: config.output.publicPath,
 			stats: "minimal",
