@@ -26,11 +26,12 @@ export default class SSRTemplatePlugin implements Plugin {
 	}
 
 	apply(compiler: Compiler): void {
-		compiler.hooks.afterEmit.tap(SSRTemplatePlugin.name, () => {
-			if (!this.triggered) {
-				throw new Error("未找到指定的HTML模板，filename=" + this.filename);
-			}
-		});
+		// TODO test for watching mode
+		// compiler.hooks.afterEmit.tap(SSRTemplatePlugin.name, () => {
+		// 	if (!this.triggered) {
+		// 		throw new Error("未找到指定的HTML模板，filename=" + this.filename);
+		// 	}
+		// });
 		compiler.hooks.compilation.tap(SSRTemplatePlugin.name, (compilation) => {
 			const hook = getHooks(compilation).beforeEmit;
 			if (!hook) {

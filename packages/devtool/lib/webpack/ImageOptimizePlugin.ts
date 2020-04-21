@@ -41,7 +41,7 @@ export default class ImageOptimizePlugin implements Plugin {
 	}
 
 	private handleAssets({ assets }: any): Promise<any> {
-		const tasks: Array<Promise<any>> = [];
+		const tasks: Promise<any>[] = [];
 
 		for (const rawName of Object.keys(assets)) {
 			const sep = rawName.lastIndexOf(".");
