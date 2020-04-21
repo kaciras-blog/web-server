@@ -47,9 +47,10 @@ class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 				return;
 			}
 			this.readyPromiseSource.resolve();
-			const source = compilation.assets[this.manifestFile].source();
-			const template = compilation.assets[this.templateFile].source();
-			this.emit("update", JSON.parse(source), template);
+
+			const source = compilation.assets[this.manifestFile];
+			const template = compilation.assets[this.templateFile];
+			this.emit("update", source, template);
 		});
 	}
 
@@ -91,13 +92,17 @@ export default class VueSSRHotReloader {
 	private renderer!: BundleRenderer;
 
 	constructor(clientPlugin: ClientSSRHotUpdatePlugin, serverConfig: Configuration) {
-		clientPlugin.on("update", (manifest, template) => {
-			this.template = template;
-			this.clientManifest = manifest;
-			this.updateVueSSR();
-		});
 		this.clientPlugin = clientPlugin;
 		this.serverConfig = serverConfig;
+
+		clientPlugin.on("update", (manifest, template) => {
+			// 新版的 html-loader 在监视模式下不再输出未变动的文件
+			if (template) {
+				this.template = template.source();
+			}
+			this.clientManifest = JSON.parse(manifest.source());
+			this.updateVueSSR();
+		});
 	}
 
 	/**
