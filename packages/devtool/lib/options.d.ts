@@ -37,11 +37,10 @@ export interface DevServerOptions {
 }
 
 export interface EnvConfig {
-	contentServerUri: string | {
+	CONTENT_SERVER_URI: string | {
 		http: string;
 		https: string;
 	};
-	webHost?: string;
-	sentryDSN?: string;
-	googleTagManager?: string;
+	SENTRY_DSN?: string;
+	GOOGLE_ANALYTICS_ID?: string;
 }
