@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		// 不要设为esnext，因为stage-3及以下的特性也会包含进来
-		"target": "es2020",
+		// ES2020支持可选链，但NodeJS 13暂时还不支持
+		"target": "es2019",
 
 		// 输出到其他目录会导致另外的包引用不到
 		// "outDir": "dist",
