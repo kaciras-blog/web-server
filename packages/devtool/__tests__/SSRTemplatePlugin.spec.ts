@@ -21,26 +21,16 @@ it("should insert inject points", async () => {
 	expect(output).toMatch("<!--vue-ssr-outlet-->");
 });
 
-it("should throw error on html-webpack-plugin found", () => {
-	const task = runWebpack({
-		entry: resolveFixture("entry-empty.js"),
-		plugins: [
-			new SSRTemplatePlugin("/index.html", '<div id="app"></div>'),
-		],
-	});
-	return expect(task).rejects.toBeInstanceOf(Error);
-});
-
-it("should throw error on no template matched", () => {
-	const task = runWebpack({
-		entry: path.join(__dirname, "fixtures/entry-empty.js"),
-		plugins: [
-			new HtmlWebpackPlugin({
-				template: path.join(__dirname, "fixtures/template.html"),
-				filename: "/non-match.html",
-			}),
-			new SSRTemplatePlugin("/index.html", '<div id="app"></div>'),
-		],
-	});
-	return expect(task).rejects.toBeInstanceOf(Error);
-});
+// it("should throw error on no template matched", () => {
+// 	const task = runWebpack({
+// 		entry: path.join(__dirname, "fixtures/entry-empty.js"),
+// 		plugins: [
+// 			new HtmlWebpackPlugin({
+// 				template: path.join(__dirname, "fixtures/template.html"),
+// 				filename: "/non-match.html",
+// 			}),
+// 			new SSRTemplatePlugin("/index.html", '<div id="app"></div>'),
+// 		],
+// 	});
+// 	return expect(task).rejects.toBeInstanceOf(Error);
+// });

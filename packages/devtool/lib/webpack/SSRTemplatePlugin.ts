@@ -33,15 +33,11 @@ export default class SSRTemplatePlugin implements Plugin {
 		// 	}
 		// });
 		compiler.hooks.compilation.tap(SSRTemplatePlugin.name, (compilation) => {
-			const hook = getHooks(compilation).beforeEmit;
-			if (!hook) {
-				throw new Error("请将 html-webpack-plugin 加入到构建中");
-			}
-			hook.tap(SSRTemplatePlugin.name, this.afterHtmlProcessing.bind(this));
+			getHooks(compilation).beforeEmit.tap(SSRTemplatePlugin.name, this.beforeEmit.bind(this));
 		});
 	}
 
-	afterHtmlProcessing(data: any) {
+	beforeEmit(data: any) {
 		if (data.outputName === this.filename) {
 			this.triggered = true;
 			let html = data.html as string;
