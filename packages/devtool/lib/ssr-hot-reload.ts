@@ -15,6 +15,8 @@ const logger = log4js.getLogger("dev");
 /**
  * 读取并保存 VueSSRClientPlugin 输出的清单文件和HTML模板的插件。
  * 该插件需要被添加到客户端的构建配置里。
+ *
+ * 当 ClientManifest 或HTML模板更新时将发出 update 事件，并传递对应的 Assets。
  */
 class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
@@ -22,15 +24,15 @@ class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
 	applied = false;
 
+	private readonly readyPromiseSource = new PromiseSource<void>();
+
 	private readonly manifestFile: string;
 	private readonly templateFile: string;
-	private readonly readyPromiseSource: PromiseSource<void>;
 
 	constructor(manifestFile: string = "vue-ssr-client-manifest.json", templateFile: string = "index.template.html") {
 		super();
 		this.manifestFile = manifestFile;
 		this.templateFile = templateFile;
-		this.readyPromiseSource = new PromiseSource();
 	}
 
 	apply(compiler: Compiler): void {
@@ -72,14 +74,15 @@ interface ClientSSRHotUpdatePlugin {
 export default class VueSSRHotReloader {
 
 	public static create(clientConfig: Configuration, options: DevelopmentOptions) {
-		const plugin = new ClientSSRHotUpdatePlugin();
+		// 我觉得不太可能一个插件都没有
 		if (!clientConfig.plugins) {
-			clientConfig.plugins = []; // 我觉得不太可能一个插件都没有
+			clientConfig.plugins = [];
 		}
+
+		const plugin = new ClientSSRHotUpdatePlugin();
 		clientConfig.plugins.push(plugin);
 
-		const serverConfig = ServerConfiguration(options);
-		return new VueSSRHotReloader(plugin, serverConfig);
+		return new VueSSRHotReloader(plugin, ServerConfiguration(options));
 	}
 
 	private readonly clientPlugin: ClientSSRHotUpdatePlugin;
@@ -96,7 +99,7 @@ export default class VueSSRHotReloader {
 		this.serverConfig = serverConfig;
 
 		clientPlugin.on("update", (manifest, template) => {
-			// 新版的 html-loader 在监视模式下不再输出未变动的文件
+			// 新版 html-loader 在监视模式下不输出未变动的文件
 			if (template) {
 				this.template = template.source();
 			}
