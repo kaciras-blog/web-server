@@ -64,8 +64,7 @@ export function feedMiddleware(apiServer: string): Middleware {
 			url: apiServer + "/articles",
 			params: {
 				count: 10,
-				sort: "create_time",
-				desc: true,
+				sort: "create_time,DESC",
 				content: true,
 				category: ctx.query.category,
 				recursive: true,
