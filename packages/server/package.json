@@ -1,8 +1,13 @@
 {
 	"name": "@kaciras-blog/server",
 	"version": "0.3.0",
-	"description": "Web page and assets server of Kaciras blog",
+	"description": "Web page and assets server of Kaciras Blog",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kaciras-blog/web-server",
+		"directory": "packages/server"
+	},
 	"main": "lib/index.js",
 	"files": [
 		"bin",

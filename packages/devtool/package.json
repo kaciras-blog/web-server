@@ -1,8 +1,13 @@
 {
 	"name": "@kaciras-blog/devtool",
 	"version": "0.3.0",
-	"description": "Develop tools for Kaciras blog",
+	"description": "Develop tools for Kaciras Blog",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kaciras-blog/web-server",
+		"directory": "packages/devtool"
+	},
 	"main": "lib/index.js",
 	"files": [
 		"bin",

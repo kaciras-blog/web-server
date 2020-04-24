@@ -1,8 +1,13 @@
 {
 	"name": "@kaciras-blog/image",
 	"version": "0.3.0",
-	"description": "Image processing library for Kaciras blog",
+	"description": "Image processing library for Kaciras Blog",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kaciras-blog/web-server",
+		"directory": "packages/image"
+	},
 	"engines": {
 		"node": ">=13.6.0"
 	},
