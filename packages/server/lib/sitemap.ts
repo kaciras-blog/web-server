@@ -40,7 +40,7 @@ class ArticleCollection implements SitemapResource {
 
 	public async addItems(sitemap: SitemapStream) {
 		const response = await axios.get(this.url, {
-			params: { count: 20, sort: "update_time", desc: true },
+			params: { count: 20, sort: "update_time,DESC" },
 		});
 
 		if (response.status !== 200) {

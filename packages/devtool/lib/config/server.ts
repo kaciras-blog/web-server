@@ -13,7 +13,7 @@ export default function (options: DevelopmentOptions) {
 	options.envConfig.CONTENT_SERVER_URI = options.blog.serverAddress;
 
 	return merge(baseConfig(options, "server"), {
-		entry: "./src/entry-server.js",
+		entry: ["./src/entry-server.js"],
 		target: "node",
 		output: {
 			filename: "server-bundle.js",
