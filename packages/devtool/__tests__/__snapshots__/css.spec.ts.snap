@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should support css imports 1`] = `
+"/* This file should be import by another*/
+
+#app::before {
+	display: flex;
+}
+
+.test {
+	transition: .5s;
+}
+
+"
+`;
+
+exports[`should support less 1`] = `
+"/* This file should be import by another*/
+#app::before {
+  display: flex;
+}
+
+.parent.child {
+  width: 20rem;
+}
+
+"
+`;

@@ -1,0 +1,5 @@
+/* This file should be import by another */
+
+#app::before {
+	display: flex;
+}
