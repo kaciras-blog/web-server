@@ -1,8 +1,8 @@
 # Kaciras 博客前端服务
 
-Kaciras个人博客的前端项目之一，包括开发工具和页面服务器。
+Kaciras个人博客的前端的开发工具和页面服务器。
 
-该项目是Kaciras个人博客项目的一部分，由 @kaciras-blog/web 使用，单独使用没有意义。
+该项目是Kaciras个人博客项目的一部分，由 @kaciras-blog/website 使用，单独使用没有意义。
 
 # 构建
 
