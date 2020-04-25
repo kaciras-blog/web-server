@@ -1,8 +1,8 @@
-import fs from "fs-extra";
 import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { Server } from "net";
 import { createSecureContext, SecureContext } from "tls";
+import fs from "fs-extra";
 import { ServerOptions, SNIProperties } from "./options";
 
 
@@ -72,11 +72,15 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 		}
 
 		const omitPort = (schema === "http" && toPort === 80) || (schema === "https" && toPort === 443);
-		const getLocation = omitPort
-			? (req: RequestMessage) => `${schema}://${req.headers.host}${req.url}`
-			: (req: RequestMessage) => `${schema}://${req.headers.host}:${toPort}${req.url}`;
 
-		return (req, res) => res.writeHead(301, { Location: getLocation(req) }).end();
+		return (req, res) => {
+			const [host] = req.headers.host!.split(":");
+			const location = omitPort
+				? `${schema}://${host}${req.url}`
+				: `${schema}://${host}:${toPort}${req.url}`;
+
+			res.writeHead(301, { Location: location }).end();
+		};
 	}
 
 	if (httpsConfig) {

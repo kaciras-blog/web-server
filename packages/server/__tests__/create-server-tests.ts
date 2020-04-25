@@ -8,14 +8,14 @@ const HTTP_URL = "http://localhost:12500/";
 const HTTPS_URL = "https://localhost:12501/";
 
 const OPTIONS: ServerOptions = {
-	https: {
+	http: {
 		port: 12500,
+		redirect: true,
+	},
+	https: {
+		port: 12501,
 		certFile: resolveFixture("localhost.pem"),
 		keyFile: resolveFixture("localhost.pvk"),
-	},
-	http: {
-		port: 12501,
-		redirect: true,
 	},
 };
 

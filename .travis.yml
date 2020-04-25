@@ -6,7 +6,6 @@ git:
 
 cache: yarn
 
-node_js: 13
-
-script:
-  - yarn test:coverage
+node_js:
+  - 13
+  - 14
