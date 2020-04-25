@@ -70,23 +70,25 @@ describe("SNI callback", () => {
 	 * @param servername 服务器名
 	 */
 	function verifyCertCN(servername: string) {
+		const socket = tls.connect({
+			servername,
+			host: "localhost",
+			port: 41000,
+			rejectUnauthorized: false,
+		});
 		return new Promise((resolve, reject) => {
-			const socket = tls.connect({
-				servername,
-				host: "localhost",
-				port: 41000,
-				rejectUnauthorized: false,
-			});
 			socket.on("secureConnect", () => {
 				const cert = socket.getPeerCertificate();
 				expect(cert.subject.CN).toEqual(servername);
 			});
 			socket.on("data", (data) => {
-				expect(data.toString()).toBe("HELLO");
 				resolve();
 				socket.end();
+				expect(data.toString()).toBe("HELLO");
 			});
 			socket.on("error", reject);
+		}).finally(() => {
+			socket.destroy();
 		});
 	}
 
@@ -100,10 +102,12 @@ describe("SNI callback", () => {
 	});
 
 	it("should accept localhost", () => {
+		expect.assertions(2);
 		return verifyCertCN("localhost");
 	});
 
 	it("should accept multiple times", async () => {
+		expect.assertions(6);
 		await verifyCertCN("anotherhost");
 		await verifyCertCN("anotherhost");
 		await verifyCertCN("anotherhost");

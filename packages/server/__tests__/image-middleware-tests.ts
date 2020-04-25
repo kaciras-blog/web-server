@@ -47,6 +47,7 @@ describe("downloadImage", () => {
 			.set("Accept", "image/webp,*/*")
 			.set("Accept-Encoding", "gzip, deflate, br")
 			.expect(404);
+
 		const args = mockService.get.mock.calls[0];
 		expect(args[2]).toBe(true);
 		expect(args[3]).toBe(true);

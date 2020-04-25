@@ -2,7 +2,6 @@ import Koa from "koa";
 import { intercept } from "../lib/blog-plugin";
 import supertest from "supertest";
 
-
 describe("intercept middleware", () => {
 	const app = new Koa();
 	app.use(intercept([

@@ -98,9 +98,10 @@ describe("certificate verification", () => {
 
 	it("should success with trust", async () => {
 		const axios = Axios.create();
-		configureAxiosHttp2(axios, true, { ca: readFixtureText("localhost.pem") });
-
-		const res = await axios.get(url);
+		const cleanSessions = configureAxiosHttp2(axios, true, {
+			ca: readFixtureText("localhost.pem"),
+		});
+		const res = await axios.get(url).finally(cleanSessions);
 		expect(res.data).toBe("Hello");
 	});
 });
