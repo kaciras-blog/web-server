@@ -4,15 +4,19 @@ import { createSNICallback, runServer } from "../lib/create-server";
 import { ServerOptions } from "../lib/options";
 import { resolveFixture } from "./test-utils";
 
-const HTTP_URL = "http://localhost/";
-const HTTPS_URL = "https://localhost/";
+const HTTP_URL = "http://localhost:12500/";
+const HTTPS_URL = "https://localhost:12501/";
 
 const OPTIONS: ServerOptions = {
 	https: {
+		port: 12500,
 		certFile: resolveFixture("localhost.pem"),
 		keyFile: resolveFixture("localhost.pvk"),
 	},
-	http: { redirect: true },
+	http: {
+		port: 12501,
+		redirect: true,
+	},
 };
 
 describe("app.runServer", () => {

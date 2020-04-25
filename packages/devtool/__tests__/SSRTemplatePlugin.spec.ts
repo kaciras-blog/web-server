@@ -6,16 +6,19 @@ import { resolveFixture, runWebpack } from "./test-utils";
 it("should insert inject points", async () => {
 	const fs = await runWebpack({
 		entry: resolveFixture("entry-empty.js"),
+		output: {
+			path: process.cwd(),
+		},
 		plugins: [
 			new HtmlWebpackPlugin({
 				template: resolveFixture("template.html"),
-				filename: "/index.html",
+				filename: "index.html",
 			}),
-			new SSRTemplatePlugin("/index.html", '<div id="app"></div>'),
+			new SSRTemplatePlugin("index.html", '<div id="app"></div>'),
 		],
 	});
 
-	const output = fs.readFileSync("/index.html", "utf8");
+	const output = fs.readFileSync(path.resolve("index.html"), "utf8");
 	expect(output).toMatch("<title>{{title}}</title>");
 	expect(output).toMatch("{{{meta}}}");
 	expect(output).toMatch("<!--vue-ssr-outlet-->");

@@ -1,3 +1,4 @@
+import "path";
 import { Compiler, Plugin } from "webpack";
 import { getHooks } from "html-webpack-plugin";
 
@@ -38,7 +39,6 @@ export default class SSRTemplatePlugin implements Plugin {
 	}
 
 	beforeEmit(data: any) {
-		console.warn(data.outputName);
 		if (data.outputName === this.filename) {
 			this.triggered = true;
 			let html = data.html as string;
