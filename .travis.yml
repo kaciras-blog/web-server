@@ -1,0 +1,12 @@
+language: node_js
+
+git:
+  depth: false
+  quiet: true
+
+cache: yarn
+
+node_js: 13
+
+script:
+  - yarn test:coverage
