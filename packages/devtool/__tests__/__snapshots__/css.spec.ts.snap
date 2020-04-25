@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`should support css imports 1`] = `
-"/* This file should be import by another*/
+"/* This file should be import by another */
 
 #app::before {
 	display: flex;
@@ -15,7 +15,7 @@ exports[`should support css imports 1`] = `
 `;
 
 exports[`should support less 1`] = `
-"/* This file should be import by another*/
+"/* This file should be import by another */
 #app::before {
   display: flex;
 }
