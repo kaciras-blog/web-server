@@ -30,10 +30,11 @@ export function createSNICallback(properties: SNIProperties[]) {
  *
  * @param server 服务器
  * @param port 端口
+ * @param hostname 绑定的主机名
  * @return 原样返回服务器对象
  */
-function listenAsync(server: Server, port: number): Promise<Server> {
-	return new Promise((resolve) => server.listen(port, () => resolve(server)));
+function listenAsync(server: Server, port: number, hostname: string): Promise<Server> {
+	return new Promise((resolve) => server.listen(port, hostname, () => resolve(server)));
 }
 
 /**
@@ -44,7 +45,12 @@ function listenAsync(server: Server, port: number): Promise<Server> {
  * @return 关闭创建的服务器的函数
  */
 export async function runServer(requestHandler: OnRequestHandler, options: ServerOptions) {
-	const { http: httpConfig, https: httpsConfig } = options;
+	const {
+		hostname = "localhost",
+		http: httpConfig,
+		https: httpsConfig,
+	} = options;
+
 	const servers: Server[] = [];
 
 	const httpPort = httpConfig && httpConfig.port || 80;
@@ -82,12 +88,12 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 			allowHTTP1: true,
 		};
 		const server = http2.createSecureServer(config, getHandler(redirect, "http", httpPort));
-		servers.push(await listenAsync(server, httpsPort));
+		servers.push(await listenAsync(server, httpsPort, hostname));
 	}
 
 	if (httpConfig) {
 		const server = http.createServer(getHandler(httpConfig.redirect, "https", httpsPort));
-		servers.push(await listenAsync(server, httpPort));
+		servers.push(await listenAsync(server, httpPort, hostname));
 	}
 
 	// Keep-Alive 的连接无法关闭，反而会使close方法一直等待，所以close的参数里没有回调

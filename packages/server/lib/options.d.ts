@@ -15,6 +15,7 @@ export interface AppOptions {
 }
 
 export interface ServerOptions {
+	hostname?: string;
 	http?: HttpServerOptions;
 	https?: HttpsServerOptions;
 }
