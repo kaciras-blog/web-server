@@ -4,7 +4,7 @@ import MFS from "memory-fs";
 import { Context } from "koa";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
-import webpack, { Compiler, Configuration, Plugin } from "webpack";
+import webpack, { Compiler, Configuration, Plugin, Watching } from "webpack";
 import PromiseSource from "@kaciras-blog/server/lib/PromiseSource";
 import { renderPage } from "@kaciras-blog/server/lib/ssr-middleware";
 import { DevelopmentOptions } from "./options";
@@ -29,7 +29,8 @@ class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 	private readonly manifestFile: string;
 	private readonly templateFile: string;
 
-	constructor(manifestFile: string = "vue-ssr-client-manifest.json", templateFile: string = "index.template.html") {
+	constructor(manifestFile: string = "vue-ssr-client-manifest.json",
+				templateFile: string = "index.template.html") {
 		super();
 		this.manifestFile = manifestFile;
 		this.templateFile = templateFile;
@@ -94,6 +95,8 @@ export default class VueSSRHotReloader {
 
 	private renderer!: BundleRenderer;
 
+	private watching?: Watching;
+
 	constructor(clientPlugin: ClientSSRHotUpdatePlugin, serverConfig: Configuration) {
 		this.clientPlugin = clientPlugin;
 		this.serverConfig = serverConfig;
@@ -108,16 +111,20 @@ export default class VueSSRHotReloader {
 		});
 	}
 
+	close(callback = () => {}) {
+		if (!this.watching) {
+			throw new Error("Not started yet.")
+		}
+		this.watching.close(callback);
+	}
+
 	/**
-	 * 创建服务端渲染的中间件，该中间件在webpack重新构建之后会自动重载新的资源。
-	 *
-	 * 【实现】
 	 * 使用 webpack.watch 来监视文件的变更，并输出到内存文件系统中，
 	 * 在每次构建完成后会更新 serverBundle 以实现服务端构建的热重载。
 	 *
-	 * @return 一个Promise，在初始化完成后 resolve，返回中间件。
+	 * @return 用于等待初始化完成的Promise
 	 */
-	async getKoaMiddleware() {
+	watch() {
 		/*
 		 * 检查 ClientSSRHotUpdatePlugin 是否被正确地加入客户端构建，因为该插件如过忘了添加
 		 * 或是客户端的构建在此方法之后运行则会造成程序死锁。
@@ -132,7 +139,7 @@ export default class VueSSRHotReloader {
 		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
 		const readyPromise = new PromiseSource();
-		compiler.watch({}, (err, stats) => {
+		this.watching = compiler.watch({}, (err, stats) => {
 			if (err) {
 				throw err;
 			}
@@ -144,9 +151,15 @@ export default class VueSSRHotReloader {
 			readyPromise.resolve();
 		});
 
-		await Promise.all([readyPromise, this.clientPlugin.ready()]);
+		return Promise.all([readyPromise, this.clientPlugin.ready()]);
+	}
 
-		logger.info("创建支持热重载的服务端渲染器");
+	/**
+	 * 获取服务端渲染的中间件，该中间件在webpack重新构建之后会自动重载新的资源。
+	 *
+	 * @return 中间件
+	 */
+	get koaMiddleware() {
 		return (ctx: Context) => renderPage(this.renderer, ctx);
 	}
 

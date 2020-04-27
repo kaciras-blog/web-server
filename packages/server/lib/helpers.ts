@@ -63,11 +63,11 @@ export async function configureGlobalAxios(origin: string, trusted?: string | tr
 
 	if (typeof trusted === "string") {
 		const ca = await fs.readFile(trusted);
-		configureAxiosHttp2(Axios, https, { ca });
+		return configureAxiosHttp2(Axios, https, { ca });
 	} else {
 		if (trusted) {
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 		}
-		configureAxiosHttp2(Axios, https);
+		return configureAxiosHttp2(Axios, https);
 	}
 }

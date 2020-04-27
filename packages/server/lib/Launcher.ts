@@ -12,10 +12,14 @@ import { BlogServerOptions } from "./options";
 
 const logger = log4js.getLogger();
 
-type CommandHandler<T> = (options: T) => void | Promise<any>;
+/**
+ * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
+ */
+type HandlerRV = void | (() => void);
+type CommandHandler<T> = (options: T) => HandlerRV | Promise<HandlerRV>;
 
 async function runProd(options: BlogServerOptions) {
-	await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
+	const closeHttp2Sessions = await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
 
 	const api = new ApplicationBuilder();
 	api.addPlugin(getBlogPlugin(options.blog));
@@ -26,8 +30,9 @@ async function runProd(options: BlogServerOptions) {
 		maxAge: 31536000,
 	}));
 
-	await runServer(api.build().callback(), options.server);
-	logger.info("启动完毕");
+	const closeServer = await runServer(api.build().callback(), options.server);
+	logger.info("Startup completed.");
+	return () => { closeHttp2Sessions(); closeServer(); }
 }
 
 /**
@@ -73,11 +78,20 @@ export default class Launcher<T extends BlogServerOptions> {
 		configureLog4js({ level: "info" });
 
 		const handler = this.commands.get(args._[0]);
-		if (handler) {
-			return handler(require(configFile));
+		if (!handler) {
+			const names = Array.from(this.commands.keys()).join(", ");
+			console.error(`Unknown command: ${args._[0]}, supported commands: ${names}`);
+			process.exit(2);
 		}
 
-		const names = Array.from(this.commands.keys()).join(", ");
-		logger.error(`未知的命令：${args._[0]}，支持的命令有：${names}`);
+		Promise.resolve(handler(require(configFile))).then((shutdownHook) => {
+			const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
+			signals.forEach((signal) => process.on(signal, () => {
+				if (shutdownHook) {
+					shutdownHook();
+				}
+				logger.info("Stopping application...");
+			}));
+		});
 	}
 }

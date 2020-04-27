@@ -7,7 +7,7 @@ import Launcher from "@kaciras-blog/server/lib/Launcher";
 import { runServer } from "@kaciras-blog/server/lib/create-server";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
 import ApplicationBuilder from "@kaciras-blog/server/lib/ApplicationBuilder";
-import { createHotMiddleware, createKoaWebpack } from "./dev-middleware";
+import { ClosableMiddleware, createHotMiddleware, createKoaWebpack } from "./dev-middleware";
 import VueSSRHotReloader from "./ssr-hot-reload";
 import ClientConfiguration from "./config/client";
 import ServerConfiguration from "./config/server";
@@ -38,7 +38,7 @@ async function invokeWebpack(config: Configuration) {
  * 启动开发服务器，它提供了热重载功能。
  */
 launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
-	await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
+	const closeHttp2Sessions = await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
 
 	const api = new ApplicationBuilder();
 	api.addPlugin(getBlogPlugin(options.blog));
@@ -46,16 +46,26 @@ launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 	const clientConfig = ClientConfiguration(options);
 	const vueSSRHotReloader = VueSSRHotReloader.create(clientConfig, options);
 
+	let devMiddleware: ClosableMiddleware;
 	if (options.dev.useHotClient !== false) {
-		api.useBeforeFilter(await createKoaWebpack(clientConfig));
+		devMiddleware = await createKoaWebpack(clientConfig);
 	} else {
-		api.useBeforeFilter(await createHotMiddleware(clientConfig));
+		devMiddleware = await createHotMiddleware(clientConfig);
 	}
+	api.useBeforeFilter(devMiddleware);
 
-	api.useFallBack(await vueSSRHotReloader.getKoaMiddleware());
+	await vueSSRHotReloader.watch();
+	api.useFallBack(vueSSRHotReloader.koaMiddleware);
 
-	await runServer(api.build().callback(), options.server);
+	const closeServer = await runServer(api.build().callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);
+
+	return () => {
+		closeHttp2Sessions();
+		closeServer();
+		devMiddleware.close();
+		vueSSRHotReloader.close();
+	}
 });
 
 launcher.registerCommand("build", async (options: DevelopmentOptions) => {
@@ -71,7 +81,7 @@ launcher.registerCommand("build", async (options: DevelopmentOptions) => {
 	await invokeWebpack(clientConfig);
 	await invokeWebpack(ServerConfiguration(options));
 
-	console.log(chalk.cyan("Build complete.\n"));
+	console.log(chalk.cyan("Build complete."));
 });
 
 export default launcher;

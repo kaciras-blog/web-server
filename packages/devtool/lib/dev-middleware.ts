@@ -4,6 +4,10 @@ import { NextHandleFunction } from "connect";
 import koaWebpack from "koa-webpack";
 import WebpackHotMiddlewareType from "webpack-hot-middleware";
 
+export interface ClosableMiddleware extends Middleware {
+	close(callback?: () => any): void;
+}
+
 /**
  * koaWebpack 使用 webpack-hot-client，与 webpack-hot-middleware 不同的是它使用 WebSocket 来发送
  * 更新通知。
@@ -46,7 +50,7 @@ export function createKoaWebpack(config: Configuration) {
  * @param config webpack的配置
  * @deprecated 尽量使用上面的 createKoaWebpack
  */
-export async function createHotMiddleware(config: Configuration): Promise<Middleware> {
+export async function createHotMiddleware(config: Configuration) {
 	if (!config.entry) {
 		throw new Error("No entry specified.");
 	}
@@ -80,7 +84,7 @@ export async function createHotMiddleware(config: Configuration): Promise<Middle
 	}
 
 	// 这下面的部分参考了 koa-webpack https://github.com/shellscape/koa-webpack/blob/master/lib/middleware.js
-	return (ctx, next) => {
+	const middleware: Middleware = (ctx, next) => {
 
 		// wait for webpack-dev-middleware to signal that the build is ready
 		const ready = new Promise((resolve, reject) => {
@@ -106,4 +110,8 @@ export async function createHotMiddleware(config: Configuration): Promise<Middle
 
 		return Promise.all([ready, handling]);
 	};
+
+	(middleware as ClosableMiddleware).close = devMiddleware.close.bind(devMiddleware);
+
+	return middleware as ClosableMiddleware;
 }
