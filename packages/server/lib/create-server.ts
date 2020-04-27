@@ -1,6 +1,6 @@
 import http, { IncomingMessage, ServerResponse } from "http";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
-import { Server } from "net";
+import { Server, Socket } from "net";
 import { createSecureContext, SecureContext } from "tls";
 import fs from "fs-extra";
 import { ServerOptions, SNIProperties } from "./options";
@@ -100,6 +100,18 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 		servers.push(await listenAsync(server, httpPort, hostname));
 	}
 
-	// Keep-Alive 的连接无法关闭，反而会使close方法一直等待，所以close的参数里没有回调
-	return () => servers.forEach((s) => s.close());
+	// Server.close 方法不会立即断开 Keep-Alive 的连接，这会使程序延迟几分钟才能结束。
+	// 这里手动记录下所有的链接，在服务器关闭时销毁它们来避免上述问题。
+	const connections = new Set<Socket>();
+	for (const server of servers) {
+		server.on("connection", (socket: Socket) => {
+			connections.add(socket);
+			socket.on("close", () => connections.delete(socket));
+		});
+	}
+
+	return () => {
+		servers.forEach((s) => s.close());
+		connections.forEach((s) => s.destroy());
+	}
 }
