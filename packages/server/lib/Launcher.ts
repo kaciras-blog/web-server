@@ -47,18 +47,12 @@ export default class Launcher<T extends BlogServerOptions> {
 		this.commands.set(command, handler);
 	}
 
-	run() {
-		configureLog4js({ level: "info" });
-
-		// TODO: 听说 Node 以后会移除 unhandledRejection
-		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
-		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
-
+	run(argv: string[]) {
 		// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 		process.env.NODE_PATH = path.resolve("node_modules");
 		require("module").Module._initPaths();
 
-		const args = parseArgs(process.argv.slice(2));
+		const args = parseArgs(argv);
 		let configFile = path.join(process.cwd(), "config");
 
 		if (args.profile) {
@@ -69,8 +63,14 @@ export default class Launcher<T extends BlogServerOptions> {
 		try {
 			require.resolve(configFile);
 		} catch (e) {
-			return logger.error("找不到配置文件：" + configFile);
+			console.error("Can not find config file: " + configFile);
+			process.exit(1);
 		}
+
+		// TODO: 听说 Node 以后会移除 unhandledRejection
+		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
+		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
+		configureLog4js({ level: "info" });
 
 		const handler = this.commands.get(args._[0]);
 		if (handler) {
