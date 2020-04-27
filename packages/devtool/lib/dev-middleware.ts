@@ -3,6 +3,7 @@ import { Middleware } from "koa";
 import { NextHandleFunction } from "connect";
 import koaWebpack from "koa-webpack";
 import WebpackHotMiddlewareType from "webpack-hot-middleware";
+import WebpackHotMiddleware from "webpack-hot-middleware";
 
 export interface ClosableMiddleware extends Middleware {
 	close(callback?: () => any): void;
@@ -75,10 +76,10 @@ export async function createHotMiddleware(config: Configuration) {
 	});
 
 	// 使用 TypeScript 的延迟加载，保证在调用时才会 require("webpack-hot-middleware")
-	let hotMiddleware: NextHandleFunction;
+	let hotMiddleware: NextHandleFunction & WebpackHotMiddleware.EventStream;
 	try {
-		const WebpackHotMiddleware: typeof WebpackHotMiddlewareType = require("webpack-hot-middleware");
-		hotMiddleware = WebpackHotMiddleware(compiler, { heartbeat: 5000 });
+		const ctor: typeof WebpackHotMiddlewareType = require("webpack-hot-middleware");
+		hotMiddleware = ctor(compiler, { heartbeat: 5000 });
 	} catch (e) {
 		throw new Error("You need install `webpack-hot-middleware`, try `npm i -D webpack-hot-middleware`");
 	}
@@ -111,7 +112,10 @@ export async function createHotMiddleware(config: Configuration) {
 		return Promise.all([ready, handling]);
 	};
 
-	(middleware as ClosableMiddleware).close = devMiddleware.close.bind(devMiddleware);
+	(middleware as ClosableMiddleware).close = () => {
+		devMiddleware.close();
+		hotMiddleware.close();
+	}
 
 	return middleware as ClosableMiddleware;
 }
