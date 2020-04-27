@@ -5,7 +5,6 @@ import { Context } from "koa";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin, Watching } from "webpack";
-import PromiseSource from "@kaciras-blog/server/lib/PromiseSource";
 import { renderPage } from "@kaciras-blog/server/lib/ssr-middleware";
 
 const logger = log4js.getLogger("dev");
@@ -19,8 +18,6 @@ const logger = log4js.getLogger("dev");
 export class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 
 	static readonly ID = "ClientSSRHotUpdatePlugin";
-
-	private readonly readyPromiseSource = new PromiseSource<void>();
 
 	private readonly manifestName: string;
 	private readonly templateName: string;
@@ -45,16 +42,10 @@ export class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 			if (compilation.getStats().hasErrors()) {
 				return;
 			}
-			this.readyPromiseSource.resolve();
-
 			this.manifest = compilation.assets[this.manifestName];
 			this.template = compilation.assets[this.templateName];
 			this.emit("update");
 		});
-	}
-
-	ready(): PromiseLike<void> {
-		return this.readyPromiseSource;
 	}
 }
 
@@ -86,6 +77,15 @@ export default class VueSSRHotReloader {
 		this.serverConfig = serverConfig;
 	}
 
+	/**
+	 * 获取服务端渲染的中间件，该中间件在webpack重新构建之后会自动重载新的资源。
+	 *
+	 * @return 中间件
+	 */
+	get koaMiddleware() {
+		return (ctx: Context) => renderPage(this.renderer, ctx);
+	}
+
 	close(callback = () => {}) {
 		if (!this.watching) {
 			throw new Error("Not started yet.")
@@ -100,9 +100,13 @@ export default class VueSSRHotReloader {
 	 * @return 用于等待初始化完成的Promise
 	 */
 	watch() {
-		const clientPlugins = this.clientConfig.plugins || [];
-		const plugin = clientPlugins.find((v) => v instanceof ClientSSRHotUpdatePlugin);
+		return Promise.all([this.initClientCompiler(), this.initServerCompiler()]);
+	}
 
+	private initClientCompiler() {
+		const clientPlugins = this.clientConfig.plugins || [];
+
+		const plugin = clientPlugins.find((v) => v instanceof ClientSSRHotUpdatePlugin);
 		if (!plugin) {
 			throw new Error("请将ClientSSRHotUpdatePlugin加入到客户端构建配置里。")
 		}
@@ -119,15 +123,21 @@ export default class VueSSRHotReloader {
 			this.updateVueSSR();
 		}
 
-		if (hotUpdatePlugin.manifest) {
-			updateClientResources();
-		}
 		hotUpdatePlugin.on("update", updateClientResources);
 
+		if (hotUpdatePlugin.manifest) {
+			updateClientResources();
+			return Promise.resolve();
+		} else {
+			return new Promise(resolve => hotUpdatePlugin.once("update", resolve));
+		}
+	}
+
+	private initServerCompiler() {
 		const compiler = webpack(this.serverConfig);
 		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
 
-		const readyPromise = new Promise(resolve => {
+		return new Promise(resolve => {
 			this.watching = compiler.watch({}, (err, stats) => {
 				if (err) {
 					throw err;
@@ -140,17 +150,6 @@ export default class VueSSRHotReloader {
 				this.updateVueSSR();
 			});
 		})
-
-		return Promise.all([readyPromise, hotUpdatePlugin.ready()]);
-	}
-
-	/**
-	 * 获取服务端渲染的中间件，该中间件在webpack重新构建之后会自动重载新的资源。
-	 *
-	 * @return 中间件
-	 */
-	get koaMiddleware() {
-		return (ctx: Context) => renderPage(this.renderer, ctx);
 	}
 
 	/**
