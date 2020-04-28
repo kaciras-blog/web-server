@@ -7,7 +7,7 @@ import { DownloadContext, downloadImage, route, uploadImage } from "../lib/image
 
 jest.mock("fs");
 
-const FILE_PATH = "/valid_file.png";
+const FILE_PATH = "/photo.png";
 const IMAGE_DATA = Buffer.from("R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==", "base64");
 
 const mockService = {
@@ -32,6 +32,10 @@ describe("downloadImage", () => {
 			.get(FILE_PATH)
 			.expect(200)
 			.expect(Buffer.from(IMAGE_DATA));
+
+		const args = mockService.get.mock.calls[0];
+		expect(args[2]).toBe(false);
+		expect(args[3]).toBe(false);
 	});
 
 	it("should fail on non exists file", async () => {

@@ -33,7 +33,7 @@ export interface DownloadContext extends ExtendableContext {
  */
 export async function downloadImage(service: PreGenerateImageService, ctx: DownloadContext) {
 	const [hash, ext] = ctx.params.name.split(".", 2);
-	const acceptWebp = Boolean(ctx.accept.type("image/webp"));
+	const acceptWebp = (ctx.accept.type() as string[]).indexOf("image/webp") > -1;
 	const acceptBrotli = Boolean(ctx.accept.encoding("br"));
 
 	const result = await service.get(hash, ext, acceptWebp, acceptBrotli);
