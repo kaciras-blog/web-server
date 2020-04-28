@@ -10,13 +10,20 @@ const logger = log4js.getLogger("SSR");
 
 /** 传递给服务端入口的上下文信息 */
 export interface RenderContext {
+
+	/** 页面的标题 */
 	title: string;
+
+	/** 插入到页面头的一些元素 */
 	meta: string;
+
+	/** 如果路由结果为404错误页则为true */
+	notFound?: boolean;
 
 	/**
 	 * 页面的完整URL，可以从中获取origin、protocol、query等信息，而VueRouter只有path。
 	 *
-	 * 因为 NodeJS 的 URL 类并不在全局域，所以这里给解析好了免得在前端代码里 require("url")。
+	 * 因为 NodeJS 的 URL 类并不在全局域，所以在这里传递以免在前端代码里 require("url")。
 	 * URL 的成员类似 Location，要获取字符串形式的可以用 URL.toString()。
 	 */
 	url: URL;
@@ -28,7 +35,6 @@ export interface RenderContext {
 const DEFAULT_CONTEXT = {
 	title: "Kaciras的博客",
 	meta: "",
-	shellOnly: false,
 };
 
 /**
@@ -49,6 +55,10 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 
 	try {
 		ctx.body = await render.renderToString(renderContext);
+
+		if (renderContext.notFound) {
+			ctx.status = 404; // 懒得管是返回页面还是空响应体了
+		}
 	} catch (e) {
 		switch (e.code) {
 			case 301:
@@ -58,9 +68,11 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 				return;
 		}
 		logger.error("服务端渲染出错", e);
-		const errorContext = { ...DEFAULT_CONTEXT, url: new URL("/error/500", ctx.href) };
 		ctx.status = 503;
-		ctx.body = await render.renderToString(errorContext);
+		ctx.body = await render.renderToString({
+			...DEFAULT_CONTEXT,
+			url: new URL("/error/500", ctx.href),
+		});
 	}
 }
 
