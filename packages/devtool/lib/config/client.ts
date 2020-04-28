@@ -73,10 +73,14 @@ export default function (options: DevelopmentOptions) {
 			excludes: ["**/.*", "**/*.{map,woff,eot,ttf}"],
 			includes: [assetsPath("**/*")],
 
-			// 这个傻B插件都不晓得把路径分隔符转换下
-			transformOptions: (data: ServiceWorkerOption) => ({
-				assets: data.assets.map((path_) => path_.replace(/\\/g, "/")),
-			}),
+			// 图片就不预载了，浪费流量。
+			// 这个傻B插件都不晓得把路径分隔符转换下。
+			transformOptions(data: ServiceWorkerOption) {
+				let { assets } = data;
+				assets = assets.filter(name => !name.startsWith("/static/img/"));
+				assets = assets.map(name => name.replace(/\\/g, "/"));
+				return { assets };
+			},
 		}),
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:8].css"),
