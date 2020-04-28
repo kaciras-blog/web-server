@@ -31,7 +31,7 @@
 		"koa": "^2.11.0",
 		"koa-bodyparser": "^4.3.0",
 		"koa-compose": "^4.1.0",
-		"koa-compress": "^3.1.0",
+		"koa-compress": "^4.0.0",
 		"koa-conditional-get": "^2.0.0",
 		"koa-static": "^5.0.0",
 		"log4js": "^6.2.1",
@@ -40,11 +40,11 @@
 		"markdown-it-toc-done-right": "^4.1.0",
 		"minimist": "^1.2.5",
 		"multer": "^1.4.2",
-		"sitemap": "^6.1.1",
+		"sitemap": "^6.1.2",
 		"vue-server-renderer": "2.6.11"
 	},
 	"devDependencies": {
 		"@types/koa-bodyparser": "^4.3.0",
-		"@types/markdown-it": "^10.0.0"
+		"@types/markdown-it": "^10.0.1"
 	}
 }

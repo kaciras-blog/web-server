@@ -109,7 +109,10 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 			/\.(?:js|css)\.map$/,
 			/^\/index\.template|vue-ssr/,
 		]));
-		api.useFilter(compress({ threshold: 1024 }));
+
+		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
+		// @ts-ignore TODO: 类型定义没跟上版本
+		api.useFilter(compress({ br: false, threshold: 1024, }));
 
 		api.useResource(createImageMiddleware(options));
 		api.useResource(serviceWorkerToggle(true));
