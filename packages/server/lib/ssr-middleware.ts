@@ -12,7 +12,6 @@ const logger = log4js.getLogger("SSR");
 export interface RenderContext {
 	title: string;
 	meta: string;
-	shellOnly: boolean;
 
 	/**
 	 * 页面的完整URL，可以从中获取origin、protocol、query等信息，而VueRouter只有path。
@@ -45,7 +44,6 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 	const renderContext: RenderContext = {
 		...DEFAULT_CONTEXT,
 		request: ctx,
-		shellOnly: ctx.query.shellOnly,
 		url: new URL(ctx.href),
 	};
 
