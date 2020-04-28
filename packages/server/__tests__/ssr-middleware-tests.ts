@@ -8,12 +8,20 @@ const koa = new Koa();
 koa.use((ctx) => renderPage({ renderToString: renderFn } as any, ctx));
 const callback = koa.callback();
 
-it("should pass render context", async () => {
+it("should render page", async () => {
 	const request = supertest(callback).get("/test?a=b");
-	await request.expect(200);
+	await request.expect(200, "test content");
 
 	const context = renderFn.mock.calls[0][0];
 	expect(context.url.toString()).toBe(request.url);
+});
+
+it("should respond with status 404 for nonexistent resource", () => {
+	renderFn.mockImplementationOnce(async (ctx) => {
+		ctx.notFound = true;
+		return "test content";
+	});
+	return supertest(callback).get("/test").expect(404);
 });
 
 it("should perform custom redirect", () => {
