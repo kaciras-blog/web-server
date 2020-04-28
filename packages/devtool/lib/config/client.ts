@@ -68,7 +68,6 @@ export default function (options: DevelopmentOptions) {
 		),
 		new ServiceWorkerWebpackPlugin({
 			entry: "./src/service-worker/index",
-			filename: assetsPath("sw.js"),
 
 			// 支持ServiceWorker的浏览器也支持woff2，其他字体就不需要了
 			excludes: ["**/.*", "**/*.{map,woff,eot,ttf}"],
@@ -100,7 +99,7 @@ export default function (options: DevelopmentOptions) {
 	};
 	plugins.push(new HtmlWebpackPlugin({
 		template: "public/index.html",
-		filename: assetsPath("app-shell.html"),
+		filename: "app-shell.html",
 		minify: htmlMinifyOptions,
 	}));
 
