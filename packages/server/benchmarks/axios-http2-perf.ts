@@ -10,7 +10,7 @@ import { configureAxiosHttp2 } from "../lib/axios-helper";
  * 不缓存 ClientHttp2Session - 1368 毫秒
  */
 const axios = Axios.create();
-configureAxiosHttp2(axios);
+const closeClients = configureAxiosHttp2(axios);
 
 const server = http2.createServer(((request, response) => response.end("benchmark")));
 
@@ -19,8 +19,8 @@ async function run() {
 
 	// 先检查一下下服务器是否能正确响应
 	const res = await axios.get(url);
-	assert.equal(res.status, 200);
-	assert.equal(res.data, "benchmark");
+	assert.strictEqual(res.status, 200);
+	assert.strictEqual(res.data, "benchmark");
 
 	async function iterate() {
 		const from = process.hrtime();
@@ -36,7 +36,9 @@ async function run() {
 		results += await iterate();
 	}
 
+	closeClients();
 	server.close();
+
 	console.log(`平均用时：${results / 5}ms`);
 }
 
