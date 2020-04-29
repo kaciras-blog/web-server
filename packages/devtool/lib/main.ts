@@ -40,8 +40,8 @@ async function invokeWebpack(config: Configuration) {
 launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 	const closeHttp2Sessions = await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
 
-	const api = new ApplicationBuilder();
-	api.addPlugin(getBlogPlugin(options.blog));
+	const builder = new ApplicationBuilder();
+	builder.addPlugin(getBlogPlugin(options.blog));
 
 	const clientConfig = ClientConfiguration(options);
 	clientConfig.plugins!.push(new ClientSSRHotUpdatePlugin())
@@ -52,13 +52,13 @@ launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 	} else {
 		devMiddleware = await createHotMiddleware(clientConfig);
 	}
-	api.useBeforeFilter(devMiddleware);
+	builder.useBeforeFilter(devMiddleware);
 
 	const vueSSRHotReloader = new VueSSRHotReloader(clientConfig, ServerConfiguration(options));
 	await vueSSRHotReloader.watch();
-	api.useFallBack(vueSSRHotReloader.koaMiddleware);
+	builder.useFallBack(vueSSRHotReloader.koaMiddleware);
 
-	const closeServer = await runServer(api.build().callback(), options.server);
+	const closeServer = await runServer(builder.build().callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);
 
 	return () => {

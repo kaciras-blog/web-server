@@ -8,7 +8,7 @@ import ApplicationBuilder from "./ApplicationBuilder";
 
 const logger = log4js.getLogger("SSR");
 
-/** 传递给服务端入口的上下文信息 */
+/** 传递给服务端入口的上下文信息，其属性可以在渲染中被修改 */
 export interface RenderContext {
 
 	/** 页面的标题 */

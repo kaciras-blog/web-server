@@ -21,16 +21,16 @@ type CommandHandler<T> = (options: T) => HandlerRV | Promise<HandlerRV>;
 async function runProd(options: BlogServerOptions) {
 	const closeHttp2Sessions = await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
 
-	const api = new ApplicationBuilder();
-	api.addPlugin(getBlogPlugin(options.blog));
-	api.addPlugin(await createSSRProductionPlugin(options.outputDir));
+	const builder = new ApplicationBuilder();
+	builder.addPlugin(getBlogPlugin(options.blog));
+	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
-	api.useResource(serve(options.outputDir, {
+	builder.useResource(serve(options.outputDir, {
 		index: false,
 		maxAge: 31536000,
 	}));
 
-	const closeServer = await runServer(api.build().callback(), options.server);
+	const closeServer = await runServer(builder.build().callback(), options.server);
 	logger.info("Startup completed.");
 	return () => { closeHttp2Sessions(); closeServer(); }
 }

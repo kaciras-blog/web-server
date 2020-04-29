@@ -29,7 +29,9 @@ interface LoaderChainOptions {
  * 3）每个加载器链的顶层是预处理器的加载器（如果有），然后是 postcss-loader、css-loader，最后根据情况选择
  *    vue-style-loader 提供内联和热重载，或是 MiniCssExtractPlugin.loader 输出到文件。
  *
+ * @see https://github.com/vuejs/vue-cli/blob/dev/packages/%40vue/cli-service/lib/config/css.js
  * @param options 生成选项
+ * @return 加载器列表
  */
 export default function generateCssLoaders(options: LoaderChainOptions): RuleSetRule[] {
 

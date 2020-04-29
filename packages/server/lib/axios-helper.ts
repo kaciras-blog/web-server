@@ -1,6 +1,8 @@
 /*
  * 自定义Axios，使其更好地支持本博客系统。
- * 【警告】Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
+ *
+ * 【警告】
+ * Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
 import { Context } from "koa";
 import log4js from "log4js";
@@ -145,7 +147,7 @@ export class CachedFetcher<T, R> {
 }
 
 /**
- * 修改指定 Axios 实例的 transport 配置，使其使用 http2 模块发送请求。
+ * 修改指定 Axios 实例的 transport 配置，让其使用 http2 模块发送请求。
  *
  * @param axios 要配置的Axios实例
  * @param https 是否使用TLS链接，因为Axios的蛋疼设计，request 的选项里没有协议，必须提前指定

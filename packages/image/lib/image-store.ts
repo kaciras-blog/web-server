@@ -12,11 +12,11 @@ export interface ImageKey {
 export type ImageStore = (key: ImageKey) => LocalFileSlot;
 
 /**
- * 图片存储槽，控制一张图片及其衍生图（缓存）的存取。
+ * 图片存储槽，控制一张图片及其缓存的存取。
  *
- * 按标签划分目录 vs. 按图片划分目录：
- * 按图片划分的话每个图片跟它的衍生缓存放在一个目录，这样做找一个图片的所有衍生图很容易，而且不同的
- * 图片之间没有关联是可以隔离的。按标签划分的优势是一旦标签的处理逻辑有改动，直接就能清理相应的衍生图，
+ * 【按标签划分目录 vs. 按图片划分目录】
+ * 按图片划分的话每个图片跟它的缓存缓存放在一个目录，这样做找一个图片的所有缓存很容易，而且不同的
+ * 图片之间没有关联是可以隔离的。按标签划分的优势是一旦标签的处理逻辑有改动，直接就能清理相应的缓存，
  * 而且原图都在一个目录里好做备份。目前来看按标签划分更好。
  */
 export class LocalFileSlot {
@@ -41,18 +41,18 @@ export class LocalFileSlot {
 		return fs.readFile(this.originPath());
 	}
 
-	/** 判断该t图片是否存在 */
+	/** 判断该图片是否存在 */
 	exists() {
 		return fs.pathExists(this.originPath());
 	}
 
-	/** 读取衍生图 */
+	/** 获取缓存图的路径，如果不存在则为null */
 	getCache(tags: ImageTags) {
 		const file = this.cachePath(tags);
 		return fs.pathExists(file).then((exists) => exists ? file : null);
 	}
 
-	/** 保存衍生图 */
+	/** 保存缓存图 */
 	async putCache(tags: ImageTags, buffer: Buffer | string) {
 		const file = this.cachePath(tags);
 		await fs.ensureFile(file);

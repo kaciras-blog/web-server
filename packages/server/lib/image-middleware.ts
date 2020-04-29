@@ -33,6 +33,9 @@ export interface DownloadContext extends ExtendableContext {
  */
 export async function downloadImage(service: PreGenerateImageService, ctx: DownloadContext) {
 	const [hash, ext] = ctx.params.name.split(".", 2);
+
+	// 浏览器的Accept头总是有一个*/*，导致ctx.accept.type("image/webp")总是true
+	// 故只能去匹配原始字符串
 	const acceptWebp = (ctx.accept.type() as string[]).indexOf("image/webp") > -1;
 	const acceptBrotli = Boolean(ctx.accept.encoding("br"));
 
@@ -43,9 +46,8 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Downl
 		return ctx.status = 404;
 	}
 
-	const stats = await fs.stat(result.path);
-
 	// 修改时间要以被请求的图片为准而不是原图，因为处理器可能被修改并重新生成了缓存
+	const stats = await fs.stat(result.path);
 	ctx.set("Last-Modified", stats.mtime.toUTCString());
 	ctx.set("Cache-Control", "max-age=31536000");
 
@@ -97,7 +99,7 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
 /**
  * 该函数的作用类似 @koa/router，组合上传和下载函数，返回新的中间件。
  *
- * 【新的中间件的功能】
+ * 【新中间件的功能】
  * 1）GET 方法映射到 downloadFn，并自动设置 ctx.params.name。
  * 2）POST 方法映射到 uploadFn。
  * 3）其他方法返回405.
