@@ -154,7 +154,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 				"process.env.CONFIG": JSON.stringify(options.envConfig),
 			}),
 			new VueLoaderPlugin(),
-			new CaseSensitivePathsPlugin(),
+			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],
 		optimization: {
 			noEmitOnErrors: true,
