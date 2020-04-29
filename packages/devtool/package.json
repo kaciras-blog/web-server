@@ -17,7 +17,7 @@
 		"node": ">=13.6.0"
 	},
 	"bin": {
-		"cli-dev": "bin/blog-devtool.js"
+		"blog-devtool": "bin/blog-devtool.js"
 	},
 	"dependencies": {
 		"@kaciras-blog/image": "^0.5.0",

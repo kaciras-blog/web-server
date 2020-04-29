@@ -18,7 +18,7 @@
 		"node": ">=13.6.0"
 	},
 	"bin": {
-		"kxc-server": "bin/blog-server.js"
+		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
 		"@iktakahiro/markdown-it-katex": "^3.1.0",
