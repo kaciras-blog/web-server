@@ -7,5 +7,4 @@ git:
 cache: yarn
 
 node_js:
-  - 13
   - 14
