@@ -72,10 +72,12 @@ export default class Launcher<T extends BlogServerOptions> {
 			process.exit(1);
 		}
 
+		const config = require(configFile);
+		configureLog4js(config.blog.logging);
+
 		// TODO: 听说 Node 以后会移除 unhandledRejection
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
-		configureLog4js({ level: "info" });
 
 		const handler = this.commands.get(args._[0]);
 		if (!handler) {
@@ -84,7 +86,7 @@ export default class Launcher<T extends BlogServerOptions> {
 			process.exit(2);
 		}
 
-		Promise.resolve(handler(require(configFile))).then((shutdownHook) => {
+		Promise.resolve(handler(config)).then((shutdownHook) => {
 			const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
 			signals.forEach((signal) => process.on(signal, () => {
 				if (shutdownHook) {

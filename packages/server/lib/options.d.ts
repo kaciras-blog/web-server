@@ -7,11 +7,26 @@ export interface BlogServerOptions {
 	server: ServerOptions;
 }
 
+interface SimpleLogConfig {
+
+	level: string;
+
+	file?: string;
+
+	/**
+	 * 即使用了文件日志，还是保持控制台输出，使用此选项可以关闭控制台的输出。
+	 * 【注意】很多日志处理系统默认读取标准流，所以不建议关闭。
+	 */
+	noConsole?: boolean;
+}
+
 export interface AppOptions {
 	host: string;
 	serverAddress: string;
 	imageRoot: string;
 	serverCert: string | true;
+
+	logging: SimpleLogConfig;
 }
 
 export interface ServerOptions {
