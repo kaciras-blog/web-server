@@ -2,7 +2,7 @@
 	"private": true,
 	"author": {
 		"name": "Kaciras",
-		"email": "Kaciras@outlook.com"
+		"email": "Kaciras@protonmail.com"
 	},
 	"workspaces": [
 		"packages/*"
