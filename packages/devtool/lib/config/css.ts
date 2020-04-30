@@ -66,20 +66,24 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 			},
 		};
 
-		const postCssLoader = {
+		const postcssLoader: any = {
 			loader: "postcss-loader",
 			options: { sourceMap },
 		};
+		if (options.production) {
+			postcssLoader.options.plugins = [require("cssnano")()];
+		}
 
 		const loaderChain: RuleSetUseItem[] = [
 			outputLoader,
 			cssLoader,
-			postCssLoader,
+			postcssLoader,
 		];
 		if (preProcessor) {
 			loaderChain.push(preProcessor);
 			cssLoader.options.importLoaders += 1;
 		}
+
 		return loaderChain;
 	}
 
