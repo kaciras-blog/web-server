@@ -30,8 +30,12 @@ async function runProd(options: BlogServerOptions) {
 		maxAge: 31536000,
 	}));
 
-	const closeServer = await runServer(builder.build().callback(), options.server);
+	const app = builder.build();
+	app.proxy = !!options.blog.useForwardedHeaders;
+
+	const closeServer = await runServer(app.callback(), options.server);
 	logger.info("Startup completed.");
+
 	return () => { closeHttp2Sessions(); closeServer(); }
 }
 

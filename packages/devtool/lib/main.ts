@@ -58,7 +58,10 @@ launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 	await vueSSRHotReloader.watch();
 	builder.useFallBack(vueSSRHotReloader.koaMiddleware);
 
-	const closeServer = await runServer(builder.build().callback(), options.server);
+	const app = builder.build();
+	app.proxy = !!options.blog.useForwardedHeaders;
+
+	const closeServer = await runServer(app.callback(), options.server);
 	console.info(`\n- Local URL: https://localhost/\n`);
 
 	return () => {
