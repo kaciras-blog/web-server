@@ -37,7 +37,7 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Downl
 	// 浏览器的Accept头总是有一个*/*，导致ctx.accept.type("image/webp")总是true
 	// 故只能去匹配原始字符串
 	const acceptWebp = (ctx.accept.type() as string[]).indexOf("image/webp") > -1;
-	const acceptBrotli = Boolean(ctx.accept.encoding("br"));
+	const acceptBrotli = !!ctx.accept.encoding("br");
 
 	const result = await service.get(hash, ext, acceptWebp, acceptBrotli);
 
