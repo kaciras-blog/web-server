@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import PresetCropFilter from "../lib/crop-filter";
-import { BadImageError, FilterArgumentError } from "../lib/exceptions";
+import { BadImageError, FilterArgumentError } from "../lib/errors";
 
 const buffer = fs.readFileSync(path.join(__dirname, "fixtures", "tile_16x16.png"));
 

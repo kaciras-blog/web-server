@@ -1,5 +1,5 @@
 import sharp, { Metadata, Region } from "sharp";
-import { BadImageError, FilterArgumentError } from "./exceptions";
+import { BadImageError, FilterArgumentError } from "./errors";
 
 /**
  * 预设集合，所有的裁剪方式都事先在这里配置，然后才能使用。

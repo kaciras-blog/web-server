@@ -12,7 +12,7 @@ import { Context, ExtendableContext, Middleware } from "koa";
 import { File } from "@koa/multer";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import { InputDataError } from "@kaciras-blog/image/lib/exceptions";
+import { InputDataError } from "@kaciras-blog/image/lib/errors";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 
 const logger = getLogger("Image");

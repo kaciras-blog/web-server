@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import Koa, { Context } from "koa";
 import multer from "@koa/multer";
 import supertest from "supertest";
-import { FilterArgumentError } from "@kaciras-blog/image/lib/exceptions";
+import { FilterArgumentError } from "@kaciras-blog/image/lib/errors";
 import { DownloadContext, downloadImage, route, uploadImage } from "../lib/image-middleware";
 
 jest.mock("fs");

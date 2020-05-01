@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs-extra";
 import codingFilter from "../lib/coding-filter";
-import { BadImageError, FilterArgumentError } from "../lib/exceptions";
+import { BadImageError, FilterArgumentError } from "../lib/errors";
 
 it("should throw FilterArgumentError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");

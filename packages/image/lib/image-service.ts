@@ -8,7 +8,7 @@ import { getLogger } from "log4js";
 import { ImageFilter, ImageTags, runFilters } from "./filter-runner";
 import codingFilter from "./coding-filter";
 import { ImageStore, LocalFileSlot } from "./image-store";
-import { BadImageError, ImageFilterException } from "./exceptions";
+import { BadImageError, ImageFilterException } from "./errors";
 
 
 const logger = getLogger("Image");

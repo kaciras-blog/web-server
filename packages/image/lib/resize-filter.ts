@@ -1,5 +1,5 @@
 import sharp, { Metadata, ResizeOptions } from "sharp";
-import { BadImageError, FilterArgumentError } from "./exceptions";
+import { BadImageError, FilterArgumentError } from "./errors";
 
 export interface Presets {
 	[key: string]: (metadata: Metadata) => ResizeOptions;

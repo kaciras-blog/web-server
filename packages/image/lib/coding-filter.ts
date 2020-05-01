@@ -4,7 +4,7 @@ import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
-import { BadImageError, FilterArgumentError, ImageFilterException } from "./exceptions";
+import { BadImageError, FilterArgumentError, ImageFilterException } from "./errors";
 
 
 const pngquant = Pngquant({ strip: true });
