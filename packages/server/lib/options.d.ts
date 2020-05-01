@@ -26,6 +26,7 @@ export interface AppOptions {
 	imageRoot: string;
 	serverCert: string | true;
 
+	serviceWorker?: boolean;
 	useForwardedHeaders?: boolean;
 	logging: SimpleLogConfig;
 }

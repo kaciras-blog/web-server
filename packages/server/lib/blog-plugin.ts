@@ -25,7 +25,7 @@ const logger = getLogger();
  *
  * @param register 是否注册 ServiceWorker
  */
-export function serviceWorkerToggle(register: boolean): Middleware {
+export function serviceWorkerToggle(register?: boolean): Middleware {
 	return (ctx, next) => {
 		if (ctx.path !== "/sw-check") {
 			return next();
@@ -111,7 +111,7 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		api.useFilter(compress({ br: false, threshold: 1024, }));
 
 		api.useResource(createImageMiddleware(options));
-		api.useResource(serviceWorkerToggle(true));
+		api.useResource(serviceWorkerToggle(options.serviceWorker));
 		api.useResource(createSitemapMiddleware(options.serverAddress));
 		api.useResource(feedMiddleware(options.serverAddress));
 	};
