@@ -104,11 +104,7 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		api.useBeforeAll(uploader.single("file"));
 
 		installCSPPlugin(api);
-
-		api.useFilter(intercept([
-			/\.(?:js|css)\.map$/,
-			/^\/index\.template|vue-ssr/,
-		]));
+		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
 		// @ts-ignore TODO: 类型定义没跟上版本
