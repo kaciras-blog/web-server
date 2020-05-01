@@ -1,6 +1,8 @@
 import path from "path";
 import fs from "fs-extra";
 
+export const FIXTURE_DIR = path.join(__dirname, "fixtures");
+
 /**
  * 返回fixtures目录下文件的完整路径。
  *
@@ -8,7 +10,7 @@ import fs from "fs-extra";
  * @return 完整路径
  */
 export function resolveFixture(name: string) {
-	return path.join(__dirname, "fixtures", name);
+	return path.join(FIXTURE_DIR, name);
 }
 
 /**

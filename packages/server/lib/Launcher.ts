@@ -1,6 +1,5 @@
 import path from "path";
 import parseArgs from "minimist";
-import serve from "koa-static";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
 import ApplicationBuilder from "./ApplicationBuilder";
@@ -8,6 +7,7 @@ import getBlogPlugin from "./blog-plugin";
 import { createSSRProductionPlugin } from "./ssr-middleware";
 import { runServer } from "./create-server";
 import { configureLog4js, configureGlobalAxios } from "./helpers";
+import staticFiles from "./static-files";
 import { BlogServerOptions } from "./options";
 
 const logger = log4js.getLogger();
@@ -25,10 +25,8 @@ async function runProd(options: BlogServerOptions) {
 	builder.addPlugin(getBlogPlugin(options.blog));
 	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
-	builder.useResource(serve(options.outputDir, {
-		index: false,
-		maxAge: 31536000,
-	}));
+	// 除了static目录外文件名都不带Hash，所以要禁用外层的缓存
+	builder.useResource(staticFiles(options.outputDir));
 
 	const app = builder.build();
 	app.proxy = !!options.blog.useForwardedHeaders;
