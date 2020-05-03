@@ -20,7 +20,7 @@ export function feedMiddleware(apiServer: string): Middleware {
 		id: origin,
 		language: "zh",
 		favicon: `${origin}/favicon.ico`,
-		copyright: "All rights reserved 2019, Kaciras",
+		copyright: "All rights reserved 2020, Kaciras",
 		feedLinks: {
 			rss: `${origin}/feed/rss`,
 			json: `${origin}/feed/json`,

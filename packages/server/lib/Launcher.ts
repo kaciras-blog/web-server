@@ -34,7 +34,7 @@ async function runProd(options: BlogServerOptions) {
 	const closeServer = await runServer(app.callback(), options.server);
 	logger.info("Startup completed.");
 
-	return () => { closeHttp2Sessions(); closeServer(); }
+	return () => { closeServer(); closeHttp2Sessions(); }
 }
 
 /**

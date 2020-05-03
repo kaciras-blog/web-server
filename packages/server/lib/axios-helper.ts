@@ -203,5 +203,5 @@ export function configureAxiosHttp2(
 	// Axios 0.19.0 修改了相关逻辑，导致该字段无法合并到最终的请求中。
 	(axios.defaults as any).transport = { request };
 
-	return () => cache.forEach((session) => session.close());
+	return () => cache.forEach((session) => session.destroy());
 }
