@@ -3,7 +3,7 @@ import { AddressInfo, Server } from "net";
 import Axios, { AxiosRequestConfig } from "axios";
 import Koa from "koa";
 import supertest from "supertest";
-import { readFixtureText } from "./test-utils";
+import { readFixtureText, sleep } from "./test-utils";
 import {
 	configureAxiosHttp2,
 	CachedFetcher,
@@ -24,19 +24,11 @@ describe("configureAxiosHttp2", () => {
 	let url: string;
 	let cleanSessions: () => void;
 
-	async function startServer() {
+	beforeEach(async () => {
+		cleanSessions = () => 0;
 		server = http2.createServer(helloHandler);
 		await new Promise((resolve) => server.listen(0, resolve));
 		url = "http://localhost:" + (server.address() as AddressInfo).port;
-	}
-
-	function closeServer() {
-		return new Promise((resolve) => server.close(resolve));
-	}
-
-	beforeEach((done) => {
-		cleanSessions = () => 0;
-		startServer().then(done);
 	});
 
 	afterEach((done) => {
@@ -61,12 +53,33 @@ describe("configureAxiosHttp2", () => {
 		const axios = Axios.create();
 		cleanSessions = configureAxiosHttp2(axios);
 
-		await closeServer();
-		await expect(axios.get(url)).rejects.toThrow();
+		await expect(axios.get("http://localhost:1")).rejects.toThrow();
 
-		await startServer();
 		const response = await axios.get(url);
 		expect(response.data).toBe("Hello");
+	});
+
+	it('should support cancellation', async () => {
+		const axios = Axios.create();
+		cleanSessions = configureAxiosHttp2(axios);
+
+		server.removeAllListeners("request");
+
+		server.on("request", async (request, response) => {
+			jest.runOnlyPendingTimers();
+			await sleep();
+			response.on("close", () => jest.runOnlyPendingTimers());
+		})
+
+		const tokenSource = Axios.CancelToken.source();
+		const res = axios.get(url, { cancelToken: tokenSource.token }).catch(e => e);
+
+		await sleep();
+		tokenSource.cancel("Cancel message");
+		jest.runOnlyPendingTimers();
+
+		await sleep();
+		expect((await res).message).toBe("Cancel message");
 	});
 });
 

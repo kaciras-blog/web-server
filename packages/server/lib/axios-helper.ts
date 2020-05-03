@@ -190,6 +190,8 @@ export function configureAxiosHttp2(
 			":path": options.path,
 		});
 
+		stream.abort = stream.destroy;
+
 		return stream.on("response", (headers: ResHeaders) => {
 			stream.headers = headers;
 			stream.statusCode = headers[":status"];
