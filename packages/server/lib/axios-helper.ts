@@ -52,15 +52,11 @@ export function configureForProxy(source: Context, axiosConfig: AxiosRequestConf
 	}
 
 	// HTTP 头是不区分大小写的，但是 Node 的 http 模块里会将其全部转换为小写
-	const csrfHeader = srcHeaders[CSRF_HEADER_NAME.toLowerCase()];
-	if (csrfHeader) {
-		distHeaders[CSRF_HEADER_NAME] = csrfHeader;
-	}
-
-	const csrfQuery = source.query[CSRF_PARAMETER_NAME];
-	if (csrfQuery) {
-		axiosConfig.params = axiosConfig.params || {};
-		axiosConfig.params[CSRF_PARAMETER_NAME] = csrfQuery;
+	const csrfToken = source.cookies.get(CSRF_COOKIE_NAME)
+	if (csrfToken) {
+		distHeaders[CSRF_HEADER_NAME] = csrfToken;
+		// axiosConfig.params = axiosConfig.params || {};
+		// axiosConfig.params[CSRF_PARAMETER_NAME] = csrfQuery;
 	}
 
 	return axiosConfig;
