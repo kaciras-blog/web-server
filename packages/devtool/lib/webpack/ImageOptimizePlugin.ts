@@ -36,6 +36,12 @@ const svgOptimizer = new SVGO();
  */
 export default class ImageOptimizePlugin implements Plugin {
 
+	private readonly include: RegExp;
+
+	constructor(include: RegExp) {
+		this.include = include;
+	}
+
 	apply(compiler: Compiler) {
 		compiler.hooks.emit.tapPromise(ImageOptimizePlugin.name, this.handleAssets.bind(this));
 	}
@@ -43,7 +49,7 @@ export default class ImageOptimizePlugin implements Plugin {
 	private handleAssets({ assets }: any): Promise<any> {
 		const tasks: Promise<any>[] = [];
 
-		for (const rawName of Object.keys(assets)) {
+		for (const rawName of Object.keys(assets).filter(n => this.include.test(n))) {
 			const sep = rawName.lastIndexOf(".");
 			const basename = rawName.substring(0, sep);
 			const type = rawName.substring(sep + 1);

@@ -169,7 +169,7 @@ export default function (options: DevelopmentOptions) {
 		};
 
 		// 该插件必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
-		plugins.push(new ImageOptimizePlugin());
+		plugins.push(new ImageOptimizePlugin(new RegExp("static/")));
 
 		const compressSource = {
 			test: /\.(js|css|html|svg)$/,
