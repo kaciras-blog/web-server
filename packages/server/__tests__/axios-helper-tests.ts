@@ -140,14 +140,10 @@ describe("configureForProxy", () => {
 	});
 
 	it("should add principal info", async () => {
-		await supertest(server).get("/")
-			.query({ [CSRF_PARAMETER_NAME]: "csrf_parameter" })
-			.set("Cookie", ["test_cookie"])
-			.set(CSRF_HEADER_NAME, "csrf_header");
+		await supertest(server).get("/").set("Cookie", ["CSRF-Token=hello"]);
 
-		expect(config.headers[CSRF_HEADER_NAME]).toBe("csrf_header");
-		expect(config.headers.Cookie).toBe("test_cookie");
-		expect(config.params[CSRF_PARAMETER_NAME]).toBe("csrf_parameter");
+		expect(config.headers[CSRF_HEADER_NAME]).toBe("hello");
+		expect(config.headers.Cookie).toBe("CSRF-Token=hello");
 	});
 });
 

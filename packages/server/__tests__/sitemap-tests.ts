@@ -2,13 +2,8 @@ import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { createSitemapMiddleware } from "../lib/sitemap";
-import { readFixtureText } from "./test-utils";
-import Mock = jest.Mock;
 
 jest.mock("axios");
-
-const SITEMAP = readFixtureText("sitemap.xml");
-const SITEMAP_BAIDU = readFixtureText("sitemap-baidu.xml");
 
 const DATA = {
 	items: [
@@ -21,13 +16,13 @@ const app = new Koa();
 app.use(createSitemapMiddleware("123.45.67.89"));
 const callback = app.callback();
 
-(axios.get as Mock).mockResolvedValue({ status: 200, data: DATA });
+(axios.get as jest.Mock).mockResolvedValue({ status: 200, data: DATA });
 
 it("should response sitemap xml", () => {
 	return supertest(callback)
 		.get("/sitemap.xml")
 		.expect(200)
-		.expect((res) => expect(res.text).toBe(SITEMAP));
+		.expect((res) => expect(res.text).toMatchSnapshot());
 });
 
 it("should output short date for Baidu", () => {
@@ -35,7 +30,7 @@ it("should output short date for Baidu", () => {
 		.get("/sitemap.xml")
 		.query({ type: "baidu" })
 		.expect(200)
-		.expect((res) => expect(res.text).toBe(SITEMAP_BAIDU));
+		.expect((res) => expect(res.text).toMatchSnapshot());
 });
 
 it("should recognize Baidu spider by User-Agent", async () => {
@@ -44,7 +39,7 @@ it("should recognize Baidu spider by User-Agent", async () => {
 			.get("/sitemap.xml")
 			.set("User-Agent", userAgent)
 			.expect(200)
-			.expect((res) => expect(res.text).toBe(SITEMAP_BAIDU));
+			.expect((res) => expect(res.text).toMatchSnapshot());
 	}
 
 	await _test("Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)");
@@ -54,6 +49,6 @@ it("should recognize Baidu spider by User-Agent", async () => {
 });
 
 it("should return 503 on error", () => {
-	(axios.get as Mock).mockRejectedValue(new Error());
+	(axios.get as jest.Mock).mockRejectedValue(new Error());
 	return supertest(callback).get("/sitemap.xml").expect(503);
 });
