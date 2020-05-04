@@ -66,7 +66,7 @@ class ArticleCollection implements SitemapResource {
  */
 async function buildSitemap(resources: SitemapResource[], isForBaidu: boolean) {
 	const sitemap = new SitemapStream({
-		hostname: "https://blog.kaciras.net",
+		hostname: "https://blog.kaciras.com",
 		lastmodDateOnly: isForBaidu,
 	});
 	for (const res of resources) {

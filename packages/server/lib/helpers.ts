@@ -30,7 +30,6 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 		logConfig.appenders.file = {
 			type: "file",
 			filename: file,
-			encoding: "utf-8",
 			layout: {
 				type: "pattern",
 				pattern: "%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %m",
