@@ -29,7 +29,7 @@ export interface RenderContext {
 	url: URL;
 
 	/** 原始请求，仅用于传递用户身份信息。 */
-	request?: Context;
+	request: Context;
 }
 
 const DEFAULT_CONTEXT = {
@@ -71,6 +71,7 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 		ctx.status = 503;
 		ctx.body = await render.renderToString({
 			...DEFAULT_CONTEXT,
+			request: ctx,
 			url: new URL("/error/500", ctx.href),
 		});
 	}
