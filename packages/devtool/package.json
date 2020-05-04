@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/devtool",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"description": "Develop tools for Kaciras Blog",
 	"license": "MIT",
 	"repository": {
@@ -21,7 +21,7 @@
 	},
 	"dependencies": {
 		"@kaciras-blog/image": "^0.6.0",
-		"@kaciras-blog/server": "^0.6.0",
+		"@kaciras-blog/server": "^0.6.1",
 		"babel-loader": "^8.1.0",
 		"cache-loader": "^4.1.0",
 		"case-sensitive-paths-webpack-plugin": "^2.3.0",
