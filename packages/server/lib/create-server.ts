@@ -11,7 +11,6 @@ type RequestMessage = IncomingMessage | Http2ServerRequest;
 type OnRequestHandler = (req: RequestMessage, res: ServerResponse | Http2ServerResponse) => void;
 type SNIResolve = (err: Error | null, ctx: SecureContext) => void;
 
-
 export function createSNICallback(properties: SNIProperties[]) {
 	const map: { [k: string]: any } = {};
 
@@ -70,16 +69,9 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 		if (typeof redirect === "number") {
 			toPort = redirect;
 		}
-
-		const omitPort = (schema === "http" && toPort === 80) || (schema === "https" && toPort === 443);
-
 		return (req, res) => {
 			const [host] = req.headers.host!.split(":");
-			const location = omitPort
-				? `${schema}://${host}${req.url}`
-				: `${schema}://${host}:${toPort}${req.url}`;
-
-			res.writeHead(301, { Location: location }).end();
+			res.writeHead(301, { Location: `${schema}://${host}:${toPort}${req.url}` }).end();
 		};
 	}
 
