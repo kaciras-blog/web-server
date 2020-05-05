@@ -10,7 +10,7 @@
 	"scripts": {
 		"compile": "tsc",
 		"lint": "tslint -p tsconfig.json --fix",
-		"test": "jest",
+		"test": "jest --silent",
 		"test:coverage": "yarn test --coverage",
 		"publish": "lerna publish --no-push"
 	},
