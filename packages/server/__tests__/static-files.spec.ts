@@ -69,7 +69,7 @@ it('should serve the file', () => {
 		.expect('world');
 });
 
-it('should set the Content-Type',  () => {
+it('should set the Content-Type', () => {
 	const app = new Koa()
 	app.use(serve(FIXTURE_DIR));
 
@@ -105,9 +105,19 @@ it('should return .br version when requested and if possible', () => {
 });
 
 describe('Cache-Control', () => {
-	it('should be set  for static files', () => {
+	it('should be set for static files', () => {
 		const app = new Koa()
-		app.use(serve(FIXTURE_DIR));
+		app.use(serve(FIXTURE_DIR, { staticAssets: /^\/static/, maxAge: 666 }));
+
+		return supertest(app.callback())
+			.get('/static/hello.json')
+			.expect(200)
+			.expect('Cache-Control', 'public,max-age=666,immutable');
+	});
+
+	it('should be set with maxAge=31536000 by default', () => {
+		const app = new Koa()
+		app.use(serve(FIXTURE_DIR, { staticAssets: /^\/static/ }));
 
 		return supertest(app.callback())
 			.get('/static/hello.json')
@@ -117,7 +127,7 @@ describe('Cache-Control', () => {
 
 	it('should not be set for non-static files', async () => {
 		const app = new Koa()
-		app.use(serve(FIXTURE_DIR));
+		app.use(serve(FIXTURE_DIR, { staticAssets: /^\/static/ }));
 
 		const res = await supertest(app.callback()).get('/hello.txt').expect(200);
 		expect("cache-control" in res.header).toBe(false);

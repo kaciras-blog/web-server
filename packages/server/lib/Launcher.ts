@@ -26,7 +26,9 @@ async function runProd(options: BlogServerOptions) {
 	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
 	// 除了static目录外文件名都不带Hash，所以要禁用外层的缓存
-	builder.useResource(staticFiles(options.outputDir));
+	builder.useResource(staticFiles(options.outputDir, {
+		staticAssets: new RegExp("^/" + options.assetsDir),
+	}));
 
 	const app = builder.build();
 	app.proxy = !!options.blog.useForwardedHeaders;

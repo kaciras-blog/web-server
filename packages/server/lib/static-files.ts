@@ -9,6 +9,15 @@ import { Middleware, Next, ParameterizedContext } from "koa";
 import fs from "fs-extra";
 import createError from "http-errors";
 
+interface Options {
+
+	/** 请求路径匹配的文件将发送缓存头 */
+	staticAssets?: RegExp;
+
+	/** 静态资源缓响应的 Cache-Control 头中 maxAge 的值 */
+	maxAge?: number;
+}
+
 const UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/
 
 const NOT_FOUND = ["ENOENT", "ENAMETOOLONG", "ENOTDIR"];
@@ -36,7 +45,7 @@ function resolvePath(root: string, path: string) {
 	return normalize(join(resolve(root), path));
 }
 
-async function send(root: string, ctx: ParameterizedContext, next: Next) {
+async function send(root: string, options: Options, ctx: ParameterizedContext, next: Next) {
 	const { method, path } = ctx;
 	let file: string;
 
@@ -82,8 +91,8 @@ async function send(root: string, ctx: ParameterizedContext, next: Next) {
 		ctx.type = extname(file);
 	}
 
-	if (path.startsWith("/static/")) {
-		ctx.set("Cache-Control", "public,max-age=31536000,immutable");
+	if (options.staticAssets?.test(path)) {
+		ctx.set("Cache-Control", `public,max-age=${options.maxAge},immutable`);
 	}
 
 	ctx.set("Content-Length", stats.size.toString());
@@ -91,6 +100,9 @@ async function send(root: string, ctx: ParameterizedContext, next: Next) {
 	ctx.body = fs.createReadStream(file);
 }
 
-export default function (root: string): Middleware {
-	return (ctx, next) => send(root, ctx, next);
+export default function (root: string, options: Options = {}): Middleware {
+	if (options.maxAge === undefined) {
+		options.maxAge = 31536000;
+	}
+	return (ctx, next) => send(root, options, ctx, next);
 }
