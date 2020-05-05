@@ -63,7 +63,7 @@ export function intercept(patterns: RegExp | RegExp[]): Middleware {
  * @param options 选项
  */
 function createImageMiddleware(options: AppOptions) {
-	const service = new PreGenerateImageService(localFileStore(options.imageRoot));
+	const service = new PreGenerateImageService(localFileStore(options.dataDir));
 	const url = options.serverAddress + "/session/user";
 
 	const downloadFn = (ctx: any) => downloadImage(service, ctx);

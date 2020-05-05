@@ -60,7 +60,7 @@ export class LocalFileSlot {
 	}
 
 	private originPath() {
-		return path.join(this.root, `${this.key.name}.${this.key.type}`);
+		return path.join(this.root, "image", `${this.key.name}.${this.key.type}`);
 	}
 
 	// Object.keys(tags) 对于非 ASCII 字符串的键返回的顺序不确定，必须排序一下
@@ -75,5 +75,7 @@ export class LocalFileSlot {
 }
 
 export function localFileStore(root: string) {
+	fs.ensureDirSync(path.join(root, "image"));
+	fs.ensureDirSync(path.join(root, "cache"));
 	return (key: ImageKey) => new LocalFileSlot(root, key);
 }

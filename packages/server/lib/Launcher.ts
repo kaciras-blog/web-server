@@ -47,7 +47,7 @@ export default class Launcher<T extends BlogServerOptions> {
 	// 注册几个内置命令
 	constructor() {
 		this.registerCommand("run", runProd);
-		this.registerCommand("build-image-cache", ((options) => buildCache(options.blog.imageRoot)));
+		this.registerCommand("build-image-cache", ((options) => buildCache(options.blog.dataDir)));
 	}
 
 	registerCommand(command: string, handler: CommandHandler<T>) {

@@ -23,7 +23,7 @@ interface SimpleLogConfig {
 export interface AppOptions {
 	host: string;
 	serverAddress: string;
-	imageRoot: string;
+	dataDir: string;
 	serverCert: string | true;
 
 	serviceWorker?: boolean;
