@@ -4,13 +4,7 @@ import Axios, { AxiosRequestConfig } from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { readFixtureText, sleep } from "./test-utils";
-import {
-	configureAxiosHttp2,
-	CachedFetcher,
-	configureForProxy,
-	CSRF_HEADER_NAME,
-	CSRF_PARAMETER_NAME,
-} from "../lib/axios-helper";
+import { CachedFetcher, configureAxiosHttp2, configureForProxy, CSRF_HEADER_NAME, } from "../lib/axios-helper";
 
 jest.useFakeTimers();
 
@@ -120,17 +114,17 @@ describe("certificate verification", () => {
 });
 
 describe("configureForProxy", () => {
-	let config: AxiosRequestConfig = {};
-	const app = new Koa();
-	const server = app.callback();
 
-	app.use((ctx) => {
-		config = {};
-		configureForProxy(ctx, config);
-	});
+	function createApp() {
+		const config: AxiosRequestConfig = {};
+		const app = new Koa();
+		app.use((ctx) => configureForProxy(ctx, config));
+		return [app, config] as [Koa, AxiosRequestConfig];
+	}
 
 	it("should set forwarded headers", async () => {
-		await supertest(server).get("/");
+		const [app, config] = createApp();
+		await supertest(app.callback()).get("/");
 
 		// 检查不要添加多余的头部
 		expect(Object.keys(config.headers)).toHaveLength(2);
@@ -140,10 +134,26 @@ describe("configureForProxy", () => {
 	});
 
 	it("should add principal info", async () => {
-		await supertest(server).get("/").set("Cookie", ["CSRF-Token=hello"]);
+		const [app, config] = createApp();
 
+		await supertest(app.callback())
+			.get("/")
+			.set("Cookie", ["CSRF-Token=hello"]);
+
+		expect(Object.keys(config.headers)).toHaveLength(4);
 		expect(config.headers[CSRF_HEADER_NAME]).toBe("hello");
 		expect(config.headers.Cookie).toBe("CSRF-Token=hello");
+	});
+
+	it('should accept X-Forwarded-For', async () => {
+		const [app, config] = createApp();
+		app.proxy = true;
+
+		await supertest(app.callback())
+			.get("/")
+			.set("X-Forwarded-For", "222.111.0.0");
+
+		expect(config.headers["X-Forwarded-For"]).toBe("222.111.0.0");
 	});
 });
 

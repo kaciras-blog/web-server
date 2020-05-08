@@ -63,9 +63,9 @@ export function feedMiddleware(apiServer: string): Middleware {
 		const feed = await fetcher.request({
 			url: apiServer + "/articles",
 			params: {
-				count: 10,
-				sort: "create_time,DESC",
 				content: true,
+				count: 10,
+				sort: "id,DESC",
 				category: ctx.query.category,
 				recursive: true,
 			},
