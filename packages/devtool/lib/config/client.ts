@@ -102,6 +102,7 @@ export default function (options: DevelopmentOptions) {
 		removeAttributeQuotes: true,
 	};
 	plugins.push(new HtmlWebpackPlugin({
+		title: "Kaciras的博客",
 		template: "public/index.html",
 		filename: "app-shell.html",
 		minify: htmlMinifyOptions,
