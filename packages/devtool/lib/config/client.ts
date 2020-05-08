@@ -10,7 +10,6 @@ import CompressionPlugin from "compression-webpack-plugin";
 import baseWebpackConfig, { resolve } from "./base";
 import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
-import SSRTemplatePlugin from "../webpack/SSRTemplatePlugin";
 import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
 
 // 这个没有类型定义
@@ -109,14 +108,12 @@ export default function (options: DevelopmentOptions) {
 	}));
 
 	// 服务端渲染的入口，要把 chunks 全部去掉以便渲染器注入资源
-	const templateFile = "index.template.html";
 	plugins.push(new HtmlWebpackPlugin({
 		chunks: [],
-		template: "public/index.html",
-		filename: templateFile,
-		minify: htmlMinifyOptions,
+		template: "public/index.template.html",
+		filename: "index.template.html",
+		minify: { ...htmlMinifyOptions, removeComments: false },
 	}));
-	plugins.push(new SSRTemplatePlugin(templateFile, "<div id=app></div>"));
 
 	const config: Configuration = {
 		entry: ["./src/entry-client.js"],
