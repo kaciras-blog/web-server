@@ -52,8 +52,8 @@ export async function runServer(requestHandler: OnRequestHandler, options: Serve
 
 	const servers: Server[] = [];
 
-	const httpPort = httpConfig && httpConfig.port || 80;
-	const httpsPort = httpsConfig && httpsConfig.port || 443;
+	const httpPort = httpConfig?.port || 80;
+	const httpsPort = httpsConfig?.port || 443;
 
 	/**
 	 * 获取请求处理器，如果 redirect 参数不为 undefined 则返回重定向的处理器，否则返回正常的请求处理器。

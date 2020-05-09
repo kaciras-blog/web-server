@@ -1,7 +1,6 @@
 {
 	"compilerOptions": {
-		// ES2020支持可选链，但NodeJS 13暂时还不支持
-		"target": "es2019",
+		"target": "esnext",
 
 		// 输出到其他目录会导致另外的包引用不到
 		// "outDir": "dist",
