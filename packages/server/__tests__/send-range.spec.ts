@@ -49,6 +49,16 @@ it('should send file part with range -N', () => {
 		.expect(206, "ld");
 });
 
+// https://github.com/koajs/koa-range/issues/15
+it('should return 206 with range larger than total length', () => {
+	return supertest(app.listen())
+		.get('/')
+		.set('Range', 'bytes=0-100')
+		.expect('Content-Range', 'bytes 0-4/5')
+		.expect('Content-Length', '5')
+		.expect(206, "world");
+});
+
 it('should return 416 with range out of bound', () => {
 	return supertest(app.callback())
 		.get('/')
