@@ -76,7 +76,21 @@ it('should set the Content-Type', () => {
 	return supertest(app.callback())
 		.get('/static/hello.json')
 		.expect('Content-Type', /application\/json/);
-})
+});
+
+it('should support Range header', () => {
+	const app = new Koa()
+	app.use(serve(FIXTURE_DIR));
+
+	return supertest(app.callback())
+		.get('/hello.txt')
+		.set("Range", "bytes=1-3")
+		.set('Accept-Encoding', 'deflate, identity')
+		.expect('Accept-Ranges', 'bytes')
+		.expect('Content-Range', "bytes 1-3/5")
+		.expect('Content-Length', "3")
+		.expect(206, "orl");
+});
 
 it('should return .gz version when requested and if possible', () => {
 	const app = new Koa()

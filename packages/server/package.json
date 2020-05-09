@@ -21,6 +21,7 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
+		"range-parser": "^1.2.1",
 		"@iktakahiro/markdown-it-katex": "^3.1.0",
 		"@kaciras-blog/image": "^0.6.2",
 		"@koa/cors": "^3.0.0",
@@ -43,6 +44,7 @@
 		"vue-server-renderer": "2.6.11"
 	},
 	"devDependencies": {
+		"@types/range-parser": "^1.2.3",
 		"@types/koa-bodyparser": "^4.3.0",
 		"@types/markdown-it": "^10.0.1"
 	}

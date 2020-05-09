@@ -8,6 +8,7 @@ import { basename, extname, join, normalize, parse, resolve, sep } from "path";
 import { Middleware, Next, ParameterizedContext } from "koa";
 import fs from "fs-extra";
 import createError from "http-errors";
+import sendFileRange from "./send-range";
 
 interface Options {
 
@@ -95,9 +96,8 @@ async function send(root: string, options: Options, ctx: ParameterizedContext, n
 		ctx.set("Cache-Control", `public,max-age=${options.maxAge},immutable`);
 	}
 
-	ctx.set("Content-Length", stats.size.toString());
 	ctx.set("Last-Modified", stats.mtime.toUTCString());
-	ctx.body = fs.createReadStream(file);
+	await sendFileRange(ctx, file, stats.size);
 }
 
 export default function (root: string, options: Options = {}): Middleware {
