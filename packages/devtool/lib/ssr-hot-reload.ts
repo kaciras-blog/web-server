@@ -121,7 +121,7 @@ export default class VueSSRHotReloader {
 
 			// 新版 html-loader 在监视模式下不输出未变动的文件
 			if (template) {
-				this.template = template.source();
+				this.template = template.source().toString();
 			}
 			this.clientManifest = JSON.parse(manifest.source());
 			this.updateVueSSR();
