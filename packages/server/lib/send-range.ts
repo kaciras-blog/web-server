@@ -7,15 +7,24 @@
  */
 import fs from "fs-extra";
 import { Context } from "koa";
-import parseRange from "range-parser";
+import parseRange, { Range } from "range-parser";
+import CombinedStream from "combined-stream";
+
+function randomHex24() {
+	let boundary = "";
+	for (let i = 0; i < 24; i++) {
+		boundary += Math.floor(Math.random() * 15).toString(16);
+	}
+	return boundary;
+}
 
 /**
  * 处理Range请求，发送部分文件。
  *
- * 该函数中会设置状态码，Accept-Ranges，Content-Length 和 Content-Range 头。
+ * 该函数中会设置状态码，Accept-Ranges，Content-Length 和 Content-Range 头，
+ * 请在调用该函数之前设置ctx.type
  *
- * 不支持多片响应，多个Range时仅发送第一个。
- * 不支持 If-Range 头。
+ * 暂不支持 If-Range 头。
  *
  * @param ctx Koa上下文
  * @param filename 文件路径
@@ -40,9 +49,46 @@ export default function sendFileRange(ctx: Context, filename: string, size: numb
 		return ctx.status = 416;
 	}
 
-	const { start, end } = ranges[0];
 	ctx.status = 206;
-	ctx.set("Content-Range", `bytes ${start}-${end}/${size}`);
-	ctx.set("Content-Length", (end - start + 1).toString());
-	ctx.body = fs.createReadStream(filename, { start, end });
+
+	if (ranges.length > 1) {
+		sendMultipartRanges(ctx, size, filename, ranges);
+	} else {
+		const { start, end } = ranges[0];
+		ctx.set("Content-Length", (end - start + 1).toString());
+		ctx.set("Content-Range", `bytes ${start}-${end}/${size}`);
+		ctx.body = fs.createReadStream(filename, ranges[0]);
+	}
+}
+
+function sendMultipartRanges(ctx: Context, size: number, filename: string, ranges: Range[]) {
+	const stream = new CombinedStream();
+	const randomHex = randomHex24();
+	const boundary = "--" + randomHex;
+
+	function getMultipartHeader(start: number, end: number) {
+		const range = `Content-Range: bytes ${start}-${end}/${size}`;
+		const type = `Content-Type: ${ctx.type}`;
+		return `${boundary}\r\n${type}\r\n${range}\r\n\r\n`;
+	}
+
+	let length = 0;
+
+	for (const range of ranges) {
+		const { start, end } = range;
+		const header = getMultipartHeader(start, end);
+
+		stream.append(header)
+		stream.append(fs.createReadStream(filename, range));
+		stream.append("\r\n");
+
+		length += header.length + (end - start + 1) + 2;
+	}
+
+	stream.append(`${boundary}--\r\n`);
+	length += boundary.length + 4;
+
+	ctx.set("Content-Length", length.toString());
+	ctx.type = `multipart/byteranges; boundary=${randomHex}`;
+	ctx.body = stream;
 }

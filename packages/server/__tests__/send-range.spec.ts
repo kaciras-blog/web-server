@@ -6,7 +6,7 @@ import { FIXTURE_DIR } from "./test-utils";
 const app = new Koa();
 app.use(ctx => {
 	ctx.type = "text/plain";
-	sendFileRange(ctx, FIXTURE_DIR + "/hello.txt", 5);
+	sendFileRange(ctx, FIXTURE_DIR + "/sendrange.txt", 475);
 });
 
 // 【坑】如果被测代码的 Content-Length 计算错误的话会抛出奇怪的错误：
@@ -49,9 +49,36 @@ it('should send file part with range -N', () => {
 		.expect(206, "ld");
 });
 
+function getChunks(res: supertest.Response) {
+	const boundary = res.get("Content-Type").substring("multipart/byteranges; boundary=".length);
+	return res.body.toString().split("--"+boundary)
+		.map((part: string) => part.replace(/^-+/, '').trim())
+		.map((part: string) => part.split('\r\n\r\n')[1])
+		.filter(Boolean);
+}
+
+it('should sends multi-chunk response on multi-range (specific ranges)', async () => {
+	const res = await supertest(app.callback())
+		.get('/')
+		.parse((x: supertest.Response, cb) => {
+			let data = "";
+			x.on("data", d => data += d);
+			x.on("end", () => cb(null, data));
+		})
+		.set("Range", "bytes=80-83,429-472,294-304")
+		.expect('Content-Type', /^multipart\/byteranges; boundary=/)
+		.expect('Content-Length', "363")
+
+	const chunks = getChunks(res);
+	expect(chunks).toHaveLength(3);
+	expect(chunks[0]).toEqual('MUST');
+	expect(chunks[1]).toEqual('this field will be sent in each part instead');
+	expect(chunks[2]).toEqual('single-part');
+});
+
 // https://github.com/koajs/koa-range/issues/15
 it('should return 206 with range larger than total length', () => {
-	return supertest(app.listen())
+	return supertest(app.callback())
 		.get('/')
 		.set('Range', 'bytes=0-100')
 		.expect('Content-Range', 'bytes 0-4/5')

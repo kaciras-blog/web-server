@@ -28,6 +28,7 @@
 		"@koa/multer": "^2.0.2",
 		"axios": "~0.18.1",
 		"feed": "^4.1.0",
+		"combined-stream": "^1.0.8",
 		"fs-extra": "^9.0.0",
 		"koa": "^2.11.0",
 		"koa-bodyparser": "^4.3.0",
@@ -44,6 +45,7 @@
 		"vue-server-renderer": "2.6.11"
 	},
 	"devDependencies": {
+		"@types/combined-stream": "^1.0.2",
 		"@types/range-parser": "^1.2.3",
 		"@types/koa-bodyparser": "^4.3.0",
 		"@types/markdown-it": "^10.0.1"
