@@ -1,12 +1,15 @@
+import fs from "fs-extra";
 import Koa from "koa";
 import supertest from "supertest";
 import sendFileRange from "../lib/send-range";
 import { FIXTURE_DIR } from "./test-utils";
 
+const FILE = FIXTURE_DIR + "/sendrange.txt";
+
 const app = new Koa();
 app.use(ctx => {
 	ctx.type = "text/plain";
-	sendFileRange(ctx, FIXTURE_DIR + "/sendrange.txt", 475);
+	sendFileRange(ctx, FILE, 475);
 });
 
 // 【坑】如果被测代码的 Content-Length 计算错误的话会抛出奇怪的错误：
@@ -15,8 +18,8 @@ app.use(ctx => {
 it('should send file without Range', () => {
 	return supertest(app.callback())
 		.get('/')
-		.expect('Content-Length', "5")
-		.expect(200, "world");
+		.expect('Content-Length', "475")
+		.expect(200, fs.readFileSync(FILE, { encoding: "utf8"}));
 });
 
 it('should send file part', () => {
@@ -24,19 +27,19 @@ it('should send file part', () => {
 		.get('/')
 		.set("Range", "bytes=1-3")
 		.expect('Accept-Ranges', 'bytes')
-		.expect('Content-Range', "bytes 1-3/5")
+		.expect('Content-Range', "bytes 1-3/475")
 		.expect('Content-Length', "3")
-		.expect(206, "orl");
+		.expect(206, "f m");
 });
 
 it('should send file part with range N-', () => {
 	return supertest(app.callback())
 		.get('/')
-		.set("Range", "bytes=1-")
+		.set("Range", "bytes=470-")
 		.expect('Accept-Ranges', 'bytes')
-		.expect('Content-Range', "bytes 1-4/5")
-		.expect('Content-Length', "4")
-		.expect(206, "orld");
+		.expect('Content-Range', "bytes 470-474/475")
+		.expect('Content-Length', "5")
+		.expect(206, "ead).");
 });
 
 it('should send file part with range -N', () => {
@@ -44,9 +47,9 @@ it('should send file part with range -N', () => {
 		.get('/')
 		.set("Range", "bytes=-2")
 		.expect('Accept-Ranges', 'bytes')
-		.expect('Content-Range', "bytes 3-4/5")
+		.expect('Content-Range', "bytes 473-474/475")
 		.expect('Content-Length', "2")
-		.expect(206, "ld");
+		.expect(206, ").");
 });
 
 function getChunks(res: supertest.Response) {
@@ -81,17 +84,17 @@ it('should sends multi-chunk response on multi-range (specific ranges)', async (
 it('should return 206 with range larger than total length', () => {
 	return supertest(app.callback())
 		.get('/')
-		.set('Range', 'bytes=0-100')
-		.expect('Content-Range', 'bytes 0-4/5')
+		.set('Range', 'bytes=470-999')
+		.expect('Content-Range', 'bytes 470-474/475')
 		.expect('Content-Length', '5')
-		.expect(206, "world");
+		.expect(206, "ead).");
 });
 
 it('should return 416 with range out of bound', () => {
 	return supertest(app.callback())
 		.get('/')
 		.set("Range", "bytes=800-900")
-		.expect('Content-Range', "bytes */5")
+		.expect('Content-Range', "bytes */475")
 		.expect(416);
 });
 
