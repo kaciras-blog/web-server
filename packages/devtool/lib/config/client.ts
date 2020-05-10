@@ -76,7 +76,7 @@ export default function (options: DevelopmentOptions) {
 			// 这个傻B插件都不晓得把路径分隔符转换下。
 			transformOptions(data: ServiceWorkerOption) {
 				let { assets } = data;
-				assets = assets.filter(name => !name.startsWith("/static/img/"));
+				assets = assets.filter(name => !name.startsWith("/static/img/") && !/KaTeX/.test(name));
 				assets = assets.map(name => name.replace(/\\/g, "/"));
 				return { assets };
 			},

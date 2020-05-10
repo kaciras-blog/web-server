@@ -1,22 +1,11 @@
 /*
  * koa-range 2年没更新，issues里的问题也没解决，也没找到其它能替代的库，故自己写一个：
  * https://github.com/koajs/koa-range
- *
- * 如果要做 multipart/byteranges 可以参考一个Express的实现：
- * https://github.com/rexxars/send-ranges
  */
 import fs from "fs-extra";
 import { Context } from "koa";
 import parseRange, { Range } from "range-parser";
 import CombinedStream from "combined-stream";
-
-function randomHex24() {
-	let boundary = "";
-	for (let i = 0; i < 24; i++) {
-		boundary += Math.floor(Math.random() * 15).toString(16);
-	}
-	return boundary;
-}
 
 /**
  * 处理Range请求，发送部分文件。
@@ -61,6 +50,7 @@ export default function sendFileRange(ctx: Context, filename: string, size: numb
 	}
 }
 
+// 参考 https://github.com/rexxars/send-ranges
 function sendMultipartRanges(ctx: Context, size: number, filename: string, ranges: Range[]) {
 	const stream = new CombinedStream();
 	const randomHex = randomHex24();
@@ -91,4 +81,12 @@ function sendMultipartRanges(ctx: Context, size: number, filename: string, range
 	ctx.set("Content-Length", length.toString());
 	ctx.type = `multipart/byteranges; boundary=${randomHex}`;
 	ctx.body = stream;
+}
+
+function randomHex24() {
+	let boundary = "";
+	for (let i = 0; i < 24; i++) {
+		boundary += Math.floor(Math.random() * 15).toString(16);
+	}
+	return boundary;
 }
