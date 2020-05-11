@@ -19,7 +19,7 @@ it('should send file without Range', () => {
 	return supertest(app.callback())
 		.get('/')
 		.expect('Content-Length', "475")
-		.expect(200, fs.readFileSync(FILE, { encoding: "utf8"}));
+		.expect(200, fs.readFileSync(FILE, { encoding: "utf8" }));
 });
 
 it('should send file part', () => {
@@ -52,28 +52,33 @@ it('should send file part with range -N', () => {
 		.expect(206, ").");
 });
 
-function getChunks(res: supertest.Response) {
-	const boundary = res.get("Content-Type").substring("multipart/byteranges; boundary=".length);
-	return res.body.toString().split("--"+boundary)
-		.map((part: string) => part.replace(/^-+/, '').trim())
-		.map((part: string) => part.split('\r\n\r\n')[1])
-		.filter(Boolean);
+function parseChunks(res: supertest.Response, callback: (err: Error | null, body: any) => void) {
+	let data = "";
+	res.on("data", d => data += d);
+	res.on("end", () => {
+		// @ts-ignore DefinedTypes 跟不上版本
+		const boundary = res.headers["content-type"]
+			.substring("multipart/byteranges; boundary=".length);
+
+		const chunks = data.toString().split("--" + boundary)
+			.map((part: string) => part.replace(/^-+/, '').trim())
+			.map((part: string) => part.split('\r\n\r\n')[1])
+			.filter(Boolean);
+
+		callback(null, chunks);
+	});
 }
 
 it('should sends multi-chunk response on multi-range (specific ranges)', async () => {
 	const res = await supertest(app.callback())
 		.get('/')
-		.parse((x: supertest.Response, cb) => {
-			let data = "";
-			x.on("data", d => data += d);
-			x.on("end", () => cb(null, data));
-		})
+		.parse(parseChunks)
 		.set("Range", "bytes=80-83,429-472,294-304")
 		.expect('Content-Type', /^multipart\/byteranges; boundary=/)
 		.expect('Content-Length', "363")
 		.expect(206);
 
-	const chunks = getChunks(res);
+	const chunks = res.body;
 	expect(chunks).toHaveLength(3);
 	expect(chunks[0]).toEqual('MUST');
 	expect(chunks[1]).toEqual('this field will be sent in each part instead');

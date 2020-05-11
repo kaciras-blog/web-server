@@ -9,6 +9,7 @@ import CombinedStream from "combined-stream";
 
 /**
  * 处理Range请求，发送部分文件。
+ * RFC：https://tools.ietf.org/html/rfc7233#section-4.1
  *
  * 该函数中会设置状态码，Accept-Ranges，Content-Length 和 Content-Range 头，
  * 请在调用该函数之前设置ctx.type
@@ -41,7 +42,7 @@ export default function sendFileRange(ctx: Context, filename: string, size: numb
 	ctx.status = 206;
 
 	if (ranges.length > 1) {
-		sendMultipartRanges(ctx, size, filename, ranges);
+		sendMultipartRanges(ctx, filename, size, ranges);
 	} else {
 		const { start, end } = ranges[0];
 		ctx.set("Content-Length", (end - start + 1).toString());
@@ -50,8 +51,17 @@ export default function sendFileRange(ctx: Context, filename: string, size: numb
 	}
 }
 
-// 参考 https://github.com/rexxars/send-ranges
-function sendMultipartRanges(ctx: Context, size: number, filename: string, ranges: Range[]) {
+/**
+ * 发送多个区间，对应 multipart/byteranges 类型的响应。
+ *
+ * 主要参考了 https://github.com/rexxars/send-ranges
+ *
+ * @param ctx Koa上下文
+ * @param filename 文件名
+ * @param size 文件大小
+ * @param ranges 要发送的区间
+ */
+function sendMultipartRanges(ctx: Context, filename: string, size: number, ranges: Range[]) {
 	const stream = new CombinedStream();
 	const randomHex = randomHex24();
 	const boundary = "--" + randomHex;
@@ -62,6 +72,7 @@ function sendMultipartRanges(ctx: Context, size: number, filename: string, range
 		return `${boundary}\r\n${type}\r\n${range}\r\n\r\n`;
 	}
 
+	// 长度计算挺麻烦，所以在下面边生成内容边统计
 	let length = 0;
 
 	for (const range of ranges) {
