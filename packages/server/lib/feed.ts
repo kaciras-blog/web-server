@@ -2,10 +2,16 @@ import Axios, { AxiosResponse } from "axios";
 import { Feed } from "feed";
 import { FeedOptions } from "feed/lib/typings";
 import { Middleware } from "koa";
-import { markdown } from "./markdown";
+import MarkdownIt from "markdown-it";
+import katex from "@iktakahiro/markdown-it-katex";
+import tableOfContent from "markdown-it-toc-done-right";
 import { once } from "./functions";
 import { CachedFetcher } from "./axios-helper";
 
+export const markdown = new MarkdownIt({ html: true });
+
+markdown.use(katex);
+markdown.use(tableOfContent);
 
 export function feedMiddleware(apiServer: string): Middleware {
 
