@@ -12,7 +12,7 @@ Kaciras个人博客的前端的开发工具和页面服务器。
 
 * [@kaciras-blog/image](packages/image) 图片处理工具，能够优化、转码图片。
 
-* [@kaciras-blog/devtool](packages/devtool) 博客的开发套件，提供构建和热重载功能，类似于Vue-Cli。
+* [@kaciras-blog/devtool](packages/devtool) 博客的开发套件，使用Webpack提供构建和热重载功能，类似于Vue-Cli。
 
 详细的说明见各自的 README.md
 
