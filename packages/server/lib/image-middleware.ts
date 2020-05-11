@@ -103,7 +103,7 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
  * 1）GET 方法映射到 downloadFn，并自动设置 ctx.params.name。
  * 2）POST 方法映射到 uploadFn。
  * 3）其他方法返回405.
- * 4）能够指定 contextPath，非此路径下的请求将原样传递给下一个中间件。
+ * 4）指定 contextPath，非此路径下的请求将原样传递给下一个中间件。
  *
  * @param contextPath 上下文路径
  * @param downloadFn 下载请求处理函数

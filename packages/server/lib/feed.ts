@@ -13,7 +13,8 @@ export const markdown = new MarkdownIt({ html: true });
 markdown.use(katex);
 markdown.use(tableOfContent);
 
-export function feedMiddleware(apiServer: string): Middleware {
+
+export default function createFeedMiddleware(apiServer: string): Middleware {
 
 	const origin = "https://blog.kaciras.com";
 
@@ -59,13 +60,6 @@ export function feedMiddleware(apiServer: string): Middleware {
 	const fetcher = new CachedFetcher(Axios, buildFeed, 7 * 86400 * 1000);
 
 	return async (ctx, next) => {
-		if (!ctx.path.startsWith("/feed/")) {
-			return next();
-		}
-		if (ctx.method !== "GET") {
-			return ctx.status = 405;
-		}
-
 		const feed = await fetcher.request({
 			url: apiServer + "/articles",
 			params: {
@@ -77,7 +71,7 @@ export function feedMiddleware(apiServer: string): Middleware {
 			},
 		});
 
-		switch (ctx.path.substring(6)) {
+		switch (ctx.params.type) {
 			case "rss":
 				ctx.body = feed.rss2();
 				ctx.type = "application/rss+xml; charset=utf-8";

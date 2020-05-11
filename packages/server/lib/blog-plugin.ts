@@ -2,25 +2,26 @@ import crypto from "crypto";
 import fs from "fs-extra";
 import path from "path";
 import Axios from "axios";
-import { Context, Middleware, Next } from "koa";
+import { Context, Next } from "koa";
 import { getLogger } from "log4js";
 import conditional from "koa-conditional-get";
 import cors from "@koa/cors";
 import compress from "koa-compress";
 import multer from "@koa/multer";
+import mime from "mime-types";
+import Router, { Middleware } from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import compose from "koa-compose";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import { localFileStore } from "@kaciras-blog/image/lib/image-store";
 import installCSPPlugin from "./csp-plugin";
 import { downloadImage, route, uploadImage } from "./image-middleware";
-import { AppOptions } from "./options";
-import { createSitemapMiddleware } from "./sitemap";
-import { feedMiddleware } from "./feed";
-import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
-import { configureForProxy } from "./axios-helper";
-import mime from "mime-types";
+import createSitemapMiddleware from "./sitemap";
+import createFeedMiddleware  from "./feed";
 import sendFileRange from "./send-range";
+import { configureForProxy } from "./axios-helper";
+import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
+import { AppOptions } from "./options";
 
 
 const logger = getLogger();
@@ -32,9 +33,6 @@ const logger = getLogger();
  */
 export function serviceWorkerToggle(register?: boolean): Middleware {
 	return (ctx, next) => {
-		if (ctx.path !== "/sw-check") {
-			return next();
-		}
 		ctx.status = register ? 200 : 205;
 		ctx.flushHeaders();
 	};
@@ -146,10 +144,18 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		// @ts-ignore TODO: 类型定义没跟上版本
 		api.useFilter(compress({ br: false, threshold: 1024, }));
 
-		api.useResource(createImageMiddleware(options));
-		api.useResource(videoMiddleware);
-		api.useResource(serviceWorkerToggle(options.serviceWorker));
-		api.useResource(createSitemapMiddleware(options.serverAddress));
-		api.useResource(feedMiddleware(options.serverAddress));
+		const router = new Router();
+
+		router.get("/sw-check", serviceWorkerToggle(options.serviceWorker));
+		router.get("/feed/:type", createFeedMiddleware(options.serverAddress));
+		router.get("/sitemap.xml", createSitemapMiddleware(options.serverAddress));
+
+		router.get("/image/:name", createImageMiddleware(options));
+		router.post("/image", createImageMiddleware(options));
+
+		router.get("/video/:name", videoMiddleware(options.serverAddress));
+		router.post("/video", videoMiddleware(options.serverAddress));
+
+		api.useResource(router.routes);
 	};
 }
