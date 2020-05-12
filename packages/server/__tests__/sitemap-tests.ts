@@ -1,7 +1,7 @@
 import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
-import { createSitemapMiddleware } from "../lib/sitemap";
+import sitemapMiddleware from "../lib/sitemap";
 
 jest.mock("axios");
 
@@ -13,7 +13,7 @@ const DATA = {
 };
 
 const app = new Koa();
-app.use(createSitemapMiddleware("123.45.67.89"));
+app.use(sitemapMiddleware("123.45.67.89"));
 const callback = app.callback();
 
 (axios.get as jest.Mock).mockResolvedValue({ status: 200, data: DATA });

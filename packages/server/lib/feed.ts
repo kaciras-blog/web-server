@@ -1,7 +1,7 @@
 import Axios, { AxiosResponse } from "axios";
 import { Feed } from "feed";
 import { FeedOptions } from "feed/lib/typings";
-import { Middleware } from "koa";
+import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
 import katex from "@iktakahiro/markdown-it-katex";
 import tableOfContent from "markdown-it-toc-done-right";
@@ -13,8 +13,11 @@ export const markdown = new MarkdownIt({ html: true });
 markdown.use(katex);
 markdown.use(tableOfContent);
 
+interface FeedContext extends ExtendableContext {
+	params: { type: string; }
+}
 
-export default function createFeedMiddleware(apiServer: string): Middleware {
+export default function createFeedMiddleware(apiServer: string) {
 
 	const origin = "https://blog.kaciras.com";
 
@@ -59,7 +62,7 @@ export default function createFeedMiddleware(apiServer: string): Middleware {
 	// 虽然缓存这东西也没啥意义，但是既然写了个 CachedFetcher，怎么也得拿出来用用。
 	const fetcher = new CachedFetcher(Axios, buildFeed, 7 * 86400 * 1000);
 
-	return async (ctx, next) => {
+	return async (ctx: FeedContext) => {
 		const feed = await fetcher.request({
 			url: apiServer + "/articles",
 			params: {

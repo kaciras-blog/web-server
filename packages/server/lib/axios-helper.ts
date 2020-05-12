@@ -4,7 +4,7 @@
  * 【警告】
  * Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
-import { Context } from "koa";
+import { ExtendableContext } from "koa";
 import log4js from "log4js";
 import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import hash from "hash-sum";
@@ -35,7 +35,7 @@ const logger = log4js.getLogger();
  * @param axiosConfig 代理到后端的Axios请求设置
  * @return Axios的请求设置
  */
-export function configureForProxy(source: Context, axiosConfig: AxiosRequestConfig = {}) {
+export function configureForProxy(source: ExtendableContext, axiosConfig: AxiosRequestConfig = {}) {
 	const srcHeaders = source.headers;
 	const distHeaders = (axiosConfig.headers = axiosConfig.headers || {});
 

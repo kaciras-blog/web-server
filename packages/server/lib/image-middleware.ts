@@ -8,8 +8,7 @@
  */
 import pathlib from "path";
 import fs from "fs-extra";
-import { Context, ExtendableContext, Middleware } from "koa";
-import { File } from "@koa/multer";
+import { Context, ExtendableContext, Middleware, Next, ParameterizedContext } from "koa";
 import { getLogger } from "log4js";
 import mime from "mime-types";
 import { InputDataError } from "@kaciras-blog/image/lib/errors";
@@ -69,7 +68,7 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Downl
  * @param ctx 请求上下文
  */
 export async function uploadImage(service: PreGenerateImageService, ctx: Context) {
-	const file: File = ctx.file;
+	const file = ctx.file;
 	if (!file) {
 		return ctx.status = 400;
 	}
@@ -105,15 +104,20 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
  * 3）其他方法返回405.
  * 4）指定 contextPath，非此路径下的请求将原样传递给下一个中间件。
  *
+ * 相当于用@koa/router的代码：
+ * @example
+ * router.get(`${contextPath}/:name`, downloadFn);
+ * router.post(contextPath, uploadFn);
+ *
  * @param contextPath 上下文路径
  * @param downloadFn 下载请求处理函数
  * @param uploadFn 上传请求处理函数
  * @return 组合后的 Koa 的中间件
  */
-export function route(contextPath: string, downloadFn: Middleware, uploadFn: Middleware): Middleware {
+export function route(contextPath: string, downloadFn: Middleware, uploadFn: Middleware) {
 	const regex = new RegExp(contextPath + "/(\\w+\\.\\w+)$");
 
-	return (ctx, next) => {
+	return (ctx: ParameterizedContext, next: Next) => {
 		const { method, path } = ctx;
 
 		if (!path.startsWith(contextPath)) {

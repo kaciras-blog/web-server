@@ -3,7 +3,7 @@
  * https://github.com/koajs/koa-range
  */
 import fs from "fs-extra";
-import { Context } from "koa";
+import { BaseContext } from "koa";
 import parseRange, { Range } from "range-parser";
 import CombinedStream from "combined-stream";
 
@@ -20,7 +20,7 @@ import CombinedStream from "combined-stream";
  * @param filename 文件路径
  * @param size 文件的大小，可以用 fs.stat(filename).size 获取
  */
-export default function sendFileRange(ctx: Context, filename: string, size: number) {
+export default function sendFileRange(ctx: BaseContext, filename: string, size: number) {
 	ctx.set("Accept-Ranges", "bytes");
 
 	const rangeHeader = ctx.get("Range");
@@ -61,7 +61,7 @@ export default function sendFileRange(ctx: Context, filename: string, size: numb
  * @param size 文件大小
  * @param ranges 要发送的区间
  */
-function sendMultipartRanges(ctx: Context, filename: string, size: number, ranges: Range[]) {
+function sendMultipartRanges(ctx: BaseContext, filename: string, size: number, ranges: Range[]) {
 	const stream = new CombinedStream();
 	const randomHex = randomHex24();
 	const boundary = "--" + randomHex;
