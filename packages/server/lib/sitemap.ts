@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BaseContext, Middleware } from "koa";
+import { BaseContext } from "koa";
 import log4js from "log4js";
 import { EnumChangefreq, SitemapStream, streamToPromise } from "sitemap";
 
