@@ -73,9 +73,10 @@ describe("uploadImage", () => {
 
 	const app = new Koa();
 	const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
-	app.use(uploader.single("file"));
 
+	app.use(uploader.single("file"));
 	app.use((ctx) => uploadImage(mockService as any, ctx));
+
 	const callback = app.callback();
 
 	it("should save a new file", async () => {
@@ -110,6 +111,15 @@ describe("uploadImage", () => {
 			.post("/image")
 			.attach("file", IMAGE_DATA, { filename: "test.gif", contentType: "image/gif" })
 			.expect(400);
+	});
+
+	it('should throw on other errors', async () => {
+		mockService.save.mockRejectedValueOnce(new Error());
+
+		await supertest(callback)
+			.post("/image")
+			.attach("file", IMAGE_DATA, { filename: "test.gif", contentType: "image/gif" })
+			.expect(500);
 	});
 });
 

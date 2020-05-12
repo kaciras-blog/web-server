@@ -10,6 +10,16 @@ it("should serve from cwd when root = '.'", () => {
 	return supertest(app.callback()).get('/package.json').expect(200);
 });
 
+it('should pass to next for directory', () => {
+	const app = new Koa();
+	app.use(serve(FIXTURE_DIR));
+	app.use(ctx => ctx.body = "hello");
+
+	return supertest(app.callback())
+		.get('/static')
+		.expect(200, "hello");
+});
+
 describe("when path is not a file", () => {
 	it('should 404', () => {
 		const app = new Koa();
