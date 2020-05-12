@@ -6,6 +6,8 @@ export interface ClassPlugin {
 
 export type FunctionPlugin = (builder: ApplicationBuilder) => void;
 
+type AnyMiddleware = Middleware<any, any>;
+
 /**
  * 把 Koa 的中间件分下组，便于解耦。
  */
@@ -34,22 +36,22 @@ export default class ApplicationBuilder {
 	}
 
 	/** 做一些全局处理的中间件，比如CORS、访问日志，请求体解析 */
-	useBeforeAll(middleware: Middleware) {
+	useBeforeAll(middleware: AnyMiddleware) {
 		this.beforeAll.push(middleware);
 	}
 
 	/** 不希望被其他插件干涉的中间件，比如webpack的热更新不能被压缩 */
-	useBeforeFilter(middleware: Middleware) {
+	useBeforeFilter(middleware: AnyMiddleware) {
 		this.beforeFilter.push(middleware);
 	}
 
 	/** 拦截和资源优化的中间件，比如压缩、屏蔽、全局权限 */
-	useFilter(middleware: Middleware) {
+	useFilter(middleware: AnyMiddleware) {
 		this.filter.push(middleware);
 	}
 
 	/** 资源中间件，比如静态文件、图片存储服务 */
-	useResource(middleware: Middleware) {
+	useResource(middleware: AnyMiddleware) {
 		this.resource.push(middleware);
 	}
 
@@ -57,7 +59,7 @@ export default class ApplicationBuilder {
 	 * 用于处理之前中间件没处理的请求，这个中间件通常有自己的路由机制，例如服务端渲染。
 	 * 这个中间件只能设置一次，多次调用说明插件有冲突。
 	 */
-	useFallBack(middleware: Middleware) {
+	useFallBack(middleware: AnyMiddleware) {
 		if (this.fallBack) {
 			throw new Error("A fall back middleware already exists.");
 		}

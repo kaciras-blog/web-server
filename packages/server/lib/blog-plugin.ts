@@ -58,6 +58,12 @@ export function intercept(patterns: RegExp | RegExp[]) {
 	};
 }
 
+/**
+ * 限制后面的中间件只能由管理员访问。
+ *
+ * @param host 内容服务器地址
+ * @return 拦截中间件
+ */
 export function adminOnlyFilter(host: string) {
 	const url = host + "/session/user";
 
@@ -130,6 +136,6 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 			ctx.set("Location", `${ctx.path}/${name}`);
 		});
 
-		api.useResource(router.routes);
+		api.useResource(router.routes());
 	};
 }
