@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import fs from "fs-extra";
 import path from "path";
 import Axios from "axios";
@@ -8,19 +7,18 @@ import conditional from "koa-conditional-get";
 import cors from "@koa/cors";
 import compress from "koa-compress";
 import multer from "@koa/multer";
-import mime from "mime-types";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import { localFileStore } from "@kaciras-blog/image/lib/image-store";
 import installCSPPlugin from "./csp-plugin";
 import { downloadImage, uploadImage } from "./image-middleware";
-import sitemaphandler from "./sitemap";
+import sitemapHandler from "./sitemap";
 import feedHandler from "./feed";
-import sendFileRange from "./send-range";
 import { configureForProxy } from "./axios-helper";
 import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
 import { AppOptions } from "./options";
+import { downloadVideo, uploadVideo } from "./video-middleware";
 
 
 const logger = getLogger();
@@ -104,7 +102,7 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 
 		router.get("/feed/:type", feedHandler(options.serverAddress));
 		router.get("/sw-check", toggleSW(options.serviceWorker));
-		router.get("/sitemap.xml", sitemaphandler(options.serverAddress));
+		router.get("/sitemap.xml", sitemapHandler(options.serverAddress));
 
 		// 用 image-middleware 里的函数组合成图片处理中间件。
 		// TODO: 支持评论插入图片
@@ -114,27 +112,8 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 
 		const videoDir = path.join(options.dataDir, "video");
 		fs.ensureDirSync(videoDir);
-
-		router.get("/video/:name", async ctx => {
-			const name = path.basename(ctx.params.name);
-			const fullname = path.join(videoDir, name);
-			const stats = await fs.stat(fullname);
-			return sendFileRange(ctx, fullname, stats.size);
-		});
-
-		router.post("/video", adminFilter, async (ctx: any) => {
-			const { buffer, mimetype } = ctx.file;
-			const hash = crypto
-				.createHash("sha3-256")
-				.update(buffer)
-				.digest("hex");
-
-			const name = hash + "." + mime.extension(mimetype);
-			await fs.writeFile(path.join(videoDir, name), buffer);
-
-			ctx.status = 201;
-			ctx.set("Location", `${ctx.path}/${name}`);
-		});
+		router.get("/video/:name", ctx => downloadVideo(videoDir, ctx));
+		router.post("/video", adminFilter, async (ctx: any) => uploadVideo(videoDir, ctx));
 
 		api.useResource(router.routes());
 	};
