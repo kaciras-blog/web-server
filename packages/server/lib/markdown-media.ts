@@ -2,7 +2,11 @@ import MarkdownIt from "markdown-it";
 import StateInline from "markdown-it/lib/rules_inline/state_inline";
 import Token from "markdown-it/lib/token";
 
-const DIRECTIVE_NAME_RE = /^[a-z][a-z0-9\-_]+/i;
+interface MediaToken extends Token {
+	src: string;
+}
+
+const DIRECTIVE_NAME_RE = /^[a-z][a-z0-9\-_]*/i;
 
 function parseMedia(state: StateInline, silent: boolean) {
 	let { pos } = state;
@@ -39,11 +43,13 @@ function parseMedia(state: StateInline, silent: boolean) {
 
 	state.pos = pos;
 	if (!silent) {
-		const token = state.push('media', directive, 0);
+		const token = state.push('media', directive, 0) as MediaToken;
 		token.level = state.level;
 		token.content = label;
-		(token as any).reference = reference;
-		token.attrs = [["attrs", attributes]];
+		token.src = reference;
+
+		// TODO: split attrs
+		token.attrs = [["attrs", attributes.trim()]];
 	}
 
 	return true;
@@ -63,7 +69,7 @@ function parseBracket(src: string, pos: number, start: string, end: string) {
 		if (src.charAt(e - 1) === "\\") {
 			i = e + 1;
 		} else {
-			return src.substring(pos + 1, i + e);
+			return src.substring(pos + 1, e);
 		}
 	}
 
@@ -71,9 +77,9 @@ function parseBracket(src: string, pos: number, start: string, end: string) {
 }
 
 function renderMedia(tokens: Token[], idx: number) {
-	const token = tokens[idx];
-	const { tag, attrs } = token;
-	return `<${tag} src="${(token as any).reference}" ${attrs![0][1]}></${tag}>`;
+	const token = tokens[idx] as MediaToken;
+	const { tag, attrs, src } = token;
+	return `<${tag} src="${src}" ${attrs![0][1]}></${tag}>`;
 }
 
 export default function install(markdownIt: MarkdownIt) {

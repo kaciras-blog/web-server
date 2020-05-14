@@ -5,7 +5,7 @@ it('should convert to html', () => {
 	const markdown = `
 text before
 
-@video[\\[test\\]](/video/foo.mp4){ loop muted }
+@video[](/video/foo.mp4){ loop="loop" muted }
 
 text after`
 	const markdownIt = new MarkdownIt();
