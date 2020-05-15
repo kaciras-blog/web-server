@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Middleware } from "koa";
+import { BaseContext } from "koa";
 import log4js from "log4js";
 import { EnumChangefreq, SitemapStream, streamToPromise } from "sitemap";
 
@@ -76,16 +76,12 @@ async function buildSitemap(resources: SitemapResource[], isForBaidu: boolean) {
 	return streamToPromise(sitemap);
 }
 
-export function createSitemapMiddleware(serverAddress: string): Middleware {
+export default function createSitemapMiddleware(serverAddress: string) {
 	const resources = [
 		new ArticleCollection(serverAddress),
 	];
 
-	return async (ctx, next) => {
-		if (ctx.path !== "/sitemap.xml") {
-			return next();
-		}
-
+	return async (ctx: BaseContext) => {
 		// https://ziyuan.baidu.com/wiki/640 百度 SiteMap 的日期格式与通用的有些不同。
 		// 【注意】ctx.get() 对不存在的头返回空字符串。
 		const isForBaidu = ctx.query.type === "baidu"

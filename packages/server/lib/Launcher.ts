@@ -6,7 +6,7 @@ import ApplicationBuilder from "./ApplicationBuilder";
 import getBlogPlugin from "./blog-plugin";
 import { createSSRProductionPlugin } from "./ssr-middleware";
 import { runServer } from "./create-server";
-import { configureLog4js, configureGlobalAxios } from "./helpers";
+import { configureGlobalAxios, configureLog4js } from "./helpers";
 import staticFiles from "./static-files";
 import { BlogServerOptions } from "./options";
 
