@@ -94,7 +94,6 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
-		// @ts-ignore TODO: 类型定义没跟上版本
 		api.useFilter(compress({ br: false, threshold: 1024, }));
 
 		const adminFilter = adminOnlyFilter(options.serverAddress);
@@ -112,8 +111,8 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 
 		const videoDir = path.join(options.dataDir, "video");
 		fs.ensureDirSync(videoDir);
-		router.get("/video/:name", ctx => downloadVideo(videoDir, ctx));
 		router.post("/video", adminFilter, async (ctx: any) => uploadVideo(videoDir, ctx));
+		router.get("/video/:name", ctx => downloadVideo(videoDir, ctx));
 
 		api.useResource(router.routes());
 	};
