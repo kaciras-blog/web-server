@@ -1,8 +1,5 @@
 /*
  * 自定义Axios，使其更好地支持本博客系统。
- *
- * 【警告】
- * Axios 0.19.0 不合并默认配置里的transport（axios/lib/core/mergeConfig.js），所以不能升级。
  */
 import { ExtendableContext } from "koa";
 import log4js from "log4js";
@@ -195,9 +192,12 @@ export function configureAxiosHttp2(
 		});
 	}
 
-	// 修改Axios默认的transport属性，注意该属性是内部使用的，没有定义在接口里。
-	// Axios 0.19.0 修改了相关逻辑，导致该字段无法合并到最终的请求中。
-	(axios.defaults as any).transport = { request };
+	// 修改 AxiosRequestConfig 的 transport 属性，该属性是内部使用的没有类型定义。
+	const transport = { request };
+	axios.interceptors.request.use(config => {
+		(config as any).transport = transport;
+		return config;
+	});
 
 	return () => cache.forEach((session) => session.destroy());
 }
