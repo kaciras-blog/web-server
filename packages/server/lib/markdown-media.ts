@@ -8,6 +8,9 @@ interface MediaToken extends Token {
 
 const DIRECTIVE_NAME_RE = /^[a-z][a-z0-9\-_]*/i;
 
+// Example:
+// @video[label text](/foo/bar.mp4){ loop muted poster="/poster.jpg" }
+
 function parseMedia(state: StateInline, silent: boolean) {
 	let { pos } = state;
 	const src = state.src.slice(0, state.posMax);

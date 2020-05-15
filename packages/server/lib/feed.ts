@@ -3,15 +3,17 @@ import { Feed } from "feed";
 import { FeedOptions } from "feed/lib/typings";
 import { Middleware } from "koa";
 import MarkdownIt from "markdown-it";
-import katex from "@iktakahiro/markdown-it-katex";
-import tableOfContent from "markdown-it-toc-done-right";
+import KaTeX from "@iktakahiro/markdown-it-katex";
+import TableOfContent from "markdown-it-toc-done-right";
+import MediaPlugin from "../lib/markdown-media";
 import { once } from "./functions";
 import { CachedFetcher } from "./axios-helper";
 
-export const markdown = new MarkdownIt({ html: true });
+export const markdown = new MarkdownIt();
 
-markdown.use(katex);
-markdown.use(tableOfContent);
+markdown.use(KaTeX);
+markdown.use(TableOfContent);
+markdown.use(MediaPlugin);
 
 export function feedMiddleware(apiServer: string): Middleware {
 
