@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import Axios from "axios";
-import { BaseContext, ExtendableContext, Next } from "koa";
+import { BaseContext, ExtendableContext, Next, ParameterizedContext } from "koa";
 import { getLogger } from "log4js";
 import conditional from "koa-conditional-get";
 import cors from "@koa/cors";
@@ -11,7 +11,6 @@ import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import { localFileStore } from "@kaciras-blog/image/lib/image-store";
-import installCSPPlugin from "./csp-plugin";
 import { downloadImage, uploadImage } from "./image-middleware";
 import sitemapHandler from "./sitemap";
 import feedHandler from "./feed";
@@ -20,8 +19,41 @@ import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
 import { AppOptions } from "./options";
 import { downloadVideo, uploadVideo } from "./video-middleware";
 
-
 const logger = getLogger();
+
+const CSP_REPORT_URI = "/csp-report";
+
+/**
+ * 设置 CSP 和 HSTS 头的中间件，能提高点安全性。
+ *
+ * Content-Security-Policy：
+ *   frame-ancestors - 没想出有什么嵌入其它网站的必要
+ *   object-src - 还是不允许往别的网站里嵌
+ *   block-all-mixed-content - 我全站都是HTTPS，也不太会去用HTTP的服务
+ *   其他的限制太死了，暂时没开启
+ *
+ * Strict-Transport-Security：直接设个最长时间就行，我的网站也不可能退回 HTTP
+ *
+ * TODO: 目前的配置比较简单就直接写死了，复杂了再考虑 koa-helmet
+ *
+ * @param ctx Koa中间件的参数，不解释
+ * @param next Koa中间件的参数，不解释
+ */
+async function securityFilter(ctx: ParameterizedContext, next: () => Promise<any>) {
+	await next();
+	ctx.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; " +
+		"object-src 'none'; block-all-mixed-content; report-uri " + CSP_REPORT_URI);
+}
+
+function cspReporter(ctx: ExtendableContext) {
+	if (ctx.request.body) {
+		logger.warn("CSP Violation: ", ctx.request.body);
+	} else {
+		logger.warn("CSP Violation: No data received!");
+	}
+	ctx.status = 204;
+}
 
 /**
  * 前端页面是否注册 ServiceWorker 的检查点，该URI返回200状态码时表示注册，否则应当注销。
@@ -86,11 +118,11 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(bodyParser());
+		api.useBeforeAll(securityFilter);
 
 		const uploader = multer({ limits: { fileSize: 10 * 1024 * 1024 } });
 		api.useBeforeAll(uploader.single("file"));
 
-		installCSPPlugin(api);
 		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
@@ -102,6 +134,7 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		router.get("/feed/:type", feedHandler(options.serverAddress));
 		router.get("/sw-check", toggleSW(options.serviceWorker));
 		router.get("/sitemap.xml", sitemapHandler(options.serverAddress));
+		router.post(CSP_REPORT_URI, cspReporter);
 
 		// 用 image-middleware 里的函数组合成图片处理中间件。
 		// TODO: 支持评论插入图片
