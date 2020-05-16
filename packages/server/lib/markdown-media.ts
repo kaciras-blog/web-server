@@ -1,3 +1,15 @@
+/*
+ * 自定义的Markdown语法，用于插入视频、音频等。
+ * 格式：@<tag>[<label>](<src>){ <attributes> }
+ *
+ * Example:
+ * @video[label text](/foo/bar.mp4){ loop muted poster="/poster.jpg" }
+ * Html:
+ * <video src="/foo/bar.mp4" loop muted poster="/poster.jpg">label text</video>
+ *
+ * 【为何不直接写HTML】
+ * 一旦写死HTML，以后想改动渲染结果就得把文章全扫一遍，麻烦。
+ */
 import MarkdownIt from "markdown-it";
 import StateInline from "markdown-it/lib/rules_inline/state_inline";
 import Token from "markdown-it/lib/token";
@@ -7,9 +19,6 @@ interface MediaToken extends Token {
 }
 
 const DIRECTIVE_NAME_RE = /^[a-z][a-z0-9\-_]*/i;
-
-// Example:
-// @video[label text](/foo/bar.mp4){ loop muted poster="/poster.jpg" }
 
 function parseMedia(state: StateInline, silent: boolean) {
 	let { pos } = state;
@@ -48,7 +57,7 @@ function parseMedia(state: StateInline, silent: boolean) {
 	if (!silent) {
 		const token = state.push('media', directive, 0) as MediaToken;
 		token.level = state.level;
-		token.content = label;
+		token.content = state.md.utils.unescapeMd(label);
 		token.src = reference;
 
 		// TODO: split attrs
@@ -76,13 +85,13 @@ function parseBracket(src: string, pos: number, start: string, end: string) {
 		}
 	}
 
-	return null;
+	return null; // close bracket not found
 }
 
 function renderMedia(tokens: Token[], idx: number) {
 	const token = tokens[idx] as MediaToken;
-	const { tag, attrs, src } = token;
-	return `<${tag} src="${src}" ${attrs![0][1]}></${tag}>`;
+	const { tag, attrs, src, content } = token;
+	return `<${tag} src="${src}" ${attrs![0][1]}>${content}</${tag}>`;
 }
 
 export default function install(markdownIt: MarkdownIt) {

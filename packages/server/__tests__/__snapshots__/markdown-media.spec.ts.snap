@@ -6,3 +6,8 @@ exports[`should convert to html 1`] = `
 <p>text after</p>
 "
 `;
+
+exports[`should unescape chars 1`] = `
+"<p><video src=\\"/video/foo.mp4\\" loop muted>[hello]</video></p>
+"
+`;
