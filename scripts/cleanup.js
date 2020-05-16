@@ -7,6 +7,7 @@ const path = require("path");
 async function cleanup() {
 	const files = await globby([
 		"packages/**/*.{js,map}",
+		"!packages/*/bin/*.js",
 		"!**/node_modules/**",
 		"!**/__mocks__",
 		"!**/__tests__/fixtures"

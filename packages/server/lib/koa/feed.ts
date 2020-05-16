@@ -5,9 +5,9 @@ import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
 import KaTeX from "@iktakahiro/markdown-it-katex";
 import TableOfContent from "markdown-it-toc-done-right";
-import MediaPlugin from "../lib/markdown-media";
-import { once } from "./functions";
-import { CachedFetcher } from "./axios-helper";
+import MediaPlugin from "../markdown-media";
+import { once } from "../functions";
+import { CachedFetcher } from "../axios-helper";
 
 export const markdown = new MarkdownIt();
 

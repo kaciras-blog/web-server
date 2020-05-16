@@ -1,7 +1,7 @@
 import supertest from "supertest";
 import Koa from "koa";
 import { FIXTURE_DIR } from "./test-utils";
-import serve from '../lib/static-files';
+import serve from '../lib/koa/static-files';
 
 it("should serve from cwd when root = '.'", () => {
 	const app = new Koa();

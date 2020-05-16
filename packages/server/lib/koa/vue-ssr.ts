@@ -4,7 +4,7 @@ import { Context } from "koa";
 import log4js from "log4js";
 import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
-import ApplicationBuilder from "./ApplicationBuilder";
+import ApplicationBuilder from "../ApplicationBuilder";
 
 const logger = log4js.getLogger("SSR");
 

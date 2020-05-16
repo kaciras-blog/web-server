@@ -1,7 +1,7 @@
 import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
-import sitemapMiddleware from "../lib/sitemap";
+import sitemapMiddleware from "../lib/koa/sitemap";
 
 jest.mock("axios");
 

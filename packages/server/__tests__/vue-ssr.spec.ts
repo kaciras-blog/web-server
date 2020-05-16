@@ -1,6 +1,6 @@
 import supertest from "supertest";
 import Koa from "koa";
-import { RenderContext, renderPage } from "../lib/ssr-middleware";
+import { RenderContext, renderPage } from "../lib/koa/vue-ssr";
 
 const renderFn = jest.fn<Promise<string>, [RenderContext]>(() => Promise.resolve("test content"));
 

@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import Koa from "koa";
 import supertest from "supertest";
-import sendFileRange from "../lib/send-range";
+import sendFileRange from "../lib/koa/send-range";
 import { FIXTURE_DIR } from "./test-utils";
 
 const FILE = FIXTURE_DIR + "/sendrange.txt";

@@ -5,7 +5,7 @@ import { Context } from "koa";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin, Watching } from "webpack";
-import { renderPage } from "@kaciras-blog/server/lib/ssr-middleware";
+import { renderPage } from "@kaciras-blog/server/lib/koa/vue-ssr";
 
 const logger = log4js.getLogger("dev");
 

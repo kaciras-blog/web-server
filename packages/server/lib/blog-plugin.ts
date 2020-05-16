@@ -11,13 +11,13 @@ import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import { localFileStore } from "@kaciras-blog/image/lib/image-store";
-import { downloadImage, uploadImage } from "./image-middleware";
-import sitemapHandler from "./sitemap";
-import feedHandler from "./feed";
+import { downloadImage, uploadImage } from "./koa/image";
+import sitemapHandler from "./koa/sitemap";
+import feedHandler from "./koa/feed";
+import { downloadVideo, uploadVideo } from "./koa/video";
 import { configureForProxy } from "./axios-helper";
 import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
 import { AppOptions } from "./options";
-import { downloadVideo, uploadVideo } from "./video-middleware";
 
 const logger = getLogger();
 

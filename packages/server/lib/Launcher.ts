@@ -4,10 +4,10 @@ import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
 import ApplicationBuilder from "./ApplicationBuilder";
 import getBlogPlugin from "./blog-plugin";
-import { createSSRProductionPlugin } from "./ssr-middleware";
+import { createSSRProductionPlugin } from "./koa/vue-ssr";
 import { runServer } from "./create-server";
 import { configureGlobalAxios, configureLog4js } from "./helpers";
-import staticFiles from "./static-files";
+import staticFiles from "./koa/static-files";
 import { BlogServerOptions } from "./options";
 
 const logger = log4js.getLogger();
