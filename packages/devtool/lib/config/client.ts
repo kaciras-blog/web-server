@@ -116,7 +116,7 @@ export default function (options: DevelopmentOptions) {
 	}));
 
 	const config: Configuration = {
-		entry: ["./src/entry-client.js"],
+		entry: ["./src/entry-client"],
 		devtool: webpackOpts.client.devtool,
 		plugins,
 		optimization: {
