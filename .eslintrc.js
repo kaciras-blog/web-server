@@ -12,7 +12,6 @@ module.exports = {
 		"quotes": ["error", "double", {
 			avoidEscape: true,
 		}],
-		"no-var-requires": "off",
 		"no-unused-vars": "off",
 		"require-atomic-updates": "off",
 		"eqeqeq": "error",
@@ -20,7 +19,7 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: ["**/__tests__/*.spec.{j,t}s?(x)",],
+			files: ["**/__tests__/*.spec.{j,t}s?(x)"],
 			env: { jest: true },
 			extends: [
 				"plugin:jest/style",
@@ -46,6 +45,8 @@ module.exports = {
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/no-non-null-assertion": "off",
 				"@typescript-eslint/no-use-before-define": "off",
+				"@typescript-eslint/camelcase": "off",
+				"@typescript-eslint/no-var-requires": "off",
 			},
 		},
 	],

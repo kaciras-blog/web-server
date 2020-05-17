@@ -65,7 +65,7 @@ export default function (options: DevelopmentOptions) {
 				to: ".",
 				globOptions: {
 					dot: true,
-					ignore: ["index.html"],
+					ignore: ["./**/index.html"],
 				},
 			}],
 		}),
