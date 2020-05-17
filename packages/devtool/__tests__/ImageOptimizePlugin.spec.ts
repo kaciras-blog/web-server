@@ -121,13 +121,14 @@ it("should cooperate with other plugins", async () => {
 		entry: resolveFixture("entry-empty.js"),
 		output: { path: "/" },
 		plugins: [
-			new CopyWebpackPlugin([
-				{
+			new CopyWebpackPlugin({
+				// @ts-ignore
+				patterns:[{
 					from: "icon-rss.svg",
 					to: "icon-rss.svg",
 					context: path.join(__dirname, "fixtures"),
-				},
-			]),
+				}],
+			}),
 			new ImageOptimizePlugin(),
 			new CompressionPlugin({ test: /\.svg$/ }),
 		],

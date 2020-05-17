@@ -58,13 +58,17 @@ export default function (options: DevelopmentOptions) {
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
 	const plugins = [
-		new CopyWebpackPlugin([
-			{
+		new CopyWebpackPlugin({
+			// @ts-ignore
+			patterns: [{
 				from: "./public",
 				to: ".",
-				ignore: ["index.html"],
+				globOptions: {
+					dot: true,
+					ignore: ["index.html"],
+				},
 			}],
-		),
+		}),
 		new ServiceWorkerWebpackPlugin({
 			entry: "./src/service-worker/index",
 
