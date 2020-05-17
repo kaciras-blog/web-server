@@ -16,3 +16,9 @@ node_modules
 *.njsproj
 *.sln
 *.sw*
+
+# Build files
+*.js.map
+packages/*/lib/**/*.js
+**/__tests__/*.js
+**/__perfs__/*.js
