@@ -28,7 +28,7 @@ describe("app.runServer", () => {
 
 	afterAll(() => close());
 
-	it("should redirect to https", async (done) => {
+	it("should redirect to https", (done) => {
 		http.get(HTTP_URL, ((res) => {
 			expect(res.statusCode).toEqual(301);
 			expect(res.headers.location).toEqual(HTTPS_URL);
@@ -92,13 +92,9 @@ describe("SNI callback", () => {
 		});
 	}
 
-	it("should throw error with invalid servername", async () => {
-		expect.assertions(1);
-		try {
-			await verifyCertCN("invaildhost");
-		} catch (e) {
-			expect(e.message).toBe("Client network socket disconnected before secure TLS connection was established");
-		}
+	it("should throw error with invalid servername", () => {
+		return expect(verifyCertCN("invaild")).rejects
+			.toThrow("Client network socket disconnected before secure TLS connection was established");
 	});
 
 	it("should accept localhost", () => {

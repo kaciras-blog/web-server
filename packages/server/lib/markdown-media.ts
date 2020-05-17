@@ -55,7 +55,7 @@ function parseMedia(state: StateInline, silent: boolean) {
 
 	state.pos = pos;
 	if (!silent) {
-		const token = state.push('media', directive, 0) as MediaToken;
+		const token = state.push("media", directive, 0) as MediaToken;
 		token.level = state.level;
 		token.content = state.md.utils.unescapeMd(label);
 		token.src = reference;
@@ -95,6 +95,6 @@ function renderMedia(tokens: Token[], idx: number) {
 }
 
 export default function install(markdownIt: MarkdownIt) {
-	markdownIt.inline.ruler.before('emphasis', 'media', parseMedia);
+	markdownIt.inline.ruler.before("emphasis", "media", parseMedia);
 	markdownIt.renderer.rules.media = renderMedia;
 }

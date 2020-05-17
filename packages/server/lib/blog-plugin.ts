@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import Axios from "axios";
-import { BaseContext, ExtendableContext, Next, ParameterizedContext } from "koa";
+import { BaseContext, ExtendableContext, Next } from "koa";
 import { getLogger } from "log4js";
 import conditional from "koa-conditional-get";
 import cors from "@koa/cors";
@@ -39,7 +39,7 @@ const CSP_REPORT_URI = "/csp-report";
  * @param ctx Koa中间件的参数，不解释
  * @param next Koa中间件的参数，不解释
  */
-async function securityFilter(ctx: ParameterizedContext, next: () => Promise<any>) {
+async function securityFilter(ctx: BaseContext, next: Next) {
 	await next();
 	ctx.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
 	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; " +
@@ -126,7 +126,7 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
-		api.useFilter(compress({ br: false, threshold: 1024, }));
+		api.useFilter(compress({ br: false, threshold: 1024 }));
 
 		const adminFilter = adminOnlyFilter(options.serverAddress);
 		const router = new Router();

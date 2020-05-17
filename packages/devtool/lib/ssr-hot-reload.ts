@@ -25,8 +25,8 @@ export class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 	manifest: any;
 	template: any;
 
-	constructor(manifestName: string = "vue-ssr-client-manifest.json",
-				templateName: string = "index.template.html") {
+	constructor(manifestName = "vue-ssr-client-manifest.json",
+				templateName = "index.template.html") {
 		super();
 		this.manifestName = manifestName;
 		this.templateName = templateName;

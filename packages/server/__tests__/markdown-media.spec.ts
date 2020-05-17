@@ -4,7 +4,7 @@ import MediaPlugin from "../lib/markdown-media";
 const markdownIt = new MarkdownIt();
 markdownIt.use(MediaPlugin);
 
-it('should convert to html', () => {
+it("should convert to html", () => {
 	const markdown = `
 text before
 
@@ -16,7 +16,7 @@ text after`
 	expect(html).toMatchSnapshot();
 });
 
-it('should unescape chars', () => {
+it("should unescape chars", () => {
 	const html = markdownIt.render("@video[[hello\\]](/video/foo.mp4){ loop muted }");
 	expect(html).toMatchSnapshot();
 });

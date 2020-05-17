@@ -13,7 +13,7 @@ describe("debounceFirst", () => {
 		expect(await obj.func()).toBe(333);
 	});
 
-	it("should avoid multiple calls", (done) => {
+	it("should avoid multiple calls", () => {return new Promise((done) => {
 		let task!: PromiseSource<number>;
 		const func = (a: number, b: number) => task = new PromiseSource();
 		const debounced = debounceFirst(func);
@@ -25,7 +25,7 @@ describe("debounceFirst", () => {
 		debounced(1, 2)
 			.then((v) => expect(v).toBe(123))
 			.then(done);
-	});
+	})});
 
 	it("should call after first resolved", async () => {
 		const func = (x: number) => Promise.resolve(x * x);
@@ -35,20 +35,15 @@ describe("debounceFirst", () => {
 		await debounced(4).then((v) => expect(v).toBe(16));
 	});
 
-	it("should reset after exception", async (done) => {
+	it("should reset after exception", async () => {
 		const debounced = debounceFirst(async (throws) => {
 			if (throws) {
-				throw new Error();
+				throw new Error("test");
 			}
 			return 123456;
 		});
-		try {
-			await debounced(true);
-			done.fail("expect to throws");
-		} catch (e) {
-			expect(await debounced(false)).toBe(123456);
-			done();
-		}
+		await expect(debounced(true)).rejects.toThrow();
+		expect(await debounced(false)).toBe(123456);
 	});
 });
 

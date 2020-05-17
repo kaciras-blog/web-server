@@ -6,7 +6,7 @@ import mime from "mime-types";
 import sendFileRange from "./send-range";
 
 interface VideoDownloadContext extends ExtendableContext {
-	params: { name: string }
+	params: { name: string };
 }
 
 export async function downloadVideo(directory: string, ctx: VideoDownloadContext) {

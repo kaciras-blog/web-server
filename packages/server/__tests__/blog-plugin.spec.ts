@@ -4,7 +4,7 @@ import supertest from "supertest";
 import { adminOnlyFilter, intercept } from "../lib/blog-plugin";
 import Mock = jest.Mock;
 
-jest.mock('axios');
+jest.mock("axios");
 
 describe("intercept middleware", () => {
 	const app = new Koa();
@@ -36,17 +36,17 @@ describe("intercept middleware", () => {
 	});
 });
 
-describe('adminOnlyFilter', () => {
+describe("adminOnlyFilter", () => {
 	const app = new Koa();
 	app.use(adminOnlyFilter("/test/user"));
 	app.use(ctx => ctx.body = "hello world");
 
-	it('should 403 for guests', () => {
+	it("should 403 for guests", () => {
 		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 0 }});
 		return supertest(app.callback()).get("/").expect(403);
 	});
 
-	it('should continue for admin', () => {
+	it("should continue for admin", () => {
 		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 2 }});
 		return supertest(app.callback()).get("/").expect(200, "hello world");
 	});

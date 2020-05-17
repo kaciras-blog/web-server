@@ -113,7 +113,7 @@ describe("uploadImage", () => {
 			.expect(400);
 	});
 
-	it('should throw on other errors', async () => {
+	it("should throw on other errors", async () => {
 		mockService.save.mockRejectedValueOnce(new Error());
 
 		await supertest(callback)

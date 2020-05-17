@@ -16,7 +16,7 @@ markdown.use(TableOfContent);
 markdown.use(MediaPlugin);
 
 interface FeedContext extends ExtendableContext {
-	params: { type: string; }
+	params: { type: string };
 }
 
 export default function createFeedMiddleware(apiServer: string) {

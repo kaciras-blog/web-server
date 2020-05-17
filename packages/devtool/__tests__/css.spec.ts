@@ -25,7 +25,7 @@ it("should support css imports", async () => {
 	expect(output.readFileSync("/main.css", "utf8")).toMatchSnapshot();
 });
 
-it('should support less', async () => {
+it("should support less", async () => {
 	const output = await runWebpack({
 		mode: "development",
 		entry: resolveFixture("less.less"),

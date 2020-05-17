@@ -4,7 +4,7 @@ import Axios, { AxiosRequestConfig } from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { readFixtureText, sleep } from "./test-utils";
-import { CachedFetcher, configureAxiosHttp2, configureForProxy, CSRF_HEADER_NAME, } from "../lib/axios-helper";
+import { CachedFetcher, configureAxiosHttp2, configureForProxy, CSRF_HEADER_NAME } from "../lib/axios-helper";
 
 jest.useFakeTimers();
 
@@ -53,7 +53,7 @@ describe("configureAxiosHttp2", () => {
 		expect(response.data).toBe("Hello");
 	});
 
-	it('should support cancellation', async () => {
+	it("should support cancellation", async () => {
 		const axios = Axios.create();
 		cleanSessions = configureAxiosHttp2(axios);
 
@@ -94,14 +94,6 @@ describe("certificate verification", () => {
 	});
 
 	afterAll((done) => server.close(done));
-
-	// TODO: 自签证书的错误如何捕获？
-	// it("should reject self signed certificate", () => {
-	// 	const axios = Axios.create();
-	// 	configureAxiosHttp2(axios, true);
-	//
-	// 	return expect(axios.get(url)).rejects.toBeTruthy();
-	// });
 
 	it("should success with trust", async () => {
 		const axios = Axios.create();
@@ -145,7 +137,7 @@ describe("configureForProxy", () => {
 		expect(config.headers.Cookie).toBe("CSRF-Token=hello");
 	});
 
-	it('should accept X-Forwarded-For', async () => {
+	it("should accept X-Forwarded-For", async () => {
 		const [app, config] = createApp();
 		app.proxy = true;
 
@@ -165,7 +157,7 @@ describe("CachedFetcher", () => {
 
 	const instance = new CachedFetcher(axios, (res) => res.data);
 
-	function mockResponse(status: number, data?: any, multiple: boolean = false) {
+	function mockResponse(status: number, data?: any, multiple = false) {
 		const response = Promise.resolve({ status, data, headers: {} });
 		if (multiple) {
 			mockRequest.mockResolvedValue(response);

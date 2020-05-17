@@ -21,7 +21,7 @@ const logger = getLogger("Image");
  * 之所以这么设计是为了跟 @koa/router 一致。
  */
 export interface DownloadContext extends ExtendableContext {
-	params: { name: string; };
+	params: { name: string };
 }
 
 /**

@@ -19,14 +19,14 @@ export interface WebpackOptions {
 	speedMeasure?: boolean;
 
 	client: {
-		useBabel: boolean,
+		useBabel: boolean;
 		devtool: Options.Devtool;
-		cssSourceMap: boolean,
+		cssSourceMap: boolean;
 	};
 
 	server: {
 		devtool: Options.Devtool;
-		cssSourceMap: boolean,
+		cssSourceMap: boolean;
 	};
 
 	vueLoader?: VueLoaderOptions;

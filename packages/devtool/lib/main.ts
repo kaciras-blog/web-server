@@ -62,7 +62,7 @@ launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 	app.proxy = !!options.blog.useForwardedHeaders;
 
 	const closeServer = await runServer(app.callback(), options.server);
-	console.info(`\n- Local URL: https://localhost/\n`);
+	console.info("\n- Local URL: https://localhost/\n");
 
 	return () => {
 		closeHttp2Sessions();

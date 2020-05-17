@@ -29,6 +29,6 @@ export function readFixtureText(name: string) {
  * @param time 时间，毫秒
  * @return 在指定的时间后完成的Promise
  */
-export function sleep(time: number = 0) {
+export function sleep(time = 0) {
 	return new Promise((resolve) => setTimeout(resolve, time));
 }
