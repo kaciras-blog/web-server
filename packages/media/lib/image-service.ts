@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { performance } from "perf_hooks";
 import { promisify } from "util";
 import sharp from "sharp";
@@ -9,6 +8,7 @@ import { ImageFilter, ImageTags, runFilters } from "./filter-runner";
 import codingFilter from "./coding-filter";
 import { ImageStore, LocalFileSlot } from "./image-store";
 import { BadImageError, ImageFilterException } from "./errors";
+import { hashName } from "./common";
 
 
 const logger = getLogger("Image");
@@ -75,11 +75,7 @@ export class PreGenerateImageService {
 			buffer = await sharp(buffer).png().toBuffer();
 		}
 
-		// TODO: hex好长，要不要换base64截断一下
-		const hash = crypto
-			.createHash("sha3-256")
-			.update(buffer)
-			.digest("hex");
+		const hash = hashName(buffer);
 
 		const slot = this.store({ name: hash, type });
 		const fullName = `${hash}.${type}`;
