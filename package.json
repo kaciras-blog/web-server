@@ -12,7 +12,7 @@
 		"lint": "eslint --fix --ext .ts packages",
 		"test": "jest --silent",
 		"test:coverage": "yarn test --coverage",
-		"publish": "lerna publish --no-push"
+		"publish": "lerna publish"
 	},
 	"devDependencies": {
 		"@types/case-sensitive-paths-webpack-plugin": "^2.1.4",
