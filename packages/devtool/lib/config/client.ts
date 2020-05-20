@@ -104,10 +104,13 @@ export default function (options: DevelopmentOptions) {
 		useShortDoctype: true,
 		removeAttributeQuotes: true,
 	};
+
 	plugins.push(new HtmlWebpackPlugin({
 		title: "Kaciras的博客",
 		template: "public/index.html",
 		filename: "app-shell.html",
+		inject: "head",
+		scriptLoading: "defer",
 		minify: htmlMinifyOptions,
 	}));
 
