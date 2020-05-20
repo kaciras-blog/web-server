@@ -20,3 +20,8 @@ it("should unescape chars", () => {
 	const html = markdownIt.render("@video[[hello\\]](/video/foo.mp4){ loop muted }");
 	expect(html).toMatchSnapshot();
 });
+
+it("should escape link", () => {
+	const html = markdownIt.render("@video[](javascript:xss){}");
+	expect(html).toMatchSnapshot();
+});

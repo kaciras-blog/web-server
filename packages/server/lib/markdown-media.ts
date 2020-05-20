@@ -41,11 +41,16 @@ function parseMedia(state: StateInline, silent: boolean) {
 	}
 	pos += label.length + 2;
 
-	const reference = parseBracket(src, pos, "(", ")");
-	if (reference === null) {
+	let link = parseBracket(src, pos, "(", ")");
+	if (link === null) {
 		return false;
 	}
-	pos += reference.length + 2;
+	pos += link.length + 2;
+
+	link = state.md.normalizeLink(link);
+	if (!state.md.validateLink(link)) {
+		link = ""; // 谨防XSS
+	}
 
 	const attributes = parseBracket(src, pos, "{", "}");
 	if (attributes === null) {
@@ -56,9 +61,9 @@ function parseMedia(state: StateInline, silent: boolean) {
 	state.pos = pos;
 	if (!silent) {
 		const token = state.push("media", directive, 0) as MediaToken;
+		token.src = link;
 		token.level = state.level;
 		token.content = state.md.utils.unescapeMd(label);
-		token.src = reference;
 
 		// TODO: split attrs
 		token.attrs = [["attrs", attributes.trim()]];
