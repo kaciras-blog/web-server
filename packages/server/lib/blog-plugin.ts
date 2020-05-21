@@ -109,7 +109,7 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 
 	return (api: ApplicationBuilder) => {
 		api.useBeforeAll(cors({
-			origin: (ctx) => ctx.protocol + options.host,
+			origin: (ctx) => ctx.protocol + "://" + options.host,
 			credentials: true,
 			maxAge: 864000,
 			exposeHeaders: ["Location"],
