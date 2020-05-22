@@ -1,8 +1,20 @@
+/*
+ * 因为要对上传的文件做Hash，故测试了常用的一些Hash函数性能。
+ *
+ * md5              - 60.89 ms
+ * sha3_256         - 385.82 ms
+ * sha2_256         - 144.40 ms
+ * murmurHash3_sync - 6.29 ms
+ */
 import crypto from "crypto";
 import { performance } from "perf_hooks";
 import { murmurHash128 } from "murmurhash-native";
 
 const buffer = crypto.randomBytes(1024 * 1024);
+
+function md5() {
+	return crypto.createHash("md5").update(buffer).digest("base64");
+}
 
 function sha3_256() {
 	return crypto.createHash("sha3-256").update(buffer).digest("base64");
@@ -10,10 +22,6 @@ function sha3_256() {
 
 function sha2_256() {
 	return crypto.createHash("sha256").update(buffer).digest("base64");
-}
-
-function md5() {
-	return crypto.createHash("md5").update(buffer).digest("base64");
 }
 
 function murmurHash3_sync() {
