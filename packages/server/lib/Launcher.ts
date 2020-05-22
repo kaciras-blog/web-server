@@ -33,10 +33,17 @@ async function runProd(options: BlogServerOptions) {
 	const app = builder.build();
 	app.proxy = !!options.blog.useForwardedHeaders;
 
+	app.on("error", (err, ctx) => {
+		logger.error("Error occurred on process " + ctx.path, err);
+	});
+
 	const closeServer = await runServer(app.callback(), options.server);
 	logger.info("Startup completed.");
 
-	return () => { closeServer(); closeHttp2Sessions(); }
+	return () => {
+		closeServer();
+		closeHttp2Sessions();
+	}
 }
 
 /**

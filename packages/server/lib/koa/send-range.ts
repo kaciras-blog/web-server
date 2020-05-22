@@ -9,12 +9,13 @@ import CombinedStream from "combined-stream";
 
 /**
  * 处理Range请求，发送部分文件。
- * RFC：https://tools.ietf.org/html/rfc7233#section-4.1
  *
  * 该函数中会设置状态码，Accept-Ranges，Content-Length 和 Content-Range 头，
  * 请在调用该函数之前设置ctx.type
  *
  * 暂不支持 If-Range 头。
+ *
+ * @see https://tools.ietf.org/html/rfc7233#section-4.1
  *
  * @param ctx Koa上下文
  * @param filename 文件路径

@@ -4,6 +4,7 @@ import { Context, ExtendableContext } from "koa";
 import fs from "fs-extra";
 import mime from "mime-types";
 import sendFileRange from "./send-range";
+import pathlib from "path";
 
 interface VideoDownloadContext extends ExtendableContext {
 	params: { name: string };
@@ -15,6 +16,10 @@ export async function downloadVideo(directory: string, ctx: VideoDownloadContext
 
 	try {
 		const stats = await fs.stat(fullname);
+		ctx.set("Last-Modified", stats.mtime.toUTCString());
+		ctx.set("Cache-Control", "max-age=31536000");
+		ctx.type = pathlib.extname(name);
+
 		return sendFileRange(ctx, fullname, stats.size);
 	} catch (e) {
 		if (e.code !== "ENOENT") throw e;

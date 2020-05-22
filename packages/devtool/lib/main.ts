@@ -65,10 +65,10 @@ launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 	console.info("\n- Local URL: https://localhost/\n");
 
 	return () => {
-		closeHttp2Sessions();
 		closeServer();
-		devMiddleware.close();
 		vueSSRHotReloader.close();
+		devMiddleware.close();
+		closeHttp2Sessions();
 	}
 });
 
