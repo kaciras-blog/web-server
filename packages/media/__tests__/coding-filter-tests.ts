@@ -1,11 +1,11 @@
 import path from "path";
 import fs from "fs-extra";
-import codingFilter from "../lib/coding-filter";
+import imageCodec from "../lib/image-codec";
 import { BadImageError, FilterArgumentError } from "../lib/errors";
 
 it("should throw FilterArgumentError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
-	return expect(codingFilter(buffer, "invalid")).rejects.toBeInstanceOf(FilterArgumentError);
+	return expect(imageCodec(buffer, "invalid")).rejects.toBeInstanceOf(FilterArgumentError);
 });
 
 // 对于非图片数据的输入，应当抛出 InputDataError 异常
@@ -13,7 +13,7 @@ describe("For non-image data", () => {
 	const buffer = Buffer.from("invalid");
 
 	function testFor(type: string) {
-		return expect(codingFilter(buffer, type)).rejects.toBeInstanceOf(BadImageError);
+		return expect(imageCodec(buffer, type)).rejects.toBeInstanceOf(BadImageError);
 	}
 
 	it("should throw jpg", () => testFor("jpg"));
@@ -27,7 +27,7 @@ describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "bad_image." + srcType));
-		await expect(codingFilter(buffer, targetType)).rejects.toBeInstanceOf(BadImageError);
+		await expect(imageCodec(buffer, targetType)).rejects.toBeInstanceOf(BadImageError);
 	}
 
 	it("should throws on optimize gif", () => testFor("gif", "gif"));
@@ -44,7 +44,7 @@ describe("optimization", () => {
 	// 这张图片如果用默认的参数转换为webp反而会变大，且失真严重
 	it("should effect on particular image", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
-		const result = await codingFilter(buffer, "webp");
+		const result = await imageCodec(buffer, "webp");
 		expect(result.length).toBeLessThan(buffer.length / 2);
 	});
 });

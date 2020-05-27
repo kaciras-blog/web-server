@@ -18,9 +18,9 @@ function makeFilenameSafe(base64: string | Buffer) {
 }
 
 /**
- * 对数据执行hash运算，返回一个唯一的字符串。
+ * 对数据执行hash运算，返回一个固定长度且唯一的字符串。
  *
- * 该函数运算速度很快，暂时不适用异步，详情见：
+ * 该函数运算速度很快，暂时不使用异步，详情见：
  * packages\media\__perfs__\hash-mane.ts
  *
  * @param buffer 数据

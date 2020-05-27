@@ -1,6 +1,6 @@
 import { Compiler, Plugin } from "webpack";
 import SVGO from "svgo";
-import codingFilter from "@kaciras-blog/image/lib/coding-filter";
+import optimize from "@kaciras-blog/media/lib/image-codec";
 
 /** webpack-sources 类型定义过时了，还得我自己搞 */
 class MyRawAssets {
@@ -69,7 +69,7 @@ export default class ImageOptimizePlugin implements Plugin {
 				const rawBuffer = assets[rawName].source();
 
 				const putOptimizedImage = async (name: string, targetType: string) => {
-					assets[name] = new MyRawAssets(await codingFilter(rawBuffer, targetType));
+					assets[name] = new MyRawAssets(await optimize(rawBuffer, targetType));
 				};
 
 				if (type !== "gif") {

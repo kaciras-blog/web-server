@@ -61,6 +61,7 @@ async function encodeWebp(buffer: Buffer) {
 	if (lossy.info.size < threshold) {
 		return lossy.data;
 	}
+
 	const lossless = await sharp(buffer)
 		.webp({ quality: 100, lossless: true })
 		.toBuffer({ resolveWithObject: true })
@@ -69,17 +70,18 @@ async function encodeWebp(buffer: Buffer) {
 	if (lossless.info.size < threshold) {
 		return lossless.data;
 	}
-	throw new ImageFilterException("Webp格式无法优化该图片的大小");
+
+	throw new ImageFilterException("Webp格式无法优化该图片");
 }
 
 /**
- * 压缩和转码的过滤器，将输入的图片转换为指定的格式，并会应用合适的有损压缩来降低图片大小。
+ * 压缩和转码图片，将输入的图片转换为指定的格式，并会应用合适的有损压缩来降低图片大小。
  *
  * @param buffer 图片数据
  * @param targetType 目标格式
  * @return 转码后的图片数据
  */
-export default async function codingFilter(buffer: Buffer, targetType: string) {
+export default async function optimize(buffer: Buffer, targetType: string) {
 	switch (targetType) {
 		case "gif":
 			if (!isGif(buffer)) {

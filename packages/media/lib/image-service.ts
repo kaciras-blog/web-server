@@ -5,7 +5,7 @@ import { brotliCompress, InputType } from "zlib";
 import SVGO from "svgo";
 import { getLogger } from "log4js";
 import { ImageFilter, ImageTags, runFilters } from "./filter-runner";
-import codingFilter from "./coding-filter";
+import imageCodec from "./image-codec";
 import { ImageStore, LocalFileSlot } from "./image-store";
 import { BadImageError, ImageFilterException } from "./errors";
 import { hashName } from "./common";
@@ -17,7 +17,7 @@ const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
 const svgOptimizer = new SVGO();
 
 const filters = new Map<string, ImageFilter>();
-filters.set("type", codingFilter);
+filters.set("type", imageCodec);
 
 const SVG_COMPRESS_THRESHOLD = 1024;
 
