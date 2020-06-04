@@ -59,7 +59,6 @@ export default function (options: DevelopmentOptions) {
 
 	const plugins = [
 		new CopyWebpackPlugin({
-			// @ts-ignore
 			patterns: [{
 				from: "./public",
 				to: ".",
