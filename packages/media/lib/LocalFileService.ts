@@ -1,7 +1,7 @@
 import path from "path";
 import mime from "mime-types";
 import fs from "fs-extra";
-import { FileReader, Params, WebFile, WebFileService } from "./WebFileService";
+import { WebFileService } from "./WebFileService";
 import { hashName } from "./common";
 
 

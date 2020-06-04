@@ -1,25 +1,13 @@
-import type { Range } from "range-parser";
-
-export interface WebFile {
-	filename: string;
-	buffer: Buffer;
-	mimetype: string;
-}
-
-export interface Params {
-	[key: string]: string;
-}
-
-export type FileReader = (range: Range) => NodeJS.ReadableStream | Buffer | string;
+import { Context } from "koa";
 
 /**
  *
  */
 export interface WebFileService {
 
-	save(file: WebFile, params: Params): Promise<any>;
+	save(ctx: Context): Promise<any>;
 
-	load(name: string, accept: Params, params: Params): Promise<FileReader | null>;
+	load(name: string, ctx: Context): Promise<any>;
 
 	getAllNames(): Promise<string[]>;
 }

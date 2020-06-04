@@ -12,20 +12,20 @@ const BASE64_REPLACE_TABLE = { "/": "_", "+": "-", "=": "" };
  *
  * @see https://tools.ietf.org/html/rfc4648#section-5
  */
-function makeFilenameSafe(base64: string | Buffer) {
+function makeFilenameSafe(base64: string) {
 	type UnsafeChar = keyof typeof BASE64_REPLACE_TABLE;
-	return (base64 as string).replace(/[+/=]/g, c => BASE64_REPLACE_TABLE[c as UnsafeChar])
+	return base64.replace(/[+/=]/g, c => BASE64_REPLACE_TABLE[c as UnsafeChar])
 }
 
 /**
  * 对数据执行hash运算，返回一个固定长度且唯一的字符串。
  *
- * 该函数运算速度很快，暂时不使用异步，详情见：
- * packages\media\__perfs__\hash-mane.ts
+ * 该函数运算速度很快，暂时不用异步，详情见：
+ * __perfs__\hash-mane.ts
  *
  * @param buffer 数据
  * @return 字符串标识
  */
 export function hashName(buffer: Buffer) {
-	return makeFilenameSafe(murmurHash128x64(buffer, "base64"));
+	return makeFilenameSafe(murmurHash128x64(buffer, "base64") as string);
 }

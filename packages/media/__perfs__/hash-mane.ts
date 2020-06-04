@@ -1,10 +1,10 @@
 /*
  * 因为要对上传的文件做Hash，故测试了常用的一些Hash函数性能。
  *
- * md5              - 60.89 ms
- * sha3_256         - 385.82 ms
- * sha2_256         - 144.40 ms
- * murmurHash3_sync - 6.29 ms
+ * md5              - 57.62 ms
+ * sha3_256         - 125.29 ms
+ * sha2_256         - 94.65 ms
+ * murmurHash3_sync - 5.73 ms
  */
 import crypto from "crypto";
 import { performance } from "perf_hooks";
