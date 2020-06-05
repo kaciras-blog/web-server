@@ -48,7 +48,7 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Downl
 	// 修改时间要以被请求的图片为准而不是原图，因为处理器可能被修改并重新生成了缓存
 	const stats = await fs.stat(result.path);
 	ctx.set("Last-Modified", stats.mtime.toUTCString());
-	ctx.set("Cache-Control", "max-age=31536000");
+	ctx.set("Cache-Control", "public,max-age=31536000");
 
 	if (result.encoding) {
 		ctx.set("Content-Encoding", result.encoding);
