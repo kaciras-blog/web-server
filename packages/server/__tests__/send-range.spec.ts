@@ -75,7 +75,7 @@ it("should sends multi-chunk response on multi-range (specific ranges)", async (
 		.parse(parseChunks)
 		.set("Range", "bytes=80-83,429-472,294-304")
 		.expect("Content-Type", /^multipart\/byteranges; boundary=/)
-		.expect("Content-Length", "363")
+		.expect("Content-Length", "395")
 		.expect(206);
 
 	const chunks = res.body;
