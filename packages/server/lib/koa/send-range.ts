@@ -57,7 +57,9 @@ export default function sendFileRange(ctx: BaseContext, filename: string, size: 
  * 发送多个区间，对应 multipart/byteranges 类型的响应。
  *
  * 主要参考了 https://github.com/rexxars/send-ranges
- * boundary的定义 https://tools.ietf.org/html/rfc2046#section-5.1.1
+ *
+ * boundary的定义(RFC)：
+ * https://tools.ietf.org/html/rfc2046#section-5.1.1
  *
  * @param ctx Koa上下文
  * @param filename 文件名
@@ -69,7 +71,7 @@ function sendMultipartRanges(ctx: BaseContext, filename: string, size: number, r
 
 	// 24个横杠 + 16个base64字符作为分隔
 	const bcharsnospace = crypto.randomBytes(12).toString("base64");
-	const boundary = "----------------" + bcharsnospace;
+	const boundary = "------------------------" + bcharsnospace;
 
 	function getMultipartHeader(start: number, end: number) {
 		const range = `Content-Range: bytes ${start}-${end}/${size}`;

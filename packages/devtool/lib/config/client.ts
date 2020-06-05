@@ -165,8 +165,9 @@ export default function (options: DevelopmentOptions) {
 		plugins.push(new BundleAnalyzerPlugin());
 	}
 
-	/** 默认文件名不带hash，生产模式带上以便区分不同版本的文件 */
 	if (webpackOpts.mode === "production") {
+
+		// 默认文件名不带hash，生产模式带上以便区分不同版本的文件
 		config.output = {
 			filename: assetsPath("js/[name].[contenthash].js"),
 			chunkFilename: assetsPath("js/[name].[contenthash].js"),

@@ -24,7 +24,6 @@ export default function createFeedMiddleware(apiServer: string) {
 	const origin = "https://blog.kaciras.com";
 
 	// TODO: 这个对象可自定义的属性太多，还需考虑重新组织配置文件，暂时这样写死
-	// TODO: 分类字段
 	const BASE_ATTRS: FeedOptions = {
 		title: "Kaciras的博客",
 		description: "没有简介，自己看内容吧",
