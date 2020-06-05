@@ -2,6 +2,7 @@
  * koa-range 2年没更新，issues里的问题也没解决，也没找到其它能替代的库，故自己写一个：
  * https://github.com/koajs/koa-range
  */
+import crypto from "crypto";
 import fs from "fs-extra";
 import { BaseContext } from "koa";
 import parseRange, { Range } from "range-parser";
@@ -56,6 +57,7 @@ export default function sendFileRange(ctx: BaseContext, filename: string, size: 
  * 发送多个区间，对应 multipart/byteranges 类型的响应。
  *
  * 主要参考了 https://github.com/rexxars/send-ranges
+ * boundary的定义 https://tools.ietf.org/html/rfc2046#section-5.1.1
  *
  * @param ctx Koa上下文
  * @param filename 文件名
@@ -64,13 +66,15 @@ export default function sendFileRange(ctx: BaseContext, filename: string, size: 
  */
 function sendMultipartRanges(ctx: BaseContext, filename: string, size: number, ranges: Range[]) {
 	const stream = new CombinedStream();
-	const randomHex = randomHex24();
-	const boundary = "--" + randomHex;
+
+	// 24个横杠 + 16个base64字符作为分隔
+	const bcharsnospace = crypto.randomBytes(12).toString("base64");
+	const boundary = "----------------" + bcharsnospace;
 
 	function getMultipartHeader(start: number, end: number) {
 		const range = `Content-Range: bytes ${start}-${end}/${size}`;
 		const type = `Content-Type: ${ctx.type}`;
-		return `${boundary}\r\n${type}\r\n${range}\r\n\r\n`;
+		return `--${boundary}\r\n${type}\r\n${range}\r\n\r\n`;
 	}
 
 	// 长度计算挺麻烦，所以在下面边生成内容边统计
@@ -87,18 +91,10 @@ function sendMultipartRanges(ctx: BaseContext, filename: string, size: number, r
 		length += header.length + (end - start + 1) + 2;
 	}
 
-	stream.append(`${boundary}--\r\n`);
-	length += boundary.length + 4;
+	stream.append(`--${boundary}--\r\n`);
+	length += boundary.length + 6;
 
 	ctx.set("Content-Length", length.toString());
-	ctx.type = `multipart/byteranges; boundary=${randomHex}`;
+	ctx.type = `multipart/byteranges; boundary=${boundary}`;
 	ctx.body = stream;
-}
-
-function randomHex24() {
-	let boundary = "";
-	for (let i = 0; i < 24; i++) {
-		boundary += Math.floor(Math.random() * 15).toString(16);
-	}
-	return boundary;
 }
