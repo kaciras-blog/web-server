@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/image",
-	"version": "0.8.2",
+	"version": "0.8.5",
 	"description": "Image processing library for Kaciras Blog",
 	"license": "MIT",
 	"repository": {
