@@ -29,7 +29,7 @@
 		"axios": "^0.19.2",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.0",
-		"fs-extra": "^9.0.0",
+		"fs-extra": "^9.0.1",
 		"koa": "^2.12.0",
 		"koa-bodyparser": "^4.3.0",
 		"koa-compose": "^4.1.0",

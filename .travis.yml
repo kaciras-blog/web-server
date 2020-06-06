@@ -1,10 +1,9 @@
 language: node_js
+node_js:
+  - 14
 
 git:
   depth: false
   quiet: true
 
 cache: yarn
-
-node_js:
-  - 14
