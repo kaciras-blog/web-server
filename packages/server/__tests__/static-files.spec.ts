@@ -128,6 +128,18 @@ it("should return .br version when requested and if possible", () => {
 		.expect("Content-Encoding", "br");
 });
 
+it("should return webp image when requested and if possible", () => {
+	const app = new Koa()
+	app.use(serve(FIXTURE_DIR));
+
+	return supertest(app.callback())
+		.get("/static/image.png")
+		.set("Accept", "image/webp,*/*")
+		.expect(200)
+		.expect("Content-Type", /image\/webp/)
+		.expect("Content-Length", "5354");
+});
+
 describe("Cache-Control", () => {
 	it("should be set for static files", () => {
 		const app = new Koa()
