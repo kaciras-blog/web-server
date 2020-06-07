@@ -13,19 +13,19 @@ import { murmurHash128 } from "murmurhash-native";
 const buffer = crypto.randomBytes(1024 * 1024);
 
 function md5() {
-	return crypto.createHash("md5").update(buffer).digest("base64");
+	return crypto.createHash("md5").update(buffer).digest("hex");
 }
 
 function sha3_256() {
-	return crypto.createHash("sha3-256").update(buffer).digest("base64");
+	return crypto.createHash("sha3-256").update(buffer).digest("hex");
 }
 
 function sha2_256() {
-	return crypto.createHash("sha256").update(buffer).digest("base64");
+	return crypto.createHash("sha256").update(buffer).digest("hex");
 }
 
 function murmurHash3_sync() {
-	return murmurHash128(buffer, "base64");
+	return murmurHash128(buffer, "hex");
 }
 
 async function test(func: any) {
