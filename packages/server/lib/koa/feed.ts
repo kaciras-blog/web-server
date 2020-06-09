@@ -27,7 +27,7 @@ export default function createFeedMiddleware(apiServer: string) {
 	const BASE_ATTRS: FeedOptions = {
 		title: "Kaciras的博客",
 		description: "没有简介，自己看内容吧",
-		link: origin,
+		link: origin + "/",
 		id: origin,
 		language: "zh",
 		favicon: `${origin}/favicon.ico`,
@@ -48,8 +48,13 @@ export default function createFeedMiddleware(apiServer: string) {
 			date: new Date(article.update),
 			published: new Date(article.create),
 			description: article.summary,
-			content: markdown.render(article.content),
+			author: {
+				name: "Kaciras",
+				email: "Kaciras@pm.me",
+				link: origin,
+			},
 			link: `${origin}/article/${article.id}/${article.urlTitle}`,
+			content: markdown.render(article.content),
 		}));
 
 		// 几个输出的结果也缓存一下，一个大约占60K内存
