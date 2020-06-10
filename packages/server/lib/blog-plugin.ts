@@ -119,7 +119,8 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		api.useBeforeAll(bodyParser());
 		api.useBeforeAll(securityFilter);
 
-		const uploader = multer({ limits: { fileSize: 10 * 1024 * 1024 } });
+		// 过大的媒体建议直接传到第三方存储
+		const uploader = multer({ limits: { fileSize: 100 * 1024 * 1024 } });
 		api.useBeforeAll(uploader.single("file"));
 
 		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
