@@ -12,7 +12,7 @@ import { configureAxiosHttp2 } from "../lib/axios-helper";
 const axios = Axios.create();
 const closeClients = configureAxiosHttp2(axios);
 
-const server = http2.createServer(((request, response) => response.end("benchmark")));
+const server = http2.createServer((request, response) => response.end("benchmark"));
 
 async function run() {
 	const url = "http://localhost:" + (server.address() as AddressInfo).port;
