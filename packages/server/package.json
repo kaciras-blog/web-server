@@ -52,6 +52,8 @@
 		"@types/koa__router": "^8.0.2",
 		"@types/markdown-it": "^10.0.1",
 		"@types/range-parser": "^1.2.3",
-		"@types/replace-ext": "^0.0.27"
+		"@types/replace-ext": "^0.0.27",
+		"koa-static": "^5.0.0",
+		"@types/koa-static": "^4.0.1"
 	}
 }
