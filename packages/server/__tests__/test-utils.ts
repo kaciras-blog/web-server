@@ -30,5 +30,5 @@ export function readFixtureText(name: string) {
  * @return 在指定的时间后完成的Promise
  */
 export function sleep(time = 0) {
-	return new Promise((resolve) => setTimeout(resolve, time));
+	return new Promise<void>((resolve) => setTimeout(resolve, time));
 }

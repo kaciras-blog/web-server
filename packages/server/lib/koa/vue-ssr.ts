@@ -53,6 +53,9 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 		url: new URL(ctx.href),
 	};
 
+	// 显示设置，虽然Koa内部也会用 '<' 开头来判断是否是HTML
+	ctx.type = "html";
+
 	try {
 		ctx.body = await render.renderToString(renderContext);
 

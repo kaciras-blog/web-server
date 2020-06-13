@@ -5,8 +5,9 @@
  * https://github.com/koajs/static
  */
 import { basename, extname, join, normalize, parse, resolve, sep } from "path";
-import { Middleware, Next, ParameterizedContext } from "koa";
+import { BaseContext, Middleware, Next } from "koa";
 import fs from "fs-extra";
+import replaceExt from "replace-ext";
 import createError from "http-errors";
 import sendFileRange from "./send-range";
 
@@ -27,7 +28,7 @@ const NOT_FOUND = ["ENOENT", "ENAMETOOLONG", "ENOTDIR"];
  * Resolve relative path against a root path.
  *
  * 源代码来自：https://github.com/pillarjs/resolve-path
- * 因为原作者没有添加Typescript定义所以就抄过来了，有改动，删除了多余的检查。
+ * 因为原作者没有添加Typescript定义所以就抄过来了，删除了多余的检查。
  */
 function resolvePath(root: string, path: string) {
 	path = path.substr(parse(path).root.length);
@@ -46,7 +47,7 @@ function resolvePath(root: string, path: string) {
 	return normalize(join(resolve(root), path));
 }
 
-async function send(root: string, options: Options, ctx: ParameterizedContext, next: Next) {
+async function send(root: string, options: Options, ctx: BaseContext, next: Next) {
 	const { method, path } = ctx;
 	let file: string;
 
@@ -62,7 +63,15 @@ async function send(root: string, options: Options, ctx: ParameterizedContext, n
 	file = resolvePath(root, file);
 
 	let encodingExt = "";
-	if (ctx.acceptsEncodings("br", "identity") === "br" && (await fs.pathExists(file + ".br"))) {
+	let webp = "";
+
+	if ((ctx.accepts() as string[]).indexOf("image/webp") > -1) {
+		webp = replaceExt(file, ".webp");
+		if (await fs.pathExists(webp)) file = webp;
+	}
+	if (file === webp) {
+		// pass
+	} else if (ctx.acceptsEncodings("br", "identity") === "br" && (await fs.pathExists(file + ".br"))) {
 		file = file + ".br";
 		encodingExt = ".br";
 		ctx.set("Content-Encoding", "br");
