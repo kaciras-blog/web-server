@@ -5,7 +5,7 @@
  * https://github.com/koajs/static
  */
 import { basename, extname, join, normalize, parse, resolve, sep } from "path";
-import { Middleware, Next, ParameterizedContext } from "koa";
+import { BaseContext, Middleware, Next } from "koa";
 import fs from "fs-extra";
 import replaceExt from "replace-ext";
 import createError from "http-errors";
@@ -47,7 +47,7 @@ function resolvePath(root: string, path: string) {
 	return normalize(join(resolve(root), path));
 }
 
-async function send(root: string, options: Options, ctx: ParameterizedContext, next: Next) {
+async function send(root: string, options: Options, ctx: BaseContext, next: Next) {
 	const { method, path } = ctx;
 	let file: string;
 
@@ -65,7 +65,7 @@ async function send(root: string, options: Options, ctx: ParameterizedContext, n
 	let encodingExt = "";
 	let webp = "";
 
-	if ((ctx.accept.type() as string[]).indexOf("image/webp") > -1) {
+	if ((ctx.accepts() as string[]).indexOf("image/webp") > -1) {
 		webp = replaceExt(file, ".webp");
 		if (await fs.pathExists(webp)) file = webp;
 	}

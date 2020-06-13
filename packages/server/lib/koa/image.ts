@@ -8,7 +8,7 @@
  */
 import pathlib from "path";
 import fs from "fs-extra";
-import { Context, ExtendableContext, Middleware, Next, ParameterizedContext } from "koa";
+import { BaseContext, Context, Middleware, Next, ParameterizedContext } from "koa";
 import { getLogger } from "log4js";
 import mime from "mime-types";
 import { InputDataError } from "@kaciras-blog/image/lib/errors";
@@ -20,7 +20,7 @@ const logger = getLogger("Image");
  * 下载图片时的 Koa 上下文，文件名通过 ctx.params.name 来传递。
  * 之所以这么设计是为了跟 @koa/router 一致。
  */
-export interface DownloadContext extends ExtendableContext {
+export interface DownloadContext extends BaseContext {
 	params: { name: string };
 }
 
@@ -35,8 +35,8 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Downl
 
 	// 浏览器的Accept头总是有一个*/*，导致ctx.accept.type("image/webp")总是true
 	// 故只能去匹配原始字符串
-	const acceptWebp = (ctx.accept.type() as string[]).indexOf("image/webp") > -1;
-	const acceptBrotli = !!ctx.accept.encoding("br");
+	const acceptWebp = (ctx.accepts() as string[]).indexOf("image/webp") > -1;
+	const acceptBrotli = !!ctx.acceptsEncodings("br");
 
 	const result = await service.get(hash, ext, acceptWebp, acceptBrotli);
 
