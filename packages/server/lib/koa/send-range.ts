@@ -1,12 +1,13 @@
 /*
- * koa-range 2年没更新，issues里的问题也没解决，也没找到其它能替代的库，故自己写一个：
+ * koa-range 2年没更新，也没找到其它能替代的库，故自己写一个。
+ *
  * https://github.com/koajs/koa-range
  */
-import crypto from "crypto";
-import fs from "fs-extra";
+import { randomBytes } from "crypto";
+import fs from "fs";
+import CombinedStream from "combined-stream";
 import { BaseContext } from "koa";
 import parseRange, { Range } from "range-parser";
-import CombinedStream from "combined-stream";
 
 // combined-stream 为何不导出 Appendable？
 export type Appendable = Parameters<typeof CombinedStream.prototype.append>[0];
@@ -16,7 +17,7 @@ export interface RangeReader {
 	/**
 	 * 文件的总长度（字节）
 	 */
-	size: number;
+	readonly size: number;
 
 	/**
 	 * 获取文件在指定区间的数据，如果区间为 undefined 则表示全部。
@@ -84,7 +85,7 @@ export default function sendFileRange(ctx: BaseContext, reader: RangeReader) {
 	ctx.status = 206;
 
 	if (ranges.length > 1) {
-		sendMultipartRanges(ctx, reader, size, ranges);
+		sendMultipartRanges(ctx, reader, ranges);
 	} else {
 		const { start, end } = ranges[0];
 		ctx.set("Content-Length", (end - start + 1).toString());
@@ -104,14 +105,14 @@ export default function sendFileRange(ctx: BaseContext, reader: RangeReader) {
  *
  * @param ctx Koa上下文
  * @param reader 数据源
- * @param size 文件大小
  * @param ranges 要发送的区间
  */
-function sendMultipartRanges(ctx: BaseContext, reader: RangeReader, size: number, ranges: Range[]) {
+function sendMultipartRanges(ctx: BaseContext, reader: RangeReader, ranges: Range[]) {
+	const { size } = reader;
 	const stream = new CombinedStream();
 
 	// 24个横杠 + 16个base64字符作为分隔
-	const bcharsnospace = crypto.randomBytes(12).toString("base64");
+	const bcharsnospace = randomBytes(12).toString("base64");
 	const boundary = "------------------------" + bcharsnospace;
 
 	function getMultipartHeader(start: number, end: number) {
