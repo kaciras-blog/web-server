@@ -1,15 +1,16 @@
 import fs from "fs-extra";
 import Koa from "koa";
 import supertest from "supertest";
-import sendFileRange from "../lib/koa/send-range";
+import sendFileRange, { FileRangeReader } from "../lib/koa/send-range";
 import { FIXTURE_DIR } from "./test-utils";
 
 const FILE = FIXTURE_DIR + "/sendrange.txt";
 
+const source = new FileRangeReader(FILE, 475);
 const app = new Koa();
 app.use(ctx => {
 	ctx.type = "text/plain";
-	sendFileRange(ctx, FILE, 475);
+	sendFileRange(ctx, source);
 });
 
 // 【坑】如果被测代码的 Content-Length 计算错误的话会抛出奇怪的错误：

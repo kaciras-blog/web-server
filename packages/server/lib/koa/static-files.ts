@@ -9,7 +9,7 @@ import { BaseContext, Middleware, Next } from "koa";
 import fs from "fs-extra";
 import replaceExt from "replace-ext";
 import createError from "http-errors";
-import sendFileRange from "./send-range";
+import sendFileRange, { FileRangeReader } from "./send-range";
 
 interface Options {
 
@@ -106,7 +106,7 @@ async function send(root: string, options: Options, ctx: BaseContext, next: Next
 	}
 
 	ctx.set("Last-Modified", stats.mtime.toUTCString());
-	await sendFileRange(ctx, file, stats.size);
+	return sendFileRange(ctx, new FileRangeReader(file, stats.size));
 }
 
 export default function (root: string, options: Options = {}): Middleware {

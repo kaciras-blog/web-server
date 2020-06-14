@@ -1,10 +1,10 @@
 import crypto from "crypto";
 import path from "path";
+import pathlib from "path";
 import { Context, ExtendableContext } from "koa";
 import fs from "fs-extra";
 import mime from "mime-types";
-import sendFileRange from "./send-range";
-import pathlib from "path";
+import sendFileRange, { FileRangeReader } from "./send-range";
 
 interface VideoDownloadContext extends ExtendableContext {
 	params: { name: string };
@@ -20,7 +20,7 @@ export async function downloadVideo(directory: string, ctx: VideoDownloadContext
 		ctx.set("Cache-Control", "max-age=31536000");
 		ctx.type = pathlib.extname(name);
 
-		return sendFileRange(ctx, fullname, stats.size);
+		return sendFileRange(ctx, new FileRangeReader(fullname, stats.size));
 	} catch (e) {
 		if (e.code !== "ENOENT") throw e;
 	}

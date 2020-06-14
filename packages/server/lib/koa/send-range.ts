@@ -8,6 +8,46 @@ import { BaseContext } from "koa";
 import parseRange, { Range } from "range-parser";
 import CombinedStream from "combined-stream";
 
+// combined-stream 为何不导出 Appendable？
+export type Appendable = Parameters<typeof CombinedStream.prototype.append>[0];
+
+export interface RangeReader {
+
+	/**
+	 * 文件的总长度（字节）
+	 */
+	size: number;
+
+	/**
+	 * 获取文件在指定区间的数据，如果区间为 undefined 则表示全部。
+	 *
+	 * @param range 区间
+	 */
+	getData(range?: Range): Appendable;
+}
+
+export class FileRangeReader implements RangeReader {
+
+	readonly size: number;
+
+	private readonly filename: string;
+
+	/**
+	 * 创建一个 FileRangeReader 的实例。
+	 *
+	 * @param filename 文件名
+	 * @param size 文件大小（字节）
+	 */
+	constructor(filename: string, size: number) {
+		this.size = size;
+		this.filename = filename;
+	}
+
+	getData(range?: Range) {
+		return fs.createReadStream(this.filename, range);
+	}
+}
+
 /**
  * 处理Range请求，发送部分文件。
  *
@@ -19,16 +59,16 @@ import CombinedStream from "combined-stream";
  * @see https://tools.ietf.org/html/rfc7233#section-4.1
  *
  * @param ctx Koa上下文
- * @param filename 文件路径
- * @param size 文件的大小，可以用 fs.stat(filename).size 获取
+ * @param reader 数据源
  */
-export default function sendFileRange(ctx: BaseContext, filename: string, size: number) {
+export default function sendFileRange(ctx: BaseContext, reader: RangeReader) {
+	const { size } = reader;
 	ctx.set("Accept-Ranges", "bytes");
 
 	const rangeHeader = ctx.get("Range");
 	if (!rangeHeader) {
 		ctx.set("Content-Length", size.toString());
-		return ctx.body = fs.createReadStream(filename);
+		return ctx.body = reader.getData();
 	}
 
 	// 未检查 type，反正正常都是 bytes
@@ -44,29 +84,30 @@ export default function sendFileRange(ctx: BaseContext, filename: string, size: 
 	ctx.status = 206;
 
 	if (ranges.length > 1) {
-		sendMultipartRanges(ctx, filename, size, ranges);
+		sendMultipartRanges(ctx, reader, size, ranges);
 	} else {
 		const { start, end } = ranges[0];
 		ctx.set("Content-Length", (end - start + 1).toString());
 		ctx.set("Content-Range", `bytes ${start}-${end}/${size}`);
-		ctx.body = fs.createReadStream(filename, ranges[0]);
+		ctx.body = reader.getData(ranges[0]);
 	}
 }
 
 /**
  * 发送多个区间，对应 multipart/byteranges 类型的响应。
  *
- * 主要参考了 https://github.com/rexxars/send-ranges
+ * 主要参考了：
+ * https://github.com/rexxars/send-ranges
  *
  * boundary的定义(RFC)：
  * https://tools.ietf.org/html/rfc2046#section-5.1.1
  *
  * @param ctx Koa上下文
- * @param filename 文件名
+ * @param reader 数据源
  * @param size 文件大小
  * @param ranges 要发送的区间
  */
-function sendMultipartRanges(ctx: BaseContext, filename: string, size: number, ranges: Range[]) {
+function sendMultipartRanges(ctx: BaseContext, reader: RangeReader, size: number, ranges: Range[]) {
 	const stream = new CombinedStream();
 
 	// 24个横杠 + 16个base64字符作为分隔
@@ -87,7 +128,7 @@ function sendMultipartRanges(ctx: BaseContext, filename: string, size: number, r
 		const header = getMultipartHeader(start, end);
 
 		stream.append(header)
-		stream.append(fs.createReadStream(filename, range));
+		stream.append(reader.getData(range));
 		stream.append("\r\n");
 
 		length += header.length + (end - start + 1) + 2;
