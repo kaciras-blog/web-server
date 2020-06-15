@@ -1,8 +1,9 @@
-import path from "path";
+import { join } from "path";
 import mime from "mime-types";
 import fs from "fs-extra";
 import { WebFileService } from "./WebFileService";
 import { hashName } from "./common";
+import { Context } from "koa";
 
 
 export default class LocalFileService implements WebFileService {
@@ -17,31 +18,29 @@ export default class LocalFileService implements WebFileService {
 		return fs.readdir(this.directory);
 	}
 
-	async save(file: WebFile) {
-		const { buffer, mimetype } = file;
+	async save(ctx: Context) {
+		const { buffer, mimetype } = ctx.file;
 
 		const name = hashName(buffer) + "." + mime.extension(mimetype);
-		const fullname = path.join(this.directory, name);
+		const path = join(this.directory, name);
 
 		try {
-			await fs.writeFile(fullname, buffer, { flag: "wx" });
+			await fs.writeFile(path, buffer, { flag: "wx" });
 		} catch (e) {
 			if (e.code !== "EEXIST") throw e;
 		}
 
-		return { name }
+		ctx.body = { name };
 	}
 
-	async load(name: string): Promise<FileReader | null> {
-		const fullname = path.join(this.directory, name);
+	async load(name: string) {
+		const path = join(this.directory, name);
 
 		try {
-			const stats = await fs.stat(fullname);
-			return (range) => fs.createReadStream(fullname, range);
+			const stats = await fs.stat(path);
+			return (range) => fs.createReadStream(path, range);
 		} catch (e) {
 			if (e.code !== "ENOENT") throw e;
 		}
-
-		return null;
 	}
 }

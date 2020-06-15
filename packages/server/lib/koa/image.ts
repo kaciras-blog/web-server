@@ -11,8 +11,8 @@ import fs from "fs-extra";
 import { BaseContext, Context, Middleware, Next, ParameterizedContext } from "koa";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import { InputDataError } from "@kaciras-blog/image/lib/errors";
-import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
+import { InputDataError } from "@kaciras-blog/media/lib/errors";
+import { PreGenerateImageService } from "@kaciras-blog/media/lib/image-service";
 
 const logger = getLogger("Image");
 

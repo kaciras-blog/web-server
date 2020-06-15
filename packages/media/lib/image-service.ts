@@ -1,23 +1,20 @@
 import { performance } from "perf_hooks";
+import { brotliCompress, InputType } from "zlib";
 import { promisify } from "util";
 import sharp from "sharp";
-import { brotliCompress, InputType } from "zlib";
-import SVGO from "svgo";
 import { getLogger } from "log4js";
-import { ImageFilter, ImageTags, runFilters } from "./filter-runner";
-import imageCodec from "./image-codec";
+import SVGO from "svgo";
 import { ImageStore, LocalFileSlot } from "./image-store";
 import { BadImageError, ImageFilterException } from "./errors";
 import { hashName } from "./common";
 
+export interface ImageTags {
+	readonly [key: string]: string;
+}
 
 const logger = getLogger("Image");
 
 const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
-const svgOptimizer = new SVGO();
-
-const filters = new Map<string, ImageFilter>();
-filters.set("type", imageCodec);
 
 const SVG_COMPRESS_THRESHOLD = 1024;
 
@@ -48,6 +45,8 @@ interface WebImageOutput extends WebImageAttribute {
  */
 export class PreGenerateImageService {
 
+	private readonly svgo = new SVGO();
+
 	private readonly store: ImageStore;
 
 	constructor(store: ImageStore) {
@@ -65,18 +64,16 @@ export class PreGenerateImageService {
 	async save(buffer: Buffer, type: string) {
 		if (type === "jpeg") {
 			type = "jpg";
-		}
-		if (INPUT_FORMATS.indexOf(type) < 0) {
-			throw new BadImageError(`不支持的图片格式：${type}`);
-		}
-
-		if (type === "bmp") {
+		} else if (type === "bmp") {
 			type = "png";
 			buffer = await sharp(buffer).png().toBuffer();
 		}
 
-		const hash = hashName(buffer);
+		if (INPUT_FORMATS.indexOf(type) < 0) {
+			throw new BadImageError(`不支持的图片格式：${type}`);
+		}
 
+		const hash = hashName(buffer);
 		const slot = this.store({ name: hash, type });
 		const fullName = `${hash}.${type}`;
 
@@ -86,6 +83,7 @@ export class PreGenerateImageService {
 			const start = performance.now();
 			await this.saveNewImage(slot, hash, type, buffer);
 			const time = performance.now() - start;
+
 			logger.info(`处理图片 ${fullName} 用时 ${time.toFixed()}ms`);
 		}
 
@@ -149,9 +147,9 @@ export class PreGenerateImageService {
 			slot.save(buffer),
 		];
 
-		// 过滤器链只用于光栅图，矢量图我还不知道怎么做裁剪、缩放、加水印等操作，只能压缩一下。
+		// 过滤器链只用于光栅图，矢量图只能压缩一下。
 		if (type === "svg") {
-			const { data } = await svgOptimizer.optimize(buffer.toString());
+			const { data } = await this.svgo.optimize(buffer.toString());
 			tasks.push(slot.putCache({}, data));
 
 			if (data.length > SVG_COMPRESS_THRESHOLD) {
