@@ -31,5 +31,9 @@ export default async function CropImageLoader(this: loader.LoaderContext, conten
 	}
 	const loaderCallback = this.async()!;
 	const query = loaderUtils.parseQuery(this.resourceQuery);
+
+	if (typeof query.size !== "string") {
+		throw new Error("Invalid size parameter: " + query.size);
+	}
 	loaderCallback(null, await processor(content, query.size));
 }
