@@ -90,10 +90,11 @@ export default class Launcher<T extends BlogServerOptions> {
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 
-		const handler = this.commands.get(args._[0]);
+		const command = args._[0];
+		const handler = this.commands.get(command);
 		if (!handler) {
 			const names = Array.from(this.commands.keys()).join(", ");
-			console.error(`Unknown command: ${args._[0]}, supported commands: ${names}`);
+			console.error(`Unknown command: ${command}, supported commands: ${names}`);
 			process.exit(2);
 		}
 
