@@ -9,7 +9,7 @@ export type FunctionPlugin = (builder: ApplicationBuilder) => void;
 type AnyMiddleware = Middleware<any, any>;
 
 /**
- * 把 Koa 的中间件分下组，便于解耦。
+ * 把 Koa 的中间件分下组，便于解耦，每一组里的中间件应当互不干扰。
  */
 export default class ApplicationBuilder {
 

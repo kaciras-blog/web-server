@@ -2,7 +2,6 @@ import { Options } from "webpack";
 import { VueLoaderOptions } from "vue-loader";
 import { BlogServerOptions } from "@kaciras-blog/server/lib/options";
 
-
 export interface DevelopmentOptions extends BlogServerOptions {
 	dev: DevServerOptions;
 	webpack: WebpackOptions;
@@ -37,10 +36,7 @@ export interface DevServerOptions {
 }
 
 export interface EnvConfig {
-	CONTENT_SERVER_URI: string | {
-		http: string;
-		https: string;
-	};
+	REQUEST_TIMEOUT: number;
 	SENTRY_DSN?: string;
 	GOOGLE_ANALYTICS_ID?: string;
 }

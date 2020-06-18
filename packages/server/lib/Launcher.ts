@@ -19,10 +19,10 @@ type HandlerRV = void | (() => void);
 type CommandHandler<T> = (options: T) => HandlerRV | Promise<HandlerRV>;
 
 async function runProd(options: BlogServerOptions) {
-	const closeHttp2Sessions = await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
+	const closeHttp2Sessions = await configureGlobalAxios(options.contentServer);
 
 	const builder = new ApplicationBuilder();
-	builder.addPlugin(getBlogPlugin(options.blog));
+	builder.addPlugin(getBlogPlugin(options));
 	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
 	// 除了static目录外文件名都不带Hash，所以要禁用外层的缓存
@@ -31,7 +31,7 @@ async function runProd(options: BlogServerOptions) {
 	}));
 
 	const app = builder.build();
-	app.proxy = !!options.blog.useForwardedHeaders;
+	app.proxy = !!options.server.useForwardedHeaders;
 
 	app.on("error", (err, ctx) => {
 		logger.error("Error occurred on process " + ctx.path, err);
@@ -56,7 +56,7 @@ export default class Launcher<T extends BlogServerOptions> {
 	// 注册几个内置命令
 	constructor() {
 		this.registerCommand("run", runProd);
-		this.registerCommand("build-image-cache", ((options) => buildCache(options.blog.dataDir)));
+		this.registerCommand("build-image-cache", ((options) => buildCache(options.app.dataDir)));
 	}
 
 	registerCommand(command: string, handler: CommandHandler<T>) {
@@ -84,7 +84,7 @@ export default class Launcher<T extends BlogServerOptions> {
 		}
 
 		const config = require(configFile);
-		configureLog4js(config.blog.logging);
+		configureLog4js(config.app.logging);
 
 		// TODO: 听说 Node 以后会移除 unhandledRejection
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
@@ -97,6 +97,8 @@ export default class Launcher<T extends BlogServerOptions> {
 			console.error(`Unknown command: ${command}, supported commands: ${names}`);
 			process.exit(2);
 		}
+
+		process.title = `Kaciras Blog - ${command}`;
 
 		Promise.resolve(handler(config)).then((shutdownHook) => {
 			const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];

@@ -3,8 +3,9 @@ export interface BlogServerOptions {
 	outputDir: string;
 	assetsDir: string;
 
-	blog: AppOptions;
 	server: ServerOptions;
+	app: AppOptions;
+	contentServer: ContentServerOptions;
 }
 
 interface SimpleLogConfig {
@@ -21,18 +22,35 @@ interface SimpleLogConfig {
 }
 
 export interface AppOptions {
-	host: string;
-	serverAddress: string;
+	title: string;
+	author: string;
+
 	dataDir: string;
-	serverCert: string | true;
 
 	serviceWorker?: boolean;
-	useForwardedHeaders?: boolean;
+
 	logging: SimpleLogConfig;
 }
 
+export interface ContentServerOptions {
+	internalOrigin: string;
+
+	cert: string | true;
+
+	publicOrigin: string | AddersSelector;
+}
+
+export interface AddersSelector {
+	http: string;
+	https: string;
+}
+
+// ===================================================
+
 export interface ServerOptions {
 	hostname?: string;
+	useForwardedHeaders?: boolean;
+
 	http?: HttpServerOptions;
 	https?: HttpsServerOptions;
 }

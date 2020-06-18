@@ -2,7 +2,7 @@ import log4js from "log4js";
 import fs from "fs-extra";
 import Axios from "axios";
 import { configureAxiosHttp2 } from "./axios-helper";
-import { SimpleLogConfig } from "./options";
+import { ContentServerOptions, SimpleLogConfig } from "./options";
 
 /**
  * 简单地配置一下日志，文档见：
@@ -43,17 +43,17 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 /**
  * 配置全局Axios实例的便捷函数。
  *
- * @param origin Http2连接的源URL
- * @param trusted 信任的证书，或是true忽略证书检查
+ * @param options 选项
  */
-export async function configureGlobalAxios(origin: string, trusted?: string | true) {
-	const https = origin.startsWith("https");
+export async function configureGlobalAxios(options: ContentServerOptions) {
+	const { internalOrigin, cert } = options;
+	const https = internalOrigin.startsWith("https");
 
-	if (typeof trusted === "string") {
-		const ca = await fs.readFile(trusted);
+	if (typeof cert === "string") {
+		const ca = await fs.readFile(cert);
 		return configureAxiosHttp2(Axios, https, { ca });
 	} else {
-		if (trusted) {
+		if (cert) {
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 		}
 		return configureAxiosHttp2(Axios, https);
