@@ -10,7 +10,7 @@ import { BlogServerOptions } from "../options";
 const logger = log4js.getLogger();
 
 export default async function run(options: BlogServerOptions) {
-	const closeHttp2Sessions = await configureGlobalAxios(options.contentServer);
+	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
 	const builder = new ApplicationBuilder();
 	builder.addPlugin(getBlogPlugin(options));

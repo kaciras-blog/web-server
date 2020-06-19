@@ -12,7 +12,7 @@ import { DevelopmentOptions } from "../options";
  * 启动开发服务器，它提供了热重载功能。
  */
 export default async function (options: DevelopmentOptions) {
-	const closeHttp2Sessions = await configureGlobalAxios(options.contentServer);
+	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
 	const builder = new ApplicationBuilder();
 	builder.addPlugin(getBlogPlugin(options));

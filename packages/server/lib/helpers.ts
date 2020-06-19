@@ -43,14 +43,17 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 /**
  * 配置全局Axios实例的便捷函数。
  *
+ * 【readFileSync】
+ * 因为是全局的配置，基本都是在其它代码之前调用，故没必要用异步。
+ *
  * @param options 选项
  */
-export async function configureGlobalAxios(options: ContentServerOptions) {
+export function configureGlobalAxios(options: ContentServerOptions) {
 	const { internalOrigin, cert } = options;
 	const https = internalOrigin.startsWith("https");
 
 	if (typeof cert === "string") {
-		const ca = await fs.readFile(cert);
+		const ca = fs.readFileSync(cert);
 		return configureAxiosHttp2(Axios, https, { ca });
 	} else {
 		if (cert) {
