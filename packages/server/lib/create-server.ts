@@ -51,6 +51,16 @@ function createServer(connector: HttpServerOptions | HttpsServerOptions) {
 }
 
 /**
+ * 创建一个重定向处理器。
+ *
+ * @param code 状态码
+ * @param origin 目标源
+ */
+function redirectHandler(code: 301 | 302, origin: string): OnRequestHandler {
+	return (req, res) => res.writeHead(code, { Location: origin + req.url }).end()
+}
+
+/**
  * 将 Server.listen 转成异步方法并调用。
  *
  * @param server 服务器
@@ -70,30 +80,29 @@ function listenAsync(server: Server, port: number, hostname: string) {
  */
 export async function startServer(requestHandler: OnRequestHandler, options: ServerOptions) {
 	const { hostname = "localhost", connectors } = options;
+
 	const servers: Server[] = [];
+	const connections = new Set<Socket>();
 
 	for (const connector of connectors) {
 		const { redirect } = connector;
 		const server = createServer(connector);
 
 		if (redirect) {
-			server.on("request", (req, res) => res.writeHead(301, { Location: redirect + req.url }).end())
+			server.on("request", redirectHandler(301, redirect));
 		} else {
 			server.on("request", requestHandler);
 		}
 
-		servers.push(server);
-		await listenAsync(server, connector.port, hostname);
-	}
-
-	// Server.close 方法不会立即断开 Keep-Alive 的连接，这会使程序延迟几分钟才能结束。
-	// 这里手动记录下所有的链接，在服务器关闭时销毁它们来避免上述问题。
-	const connections = new Set<Socket>();
-	for (const server of servers) {
+		// Server.close 方法不会立即断开 Keep-Alive 的连接，这会使程序延迟几分钟才能结束。
+		// 这里手动记录下所有的链接，在服务器关闭时销毁它们来避免上述问题。
 		server.on("connection", (socket: Socket) => {
 			connections.add(socket);
 			socket.on("close", () => connections.delete(socket));
 		});
+
+		servers.push(server);
+		await listenAsync(server, connector.port, hostname);
 	}
 
 	return () => {
