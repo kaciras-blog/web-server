@@ -111,14 +111,6 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 	const { app } = options;
 
 	return (api: ApplicationBuilder) => {
-		// api.useBeforeAll(cors({
-		// 	origin: (ctx) => ctx.protocol + "://" + options.host,
-		// 	credentials: true,
-		// 	maxAge: 864000,
-		// 	exposeHeaders: ["Location"],
-		// 	allowHeaders: ["X-CSRF-Token"],
-		// }));
-
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(bodyParser());
 		api.useBeforeAll(securityFilter);

@@ -25,7 +25,6 @@
 		"@types/koa-compress": "^4.0.0",
 		"@types/koa-conditional-get": "^2.0.0",
 		"@types/koa-webpack": "^5.0.1",
-		"@types/koa__cors": "^3.0.1",
 		"@types/koa__multer": "^2.0.1",
 		"@types/mime-types": "^2.1.0",
 		"@types/mini-css-extract-plugin": "^0.9.1",
