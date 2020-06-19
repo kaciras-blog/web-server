@@ -101,8 +101,11 @@ export function adminOnlyFilter(host: string) {
 	}
 }
 
-// 【注意】没有使用 Etag，因为所有资源都可以用时间缓存，而且 koa-etag 内部使用 sha1 计算 Etag，
-// 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
+/*
+ * 【关于 koa-etag】
+ * 没有使用，因为所有资源都可以用时间缓存，而且 koa-etag 内部使用 sha1 计算 Etag，
+ * 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
+ */
 export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugin {
 	const address = options.contentServer.internalOrigin;
 	const { app } = options;

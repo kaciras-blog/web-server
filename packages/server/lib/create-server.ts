@@ -13,7 +13,7 @@ type OnRequestHandler = (req: RequestMessage, res: ServerResponse | Http2ServerR
 type SNIResolve = (err: Error | null, ctx: SecureContext) => void;
 
 export function createSNICallback(properties: SNIProperties[]) {
-	const map: { [k: string]: SecureContext } = {};
+	const map: { [servername: string]: SecureContext } = {};
 
 	// 据测试 SecureContext 可以重用
 	for (const p of properties) {
@@ -41,6 +41,7 @@ function createConnector(connector: HttpServerOptions | HttpsServerOptions) {
 				return http2.createSecureServer(config);
 		}
 	} else {
+		// http2.createServer 没有 allowHTTP1 这个参数，所以必须用 version 选项区分
 		switch (connector.version) {
 			case 1:
 				return http.createServer();
@@ -53,11 +54,11 @@ function createConnector(connector: HttpServerOptions | HttpsServerOptions) {
 /**
  * 创建一个重定向处理器。
  *
- * @param code 状态码
  * @param origin 目标源
+ * @return HTTP请求处理器
  */
-function redirectHandler(code: 301 | 302, origin: string): OnRequestHandler {
-	return (req, res) => res.writeHead(code, { Location: origin + req.url }).end()
+function redirectHandler(origin: string): OnRequestHandler {
+	return (req, res) => res.writeHead(301, { Location: origin + req.url }).end()
 }
 
 /**
@@ -89,7 +90,7 @@ export default async function startServer(handler: OnRequestHandler, options: Se
 		const server = createConnector(connector);
 
 		if (redirect) {
-			server.on("request", redirectHandler(301, redirect));
+			server.on("request", redirectHandler(redirect));
 		} else {
 			server.on("request", handler);
 		}

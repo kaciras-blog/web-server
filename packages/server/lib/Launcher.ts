@@ -4,6 +4,7 @@ import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
 import { configureLog4js } from "./helpers";
 import { BlogServerOptions } from "./options";
+import run from "./command/run";
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
@@ -20,7 +21,7 @@ export default class Launcher<T extends BlogServerOptions> {
 
 	// 注册几个内置命令
 	constructor() {
-		this.registerCommand("run", require("./command/run"));
+		this.registerCommand("run", run);
 		this.registerCommand("build-image-cache", ((options) => buildCache(options.app.dataDir)));
 	}
 

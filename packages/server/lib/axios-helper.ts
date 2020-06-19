@@ -74,8 +74,6 @@ interface CacheEntry<T> {
  *
  * 【其它方案】因为 AxiosResponse 里带有请求配置，所以可以用个拦截器来做缓存，但是它的API返回的是 AxiosResponse
  * 而不是解析后的结果，要做也只能替换其 data 字段，这样的话总感觉怪怪的。
- *
- * TODO: 直接用整个 requestConfig 作为键会有一些属性多余
  */
 export class CachedFetcher<T, R> {
 
