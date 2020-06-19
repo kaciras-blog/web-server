@@ -2,49 +2,14 @@ import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
-import ApplicationBuilder from "./ApplicationBuilder";
-import getBlogPlugin from "./blog-plugin";
-import { createSSRProductionPlugin } from "./koa/vue-ssr";
-import startServer from "./create-server";
-import { configureGlobalAxios, configureLog4js } from "./helpers";
-import staticFiles from "./koa/static-files";
+import { configureLog4js } from "./helpers";
 import { BlogServerOptions } from "./options";
-
-const logger = log4js.getLogger();
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
  */
 type HandlerRV = void | (() => void);
 type CommandHandler<T> = (options: T) => HandlerRV | Promise<HandlerRV>;
-
-async function runProd(options: BlogServerOptions) {
-	const closeHttp2Sessions = await configureGlobalAxios(options.contentServer);
-
-	const builder = new ApplicationBuilder();
-	builder.addPlugin(getBlogPlugin(options));
-	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
-
-	// 除了static目录外文件名都不带Hash，所以要禁用外层的缓存
-	builder.useResource(staticFiles(options.outputDir, {
-		staticAssets: new RegExp("^/" + options.assetsDir),
-	}));
-
-	const app = builder.build();
-	app.proxy = !!options.server.useForwardedHeaders;
-
-	app.on("error", (err, ctx) => {
-		logger.error("Error occurred on process " + ctx.path, err);
-	});
-
-	const closeServer = await startServer(app.callback(), options.server);
-	logger.info("Startup completed.");
-
-	return () => {
-		closeServer();
-		closeHttp2Sessions();
-	}
-}
 
 /**
  * 简单的启动器，提供注册命令然后从命令行里调用的功能，并对启动参数做一些处理。
@@ -55,7 +20,7 @@ export default class Launcher<T extends BlogServerOptions> {
 
 	// 注册几个内置命令
 	constructor() {
-		this.registerCommand("run", runProd);
+		this.registerCommand("run", require("./command/run"));
 		this.registerCommand("build-image-cache", ((options) => buildCache(options.app.dataDir)));
 	}
 
@@ -84,7 +49,9 @@ export default class Launcher<T extends BlogServerOptions> {
 		}
 
 		const config = require(configFile);
+
 		configureLog4js(config.app.logging);
+		const logger = log4js.getLogger("init");
 
 		// TODO: 听说 Node 以后会移除 unhandledRejection
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
