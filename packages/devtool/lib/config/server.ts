@@ -6,11 +6,7 @@ import baseConfig from "./base";
 import { DevelopmentOptions } from "../options";
 import generateCssLoaders from "./css";
 
-
 export default function (options: DevelopmentOptions) {
-
-	// 服务端构建时页面内的请求走内部地址
-	options.envConfig.CONTENT_SERVER_URI = options.blog.serverAddress;
 
 	return merge(baseConfig(options, "server"), {
 		entry: ["./src/entry-server"],
@@ -40,7 +36,10 @@ export default function (options: DevelopmentOptions) {
 
 		plugins: [
 			new VueSSRServerPlugin(),
-			new DefinePlugin({ "process.env.VUE_ENV": "'server'" }),
+			new DefinePlugin({
+				"process.env.API_ORIGIN": JSON.stringify(options.contentServer.internalOrigin),
+				"process.env.VUE_ENV": "'server'",
+			}),
 		],
 	});
 }

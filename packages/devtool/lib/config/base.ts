@@ -4,6 +4,7 @@ import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
 import { DevelopmentOptions, WebpackOptions } from "../options";
+import CodeValueObject = DefinePlugin.CodeValueObject;
 
 /**
  * 将相对于 process.cwd 的路径转换为绝对路径。
@@ -36,6 +37,9 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
+
+	const thirdPartyEnv: { [key: string]: CodeValueObject } = {};
+	Object.entries(options.thirdParty).forEach(([k, v]) => thirdPartyEnv["process.env." + k] = v)
 
 	return {
 		mode: webpackOpts.mode,
@@ -150,9 +154,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			],
 		},
 		plugins: [
-			new DefinePlugin({
-				"process.env.CONFIG": JSON.stringify(options.envConfig),
-			}),
+			new DefinePlugin(thirdPartyEnv),
 			new VueLoaderPlugin(),
 			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],

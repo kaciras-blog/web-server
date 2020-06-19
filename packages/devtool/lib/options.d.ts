@@ -5,7 +5,7 @@ import { BlogServerOptions } from "@kaciras-blog/server/lib/options";
 export interface DevelopmentOptions extends BlogServerOptions {
 	dev: DevServerOptions;
 	webpack: WebpackOptions;
-	envConfig: EnvConfig;
+	thirdParty: ThirdPartyOptions;
 }
 
 export interface WebpackOptions {
@@ -35,8 +35,7 @@ export interface DevServerOptions {
 	useHotClient?: boolean;
 }
 
-export interface EnvConfig {
-	REQUEST_TIMEOUT: number;
+export interface ThirdPartyOptions {
 	SENTRY_DSN?: string;
 	GOOGLE_ANALYTICS_ID?: string;
 }
