@@ -13,9 +13,9 @@ type OnRequestHandler = (req: RequestMessage, res: ServerResponse | Http2ServerR
 type SNIResolve = (err: Error | null, ctx: SecureContext) => void;
 
 export function createSNICallback(properties: SNIProperties[]) {
-	const map: { [k: string]: any } = {};
+	const map: { [k: string]: SecureContext } = {};
 
-	// 据测试SecureContext可以重用
+	// 据测试 SecureContext 可以重用
 	for (const p of properties) {
 		map[p.hostname] = createSecureContext({
 			key: fs.readFileSync(p.key),
@@ -57,8 +57,8 @@ function createServer(connector: HttpServerOptions | HttpsServerOptions) {
  * @param port 端口
  * @param hostname 绑定的主机名
  */
-function listenAsync(server: Server, port: number, hostname: string): Promise<Server> {
-	return new Promise((resolve) => server.listen(port, hostname, resolve));
+function listenAsync(server: Server, port: number, hostname: string) {
+	return new Promise<void>((resolve) => server.listen(port, hostname, resolve));
 }
 
 /**
