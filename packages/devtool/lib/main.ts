@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import webpack, { Configuration, Stats } from "webpack";
 import { configureGlobalAxios } from "@kaciras-blog/server/lib/helpers";
 import Launcher from "@kaciras-blog/server/lib/Launcher";
-import { startServer } from "@kaciras-blog/server/lib/create-server";
+import startServer from "@kaciras-blog/server/lib/create-server";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
 import ApplicationBuilder from "@kaciras-blog/server/lib/ApplicationBuilder";
 import { ClosableMiddleware, createHotMiddleware, createKoaWebpack } from "./dev-middleware";

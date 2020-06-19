@@ -1,6 +1,6 @@
 import http from "http";
 import tls from "tls";
-import { createSNICallback, startServer } from "../lib/create-server";
+import startServer, { createSNICallback } from "../lib/create-server";
 import { ServerOptions } from "../lib/options";
 import { resolveFixture } from "./test-utils";
 

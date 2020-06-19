@@ -25,7 +25,7 @@ export function createSNICallback(properties: SNIProperties[]) {
 	return (servername: string, callback: SNIResolve) => callback(null, map[servername]);
 }
 
-function createServer(connector: HttpServerOptions | HttpsServerOptions) {
+function createConnector(connector: HttpServerOptions | HttpsServerOptions) {
 	if ("certFile" in connector) {
 		const { certFile, keyFile, sni } = connector;
 		const config = {
@@ -74,11 +74,11 @@ function listenAsync(server: Server, port: number, hostname: string) {
 /**
  * 创建并启动一个或多个服务器，返回关闭它们的函数。
  *
- * @param requestHandler 处理请求的函数
+ * @param handler 处理请求的函数
  * @param options 选项
  * @return 关闭创建的服务器的函数
  */
-export async function startServer(requestHandler: OnRequestHandler, options: ServerOptions) {
+export default async function startServer(handler: OnRequestHandler, options: ServerOptions) {
 	const { hostname = "localhost", connectors } = options;
 
 	const servers: Server[] = [];
@@ -86,12 +86,12 @@ export async function startServer(requestHandler: OnRequestHandler, options: Ser
 
 	for (const connector of connectors) {
 		const { redirect } = connector;
-		const server = createServer(connector);
+		const server = createConnector(connector);
 
 		if (redirect) {
 			server.on("request", redirectHandler(301, redirect));
 		} else {
-			server.on("request", requestHandler);
+			server.on("request", handler);
 		}
 
 		// Server.close 方法不会立即断开 Keep-Alive 的连接，这会使程序延迟几分钟才能结束。
