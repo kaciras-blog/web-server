@@ -51,13 +51,13 @@ export interface ServerOptions {
 	hostname?: string;
 	useForwardedHeaders?: boolean;
 
-	http?: HttpServerOptions;
-	https?: HttpsServerOptions;
+	connectors: Array<HttpServerOptions | HttpsServerOptions>
 }
 
 export interface HttpServerOptions {
-	port?: number;
-	redirect?: number | true;
+	version: 1 | 2;
+	port: number;
+	redirect?: string;
 }
 
 export interface HttpsServerOptions extends HttpServerOptions {

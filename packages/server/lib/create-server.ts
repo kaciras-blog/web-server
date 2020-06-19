@@ -1,9 +1,10 @@
 import http, { IncomingMessage, ServerResponse } from "http";
+import https from "https";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { Server, Socket } from "net";
 import { createSecureContext, SecureContext } from "tls";
 import fs from "fs-extra";
-import { ServerOptions, SNIProperties } from "./options";
+import { HttpServerOptions, HttpsServerOptions, ServerOptions, SNIProperties } from "./options";
 
 
 // app.callback() 的定义，比较长不方便直接写在参数里
@@ -24,16 +25,40 @@ export function createSNICallback(properties: SNIProperties[]) {
 	return (servername: string, callback: SNIResolve) => callback(null, map[servername]);
 }
 
+function createServer(connector: HttpServerOptions | HttpsServerOptions) {
+	if ("certFile" in connector) {
+		const { certFile, keyFile, sni } = connector;
+		const config = {
+			cert: fs.readFileSync(certFile),
+			key: fs.readFileSync(keyFile),
+			SNICallback: sni && createSNICallback(sni),
+			allowHTTP1: true,
+		};
+		switch (connector.version) {
+			case 1:
+				return https.createServer(config);
+			case 2:
+				return http2.createSecureServer(config);
+		}
+	} else {
+		switch (connector.version) {
+			case 1:
+				return http.createServer();
+			case 2:
+				return http2.createServer();
+		}
+	}
+}
+
 /**
  * 将 Server.listen 转成异步方法并调用。
  *
  * @param server 服务器
  * @param port 端口
  * @param hostname 绑定的主机名
- * @return 原样返回服务器对象
  */
 function listenAsync(server: Server, port: number, hostname: string): Promise<Server> {
-	return new Promise((resolve) => server.listen(port, hostname, () => resolve(server)));
+	return new Promise((resolve) => server.listen(port, hostname, resolve));
 }
 
 /**
@@ -43,53 +68,22 @@ function listenAsync(server: Server, port: number, hostname: string): Promise<Se
  * @param options 选项
  * @return 关闭创建的服务器的函数
  */
-export async function runServer(requestHandler: OnRequestHandler, options: ServerOptions) {
-	const {
-		hostname = "localhost",
-		http: httpConfig,
-		https: httpsConfig,
-	} = options;
-
+export async function startServer(requestHandler: OnRequestHandler, options: ServerOptions) {
+	const { hostname = "localhost", connectors } = options;
 	const servers: Server[] = [];
 
-	const httpPort = httpConfig?.port || 80;
-	const httpsPort = httpsConfig?.port || 443;
+	for (const connector of connectors) {
+		const { redirect } = connector;
+		const server = createServer(connector);
 
-	/**
-	 * 获取请求处理器，如果 redirect 参数不为 undefined 则返回重定向的处理器，否则返回正常的请求处理器。
-	 *
-	 * @param redirect 重定向设置，数值为重定向端口，true使用默认端口
-	 * @param schema 重定向目标的schema
-	 * @param toPort 重定向目标的端口
-	 */
-	function getHandler(redirect: number | true | undefined, schema: string, toPort: number): OnRequestHandler {
-		if (!redirect) {
-			return requestHandler;
+		if (redirect) {
+			server.on("request", (req, res) => res.writeHead(301, { Location: redirect + req.url }).end())
+		} else {
+			server.on("request", requestHandler);
 		}
-		if (typeof redirect === "number") {
-			toPort = redirect;
-		}
-		return (req, res) => {
-			const [host] = req.headers.host!.split(":");
-			res.writeHead(301, { Location: `${schema}://${host}:${toPort}${req.url}` }).end();
-		};
-	}
 
-	if (httpsConfig) {
-		const { certFile, keyFile, sni, redirect } = httpsConfig;
-		const config = {
-			cert: fs.readFileSync(certFile),
-			key: fs.readFileSync(keyFile),
-			SNICallback: sni && createSNICallback(sni),
-			allowHTTP1: true,
-		};
-		const server = http2.createSecureServer(config, getHandler(redirect, "http", httpPort));
-		servers.push(await listenAsync(server, httpsPort, hostname));
-	}
-
-	if (httpConfig) {
-		const server = http.createServer(getHandler(httpConfig.redirect, "https", httpsPort));
-		servers.push(await listenAsync(server, httpPort, hostname));
+		servers.push(server);
+		await listenAsync(server, connector.port, hostname);
 	}
 
 	// Server.close 方法不会立即断开 Keep-Alive 的连接，这会使程序延迟几分钟才能结束。

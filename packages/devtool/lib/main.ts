@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import webpack, { Configuration, Stats } from "webpack";
 import { configureGlobalAxios } from "@kaciras-blog/server/lib/helpers";
 import Launcher from "@kaciras-blog/server/lib/Launcher";
-import { runServer } from "@kaciras-blog/server/lib/create-server";
+import { startServer } from "@kaciras-blog/server/lib/create-server";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
 import ApplicationBuilder from "@kaciras-blog/server/lib/ApplicationBuilder";
 import { ClosableMiddleware, createHotMiddleware, createKoaWebpack } from "./dev-middleware";
@@ -38,10 +38,10 @@ async function invokeWebpack(config: Configuration) {
  * 启动开发服务器，它提供了热重载功能。
  */
 launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
-	const closeHttp2Sessions = await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
+	const closeHttp2Sessions = await configureGlobalAxios(options.contentServer);
 
 	const builder = new ApplicationBuilder();
-	builder.addPlugin(getBlogPlugin(options.blog));
+	builder.addPlugin(getBlogPlugin(options));
 
 	const clientConfig = ClientConfiguration(options);
 	clientConfig.plugins!.push(new ClientSSRHotUpdatePlugin())
@@ -59,9 +59,9 @@ launcher.registerCommand("serve", async (options: DevelopmentOptions) => {
 	builder.useFallBack(vueSSRHotReloader.koaMiddleware);
 
 	const app = builder.build();
-	app.proxy = !!options.blog.useForwardedHeaders;
+	app.proxy = !!options.server.useForwardedHeaders;
 
-	const closeServer = await runServer(app.callback(), options.server);
+	const closeServer = await startServer(app.callback(), options.server);
 	console.info("\n- Local URL: https://localhost/\n");
 
 	return () => {

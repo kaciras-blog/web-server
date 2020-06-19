@@ -5,7 +5,7 @@ import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
 import ApplicationBuilder from "./ApplicationBuilder";
 import getBlogPlugin from "./blog-plugin";
 import { createSSRProductionPlugin } from "./koa/vue-ssr";
-import { runServer } from "./create-server";
+import { startServer } from "./create-server";
 import { configureGlobalAxios, configureLog4js } from "./helpers";
 import staticFiles from "./koa/static-files";
 import { BlogServerOptions } from "./options";
@@ -37,7 +37,7 @@ async function runProd(options: BlogServerOptions) {
 		logger.error("Error occurred on process " + ctx.path, err);
 	});
 
-	const closeServer = await runServer(app.callback(), options.server);
+	const closeServer = await startServer(app.callback(), options.server);
 	logger.info("Startup completed.");
 
 	return () => {
