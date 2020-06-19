@@ -72,6 +72,26 @@ function listenAsync(server: Server, port: number, hostname: string) {
 	return new Promise<void>((resolve) => server.listen(port, hostname, resolve));
 }
 
+export class ServerGroup {
+
+	readonly servers: Server[]
+	readonly connections: Set<Socket>;
+
+	constructor(servers: Server[], connections: Set<Socket>) {
+		this.servers = servers;
+		this.connections = connections;
+	}
+
+	close() {
+		this.servers.forEach((s) => s.close());
+	}
+
+	forceClose() {
+		this.close();
+		this.connections.forEach((s) => s.destroy());
+	}
+}
+
 /**
  * 创建并启动一个或多个服务器，返回关闭它们的函数。
  *
@@ -79,13 +99,13 @@ function listenAsync(server: Server, port: number, hostname: string) {
  * @param options 选项
  * @return 关闭创建的服务器的函数
  */
-export default async function startServer(handler: OnRequestHandler, options: ServerOptions) {
+export default function startServer(handler: OnRequestHandler, options: ServerOptions) {
 	const { hostname = "localhost", connectors } = options;
 
 	const servers: Server[] = [];
 	const connections = new Set<Socket>();
 
-	for (const connector of connectors) {
+	const tasks = connectors.map((connector) => {
 		const { redirect } = connector;
 		const server = createConnector(connector);
 
@@ -103,11 +123,8 @@ export default async function startServer(handler: OnRequestHandler, options: Se
 		});
 
 		servers.push(server);
-		await listenAsync(server, connector.port, hostname);
-	}
+		return listenAsync(server, connector.port, hostname);
+	})
 
-	return () => {
-		servers.forEach((s) => s.close());
-		connections.forEach((s) => s.destroy());
-	}
+	return Promise.all(tasks).then(() => new ServerGroup(servers, connections));
 }

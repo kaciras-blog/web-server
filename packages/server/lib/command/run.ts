@@ -28,11 +28,11 @@ export default async function run(options: BlogServerOptions) {
 		logger.error("Error occurred on process " + ctx.path, err);
 	});
 
-	const closeServer = await startServer(app.callback(), options.server);
+	const serverGroup = await startServer(app.callback(), options.server);
 	logger.info("Startup completed.");
 
 	return () => {
-		closeServer();
+		serverGroup.forceClose();
 		closeHttp2Sessions();
 	}
 }

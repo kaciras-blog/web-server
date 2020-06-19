@@ -35,13 +35,13 @@ export default async function (options: DevelopmentOptions) {
 	const app = builder.build();
 	app.proxy = !!options.server.useForwardedHeaders;
 
-	const closeServer = await startServer(app.callback(), options.server);
+	const serverGroup = await startServer(app.callback(), options.server);
 	console.info("\n- Local URL: https://localhost/\n");
 
 	return () => {
-		closeServer();
 		vueSSRHotReloader.close();
 		devMiddleware.close();
+		serverGroup.forceClose();
 		closeHttp2Sessions();
 	}
 }

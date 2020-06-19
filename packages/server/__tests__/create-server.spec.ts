@@ -1,6 +1,6 @@
-import http from "http";
 import tls from "tls";
-import startServer, { createSNICallback } from "../lib/create-server";
+import supertest from "supertest";
+import startServer, { createSNICallback, ServerGroup } from "../lib/create-server";
 import { ServerOptions } from "../lib/options";
 import { resolveFixture } from "./test-utils";
 
@@ -34,20 +34,19 @@ describe("app.startServer", () => {
 		],
 	};
 
-	let close: () => void;
+	let serverGroup: ServerGroup;
 
 	beforeAll(async () => {
-		close = await startServer((req, res: any) => res.end("hello"), OPTIONS);
+		serverGroup = await startServer((req, res: any) => res.end("hello"), OPTIONS);
 	});
 
-	afterAll(() => close());
+	afterAll(() => serverGroup.forceClose());
 
-	it("should redirect to https", (done) => {
-		http.get(HTTP_URL, ((res) => {
-			expect(res.statusCode).toEqual(301);
-			expect(res.headers.location).toEqual(HTTPS_URL + "/");
-			done();
-		})).end();
+	it("should redirect to https", () => {
+		return supertest(serverGroup.servers[0])
+			.get("/")
+			.expect(301)
+			.expect("location", HTTPS_URL + "/")
 	});
 });
 
