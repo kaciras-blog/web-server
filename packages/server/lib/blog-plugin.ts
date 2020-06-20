@@ -68,17 +68,12 @@ export function toggleSW(enable?: boolean) {
 /**
  * 拦截某些资源，ctx.path 匹配到任一模式串的请求将被拦截，并返回404。
  *
- * @param patterns 模式串
+ * @param pattern 模式串，可以用 combineRegex 来组合多个串
  * @return Koa 的中间件函数
  */
-export function intercept(patterns: RegExp | RegExp[]) {
-
-	const combined = Array.isArray(patterns)
-		? new RegExp(patterns.map((p) => `(?:${p.source})`).join("|"))
-		: patterns;
-
+export function intercept(pattern: RegExp) {
 	return (ctx: BaseContext, next: Next) => {
-		if (!combined.test(ctx.path)) {
+		if (!pattern.test(ctx.path)) {
 			return next();
 		}
 		ctx.status = 404;

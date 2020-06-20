@@ -4,7 +4,8 @@
  *
  * 该函数既可以屏蔽重复的调用，也能够用来缓存函数的返回值。
  *
- * 【实现】注意被使用的是返回的函数，不是包装函数，为了传递this所以不能返回Lambda表达式。
+ * 【实现】
+ * 注意被使用的是返回的函数，不是包装函数，为了传递this所以不能返回Lambda表达式。
  *
  * @param func 原函数
  * @return 包装后的函数
@@ -38,4 +39,17 @@ export function debounceFirst<T, R>(func: (...args: any[]) => Promise<R>) {
 		}
 		return task = func.apply(this, args).finally(() => task = null);
 	};
+}
+
+/**
+ * 把多个正则表达式组以“或”关系合为一个。
+ *
+ * 【造轮子】
+ * 虽然有几个库也干这事，不过这函数太简单自己写也不费事。
+ *
+ * @param patterns 表达式数组
+ * @return 组合后的正则表达式，匹配原数组中的任意一个
+ */
+export function combineRegex(patterns: RegExp[]) {
+	return new RegExp(patterns.map((p) => `(?:${p.source})`).join("|"))
 }
