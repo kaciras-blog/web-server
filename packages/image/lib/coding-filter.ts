@@ -21,7 +21,7 @@ function throwInvalidData(error: Error): never {
 /**
  * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这仨字。
  *
- * 【实现选择】
+ * 【造轮子】
  * 有个 is-gif 包提供同样的功能，但它使用 file-type 很多余。反观 is-png 倒是直接读取 MagicNumber，
  * 所以PNG直接用 is-png 包而GIF自己写个函数判断。
  *

@@ -6,7 +6,6 @@ import { createSecureContext, SecureContext } from "tls";
 import fs from "fs-extra";
 import { HttpServerOptions, HttpsServerOptions, ServerOptions, SNIProperties } from "./options";
 
-
 // app.callback() 的定义，比较长不方便直接写在参数里
 type RequestMessage = IncomingMessage | Http2ServerRequest;
 type OnRequestHandler = (req: RequestMessage, res: ServerResponse | Http2ServerResponse) => void;
@@ -72,9 +71,15 @@ function listenAsync(server: Server, port: number, hostname: string) {
 	return new Promise<void>((resolve) => server.listen(port, hostname, resolve));
 }
 
+/**
+ * 把服务器和连接打包，并提供快捷的关闭方法。
+ */
 export class ServerGroup {
 
+	/** 服务器列表，索引与 ServerOptions.connectors 参数是对应的 */
 	readonly servers: Server[]
+
+	/** 所有服务器中保持的客户端连接 */
 	readonly connections: Set<Socket>;
 
 	constructor(servers: Server[], connections: Set<Socket>) {
@@ -82,10 +87,17 @@ export class ServerGroup {
 		this.connections = connections;
 	}
 
+	/**
+	 * 关闭服务器，不再接收新连接并等待现有连接全部关闭。
+	 * 要强制断开现有连接可以用 forceClose()
+	 */
 	close() {
 		this.servers.forEach((s) => s.close());
 	}
 
+	/**
+	 * 立即关闭服务器，不再接收新连接，现有的连接也全部都关闭。
+	 */
 	forceClose() {
 		this.close();
 		this.connections.forEach((s) => s.destroy());
@@ -93,11 +105,11 @@ export class ServerGroup {
 }
 
 /**
- * 创建并启动一个或多个服务器，返回关闭它们的函数。
+ * 创建并启动一个或多个服务器。
  *
  * @param handler 处理请求的函数
  * @param options 选项
- * @return 关闭创建的服务器的函数
+ * @return 服务器组
  */
 export default function startServer(handler: OnRequestHandler, options: ServerOptions) {
 	const { hostname = "localhost", connectors } = options;
@@ -124,7 +136,7 @@ export default function startServer(handler: OnRequestHandler, options: ServerOp
 
 		servers.push(server);
 		return listenAsync(server, connector.port, hostname);
-	})
+	});
 
 	return Promise.all(tasks).then(() => new ServerGroup(servers, connections));
 }
