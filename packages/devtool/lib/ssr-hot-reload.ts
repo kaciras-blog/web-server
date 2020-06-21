@@ -6,6 +6,7 @@ import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import webpack, { Compiler, Configuration, Plugin, Watching } from "webpack";
 import { renderPage } from "@kaciras-blog/server/lib/koa/vue-ssr";
+import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
 
 const logger = log4js.getLogger("dev");
 
@@ -32,9 +33,9 @@ export class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 		this.templateName = templateName;
 	}
 
-	apply(compiler: Compiler): void {
-		// noinspection SuspiciousTypeOfGuard 这是 Vue 内部的类型
-		if (!(compiler.options.plugins || []).some((plugin) => plugin instanceof VueSSRClientPlugin)) {
+	apply(compiler: Compiler) {
+		const clientPlugin = compiler.options.plugins?.find(v => v instanceof VueSSRClientPlugin);
+		if (!clientPlugin) {
 			throw new Error("请将 vue-server-renderer/client-plugin 加入到客户端的构建中");
 		}
 
@@ -67,6 +68,7 @@ export default class VueSSRHotReloader {
 
 	private readonly clientConfig: Configuration;
 	private readonly serverConfig: Configuration;
+	private readonly bundleName: string;
 
 	private template: any;
 	private clientManifest: any;
@@ -76,9 +78,19 @@ export default class VueSSRHotReloader {
 
 	private watching?: Watching;
 
-	constructor(clientConfig: Configuration, serverConfig: Configuration) {
+	constructor(
+		clientConfig: Configuration,
+		serverConfig: Configuration,
+		bundleName = "vue-ssr-server-bundle.json",
+	) {
 		this.clientConfig = clientConfig;
 		this.serverConfig = serverConfig;
+		this.bundleName = bundleName;
+
+		const serverPlugin = serverConfig.plugins?.find(v => v instanceof VueSSRServerPlugin);
+		if (!serverPlugin) {
+			throw new Error("请将 vue-server-renderer/server-plugin 加入到服务端的构建中");
+		}
 	}
 
 	/**
@@ -124,7 +136,7 @@ export default class VueSSRHotReloader {
 				this.template = template.source().toString();
 			}
 			this.clientManifest = JSON.parse(manifest.source());
-			this.updateVueSSR();
+			this.updateRenderer();
 		}
 
 		hotUpdatePlugin.on("update", updateClientResources);
@@ -150,8 +162,8 @@ export default class VueSSRHotReloader {
 					return logger.error(stats.toString());
 				}
 				resolve();
-				this.serverBundle = JSON.parse(stats.compilation.assets["vue-ssr-server-bundle.json"].source());
-				this.updateVueSSR();
+				this.serverBundle = JSON.parse(stats.compilation.assets[this.bundleName].source());
+				this.updateRenderer();
 			});
 		})
 	}
@@ -159,8 +171,11 @@ export default class VueSSRHotReloader {
 	/**
 	 * 更新Vue的服务端渲染器，在客户端或服务端构建完成后调用。
 	 */
-	private updateVueSSR() {
-		const { serverBundle, template, clientManifest } = this;
-		this.renderer = createBundleRenderer(serverBundle, { template, clientManifest, runInNewContext: false });
+	private updateRenderer() {
+		this.renderer = createBundleRenderer(this.serverBundle, {
+			runInNewContext: false,
+			template: this.template,
+			clientManifest: this.clientManifest,
+		});
 	}
 }
