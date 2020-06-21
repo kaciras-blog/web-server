@@ -105,7 +105,7 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 	const address = options.contentServer.internalOrigin;
 	const { app } = options;
 
-	return (api: ApplicationBuilder) => {
+	return (api: AppBuilder) => {
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(bodyParser());
 		api.useBeforeAll(securityFilter);
