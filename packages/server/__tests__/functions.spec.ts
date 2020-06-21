@@ -1,5 +1,4 @@
 import { combineRegex, debounceFirst, once } from "../lib/functions";
-import PromiseSource from "../lib/PromiseSource";
 
 describe("debounceFirst", () => {
 
@@ -17,13 +16,16 @@ describe("debounceFirst", () => {
 
 	it("should avoid multiple calls", () => {
 		return new Promise((done) => {
-			let task: PromiseSource<number>;
-			const func = () => task = new PromiseSource();
+			let resolve: (n: number) => void;
+
+			const promise = new Promise<number>(r => resolve = r);
+			const func = () => promise;
+
 			const debounced = debounceFirst(func);
 
 			expect(debounced(5, 6)).toBe(debounced(3, 4));
 
-			task!.resolve(123);
+			resolve!(123);
 
 			debounced(1, 2)
 				.then((v) => expect(v).toBe(123))
