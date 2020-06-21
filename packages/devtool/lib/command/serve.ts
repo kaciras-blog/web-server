@@ -14,7 +14,7 @@ import { DevelopmentOptions } from "../options";
 export default async function (options: DevelopmentOptions) {
 	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
-	const builder = new ApplicationBuilder();
+	const builder = new AppBuilder();
 	builder.addPlugin(getBlogPlugin(options));
 
 	const clientConfig = ClientConfiguration(options);

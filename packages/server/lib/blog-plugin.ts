@@ -15,7 +15,7 @@ import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
 import { downloadVideo, uploadVideo } from "./koa/video";
 import { configureForProxy } from "./axios-helper";
-import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
+import AppBuilder, { FunctionPlugin } from "./AppBuilder";
 import { BlogServerOptions } from "./options";
 
 const logger = getLogger();

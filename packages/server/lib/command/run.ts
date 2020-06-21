@@ -46,7 +46,7 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 export default async function run(options: BlogServerOptions) {
 	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
-	const builder = new ApplicationBuilder();
+	const builder = new AppBuilder();
 	builder.addPlugin(getBlogPlugin(options));
 	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
