@@ -1,13 +1,47 @@
 import log4js from "log4js";
-import ApplicationBuilder from "../ApplicationBuilder";
+import AppBuilder from "../AppBuilder";
 import getBlogPlugin from "../blog-plugin";
 import { createSSRProductionPlugin } from "../koa/vue-ssr";
 import staticFiles from "../koa/static-files";
 import startServer from "../create-server";
 import { configureGlobalAxios } from "../helpers";
-import { BlogServerOptions } from "../options";
+import { BlogServerOptions, SimpleLogConfig } from "../options";
 
-const logger = log4js.getLogger();
+/**
+ * 简单地配置一下日志，文档见：
+ * https://log4js-node.github.io/log4js-node/appenders.html
+ */
+export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
+	const logConfig: log4js.Configuration = {
+		appenders: {
+			console: {
+				type: "stdout",
+				layout: {
+					type: "pattern",
+					pattern: "%[%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %]%m",
+				},
+			},
+		},
+		categories: {
+			default: { appenders: ["console"], level },
+		},
+	};
+	if (noConsole) {
+		logConfig.categories.default.appenders = [];
+	}
+	if (file) {
+		logConfig.appenders.file = {
+			type: "file",
+			filename: file,
+			layout: {
+				type: "pattern",
+				pattern: "%d{yyyy-MM-dd hh:mm:ss} [%p] %c - %m",
+			},
+		};
+		logConfig.categories.default.appenders.push("file");
+	}
+	log4js.configure(logConfig);
+}
 
 export default async function run(options: BlogServerOptions) {
 	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);

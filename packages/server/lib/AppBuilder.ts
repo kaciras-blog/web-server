@@ -1,17 +1,17 @@
 import Koa, { Middleware } from "koa";
 
 export interface ClassPlugin {
-	configureCliServer(builder: ApplicationBuilder): void;
+	configureCliServer(builder: AppBuilder): void;
 }
 
-export type FunctionPlugin = (builder: ApplicationBuilder) => void;
+export type FunctionPlugin = (builder: AppBuilder) => void;
 
 type AnyMiddleware = Middleware<any, any>;
 
 /**
  * 把 Koa 的中间件分下组，便于解耦，每一组里的中间件应当互不干扰。
  */
-export default class ApplicationBuilder {
+export default class AppBuilder {
 
 	private readonly beforeAll: Middleware[] = [];
 	private readonly beforeFilter: Middleware[] = [];
