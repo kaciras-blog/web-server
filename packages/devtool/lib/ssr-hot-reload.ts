@@ -4,15 +4,15 @@ import MFS from "memory-fs";
 import { Context } from "koa";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
 import webpack, { Compiler, Configuration, Plugin, Watching } from "webpack";
 import { renderPage } from "@kaciras-blog/server/lib/koa/vue-ssr";
-import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
 
 const logger = log4js.getLogger("dev");
 
 /**
  * 读取并保存 VueSSRClientPlugin 输出的清单文件和HTML模板的插件。
- * 该插件需要被添加到客户端的构建配置里。
+ * 该插件需要手动添加到客户端的构建配置里。
  *
  * 当 ClientManifest 或HTML模板更新时将发出 update 事件，并传递对应的 Assets。
  */
@@ -151,7 +151,7 @@ export default class VueSSRHotReloader {
 
 	private initServerCompiler() {
 		const compiler = webpack(this.serverConfig);
-		compiler.outputFileSystem = new MFS(); // TODO: 没必要保存到内存里
+		compiler.outputFileSystem = new MFS();
 
 		return new Promise(resolve => {
 			this.watching = compiler.watch({}, (err, stats) => {
