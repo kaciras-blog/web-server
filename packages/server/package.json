@@ -43,6 +43,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^6.1.5",
+		"source-map-support": "^0.5.19",
 		"vue-server-renderer": "2.6.11"
 	},
 	"devDependencies": {
