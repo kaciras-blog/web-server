@@ -1,5 +1,5 @@
 import startServer from "@kaciras-blog/server/lib/create-server";
-import { configureGlobalAxios } from "@kaciras-blog/server/lib/helpers";
+import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper";
 import AppBuilder from "@kaciras-blog/server/lib/AppBuilder";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
 import ClientConfiguration from "../config/client";

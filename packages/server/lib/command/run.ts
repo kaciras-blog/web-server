@@ -4,11 +4,12 @@ import getBlogPlugin from "../blog-plugin";
 import { createSSRProductionPlugin } from "../koa/vue-ssr";
 import staticFiles from "../koa/static-files";
 import startServer from "../create-server";
-import { configureGlobalAxios } from "../helpers";
+import { configureGlobalAxios } from "../axios-helper";
 import { BlogServerOptions, SimpleLogConfig } from "../options";
 
 /**
- * 简单地配置一下日志，文档见：
+ * 运行生产模式需要更详细的日志输出格式。
+ *
  * https://log4js-node.github.io/log4js-node/appenders.html
  */
 export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
@@ -26,9 +27,11 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 			default: { appenders: ["console"], level },
 		},
 	};
+
 	if (noConsole) {
 		logConfig.categories.default.appenders = [];
 	}
+
 	if (file) {
 		logConfig.appenders.file = {
 			type: "file",
@@ -40,10 +43,14 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 		};
 		logConfig.categories.default.appenders.push("file");
 	}
+
 	log4js.configure(logConfig);
 }
 
 export default async function run(options: BlogServerOptions) {
+	configureLog4js(options.app.logging);
+	const logger = log4js.getLogger();
+
 	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
 	const builder = new AppBuilder();

@@ -1,16 +1,18 @@
 /*
  * 自定义Axios，使其更好地支持本博客系统。
  */
-import { ExtendableContext } from "koa";
-import log4js from "log4js";
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import hash from "hash-sum";
 import http2, {
 	ClientHttp2Session,
 	IncomingHttpHeaders,
 	IncomingHttpStatusHeader,
 	SecureClientSessionOptions,
 } from "http2";
+import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import { ExtendableContext } from "koa";
+import log4js from "log4js";
+import fs from "fs-extra";
+import hash from "hash-sum";
+import { ContentServerOptions } from "./options";
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
@@ -201,4 +203,27 @@ export function configureAxiosHttp2(
 	});
 
 	return () => cache.forEach((session) => session.destroy());
+}
+
+/**
+ * 配置全局Axios实例的便捷函数。
+ *
+ * 【readFileSync】
+ * 因为是全局的配置，基本都是在其它代码之前调用，没必要用异步。
+ *
+ * @param options 选项
+ */
+export function configureGlobalAxios(options: ContentServerOptions) {
+	const { internalOrigin, cert } = options;
+	const https = internalOrigin.startsWith("https");
+
+	if (typeof cert === "string") {
+		const ca = fs.readFileSync(cert);
+		return configureAxiosHttp2(Axios, https, { ca });
+	} else {
+		if (cert) {
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+		}
+		return configureAxiosHttp2(Axios, https);
+	}
 }

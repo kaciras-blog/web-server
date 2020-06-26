@@ -2,7 +2,6 @@ import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
-import { configureLog4js } from "./helpers";
 import { BlogServerOptions } from "./options";
 import run from "./command/run";
 
@@ -51,7 +50,18 @@ export default class Launcher<T extends BlogServerOptions> {
 
 		const config = require(configFile);
 
-		configureLog4js(config.app.logging);
+		log4js.configure({
+			appenders: {
+				console: {
+					type: "console",
+					layout: { type: "pattern", pattern: "%[%c - %]%m" },
+				},
+			},
+			categories: {
+				default: { appenders: ["console"], level: "all" },
+			},
+		});
+
 		const logger = log4js.getLogger("init");
 
 		// TODO: 听说 Node 以后会移除 unhandledRejection
