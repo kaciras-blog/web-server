@@ -1,31 +1,37 @@
-import { debounceFirst, once } from "../lib/functions";
-import PromiseSource from "../lib/PromiseSource";
+import { combineRegex, debounceFirst, once } from "../lib/functions";
 
 describe("debounceFirst", () => {
 
 	it("should pass context", async () => {
 		const obj = {
 			value: 333,
-			func() { return Promise.resolve(this.value); },
+			func() {
+				return Promise.resolve(this.value);
+			},
 		};
 
 		obj.func = debounceFirst(obj.func);
 		expect(await obj.func()).toBe(333);
 	});
 
-	it("should avoid multiple calls", () => {return new Promise((done) => {
-		let task!: PromiseSource<number>;
-		const func = (a: number, b: number) => task = new PromiseSource();
-		const debounced = debounceFirst(func);
+	it("should avoid multiple calls", () => {
+		return new Promise((done) => {
+			let resolve: (n: number) => void;
 
-		expect(debounced(5, 6)).toBe(debounced(3, 4));
+			const promise = new Promise<number>(r => resolve = r);
+			const func = () => promise;
 
-		task.resolve(123);
+			const debounced = debounceFirst(func);
 
-		debounced(1, 2)
-			.then((v) => expect(v).toBe(123))
-			.then(done);
-	})});
+			expect(debounced(5, 6)).toBe(debounced(3, 4));
+
+			resolve!(123);
+
+			debounced(1, 2)
+				.then((v) => expect(v).toBe(123))
+				.then(done);
+		})
+	});
 
 	it("should call after first resolved", async () => {
 		const func = (x: number) => Promise.resolve(x * x);
@@ -52,7 +58,9 @@ describe("once", () => {
 	it("should pass context", () => {
 		const obj = {
 			value: 333,
-			func() { return this.value; },
+			func() {
+				return this.value;
+			},
 		};
 
 		obj.func = once(obj.func);
@@ -78,6 +86,7 @@ describe("once", () => {
 			}
 			return 123456;
 		}
+
 		const func = jest.fn(testFn);
 		const wrapped = once(func);
 
@@ -86,5 +95,35 @@ describe("once", () => {
 		expect(wrapped(false)).toBe(123456);
 
 		expect(func.mock.calls).toHaveLength(3);
+	});
+});
+
+describe("combineRegex", () => {
+
+	it("should support empty array", () => {
+		const regex = combineRegex([]);
+		expect(regex.test("foobar")).toBe(true);
+		expect(regex.test("")).toBe(true);
+	});
+
+	it("should support single element", () => {
+		const regex = combineRegex([/foobar/]);
+		expect(regex.test("_foobar_")).toBe(true);
+		expect(regex.test("_foobaz_")).toBe(false);
+	});
+
+	it("should combine patterns", () => {
+		const regex = combineRegex([/^a/, /b$/]);
+		expect(regex.test("a_")).toBe(true);
+		expect(regex.test("_b")).toBe(true);
+	});
+
+	it("should support capture group", () => {
+		const regex = combineRegex([/(a+)/, /(b+)/]);
+		const exec = regex.exec("bbb,aa")!;
+
+		expect(exec[0]).toBe("bbb");
+		expect(exec[1]).toBeUndefined();
+		expect(exec[2]).toBe("bbb");
 	});
 });

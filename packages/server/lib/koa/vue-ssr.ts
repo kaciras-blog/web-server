@@ -4,7 +4,7 @@ import { Context } from "koa";
 import log4js from "log4js";
 import path from "path";
 import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
-import ApplicationBuilder from "../ApplicationBuilder";
+import AppBuilder from "../AppBuilder";
 
 const logger = log4js.getLogger("SSR");
 
@@ -97,5 +97,5 @@ export async function createSSRProductionPlugin(workingDir: string) {
 		clientManifest: require(resolve("vue-ssr-client-manifest.json")),
 	});
 
-	return (api: ApplicationBuilder) => api.useFallBack((ctx) => renderPage(renderer, ctx));
+	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(renderer, ctx));
 }

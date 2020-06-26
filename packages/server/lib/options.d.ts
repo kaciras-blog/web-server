@@ -3,8 +3,9 @@ export interface BlogServerOptions {
 	outputDir: string;
 	assetsDir: string;
 
-	blog: AppOptions;
 	server: ServerOptions;
+	app: AppOptions;
+	contentServer: ContentServerOptions;
 }
 
 interface SimpleLogConfig {
@@ -15,31 +16,50 @@ interface SimpleLogConfig {
 
 	/**
 	 * 即使用了文件日志，还是保持控制台输出，使用此选项可以关闭控制台的输出。
-	 * 【注意】很多日志处理系统默认读取标准流，所以不建议关闭。
+	 *
+	 * 【注意】
+	 * 很多日志处理系统默认读取标准流，所以不建议关闭。
 	 */
 	noConsole?: boolean;
 }
 
 export interface AppOptions {
-	host: string;
-	serverAddress: string;
+	title: string;
+	author: string;
+
 	dataDir: string;
-	serverCert: string | true;
 
 	serviceWorker?: boolean;
-	useForwardedHeaders?: boolean;
+
 	logging: SimpleLogConfig;
 }
 
+export interface ContentServerOptions {
+	internalOrigin: string;
+
+	cert: string | true;
+
+	publicOrigin: string | AddersSelector;
+}
+
+export interface AddersSelector {
+	http: string;
+	https: string;
+}
+
+// ===================================================
+
 export interface ServerOptions {
 	hostname?: string;
-	http?: HttpServerOptions;
-	https?: HttpsServerOptions;
+	useForwardedHeaders?: boolean;
+
+	connectors: Array<HttpServerOptions | HttpsServerOptions>
 }
 
 export interface HttpServerOptions {
-	port?: number;
-	redirect?: number | true;
+	version: 1 | 2;
+	port: number;
+	redirect?: string;
 }
 
 export interface HttpsServerOptions extends HttpServerOptions {

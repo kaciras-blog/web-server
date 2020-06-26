@@ -8,7 +8,8 @@
  * <video src="/foo/bar.mp4" loop muted poster="/poster.jpg">label text</video>
  *
  * 【为何不直接写HTML】
- * 一旦写死HTML，以后想改动渲染结果就得把文章全扫一遍，麻烦。
+ * Markdown本身是跟渲染结果无关的，不应该和HTML绑死。
+ * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
  */
 import MarkdownIt from "markdown-it";
 import StateInline from "markdown-it/lib/rules_inline/state_inline";

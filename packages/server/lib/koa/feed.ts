@@ -1,6 +1,5 @@
 import Axios, { AxiosResponse } from "axios";
 import { Feed } from "feed";
-import { FeedOptions } from "feed/lib/typings";
 import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
 import KaTeX from "@iktakahiro/markdown-it-katex";
@@ -8,9 +7,9 @@ import TableOfContent from "markdown-it-toc-done-right";
 import MediaPlugin from "../markdown-media";
 import { once } from "../functions";
 import { CachedFetcher } from "../axios-helper";
+import { BlogServerOptions } from "../options";
 
-export const markdown = new MarkdownIt();
-
+const markdown = new MarkdownIt();
 markdown.use(KaTeX);
 markdown.use(TableOfContent);
 markdown.use(MediaPlugin);
@@ -19,28 +18,28 @@ interface FeedContext extends ExtendableContext {
 	params: { type: string };
 }
 
-export default function createFeedMiddleware(apiServer: string) {
+export default function createFeedMiddleware(options: BlogServerOptions) {
+	const { author, title } = options.app;
+	const articleApi = options.contentServer.internalOrigin + "/articles";
 
-	const origin = "https://blog.kaciras.com";
-
-	// TODO: 这个对象可自定义的属性太多，还需考虑重新组织配置文件，暂时这样写死
-	const BASE_ATTRS: FeedOptions = {
-		title: "Kaciras的博客",
-		description: "没有简介，自己看内容吧",
-		link: origin + "/",
-		id: origin,
-		language: "zh",
-		favicon: `${origin}/favicon.ico`,
-		copyright: "All rights reserved 2020, Kaciras",
-		feedLinks: {
-			rss: `${origin}/feed/rss`,
-			json: `${origin}/feed/json`,
-			atom: `${origin}/feed/atom`,
-		},
-	};
+	const getLinksFor = (origin: string) => ({
+		rss: `${origin}/feed/rss`,
+		json: `${origin}/feed/json`,
+		atom: `${origin}/feed/atom`,
+	});
 
 	function buildFeed(response: AxiosResponse) {
-		const feed = new Feed(BASE_ATTRS);
+		const { origin } = response.config.params;
+
+		const feed = new Feed({
+			title,
+			id: origin + "/",
+			link: origin,
+			language: "zh",
+			favicon: `${origin}/favicon.ico`,
+			copyright: `All rights reserved 2020, ${author}`,
+			feedLinks: getLinksFor(origin),
+		});
 
 		feed.items = response.data.items.map((article: any) => ({
 			title: article.title,
@@ -49,9 +48,7 @@ export default function createFeedMiddleware(apiServer: string) {
 			published: new Date(article.create),
 			description: article.summary,
 			author: {
-				name: "Kaciras",
-				email: "Kaciras@pm.me",
-				link: origin,
+				name: author,
 			},
 			link: `${origin}/article/${article.id}/${article.urlTitle}`,
 			content: markdown.render(article.content),
@@ -70,8 +67,9 @@ export default function createFeedMiddleware(apiServer: string) {
 
 	return async (ctx: FeedContext) => {
 		const feed = await fetcher.request({
-			url: apiServer + "/articles",
+			url: articleApi,
 			params: {
+				origin: ctx.origin,
 				content: true,
 				count: 10,
 				sort: "id,DESC",
@@ -95,7 +93,7 @@ export default function createFeedMiddleware(apiServer: string) {
 				break;
 			default:
 				ctx.status = 404;
-				ctx.body = { message: "请求的Feed类型不支持", links: BASE_ATTRS.feedLinks };
+				ctx.body = { message: "请求的Feed类型不支持", links: getLinksFor(ctx.origin) };
 		}
 	};
 }

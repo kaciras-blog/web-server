@@ -1,5 +1,5 @@
 import path from "path";
-import { Configuration, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
+import { Configuration, DefinePlugin, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
 import merge from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
@@ -92,6 +92,7 @@ export default function (options: DevelopmentOptions) {
 		}),
 		new VueSSRClientPlugin(),
 		new HashedModuleIdsPlugin(),
+		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
 	];
 
 	const htmlMinifyOptions = {

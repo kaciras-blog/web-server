@@ -4,7 +4,6 @@ import Axios from "axios";
 import { BaseContext, ExtendableContext, Next } from "koa";
 import { getLogger } from "log4js";
 import conditional from "koa-conditional-get";
-import cors from "@koa/cors";
 import compress from "koa-compress";
 import multer from "@koa/multer";
 import Router from "@koa/router";
@@ -16,8 +15,8 @@ import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
 import { downloadVideo, uploadVideo } from "./koa/video";
 import { configureForProxy } from "./axios-helper";
-import ApplicationBuilder, { FunctionPlugin } from "./ApplicationBuilder";
-import { AppOptions } from "./options";
+import AppBuilder, { FunctionPlugin } from "./AppBuilder";
+import { BlogServerOptions } from "./options";
 
 const logger = getLogger();
 
@@ -69,17 +68,12 @@ export function toggleSW(enable?: boolean) {
 /**
  * 拦截某些资源，ctx.path 匹配到任一模式串的请求将被拦截，并返回404。
  *
- * @param patterns 模式串
+ * @param pattern 模式串，可以用 combineRegex 来组合多个串
  * @return Koa 的中间件函数
  */
-export function intercept(patterns: RegExp | RegExp[]) {
-
-	const combined = Array.isArray(patterns)
-		? new RegExp(patterns.map((p) => `(?:${p.source})`).join("|"))
-		: patterns;
-
+export function intercept(pattern: RegExp) {
 	return (ctx: BaseContext, next: Next) => {
-		if (!combined.test(ctx.path)) {
+		if (!pattern.test(ctx.path)) {
 			return next();
 		}
 		ctx.status = 404;
@@ -102,19 +96,16 @@ export function adminOnlyFilter(host: string) {
 	}
 }
 
-// 【注意】没有使用 Etag，因为所有资源都可以用时间缓存，而且 koa-etag 内部使用 sha1 计算 Etag，
-// 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
-export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
+/*
+ * 【关于 koa-etag】
+ * 没有使用，因为所有资源都可以用时间缓存，而且 koa-etag 内部使用 sha1 计算 Etag，
+ * 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
+ */
+export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugin {
+	const address = options.contentServer.internalOrigin;
+	const { app } = options;
 
-	return (api: ApplicationBuilder) => {
-		api.useBeforeAll(cors({
-			origin: (ctx) => ctx.protocol + "://" + options.host,
-			credentials: true,
-			maxAge: 864000,
-			exposeHeaders: ["Location"],
-			allowHeaders: ["X-CSRF-Token"],
-		}));
-
+	return (api: AppBuilder) => {
 		api.useBeforeAll(conditional());
 		api.useBeforeAll(bodyParser());
 		api.useBeforeAll(securityFilter);
@@ -128,21 +119,21 @@ export default function getBlogPlugin(options: AppOptions): FunctionPlugin {
 		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
 		api.useFilter(compress({ br: false, threshold: 1024 }));
 
-		const adminFilter = adminOnlyFilter(options.serverAddress);
+		const adminFilter = adminOnlyFilter(address);
 		const router = new Router();
 
-		router.get("/feed/:type", feedHandler(options.serverAddress));
-		router.get("/sw-check", toggleSW(options.serviceWorker));
-		router.get("/sitemap.xml", sitemapHandler(options.serverAddress));
+		router.get("/feed/:type", feedHandler(options));
+		router.get("/sw-check", toggleSW(app.serviceWorker));
+		router.get("/sitemap.xml", sitemapHandler(address));
 		router.post(CSP_REPORT_URI, cspReporter);
 
 		// 用 image-middleware 里的函数组合成图片处理中间件。
 		// TODO: 支持评论插入图片
-		const service = new PreGenerateImageService(localFileStore(options.dataDir));
+		const service = new PreGenerateImageService(localFileStore(app.dataDir));
 		router.post("/image", adminFilter, (ctx: any) => uploadImage(service, ctx));
 		router.get("/image/:name", ctx => downloadImage(service, ctx));
 
-		const videoDir = path.join(options.dataDir, "video");
+		const videoDir = path.join(app.dataDir, "video");
 		fs.ensureDirSync(videoDir);
 		router.post("/video", adminFilter, async (ctx: any) => uploadVideo(videoDir, ctx));
 		router.get("/video/:name", ctx => downloadVideo(videoDir, ctx));

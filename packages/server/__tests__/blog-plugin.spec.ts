@@ -8,10 +8,7 @@ jest.mock("axios");
 
 describe("intercept middleware", () => {
 	const app = new Koa();
-	app.use(intercept([
-		/\.(?:js|css)\.map$/,
-		new RegExp("^/index\\.template|vue-ssr"),
-	]));
+	app.use(intercept(/(\.(?:js|css)\.map$)|(^\/index\.template|vue-ssr)/));
 	app.use((ctx) => ctx.status = 200);
 	const callback = app.callback();
 

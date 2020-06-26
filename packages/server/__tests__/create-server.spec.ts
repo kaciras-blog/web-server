@@ -1,39 +1,52 @@
-import http from "http";
 import tls from "tls";
-import { createSNICallback, runServer } from "../lib/create-server";
+import supertest from "supertest";
+import startServer, { createSNICallback, ServerGroup } from "../lib/create-server";
 import { ServerOptions } from "../lib/options";
 import { resolveFixture } from "./test-utils";
 
-const HTTP_URL = "http://localhost:12500/";
-const HTTPS_URL = "https://localhost:12501/";
+const HTTP_URL = "http://localhost:12500";
+const HTTPS_URL = "https://localhost:12501";
 
-const OPTIONS: ServerOptions = {
-	http: {
-		port: 12500,
-		redirect: true,
-	},
-	https: {
-		port: 12501,
-		certFile: resolveFixture("localhost.pem"),
-		keyFile: resolveFixture("localhost.pvk"),
-	},
-};
+describe("app.startServer", () => {
+	const OPTIONS: ServerOptions = {
+		connectors: [
+			{
+				version: 1,
+				port: 12500,
+				redirect: HTTPS_URL,
+			},
+			{
+				version: 1,
+				port: 12501,
+				certFile: resolveFixture("localhost.pem"),
+				keyFile: resolveFixture("localhost.pvk"),
+			},
+			{
+				version: 2,
+				port: 12502,
+			},
+			{
+				version: 2,
+				port: 12503,
+				certFile: resolveFixture("localhost.pem"),
+				keyFile: resolveFixture("localhost.pvk"),
+			},
+		],
+	};
 
-describe("app.runServer", () => {
-	let close: () => void;
+	let serverGroup: ServerGroup;
 
 	beforeAll(async () => {
-		close = await runServer((req, res: any) => res.end("hello"), OPTIONS);
+		serverGroup = await startServer((req, res: any) => res.end("hello"), OPTIONS);
 	});
 
-	afterAll(() => close());
+	afterAll(() => serverGroup.forceClose());
 
-	it("should redirect to https", (done) => {
-		http.get(HTTP_URL, ((res) => {
-			expect(res.statusCode).toEqual(301);
-			expect(res.headers.location).toEqual(HTTPS_URL);
-			done();
-		})).end();
+	it("should redirect to https", () => {
+		return supertest(serverGroup.servers[0])
+			.get("/")
+			.expect(301)
+			.expect("location", HTTPS_URL + "/")
 	});
 });
 

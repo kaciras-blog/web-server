@@ -1,16 +1,18 @@
 /*
  * 自定义Axios，使其更好地支持本博客系统。
  */
-import { ExtendableContext } from "koa";
-import log4js from "log4js";
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import hash from "hash-sum";
 import http2, {
 	ClientHttp2Session,
 	IncomingHttpHeaders,
 	IncomingHttpStatusHeader,
 	SecureClientSessionOptions,
 } from "http2";
+import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import { ExtendableContext } from "koa";
+import log4js from "log4js";
+import fs from "fs-extra";
+import hash from "hash-sum";
+import { ContentServerOptions } from "./options";
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
@@ -70,12 +72,12 @@ interface CacheEntry<T> {
 /**
  * 为 Axios 请求增加缓存的类，能够缓存解析后的内容，并在远程端返回 304 时使用缓存以避免解析过程的消耗。
  *
- * 【注意】不要再浏览器端使用，因为浏览器有缓存功能。
+ * 【注意】
+ * 不要在浏览器端使用，因为浏览器有缓存功能。
  *
- * 【其它方案】因为 AxiosResponse 里带有请求配置，所以可以用个拦截器来做缓存，但是它的API返回的是 AxiosResponse
+ * 【其它方案】
+ * 因为 AxiosResponse 里带有请求配置，所以可以用个拦截器来做缓存，但是它的API返回的是 AxiosResponse
  * 而不是解析后的结果，要做也只能替换其 data 字段，这样的话总感觉怪怪的。
- *
- * TODO: 直接用整个 requestConfig 作为键会有一些属性多余
  */
 export class CachedFetcher<T, R> {
 
@@ -101,7 +103,8 @@ export class CachedFetcher<T, R> {
 	/**
 	 * 调用 Axios.request 发送请求，并尽量使用缓存来避免解析。
 	 *
-	 * 【注意】Axios 默认下载全部的响应体，如果要避免下载响应体需要把 responseType 设为 "stream"。
+	 * 【注意】
+	 * Axios 默认下载全部的响应体，如果要避免下载响应体需要把 responseType 设为 "stream"。
 	 *
 	 * @param config Axios请求配置
 	 */
@@ -200,4 +203,27 @@ export function configureAxiosHttp2(
 	});
 
 	return () => cache.forEach((session) => session.destroy());
+}
+
+/**
+ * 配置全局Axios实例的便捷函数。
+ *
+ * 【readFileSync】
+ * 因为是全局的配置，基本都是在其它代码之前调用，没必要用异步。
+ *
+ * @param options 选项
+ */
+export function configureGlobalAxios(options: ContentServerOptions) {
+	const { internalOrigin, cert } = options;
+	const https = internalOrigin.startsWith("https");
+
+	if (typeof cert === "string") {
+		const ca = fs.readFileSync(cert);
+		return configureAxiosHttp2(Axios, https, { ca });
+	} else {
+		if (cert) {
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+		}
+		return configureAxiosHttp2(Axios, https);
+	}
 }

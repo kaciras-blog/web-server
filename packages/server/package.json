@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/server",
-	"version": "0.8.5",
+	"version": "0.9.0",
 	"description": "Web page and assets server of Kaciras Blog",
 	"license": "MIT",
 	"repository": {
@@ -22,15 +22,14 @@
 	},
 	"dependencies": {
 		"@iktakahiro/markdown-it-katex": "^3.1.0",
-		"@kaciras-blog/media": "^0.8.5",
-		"@koa/cors": "^3.1.0",
+		"@kaciras-blog/image": "^0.9.0",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^9.0.1",
 		"axios": "^0.19.2",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.0",
 		"fs-extra": "^9.0.1",
-		"koa": "^2.12.0",
+		"koa": "^2.12.1",
 		"koa-bodyparser": "^4.3.0",
 		"koa-compose": "^4.1.0",
 		"koa-compress": "^4.0.1",
@@ -44,16 +43,17 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^6.1.5",
+		"source-map-support": "^0.5.19",
 		"vue-server-renderer": "2.6.11"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.2",
 		"@types/koa-bodyparser": "^4.3.0",
+		"@types/koa-static": "^4.0.1",
 		"@types/koa__router": "^8.0.2",
 		"@types/markdown-it": "^10.0.1",
 		"@types/range-parser": "^1.2.3",
 		"@types/replace-ext": "^0.0.27",
-		"koa-static": "^5.0.0",
-		"@types/koa-static": "^4.0.1"
+		"koa-static": "^5.0.0"
 	}
 }

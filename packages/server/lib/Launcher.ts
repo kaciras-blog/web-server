@@ -2,49 +2,14 @@ import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/image/lib/build-image-cache";
-import ApplicationBuilder from "./ApplicationBuilder";
-import getBlogPlugin from "./blog-plugin";
-import { createSSRProductionPlugin } from "./koa/vue-ssr";
-import { runServer } from "./create-server";
-import { configureGlobalAxios, configureLog4js } from "./helpers";
-import staticFiles from "./koa/static-files";
 import { BlogServerOptions } from "./options";
-
-const logger = log4js.getLogger();
+import run from "./command/run";
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
  */
 type HandlerRV = void | (() => void);
 type CommandHandler<T> = (options: T) => HandlerRV | Promise<HandlerRV>;
-
-async function runProd(options: BlogServerOptions) {
-	const closeHttp2Sessions = await configureGlobalAxios(options.blog.serverAddress, options.blog.serverCert);
-
-	const builder = new ApplicationBuilder();
-	builder.addPlugin(getBlogPlugin(options.blog));
-	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
-
-	// 除了static目录外文件名都不带Hash，所以要禁用外层的缓存
-	builder.useResource(staticFiles(options.outputDir, {
-		staticAssets: new RegExp("^/" + options.assetsDir),
-	}));
-
-	const app = builder.build();
-	app.proxy = !!options.blog.useForwardedHeaders;
-
-	app.on("error", (err, ctx) => {
-		logger.error("Error occurred on process " + ctx.path, err);
-	});
-
-	const closeServer = await runServer(app.callback(), options.server);
-	logger.info("Startup completed.");
-
-	return () => {
-		closeServer();
-		closeHttp2Sessions();
-	}
-}
 
 /**
  * 简单的启动器，提供注册命令然后从命令行里调用的功能，并对启动参数做一些处理。
@@ -55,8 +20,8 @@ export default class Launcher<T extends BlogServerOptions> {
 
 	// 注册几个内置命令
 	constructor() {
-		this.registerCommand("run", runProd);
-		this.registerCommand("build-image-cache", ((options) => buildCache(options.blog.dataDir)));
+		this.registerCommand("run", run);
+		this.registerCommand("build-image-cache", ((options) => buildCache(options.app.dataDir)));
 	}
 
 	registerCommand(command: string, handler: CommandHandler<T>) {
@@ -84,18 +49,34 @@ export default class Launcher<T extends BlogServerOptions> {
 		}
 
 		const config = require(configFile);
-		configureLog4js(config.blog.logging);
+
+		log4js.configure({
+			appenders: {
+				console: {
+					type: "console",
+					layout: { type: "pattern", pattern: "%[%c - %]%m" },
+				},
+			},
+			categories: {
+				default: { appenders: ["console"], level: "all" },
+			},
+		});
+
+		const logger = log4js.getLogger("init");
 
 		// TODO: 听说 Node 以后会移除 unhandledRejection
 		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
 		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 
-		const handler = this.commands.get(args._[0]);
+		const command = args._[0];
+		const handler = this.commands.get(command);
 		if (!handler) {
 			const names = Array.from(this.commands.keys()).join(", ");
-			console.error(`Unknown command: ${args._[0]}, supported commands: ${names}`);
+			console.error(`Unknown command: ${command}, supported commands: ${names}`);
 			process.exit(2);
 		}
+
+		process.title = `Kaciras Blog - ${command}`;
 
 		Promise.resolve(handler(config)).then((shutdownHook) => {
 			const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
