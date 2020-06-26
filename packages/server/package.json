@@ -29,7 +29,7 @@
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.0",
 		"fs-extra": "^9.0.1",
-		"koa": "^2.12.1",
+		"koa": "^2.13.0",
 		"koa-bodyparser": "^4.3.0",
 		"koa-compose": "^4.1.0",
 		"koa-compress": "^4.0.1",
@@ -42,7 +42,7 @@
 		"multer": "^1.4.2",
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
-		"sitemap": "^6.1.5",
+		"sitemap": "^6.1.6",
 		"source-map-support": "^0.5.19",
 		"vue-server-renderer": "2.6.11"
 	},
