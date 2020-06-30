@@ -110,10 +110,6 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		api.useBeforeAll(bodyParser());
 		api.useBeforeAll(securityFilter);
 
-		// 过大的媒体建议直接传到第三方存储
-		const uploader = multer({ limits: { fileSize: 100 * 1024 * 1024 } });
-		api.useBeforeAll(uploader.single("file"));
-
 		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得

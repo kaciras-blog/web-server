@@ -58,7 +58,7 @@ export default class Launcher<T extends BlogServerOptions> {
 				},
 			},
 			categories: {
-				default: { appenders: ["console"], level: "all" },
+				default: { appenders: ["console"], level: "debug" },
 			},
 		});
 

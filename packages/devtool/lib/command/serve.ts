@@ -1,7 +1,7 @@
 import startServer from "@kaciras-blog/server/lib/create-server";
 import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper";
 import AppBuilder from "@kaciras-blog/server/lib/AppBuilder";
-import getBlogPlugin from "@kaciras-blog/server/lib/blog-plugin";
+import getBlogPlugin from "@kaciras-blog/server/lib/blog";
 import ClientConfiguration from "../config/client";
 import ServerConfiguration from "../config/server";
 import VueSSRHotReloader, { ClientSSRHotUpdatePlugin } from "../ssr-hot-reload";
