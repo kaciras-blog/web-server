@@ -123,16 +123,24 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		router.get("/sitemap.xml", sitemapHandler(address));
 		router.post(CSP_REPORT_URI, cspReporter);
 
+		// 过大的媒体建议直接传到第三方存储
+		const multerInstance = multer({ limits: { fileSize: 50 * 1024 * 1024 } });
+		const uploader = multerInstance.single("file");
+
 		// 用 image-middleware 里的函数组合成图片处理中间件。
 		// TODO: 支持评论插入图片
 		const service = new PreGenerateImageService(localFileStore(app.dataDir));
-		router.post("/image", adminFilter, (ctx: any) => uploadImage(service, ctx));
 		router.get("/image/:name", ctx => downloadImage(service, ctx));
+
+		// @ts-ignore
+		router.post("/image", adminFilter, uploader, (ctx: any) => uploadImage(service, ctx));
 
 		const videoDir = path.join(app.dataDir, "video");
 		fs.ensureDirSync(videoDir);
-		router.post("/video", adminFilter, async (ctx: any) => uploadVideo(videoDir, ctx));
 		router.get("/video/:name", ctx => downloadVideo(videoDir, ctx));
+
+		// @ts-ignore
+		router.post("/video", adminFilter, uploader, (ctx: any) => uploadVideo(videoDir, ctx));
 
 		api.useResource(router.routes());
 	};
