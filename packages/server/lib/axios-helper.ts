@@ -30,9 +30,9 @@ const logger = log4js.getLogger();
  * 从Koa的请求中复制与身份相关的信息和一些其他必要的头部到Axios的请求中。
  * 该函数只能在服务端使用。
  *
- * @param ctx Koa接受到的请求
- * @param config 代理到后端的Axios请求设置
- * @return Axios的请求设置
+ * @param ctx Koa上下文
+ * @param config 代理到后端的Axios请求配置
+ * @return Axios 的请求配置
  */
 export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestConfig = {}) {
 	const srcHeaders = ctx.headers;
