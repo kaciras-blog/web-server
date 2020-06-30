@@ -1,8 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
 import Axios from "axios";
-import { BaseContext, ExtendableContext, Next } from "koa";
 import { getLogger } from "log4js";
+import { BaseContext, ExtendableContext, Next } from "koa";
 import conditional from "koa-conditional-get";
 import compress from "koa-compress";
 import multer from "@koa/multer";
@@ -10,13 +10,13 @@ import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import { localFileStore } from "@kaciras-blog/image/lib/image-store";
+import AppBuilder, { FunctionPlugin } from "./AppBuilder";
+import { BlogServerOptions } from "./options";
 import { downloadImage, uploadImage } from "./koa/image";
 import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
 import { downloadVideo, uploadVideo } from "./koa/video";
 import { configureForProxy } from "./axios-helper";
-import AppBuilder, { FunctionPlugin } from "./AppBuilder";
-import { BlogServerOptions } from "./options";
 
 const logger = getLogger();
 
