@@ -3,12 +3,12 @@
  * 格式：@<tag>[<label>](<src>){ <attributes> }
  *
  * Example:
- * @video[label text](/foo/bar.mp4){ loop muted poster="/poster.jpg" }
+ * @video[label](/foo/bar.mp4){ loop muted width="300" height="100" }
  * Html:
  * <video src="/foo/bar.mp4" loop muted poster="/poster.jpg">label text</video>
  *
  * 【为何不直接写HTML】
- * Markdown本身是跟渲染结果无关的，不应该和HTML绑死。
+ * Markdown本身是跟渲染结果无关的，不应该和HTML绑死，而且写HTML不利于修改。
  * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
  */
 import MarkdownIt from "markdown-it";
