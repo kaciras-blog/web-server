@@ -102,7 +102,8 @@ export default class VueSSRHotReloader {
 		return (ctx: Context) => renderPage(this.renderer, ctx);
 	}
 
-	close(callback = () => {}) {
+	close(callback = () => {
+	}) {
 		if (!this.watching) {
 			throw new Error("Not started yet.")
 		}
@@ -159,7 +160,9 @@ export default class VueSSRHotReloader {
 					throw err;
 				}
 				if (stats.hasErrors()) {
-					return logger.error(stats.toString());
+					logger.error(stats.toString("errors-only"));
+					logger.error("Server side build failed with errors.");
+					return;
 				}
 				resolve();
 				this.serverBundle = JSON.parse(stats.compilation.assets[this.bundleName].source());

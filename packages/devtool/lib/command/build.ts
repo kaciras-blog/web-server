@@ -36,7 +36,8 @@ export default async function (options: DevelopmentOptions)  {
 	}
 
 	await invokeWebpack(clientConfig);
-	await invokeWebpack(ServerConfiguration(options));
+	console.log(chalk.cyan("Client Build complete."));
 
-	console.log(chalk.cyan("Build complete."));
+	await invokeWebpack(ServerConfiguration(options));
+	console.log(chalk.cyan("Server build complete."));
 }
