@@ -1,106 +1,160 @@
 /*
- * 自定义的Markdown语法，用于插入视频、音频等。
- * 格式：@<tag>[<label>](<src>){ <attributes> }
+ * 自定义的Markdown语法，用于插入视频、音频等，
+ * 该语句是一个块级元素，因为目前没有图文混排的需求。
+ *
+ * 格式：@<type>[<label>](<src>){ <attributes> }
+ * - type: 类型
+ * - label: 替代内容或标签
+ * - src: 源链接
+ * - attributes: 附加属性
+ *
+ * 其中 { <attributes> } 部分可用于设置宽高等，其应当是可省略的，Markdown的原则是只关注内容。
  *
  * Example:
- * @video[label](/foo/bar.mp4){ loop muted width="300" height="100" }
- * Html:
- * <video src="/foo/bar.mp4" loop muted poster="/poster.jpg">label text</video>
+ * @video[](/foo/bar.mp4){ loop muted width="300" height="100" }
+ * @gif[A animated image](/data/gif-to-video.mp4){ width="300" height="100" }
  *
  * 【为何不直接写HTML】
  * Markdown本身是跟渲染结果无关的，不应该和HTML绑死，而且写HTML不利于修改。
  * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
  */
 import MarkdownIt from "markdown-it";
-import StateInline from "markdown-it/lib/rules_inline/state_inline";
 import Token from "markdown-it/lib/token";
+import StateBlock from "markdown-it/lib/rules_block/state_block";
+
+type Attributes = { [key: string]: string | true };
 
 interface MediaToken extends Token {
 	src: string;
+	attributes: Attributes;
 }
 
-const DIRECTIVE_NAME_RE = /^[a-z][a-z0-9\-_]*/i;
+const BASE_RE = /^@([a-z][a-z0-9\-_]*)\[([^\]]*)]\(([^)]*)\)/;
 
-function parseMedia(state: StateInline, silent: boolean) {
-	let { pos } = state;
-	const src = state.src.slice(0, state.posMax);
+function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
+	const posMax = state.eMarks[startLine];
+	const pos = state.tShift[startLine] + state.bMarks[startLine];
 
-	if (src.charCodeAt(pos) !== 0x40) {
-		return false;
-	}
-
-	const match = DIRECTIVE_NAME_RE.exec(src.slice(++pos));
+	const match = BASE_RE.exec(state.src.slice(pos, posMax));
 	if (!match) {
 		return false;
 	}
-	const directive = match[0];
-	pos += directive.length;
 
-	const label = parseBracket(src, pos, "[", "]");
-	if (label === null) {
-		return false;
-	}
-	pos += label.length + 2;
+	const [base, type, label, reference] = match;
 
-	let link = parseBracket(src, pos, "(", ")");
-	if (link === null) {
-		return false;
-	}
-	pos += link.length + 2;
-
-	link = state.md.normalizeLink(link);
+	let link = state.md.normalizeLink(reference);
 	if (!state.md.validateLink(link)) {
 		link = ""; // 谨防XSS
 	}
 
-	const attributes = parseBracket(src, pos, "{", "}");
-	if (attributes === null) {
+	let attributes
+	try {
+		attributes = parseAttributes(state, pos + base.length, posMax);
+	} catch (e) {
 		return false;
 	}
-	pos += attributes.length + 2;
 
-	state.pos = pos;
 	if (!silent) {
-		const token = state.push("media", directive, 0) as MediaToken;
+		const token = state.push("media", type, 0) as MediaToken;
 		token.src = link;
-		token.level = state.level;
 		token.content = state.md.utils.unescapeMd(label);
-
-		// TODO: split attrs
-		token.attrs = [["attrs", attributes.trim()]];
+		token.attributes = attributes;
+		token.map = [startLine, state.line];
 	}
 
+	state.line = startLine + 1;
 	return true;
 }
 
-function parseBracket(src: string, pos: number, start: string, end: string) {
-	if (src.charAt(pos) !== start) {
-		return null;
-	}
-	let i = pos + 1;
+enum ParseState {
+	Free,
+	Key,
+	Value,
+}
 
-	while (i < src.length) {
-		const e = src.indexOf(end, i);
-		if (e === -1) {
-			return null;
-		}
-		if (src.charAt(e - 1) === "\\") {
-			i = e + 1;
-		} else {
-			return src.substring(pos + 1, e);
-		}
+const ESCAPE_RE = /\\[\\"]/
+
+function parseAttributes(state: StateBlock, index: number, end: number) {
+	const { src } = state;
+
+	if (src.charCodeAt(index) !== 0x7B) {
+		return {};
 	}
 
-	return null; // close bracket not found
+	const attributes: Attributes = {};
+
+	let parsing = ParseState.Free;
+	let key = "";
+	let start = index;
+
+	while (++index < end) {
+		const ch = src.charCodeAt(index);
+
+		if (ch === 0x7D /* } */) {
+			if (parsing !== ParseState.Value) {
+				break;
+			}
+		}
+
+		if (parsing === ParseState.Free) {
+			if (state.md.utils.isWhiteSpace(ch)) {
+				continue;
+			}
+			start = index;
+			parsing = ParseState.Key;
+		} else if (parsing === ParseState.Key) {
+			if (state.md.utils.isWhiteSpace(ch)) {
+				parsing = ParseState.Free;
+				attributes[src.substring(start, index)] = true;
+			}
+			if (ch !== 0x3D /* = */) {
+				continue;
+			}
+			if (src.charCodeAt(index + 1) !== 0x22 /* " */) {
+				throw new Error("Expect double quotes, but: " + src.charAt(index));
+			}
+			key = src.substring(start, index);
+			index += 2;
+			start = index;
+			parsing = ParseState.Value;
+		} else if (parsing === ParseState.Value) {
+			if (src.charCodeAt(index) !== 0x22) {
+				continue;
+			}
+			if (src.charCodeAt(index - 1) === 0x5C /* \ */) {
+				continue;
+			}
+			parsing = ParseState.Free;
+			attributes[key] = src.substring(start, index).replace(ESCAPE_RE, "$1");
+		}
+	}
+
+	if (parsing !== ParseState.Free) {
+		throw new Error("Truncated")
+	}
+
+	return attributes;
 }
 
 function renderMedia(tokens: Token[], idx: number) {
 	const token = tokens[idx] as MediaToken;
-	const { tag, attrs, src, content } = token;
-	return `<${tag} src="${src}" ${attrs![0][1]}>${content}</${tag}>`;
+	const { tag, attributes, src, content } = token;
+
+	switch (tag) {
+		case "gif":
+			return renderGIFVideo(src, content, attributes);
+		case "video":
+			return `<${tag} src="${src}">${content}</${tag}>`;
+	}
+
+	throw new Error("Unsupported media type: " + tag);
+}
+
+function renderGIFVideo(src: string, alt: string, attrs: Attributes) {
+	return `<div class="video"><video src="${src}"></video></div>`;
 }
 
 export default function install(markdownIt: MarkdownIt) {
-	markdownIt.inline.ruler.before("emphasis", "media", parseMedia);
+	markdownIt.block.ruler.before("html_block", "media", parseMedia);
 	markdownIt.renderer.rules.media = renderMedia;
 }
