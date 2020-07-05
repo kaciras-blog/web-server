@@ -18,33 +18,12 @@ import MarkdownIt from "markdown-it";
 import Token from "markdown-it/lib/token";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
-export interface MediaToken extends Token {
-	src: string;
-}
-
-class RegexBuilder {
-
-	private pattern: string;
-
-	constructor(pattern: RegExp) {
-		this.pattern = pattern.source;
-	}
-
-	replace(name: string, value: RegExp) {
-		this.pattern = this.pattern.replace(name, value.source);
-		return this;
-	}
-
-	build() {
-		return new RegExp(this.pattern);
-	}
-}
-
-const BASE_RE = new RegexBuilder(/^@(TYPE)\[(LABEL)]\((HREF)\)/)
-	.replace("TYPE", /[a-z][a-z0-9\-_]*/)
-	.replace("LABEL", /(?:\[(?:\\.|[^[\]\\])*]|\\.|`[^`]*`|[^[\]\\`])*?/)
-	.replace("HREF", /[^)]*/)
-	.build();
+const BASE_RE = function () {
+	const TYPE = /([a-z][a-z0-9\-_]*)/i.source;
+	const LABEL = /\[(.*?)(?<!\\)]/.source;
+	const HREF = /\((.*?)(?<!\\)\)/.source;
+	return new RegExp(`@${TYPE}${LABEL}${HREF}`)
+}();
 
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
 	const { src, md, eMarks, tShift, bMarks } = state;
@@ -57,16 +36,17 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 		return false;
 	}
 
-	const [, type, label, reference] = match;
+	const [, type, label] = match;
+	let href = match[3];
 
-	// 谨防XSS
-	let link = md.normalizeLink(reference);
-	if (!md.validateLink(link)) link = "";
+	href = md.utils.unescapeMd(href);
+	href = md.normalizeLink(href);
+	if (!md.validateLink(href)) href = "";
 
 	if (!silent) {
-		const token = state.push("media", type, 0) as MediaToken;
+		const token = state.push("media", type, 0);
 		token.map = [startLine, state.line];
-		token.src = link;
+		token.attrs = [["src", href]]
 		token.content = state.md.utils.unescapeMd(label);
 	}
 
@@ -74,13 +54,38 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	return true;
 }
 
+function parseBracket(src: string, s: number, e: number, begin: number, close: number) {
+	if (src.charCodeAt(s) !== begin) {
+		throw new Error("Begin bracket not found");
+	}
+
+	s += 1;
+	let level = 1;
+
+	for (let i = s; i < e; i++) {
+		const ch = src.charCodeAt(i);
+
+		if (ch === begin) {
+			level++;
+		} else if (ch === close) {
+			level--;
+			if (level === 0) {
+				return src.slice(s, i);
+			}
+		}
+	}
+
+	throw new Error("Close bracket count not match the begin");
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                            Renderer
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 function renderMedia(tokens: Token[], idx: number) {
-	const token = tokens[idx] as MediaToken;
-	const { tag, src, content } = token;
+	const token = tokens[idx];
+	const { tag, content } = token;
+	const src = token.attrGet("src")!;
 
 	switch (tag) {
 		case "gif":

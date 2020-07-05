@@ -1,4 +1,4 @@
-import { combineRegex, debounceFirst, once } from "../lib/functions";
+import { combineRegexOr, debounceFirst, once } from "../lib/functions";
 
 describe("debounceFirst", () => {
 
@@ -98,28 +98,28 @@ describe("once", () => {
 	});
 });
 
-describe("combineRegex", () => {
+describe("combineRegexOr", () => {
 
 	it("should support empty array", () => {
-		const regex = combineRegex([]);
+		const regex = combineRegexOr([]);
 		expect(regex.test("foobar")).toBe(true);
 		expect(regex.test("")).toBe(true);
 	});
 
 	it("should support single element", () => {
-		const regex = combineRegex([/foobar/]);
+		const regex = combineRegexOr([/foobar/]);
 		expect(regex.test("_foobar_")).toBe(true);
 		expect(regex.test("_foobaz_")).toBe(false);
 	});
 
 	it("should combine patterns", () => {
-		const regex = combineRegex([/^a/, /b$/]);
+		const regex = combineRegexOr([/^a/, /b$/]);
 		expect(regex.test("a_")).toBe(true);
 		expect(regex.test("_b")).toBe(true);
 	});
 
 	it("should support capture group", () => {
-		const regex = combineRegex([/(a+)/, /(b+)/]);
+		const regex = combineRegexOr([/(a+)/, /(b+)/]);
 		const exec = regex.exec("bbb,aa")!;
 
 		expect(exec[0]).toBe("bbb");
