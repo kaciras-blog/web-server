@@ -15,6 +15,7 @@
  * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
  */
 import MarkdownIt from "markdown-it";
+import { escapeHtml, unescapeMd } from "markdown-it/lib/common/utils";
 import Token from "markdown-it/lib/token";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
@@ -39,77 +40,59 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	const [, type, label] = match;
 	let href = match[3];
 
-	href = md.utils.unescapeMd(href);
+	href = unescapeMd(href);
 	href = md.normalizeLink(href);
 	if (!md.validateLink(href)) href = "";
 
 	if (!silent) {
 		const token = state.push("media", type, 0);
-		token.map = [startLine, state.line];
 		token.attrs = [["src", href]]
-		token.content = state.md.utils.unescapeMd(label);
+		token.content = unescapeMd(label);
+		token.map = [startLine, state.line];
 	}
 
 	state.line = startLine + 1;
 	return true;
 }
 
-function parseBracket(src: string, s: number, e: number, begin: number, close: number) {
-	if (src.charCodeAt(s) !== begin) {
-		throw new Error("Begin bracket not found");
-	}
-
-	s += 1;
-	let level = 1;
-
-	for (let i = s; i < e; i++) {
-		const ch = src.charCodeAt(i);
-
-		if (ch === begin) {
-			level++;
-		} else if (ch === close) {
-			level--;
-			if (level === 0) {
-				return src.slice(s, i);
-			}
-		}
-	}
-
-	throw new Error("Close bracket count not match the begin");
-}
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                            Renderer
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-function renderMedia(tokens: Token[], idx: number) {
-	const token = tokens[idx];
-	const { tag, content } = token;
-	const src = token.attrGet("src")!;
-
-	switch (tag) {
-		case "gif":
-			return renderGIFVideo(src, content);
-		case "video":
-			return renderVideo(src, content);
-	}
-
-	throw new Error("Unsupported media type: " + tag);
-}
-
-function renderVideo(src: string, poster: string) {
-	let attrs = `src="${src}"`;
-	if (poster) {
-		attrs += ` poster="${poster}"`;
-	}
-	return `<div class="video"><video ${attrs}></video></div>`;
-}
-
-function renderGIFVideo(src: string, _: string) {
-	return `<div class="video"><video src="${src}" loop muted></video></div>`;
-}
-
 export default function install(markdownIt: MarkdownIt) {
+
+	function renderMedia(tokens: Token[], idx: number) {
+		const token = tokens[idx];
+
+		const { tag } = token;
+		const content = escapeHtml(token.content);
+		const src = escapeHtml(token.attrGet("src")!);
+
+		switch (tag) {
+			case "gif":
+				return renderGIFVideo(src, content);
+			case "video":
+				return renderVideo(src, content);
+		}
+
+		throw new Error("Unsupported media type: " + tag);
+	}
+
+	function renderVideo(src: string, poster: string) {
+		let attrs = `src="${src}"`;
+
+		poster = markdownIt.normalizeLink(poster);
+		if (poster && markdownIt.validateLink(poster)) {
+			attrs += ` poster="${poster}"`;
+		}
+
+		return `<video ${attrs} controls></video>`;
+	}
+
+	function renderGIFVideo(src: string, label: string) {
+		return `<video title="${label}" src="${src}" loop muted></video>`;
+	}
+
 	markdownIt.block.ruler.before("html_block", "media", parseMedia);
 	markdownIt.renderer.rules.media = renderMedia;
 }

@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renderer should avoid XSS attack 1`] = `"<video title=\\"\\" src=\\"\\" loop muted></video>"`;
+
+exports[`renderer should avoid XSS attack 2`] = `"<video title=\\"&lt;script&gt;alert(1)&lt;/script&gt;\\" src=\\"\\" loop muted></video>"`;
+
+exports[`renderer should avoid XSS attack 3`] = `"<video src=\\"\\" controls></video>"`;
+
+exports[`renderer should avoid XSS attack 4`] = `"<video src=\\"\\" controls></video>"`;
+
+exports[`renderer should convert to html 1`] = `
+"<p>text before</p>
+<video title=\\"A gif video\\" src=\\"/video/foo.mp4\\" loop muted></video><p>text after</p>
+"
+`;
+
+exports[`renderer should escape html 1`] = `"<video src=\\"/bar?a=b&amp;c=d\\" poster=\\"/f&quot;o&quot;o\\" controls></video>"`;
