@@ -2,13 +2,13 @@
  * 自定义的Markdown语法，用于插入视频、音频等，
  * 该语句是一个块级元素，因为目前没有图文混排的需求。
  *
- * 格式：@<type>[<label>](<src>){ <attributes> }
+ * 格式：@<type>[<label>](<src>){ <properties> }
  * - type: 类型
  * - label: 替代内容或标签
  * - src: 源链接
- * - attributes: 附加属性
+ * - properties: 附加属性
  *
- * 其中 { <attributes> } 部分可用于设置宽高等，其应当是可省略的，Markdown的原则是只关注内容。
+ * 其中 { <properties> } 部分可用于设置宽高等，其应当是可省略的，Markdown的原则是只关注内容。
  *
  * Example:
  * @gif[A animated image](/data/gif-to-video.mp4){ width="300" height="100" }
@@ -21,11 +21,11 @@ import MarkdownIt from "markdown-it";
 import Token from "markdown-it/lib/token";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
-type Properties = { [key: string]: string | true };
+export type Properties = { [key: string]: string | true };
 
-interface MediaToken extends Token {
+export interface MediaToken extends Token {
 	src: string;
-	attributes: Properties;
+	properties: Properties;
 }
 
 class RegexBuilder {
@@ -89,7 +89,7 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 		const token = state.push("media", type, 0) as MediaToken;
 		token.src = link;
 		token.content = state.md.utils.unescapeMd(label);
-		token.attributes = attributes;
+		token.properties = attributes;
 		token.map = [startLine, state.line];
 	}
 
@@ -98,7 +98,7 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 }
 
 function unescape(value: string) {
-	return value.replace(/\\([\\"])/, "$1")
+	return value.replace(/\\([\\"])/g, "$1")
 }
 
 const KEY_RE = /\s*(\w+)/;
@@ -124,7 +124,7 @@ function parseProperties(src: string, attributes: Properties) {
 			throw new Error("Expect double quotes, but: " + src.charAt(len));
 		}
 
-		attributes[kMatch[1]] = vMatch[1];
+		attributes[kMatch[1]] = unescape(vMatch[1]);
 		src = src.slice(vMatch[0].length);
 
 		if (!isPairEnd(src.charCodeAt(0))) {
@@ -155,13 +155,13 @@ function parseProperties(src: string, attributes: Properties) {
 
 function renderMedia(tokens: Token[], idx: number) {
 	const token = tokens[idx] as MediaToken;
-	const { tag, attributes, src, content } = token;
+	const { tag, properties, src, content } = token;
 
 	switch (tag) {
 		case "gif":
-			return renderGIFVideo(src, content, attributes);
+			return renderGIFVideo(src, content, properties);
 		case "video":
-			return renderVideo(src, content, attributes);
+			return renderVideo(src, content, properties);
 	}
 
 	throw new Error("Unsupported media type: " + tag);
