@@ -8,7 +8,7 @@ it("should convert to html", () => {
 	const markdown = `
 text before
 
-@video[](/video/foo.mp4){ loop="loop" muted }
+@gif[A gif video](/video/foo.mp4){ width="1920" height="1080" }
 
 text after`
 
@@ -16,9 +16,13 @@ text after`
 	expect(html).toMatchSnapshot();
 });
 
-it("should unescape chars", () => {
-	const html = markdownIt.render("@video[[hello\\]](/video/foo.mp4){ loop muted }");
+it("should unescape chars in label", () => {
+	const html = markdownIt.render('@video[/\\[hello\\]](/video/foo.mp4){loop width="1920" muted}');
 	expect(html).toMatchSnapshot();
+});
+
+it("should unescape chars in property", () => {
+	expect(markdownIt.render('@video[](/video/foo.mp4){ key="tes\\"t" }')).toMatchSnapshot();
 });
 
 it("should escape link", () => {

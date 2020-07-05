@@ -11,7 +11,6 @@
  * 其中 { <attributes> } 部分可用于设置宽高等，其应当是可省略的，Markdown的原则是只关注内容。
  *
  * Example:
- * @video[](/foo/bar.mp4){ loop muted width="300" height="100" }
  * @gif[A animated image](/data/gif-to-video.mp4){ width="300" height="100" }
  *
  * 【为何不直接写HTML】
@@ -22,36 +21,68 @@ import MarkdownIt from "markdown-it";
 import Token from "markdown-it/lib/token";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
-type Attributes = { [key: string]: string | true };
+type Properties = { [key: string]: string | true };
 
 interface MediaToken extends Token {
 	src: string;
-	attributes: Attributes;
+	attributes: Properties;
 }
 
-const BASE_RE = /^@([a-z][a-z0-9\-_]*)\[([^\]]*)]\(([^)]*)\)/;
+class RegexBuilder {
+
+	private pattern: string;
+
+	constructor(pattern: RegExp) {
+		this.pattern = pattern.source;
+	}
+
+	replace(name: string, value: RegExp) {
+		this.pattern = this.pattern.replace(name, value.source);
+		return this;
+	}
+
+	build() {
+		return new RegExp(this.pattern);
+	}
+}
+
+const BASE_RE = new RegexBuilder(/^@(TYPE)\[(LABEL)]\((HREF)\)/)
+	.replace("TYPE", /[a-z][a-z0-9\-_]*/)
+	.replace("LABEL", /(?:\[(?:\\.|[^[\]\\])*]|\\.|`[^`]*`|[^[\]\\`])*?/)
+	.replace("HREF", /[^)]*/)
+	.build();
 
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
-	const posMax = state.eMarks[startLine];
-	const pos = state.tShift[startLine] + state.bMarks[startLine];
+	const { src, md, eMarks, tShift, bMarks } = state;
 
-	const match = BASE_RE.exec(state.src.slice(pos, posMax));
+	const posMax = eMarks[startLine];
+	const pos = tShift[startLine] + bMarks[startLine];
+
+	const match = BASE_RE.exec(src.slice(pos, posMax));
 	if (!match) {
 		return false;
 	}
 
 	const [base, type, label, reference] = match;
 
-	let link = state.md.normalizeLink(reference);
-	if (!state.md.validateLink(link)) {
+	let link = md.normalizeLink(reference);
+	if (!md.validateLink(link)) {
 		link = ""; // 谨防XSS
 	}
 
-	let attributes
-	try {
-		attributes = parseAttributes(state, pos + base.length, posMax);
-	} catch (e) {
-		return false;
+	const attributes: Properties = {};
+
+	// 有 { 需要解析属性段
+	if (src.charCodeAt(pos + base.length) === 0x7B) {
+		if (src.charCodeAt(posMax - 1) !== 0x7D) {
+			return false;
+		}
+		const section = src.slice(pos + base.length + 1, posMax - 1);
+		try {
+			parseProperties(section, attributes);
+		} catch (e) {
+			return false;
+		}
 	}
 
 	if (!silent) {
@@ -66,75 +97,61 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	return true;
 }
 
-enum ParseState {
-	Free,
-	Key,
-	Value,
+function unescape(value: string) {
+	return value.replace(/\\([\\"])/, "$1")
 }
 
-const ESCAPE_RE = /\\[\\"]/
+const KEY_RE = /\s*(\w+)/;
+const VALUE_RE = /"(.*?)(?<!\\)"/;
 
-function parseAttributes(state: StateBlock, index: number, end: number) {
-	const { src } = state;
+function isPairEnd(code: number) {
+	return Number.isNaN(code) || code === 0x20 || code === 0x09;
+}
 
-	if (src.charCodeAt(index) !== 0x7B) {
-		return {};
+function parseProperties(src: string, attributes: Properties) {
+
+	function consumeToggle(kMatch: RegExpExecArray) {
+		attributes[kMatch[1]] = true;
+		src = src.slice(kMatch[0].length);
 	}
 
-	const attributes: Attributes = {};
+	function consumeValue(kMatch: RegExpExecArray) {
+		const len = kMatch[0].length;
+		src = src.slice(len + 1);
 
-	let parsing = ParseState.Free;
-	let key = "";
-	let start = index;
-
-	while (++index < end) {
-		const ch = src.charCodeAt(index);
-
-		if (ch === 0x7D /* } */) {
-			if (parsing !== ParseState.Value) {
-				break;
-			}
+		const vMatch = VALUE_RE.exec(src);
+		if (!vMatch) {
+			throw new Error("Expect double quotes, but: " + src.charAt(len));
 		}
 
-		if (parsing === ParseState.Free) {
-			if (state.md.utils.isWhiteSpace(ch)) {
-				continue;
-			}
-			start = index;
-			parsing = ParseState.Key;
-		} else if (parsing === ParseState.Key) {
-			if (state.md.utils.isWhiteSpace(ch)) {
-				parsing = ParseState.Free;
-				attributes[src.substring(start, index)] = true;
-			}
-			if (ch !== 0x3D /* = */) {
-				continue;
-			}
-			if (src.charCodeAt(index + 1) !== 0x22 /* " */) {
-				throw new Error("Expect double quotes, but: " + src.charAt(index));
-			}
-			key = src.substring(start, index);
-			index += 2;
-			start = index;
-			parsing = ParseState.Value;
-		} else if (parsing === ParseState.Value) {
-			if (src.charCodeAt(index) !== 0x22) {
-				continue;
-			}
-			if (src.charCodeAt(index - 1) === 0x5C /* \ */) {
-				continue;
-			}
-			parsing = ParseState.Free;
-			attributes[key] = src.substring(start, index).replace(ESCAPE_RE, "$1");
+		attributes[kMatch[1]] = vMatch[1];
+		src = src.slice(vMatch[0].length);
+
+		if (!isPairEnd(src.charCodeAt(0))) {
+			throw new Error(`Invalid char: ${src.charAt(0)} after value`);
 		}
 	}
 
-	if (parsing !== ParseState.Free) {
-		throw new Error("Truncated")
-	}
+	let kMatch = KEY_RE.exec(src);
+	while (kMatch) {
+		const len = kMatch[0].length;
+		const code = src.charCodeAt(len);
 
-	return attributes;
+		if (isPairEnd(code)) {
+			consumeToggle(kMatch);
+		} else if (code === 0x3D) {
+			consumeValue(kMatch);
+		} else {
+			throw new Error(`Invalid char: ${src.charAt(len)} after key`);
+		}
+
+		kMatch = KEY_RE.exec(src);
+	}
 }
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                            Renderer
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 function renderMedia(tokens: Token[], idx: number) {
 	const token = tokens[idx] as MediaToken;
@@ -144,14 +161,22 @@ function renderMedia(tokens: Token[], idx: number) {
 		case "gif":
 			return renderGIFVideo(src, content, attributes);
 		case "video":
-			return `<${tag} src="${src}">${content}</${tag}>`;
+			return renderVideo(src, content, attributes);
 	}
 
 	throw new Error("Unsupported media type: " + tag);
 }
 
-function renderGIFVideo(src: string, alt: string, attrs: Attributes) {
-	return `<div class="video"><video src="${src}"></video></div>`;
+function renderVideo(src: string, poster: string, _: Properties) {
+	let attrs = `src="${src}"`;
+	if (poster) {
+		attrs += ` poster="${poster}"`;
+	}
+	return `<div class="video"><video ${attrs}></video></div>`;
+}
+
+function renderGIFVideo(src: string, _: string, __: Properties) {
+	return `<div class="video"><video src="${src}" loop muted></video></div>`;
 }
 
 export default function install(markdownIt: MarkdownIt) {
