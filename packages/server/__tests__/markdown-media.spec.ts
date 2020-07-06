@@ -37,7 +37,7 @@ describe("tokenizer", () => {
 	});
 });
 
-describe("renderer", () => {
+describe("default renderer", () => {
 	const markdownIt = new MarkdownIt();
 	markdownIt.use(MediaPlugin);
 
@@ -75,4 +75,15 @@ text after
 		expect(markdownIt.render("@video[](javascript:alert(1\\);)")).toMatchSnapshot();
 		expect(markdownIt.render("@video[javascript:alert(1\\);]()")).toMatchSnapshot();
 	});
+});
+
+it("should support render custom type", () => {
+	const markdownIt = new MarkdownIt();
+
+	markdownIt.use(MediaPlugin, {
+		CUSTOM: (href, label) => `Custom [href=${href}, label=${label}]`,
+	});
+
+	const result = markdownIt.render("@CUSTOM[bar](foo)");
+	expect(result).toBe("Custom [href=foo, label=bar]");
 });

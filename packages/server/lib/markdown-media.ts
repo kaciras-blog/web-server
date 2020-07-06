@@ -66,7 +66,7 @@ export interface RendererMap {
 	[type: string]: (href: string, label: string, md: MarkdownIt) => string;
 }
 
-export const DefaultMap: Readonly<RendererMap> = {
+export const DefaultRenderMap: Readonly<RendererMap> = {
 
 	video(src: string, poster: string, md: MarkdownIt) {
 		let attrs = `src="${src}"`;
@@ -84,7 +84,7 @@ export const DefaultMap: Readonly<RendererMap> = {
 	},
 }
 
-export default function install(markdownIt: MarkdownIt, map: RendererMap = DefaultMap) {
+export default function install(markdownIt: MarkdownIt, map: RendererMap = DefaultRenderMap) {
 
 	markdownIt.renderer.rules.media = (tokens, idx) => {
 		const token = tokens[idx];
