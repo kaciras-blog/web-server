@@ -101,19 +101,16 @@ export default function install(markdownIt: MarkdownIt, map: RendererMap = Defau
 
 	markdownIt.renderer.rules.media = (tokens, idx) => {
 		const token = tokens[idx];
-
 		const { tag } = token;
-		const label = escapeHtml(token.content);
-		const href = escapeHtml(token.attrGet("src")!);
+		const href = token.attrGet("src")!;
 
 		const renderFn = map[tag];
 		if (!renderFn) {
 			return `[Unknown media type: ${tag}]`;
 		}
 
-		return renderFn(href, label, markdownIt);
+		return renderFn(href, token.content, markdownIt);
 	};
 
 	markdownIt.block.ruler.before("html_block", "media", parseMedia);
-
 }

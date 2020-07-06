@@ -60,7 +60,7 @@ text after
 		expect(markdownIt.render("@video[/poster.png](/video/foo.mp4)")).toMatchSnapshot();
 	});
 
-	it("should escape html", () => {
+	it("should not escape html for href", () => {
 		expect(markdownIt.render('@video[/f"o"o](/bar?a=b&c=d)')).toMatchSnapshot();
 	});
 
