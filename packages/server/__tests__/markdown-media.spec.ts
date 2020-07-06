@@ -64,6 +64,10 @@ text after
 		expect(markdownIt.render('@video[/f"o"o](/bar?a=b&c=d)')).toMatchSnapshot();
 	});
 
+	it("should render unknown type", () => {
+		expect(markdownIt.render("@unknown[]()")).toMatchSnapshot();
+	});
+
 	// 因为我用的 MarkdownIt 自带的 normalizeLink & validateLink，所以只测一种形式避免忘记检查
 	it("should avoid XSS attack", () => {
 		expect(markdownIt.render("@gif[](javascript:alert(1\\);)")).toMatchSnapshot();

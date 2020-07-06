@@ -1,14 +1,15 @@
 /*
- * 自定义的Markdown语法，用于插入视频、音频等，
+ * 自定义的 Markdown 语法，用于插入视频、音频等，
  * 该语句是一个块级元素，因为目前没有图文混排的需求。
  *
- * 格式：@<type>[<label>](<src>)
+ * 格式：@<type>[<label>](<href>)
  * - type: 类型
  * - label: 替代内容或标签
- * - src: 源链接
+ * - href: 源链接
  *
  * Example:
  * @gif[A animated image](/data/gif-to-video.mp4?vw=300&vh=100)
+ * @video[/poster.png](/foo/bar/mp4)
  *
  * 【为何不直接写HTML】
  * Markdown本身是跟渲染结果无关的，不应该和HTML绑死，而且写HTML不利于修改。
@@ -16,31 +17,33 @@
  */
 import MarkdownIt from "markdown-it";
 import { escapeHtml, unescapeMd } from "markdown-it/lib/common/utils";
-import Token from "markdown-it/lib/token";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
+/**
+ * 括号里的字段仅支持斜杠转义，没有实现括号计数。
+ * 通常是两种都支持，但斜杠转义可以代替计数，而且它是必需的，再者斜杠转义用环视写起来也简单。
+ */
 const BASE_RE = function () {
-	const TYPE = /([a-z][a-z0-9\-_]*)/i.source;
-	const LABEL = /\[(.*?)(?<!\\)]/.source;
-	const HREF = /\((.*?)(?<!\\)\)/.source;
-	return new RegExp(`@${TYPE}${LABEL}${HREF}`)
+	const type = /([a-z][a-z0-9\-_]*)/.source;
+	const label = /\[(.*?)(?<!\\)]/.source;
+	const href = /\((.*?)(?<!\\)\)/.source;
+	return new RegExp(`@${type}${label}${href}`, "i")
 }();
 
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
-	const { src, md, eMarks, tShift, bMarks } = state;
+	const { src, md } = state;
 
-	const posMax = eMarks[startLine];
-	const pos = tShift[startLine] + bMarks[startLine];
+	const pMax = state.eMarks[startLine];
+	const p = state.tShift[startLine] + state.bMarks[startLine];
 
-	const match = BASE_RE.exec(src.slice(pos, posMax));
+	const match = BASE_RE.exec(src.slice(p, pMax));
 	if (!match) {
 		return false;
 	}
 
 	const [, type, label] = match;
-	let href = match[3];
 
-	href = unescapeMd(href);
+	let href = unescapeMd(match[3]);
 	href = md.normalizeLink(href);
 	if (!md.validateLink(href)) href = "";
 
@@ -59,40 +62,45 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
  *                            Renderer
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-export default function install(markdownIt: MarkdownIt) {
+export interface RendererMap {
+	[type: string]: (href: string, label: string, md: MarkdownIt) => string;
+}
 
-	function renderMedia(tokens: Token[], idx: number) {
-		const token = tokens[idx];
+export const DefaultMap: Readonly<RendererMap> = {
 
-		const { tag } = token;
-		const content = escapeHtml(token.content);
-		const src = escapeHtml(token.attrGet("src")!);
-
-		switch (tag) {
-			case "gif":
-				return renderGIFVideo(src, content);
-			case "video":
-				return renderVideo(src, content);
-		}
-
-		throw new Error("Unsupported media type: " + tag);
-	}
-
-	function renderVideo(src: string, poster: string) {
+	video(src: string, poster: string, md: MarkdownIt) {
 		let attrs = `src="${src}"`;
 
-		poster = markdownIt.normalizeLink(poster);
-		if (poster && markdownIt.validateLink(poster)) {
+		poster = md.normalizeLink(poster);
+		if (poster && md.validateLink(poster)) {
 			attrs += ` poster="${poster}"`;
 		}
 
 		return `<video ${attrs} controls></video>`;
-	}
+	},
 
-	function renderGIFVideo(src: string, label: string) {
-		return `<video title="${label}" src="${src}" loop muted></video>`;
-	}
+	gif(src: string) {
+		return `<video src="${src}" loop muted></video>`;
+	},
+}
+
+export default function install(markdownIt: MarkdownIt, map: RendererMap = DefaultMap) {
+
+	markdownIt.renderer.rules.media = (tokens, idx) => {
+		const token = tokens[idx];
+
+		const { tag } = token;
+		const label = escapeHtml(token.content);
+		const href = escapeHtml(token.attrGet("src")!);
+
+		const renderFn = map[tag];
+		if (!renderFn) {
+			return `[Unknown media type: ${tag}]`;
+		}
+
+		return renderFn(href, label, markdownIt);
+	};
 
 	markdownIt.block.ruler.before("html_block", "media", parseMedia);
-	markdownIt.renderer.rules.media = renderMedia;
+
 }
