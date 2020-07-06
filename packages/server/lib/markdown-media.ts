@@ -11,6 +11,19 @@
  * @gif[A animated image](/data/gif-to-video.mp4?vw=300&vh=100)
  * @video[/poster.png](/foo/bar/mp4)
  *
+ * 【语法相关讨论】
+ * https://talk.commonmark.org/t/embedded-audio-and-video/441
+ * https://talk.commonmark.org/t/generic-directives-plugins-syntax/444
+ *
+ * 【附加属性的语法】
+ * 有一种提案是在后面用大括号：@type[...](...){ key="value" }
+ * 目前只有宽高两个附加属性的需求，在图片上已经加在URL参数上，为了统一还是使用URL参数。
+ *
+ * 【为什么不用 GitLab Flavored Markdown】
+ * 复用图片的语法，依靠扩展名来区分媒体类型有两个缺陷：
+ * - 无法解决用视频来模拟GIF图片的需求
+ * - URL必须要有扩展名，但并不是所有系统都是这样（比如Twitter）
+ *
  * 【为何不直接写HTML】
  * Markdown本身是跟渲染结果无关的，不应该和HTML绑死，而且写HTML不利于修改。
  * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
