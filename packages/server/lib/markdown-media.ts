@@ -29,7 +29,7 @@
  * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
  */
 import MarkdownIt from "markdown-it";
-import { escapeHtml, unescapeMd } from "markdown-it/lib/common/utils";
+import { unescapeMd } from "markdown-it/lib/common/utils";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
 /**
@@ -71,14 +71,16 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	return true;
 }
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *                            Renderer
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
+/**
+ * 自定义渲染函数，以 type 作为键，值为渲染函数
+ */
 export interface RendererMap {
 	[type: string]: (href: string, label: string, md: MarkdownIt) => string;
 }
 
+/**
+ * 默认的渲染函数，支持 video 和 gif 类型，简单地渲染为<video>元素
+ */
 export const DefaultRenderMap: Readonly<RendererMap> = {
 
 	video(src: string, poster: string, md: MarkdownIt) {
@@ -97,6 +99,14 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
 	},
 }
 
+/**
+ * MarkdownIt的插件函数，用法：markdownIt.use(require("markdown-media"), { ... })
+ *
+ * 可以自定义map参数设置自定义渲染函数，也可以直接修改 markdownIt.renderer.rules.media
+ *
+ * @param markdownIt markdownIt实例
+ * @param map 渲染函数选项，用于自定义
+ */
 export default function install(markdownIt: MarkdownIt, map: RendererMap = DefaultRenderMap) {
 
 	markdownIt.renderer.rules.media = (tokens, idx) => {
