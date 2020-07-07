@@ -35,12 +35,14 @@ import StateBlock from "markdown-it/lib/rules_block/state_block";
 /**
  * 括号里的字段仅支持斜杠转义，没有实现括号计数。
  * 通常是两种都支持，但斜杠转义可以代替计数，而且它是必需的，再者斜杠转义用环视写起来也简单。
+ *
+ * 前后不允许空白，也没想到留空白能有什么用，语法严点能避免一些不必要的坑。
  */
 const BASE_RE = function () {
 	const type = /([a-z][a-z0-9\-_]*)/.source;
 	const label = /\[(.*?)(?<!\\)]/.source;
 	const href = /\((.*?)(?<!\\)\)/.source;
-	return new RegExp(`@${type}${label}${href}`, "i")
+	return new RegExp(`^@${type}${label}${href}$`, "i")
 }();
 
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
