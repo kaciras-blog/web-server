@@ -17,7 +17,7 @@ export async function downloadVideo(directory: string, ctx: VideoDownloadContext
 	try {
 		const stats = await fs.stat(fullname);
 		ctx.set("Last-Modified", stats.mtime.toUTCString());
-		ctx.set("Cache-Control", "max-age=31536000");
+		ctx.set("Cache-Control", "public,max-age=31536000");
 		ctx.type = pathlib.extname(name);
 
 		return sendFileRange(ctx, new FileRangeReader(fullname, stats.size));

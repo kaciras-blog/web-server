@@ -1,7 +1,7 @@
 import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
-import { adminOnlyFilter, intercept } from "../lib/blog-plugin";
+import { adminOnlyFilter, intercept } from "../lib/blog";
 import Mock = jest.Mock;
 
 jest.mock("axios");

@@ -8,7 +8,9 @@ import { HttpServerOptions, HttpsServerOptions, ServerOptions, SNIProperties } f
 
 // app.callback() 的定义，比较长不方便直接写在参数里
 type RequestMessage = IncomingMessage | Http2ServerRequest;
+
 type OnRequestHandler = (req: RequestMessage, res: ServerResponse | Http2ServerResponse) => void;
+
 type SNIResolve = (err: Error | null, ctx: SecureContext) => void;
 
 export function createSNICallback(properties: SNIProperties[]) {

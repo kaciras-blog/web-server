@@ -1,8 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
 import Axios from "axios";
-import { BaseContext, ExtendableContext, Next } from "koa";
 import { getLogger } from "log4js";
+import { BaseContext, ExtendableContext, Next } from "koa";
 import conditional from "koa-conditional-get";
 import compress from "koa-compress";
 import multer from "@koa/multer";
@@ -10,13 +10,13 @@ import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
 import { localFileStore } from "@kaciras-blog/image/lib/image-store";
+import AppBuilder, { FunctionPlugin } from "./AppBuilder";
+import { BlogServerOptions } from "./options";
 import { downloadImage, uploadImage } from "./koa/image";
 import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
 import { downloadVideo, uploadVideo } from "./koa/video";
 import { configureForProxy } from "./axios-helper";
-import AppBuilder, { FunctionPlugin } from "./AppBuilder";
-import { BlogServerOptions } from "./options";
 
 const logger = getLogger();
 
@@ -68,7 +68,7 @@ export function toggleSW(enable?: boolean) {
 /**
  * 拦截某些资源，ctx.path 匹配到任一模式串的请求将被拦截，并返回404。
  *
- * @param pattern 模式串，可以用 combineRegex 来组合多个串
+ * @param pattern 模式串，可以用 combineRegexOr 来组合多个串
  * @return Koa 的中间件函数
  */
 export function intercept(pattern: RegExp) {
@@ -110,10 +110,6 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		api.useBeforeAll(bodyParser());
 		api.useBeforeAll(securityFilter);
 
-		// 过大的媒体建议直接传到第三方存储
-		const uploader = multer({ limits: { fileSize: 100 * 1024 * 1024 } });
-		api.useBeforeAll(uploader.single("file"));
-
 		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
@@ -127,16 +123,24 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		router.get("/sitemap.xml", sitemapHandler(address));
 		router.post(CSP_REPORT_URI, cspReporter);
 
+		// 过大的媒体建议直接传到第三方存储
+		const multerInstance = multer({ limits: { fileSize: 50 * 1024 * 1024 } });
+		const uploader = multerInstance.single("file");
+
 		// 用 image-middleware 里的函数组合成图片处理中间件。
 		// TODO: 支持评论插入图片
 		const service = new PreGenerateImageService(localFileStore(app.dataDir));
-		router.post("/image", adminFilter, (ctx: any) => uploadImage(service, ctx));
 		router.get("/image/:name", ctx => downloadImage(service, ctx));
+
+		// @ts-ignore
+		router.post("/image", adminFilter, uploader, (ctx: any) => uploadImage(service, ctx));
 
 		const videoDir = path.join(app.dataDir, "video");
 		fs.ensureDirSync(videoDir);
-		router.post("/video", adminFilter, async (ctx: any) => uploadVideo(videoDir, ctx));
 		router.get("/video/:name", ctx => downloadVideo(videoDir, ctx));
+
+		// @ts-ignore
+		router.post("/video", adminFilter, uploader, (ctx: any) => uploadVideo(videoDir, ctx));
 
 		api.useResource(router.routes());
 	};

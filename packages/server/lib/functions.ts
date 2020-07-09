@@ -52,6 +52,6 @@ export function debounceFirst<T, R>(func: (...args: any[]) => Promise<R>) {
  * @param patterns 表达式数组
  * @return 组合后的正则表达式，匹配原数组中的任意一个
  */
-export function combineRegex(patterns: RegExp[]) {
+export function combineRegexOr(patterns: RegExp[]) {
 	return new RegExp(patterns.map((p) => `(?:${p.source})`).join("|"));
 }

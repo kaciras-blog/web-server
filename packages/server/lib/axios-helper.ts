@@ -30,16 +30,16 @@ const logger = log4js.getLogger();
  * 从Koa的请求中复制与身份相关的信息和一些其他必要的头部到Axios的请求中。
  * 该函数只能在服务端使用。
  *
- * @param source Koa接受到的请求
- * @param axiosConfig 代理到后端的Axios请求设置
- * @return Axios的请求设置
+ * @param ctx Koa上下文
+ * @param config 代理到后端的Axios请求配置
+ * @return Axios 的请求配置
  */
-export function configureForProxy(source: ExtendableContext, axiosConfig: AxiosRequestConfig = {}) {
-	const srcHeaders = source.headers;
-	const distHeaders = (axiosConfig.headers = axiosConfig.headers || {});
+export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestConfig = {}) {
+	const srcHeaders = ctx.headers;
+	const distHeaders = (config.headers = config.headers || {});
 
 	// 转发请求记得带上 X-Forwarded-For
-	distHeaders["X-Forwarded-For"] = source.ip;
+	distHeaders["X-Forwarded-For"] = ctx.ip;
 
 	// UA可以随便改，没啥实际用，还不如穿透了统计下客户端类型
 	if (srcHeaders["user-agent"]) {
@@ -51,14 +51,14 @@ export function configureForProxy(source: ExtendableContext, axiosConfig: AxiosR
 	}
 
 	// HTTP 头是不区分大小写的，但是 Node 的 http 模块里会将其全部转换为小写
-	const csrfToken = source.cookies.get(CSRF_COOKIE_NAME)
+	const csrfToken = ctx.cookies.get(CSRF_COOKIE_NAME)
 	if (csrfToken) {
 		distHeaders[CSRF_HEADER_NAME] = csrfToken;
-		// axiosConfig.params = axiosConfig.params || {};
-		// axiosConfig.params[CSRF_PARAMETER_NAME] = csrfQuery;
+		// config.params = config.params || {};
+		// config.params[CSRF_PARAMETER_NAME] = csrfQuery;
 	}
 
-	return axiosConfig;
+	return config;
 }
 
 type ResponseParser<T, R> = (response: AxiosResponse<T>) => R;

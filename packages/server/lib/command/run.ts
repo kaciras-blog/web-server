@@ -1,6 +1,6 @@
 import log4js from "log4js";
 import AppBuilder from "../AppBuilder";
-import getBlogPlugin from "../blog-plugin";
+import getBlogPlugin from "../blog";
 import { createSSRProductionPlugin } from "../koa/vue-ssr";
 import staticFiles from "../koa/static-files";
 import startServer from "../create-server";
