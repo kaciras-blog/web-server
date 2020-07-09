@@ -21,3 +21,8 @@ exports[`default renderer should render gif video 1`] = `"<video src=\\"/video/f
 exports[`default renderer should render unknown type 1`] = `"[Unknown media type: unknown]"`;
 
 exports[`default renderer should render video 1`] = `"<video src=\\"/video/foo.mp4\\" poster=\\"/poster.png\\" controls></video>"`;
+
+exports[`tokenizer should restrict statement is filled with a whole line 1`] = `
+"<p>@gif<a href=\\"\\"></a> text after</p>
+"
+`;

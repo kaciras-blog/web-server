@@ -17,13 +17,17 @@ describe("tokenizer", () => {
 		markdownIt.render("@gif[A gif video](/video/foo.mp4)");
 		expect(token.tag).toBe("gif");
 		expect(token.content).toBe("A gif video");
-		expect(token.attrGet("src")).toBe("/video/foo.mp4");
+		expect(token.attrGet("href")).toBe("/video/foo.mp4");
 	});
 
 	it("should allow empty label and href", () => {
 		markdownIt.render("@gif[]()");
 		expect(token.content).toBe("");
-		expect(token.attrGet("src")).toBe("");
+		expect(token.attrGet("href")).toBe("");
+	});
+
+	it("should restrict statement is filled with a whole line", () => {
+		expect(markdownIt.render("@gif[]() text after")).toMatchSnapshot();
 	});
 
 	it("should support escape ]", () => {
@@ -33,7 +37,7 @@ describe("tokenizer", () => {
 
 	it("should support escape )", () => {
 		markdownIt.render("@gif[](/video/foo(bar\\).mp4)");
-		expect(token.attrGet("src")).toBe("/video/foo(bar).mp4");
+		expect(token.attrGet("href")).toBe("/video/foo(bar).mp4");
 	});
 });
 
