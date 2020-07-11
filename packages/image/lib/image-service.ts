@@ -143,7 +143,7 @@ export class PreGenerateImageService {
 				if (!(error instanceof ImageFilterException)) {
 					throw error;
 				}
-				logger.debug(`忽略转换：${error.message}，hash=${hash}`);
+				logger.debug(`${error.message}，hash=${hash}`);
 			}
 		}
 
@@ -168,6 +168,7 @@ export class PreGenerateImageService {
 			// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
 			if (webp && webp.length < compressed!.length) {
 				tasks.push(slot.putCache({ type: "webp" }, webp));
+			} else {
 				logger.trace(`${hash} 转WebP格式效果不佳`);
 			}
 		}
