@@ -30,13 +30,14 @@ describe("tokenizer", () => {
 		expect(markdownIt.render("@gif[]() text after")).toMatchSnapshot();
 	});
 
-	it("should support escape ]", () => {
-		markdownIt.render("@gif[A [gif\\] video]()");
-		expect(token.content).toBe("A [gif] video");
+	it("should support escape \\](", () => {
+		markdownIt.render("@gif[A [gif\\](video)](/video/foo.mp4)");
+		expect(token.content).toBe("A [gif](video)");
+		expect(token.attrGet("href")).toBe("/video/foo.mp4");
 	});
 
-	it("should support escape )", () => {
-		markdownIt.render("@gif[](/video/foo(bar\\).mp4)");
+	it("should support () in href", () => {
+		markdownIt.render("@gif[](/video/foo(bar).mp4)");
 		expect(token.attrGet("href")).toBe("/video/foo(bar).mp4");
 	});
 });
