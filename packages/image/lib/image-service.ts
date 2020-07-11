@@ -22,10 +22,9 @@ filters.set("type", codingFilter);
 const SVG_COMPRESS_THRESHOLD = 1024;
 
 /**
- * 能够处理的输入图片格式。
- * 不支持WebP作为输入，因为很难从WebP转换回传统格式。
+ * 能够处理的图片格式，不支持 WebP 作为输入。
  */
-const INPUT_FORMATS = ["jpg", "png", "gif", "bmp", "svg"];
+const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
 /**
  * 附加的文件属性，因为SVG可以用Brotli压缩，而HTTP响应需要一些额外的头部来处理。
@@ -63,19 +62,16 @@ export class PreGenerateImageService {
 	 * @return 返回保存的文件名
 	 */
 	async save(buffer: Buffer, type: string) {
-		if (type === "jpeg") {
-			type = "jpg";
-		}
-		if (INPUT_FORMATS.indexOf(type) < 0) {
-			throw new BadImageError(`不支持的图片格式：${type}`);
-		}
-
 		if (type === "bmp") {
 			type = "png";
 			buffer = await sharp(buffer).png().toBuffer();
 		}
 
-		// TODO: hex好长，要不要换base64截断一下
+		if (INPUT_FORMATS.indexOf(type) < 0) {
+			throw new BadImageError(`不支持的图片格式：${type}`);
+		}
+
+		// TODO: 256位 + hex 文件名好长，考虑换128位 + base64
 		const hash = crypto
 			.createHash("sha3-256")
 			.update(buffer)
