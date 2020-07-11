@@ -9,9 +9,6 @@ import { BadImageError, FilterArgumentError, ImageFilterException } from "./erro
 const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
 
-/** webp 转码的最低压缩比，达不到的认为无法压缩 */
-const WEBP_MIN_COMPRESS_RATE = 0.9;
-
 /** 转换一下异常以便上层处理 */
 function throwInvalidData(error: Error): never {
 	throw new BadImageError(error.message);
@@ -21,8 +18,8 @@ function throwInvalidData(error: Error): never {
  * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这仨字。
  *
  * 【造轮子】
- * 有个 is-gif 包提供同样的功能，但它使用 file-type 很多余。反观 is-png 倒是直接读取 MagicNumber，
- * 所以PNG直接用 is-png 包而GIF自己写个函数判断。
+ * 有个 is-gif 包提供同样的功能，但它使用 file-type 很多余。
+ * 反观 is-png 倒是直接读取 MagicNumber，所以PNG直接用 is-png 包而GIF自己写个函数判断。
  *
  * @param buffer 图片数据
  * @return 如果是GIF格式返回true，否则false
@@ -49,7 +46,7 @@ async function encodeWebp(buffer: Buffer) {
 	/*
 	 * 测试中发现黑色背景+彩色文字的图片从PNG转WEBP之后更大了，且失真严重。
 	 * 但是使用 -lossless 反而对这类图片有较好的效果。
-	 * 目前也不知道怎么检测图像是那种，只能比较有损和无损两种结果选出最好的。
+	 * 目前也不知道怎么检测图像是哪种，只能比较有损和无损两种结果选出最好的。
 	 *
 	 * 【官网也有对此问题的描述】
 	 * https://developers.google.com/speed/webp/faq#can_a_webp_image_grow_larger_than_its_source_image
@@ -64,7 +61,7 @@ async function encodeWebp(buffer: Buffer) {
 		candidates.push(input.webp({ lossless: true }).toBuffer())
 	}
 
-	return (await Promise.all(candidates))
+	return (await Promise.all(candidates).catch(throwInvalidData))
 		.reduce((best, candidate) => candidate.length < best.length ? candidate : best);
 }
 
