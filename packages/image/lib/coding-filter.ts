@@ -1,11 +1,10 @@
-import sharp from "sharp";
+import sharp, { Sharp } from "sharp";
 import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
 import { BadImageError, FilterArgumentError, ImageFilterException } from "./errors";
-
 
 const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
@@ -32,6 +31,9 @@ function isGif(buffer: Buffer) {
 	return buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
 }
 
+// 又一个喜欢内联类型的……
+type WebpOutput = ReturnType<Sharp["toBuffer"]>;
+
 /**
  * 尝试将图片转换为更优化的 WebP 格式。
  * WebP 并不一定比原图的编码更好，它有更高的解码消耗，所以只有 WebP 能明显降低图片大小时才有意义。
@@ -45,30 +47,33 @@ async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
 		throw new ImageFilterException("暂不支持GIF转WEBP");
 	}
-	const threshold = buffer.length * WEBP_MIN_COMPRESS_RATE;
-
-	// Google 官网说 libwebp 默认的质量 75 是比较均衡的，但 sharp 默认80，这里还是用 Google 的
-	const lossy = await sharp(buffer)
-		.webp({ quality: 75 })
-		.toBuffer({ resolveWithObject: true })
-		.catch(throwInvalidData);
+	const input = sharp(buffer);
 
 	/*
 	 * 测试中发现黑色背景+彩色文字的图片从PNG转WEBP之后更大了，且失真严重。
 	 * 但是使用 -lossless 反而对这类图片有较好的效果。
-	 * 目前也不知道怎么检测图像是那种，只能通过结果的大小来判断，以后考虑写个底层的Addon？
+	 * 目前也不知道怎么检测图像是那种，只能比较有损和无损两种结果选出最好的。
+	 *
+	 * 【官网也有对此问题的描述】
+	 * https://developers.google.com/speed/webp/faq#can_a_webp_image_grow_larger_than_its_source_image
 	 */
-	if (lossy.info.size < threshold) {
-		return lossy.data;
-	}
-	const lossless = await sharp(buffer)
-		.webp({ quality: 100, lossless: true })
-		.toBuffer({ resolveWithObject: true })
-		.catch(throwInvalidData);
+	const candidates: WebpOutput[] = [
 
-	if (lossless.info.size < threshold) {
-		return lossless.data;
+		// Google 官网说 libwebp 默认的质量 75 是比较均衡的，但 sharp 默认80，这里还是用 Google 的
+		input.webp({ quality: 75 }).toBuffer({ resolveWithObject: true }),
+	];
+
+	if (isPng(buffer)) {
+		candidates.push(input.webp({ lossless: true }).toBuffer({ resolveWithObject: true }))
 	}
+
+	const webp = (await Promise.all(candidates))
+		.reduce((best, candidate) => candidate.info.size < best.info.size ? candidate : best);
+
+	if (webp.info.size < buffer.length * WEBP_MIN_COMPRESS_RATE) {
+		return webp.data;
+	}
+
 	throw new ImageFilterException("Webp格式无法优化该图片的大小");
 }
 
