@@ -24,6 +24,8 @@
  * - 无法解决用视频来模拟GIF图片的需求
  * - URL必须要有扩展名，但并不是所有系统都是这样（比如Twitter）
  *
+ * https://gitlab.com/help/user/markdown#videos
+ *
  * 【为何不直接写HTML】
  * Markdown本身是跟渲染结果无关的，不应该和HTML绑死，而且写HTML不利于修改。
  * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
@@ -81,9 +83,13 @@ export interface RendererMap {
 }
 
 /**
- * 默认的渲染函数，支持 video 和 gif 类型，简单地渲染为<video>元素
+ * 默认的渲染函数，支持 audio、video 和 gif 类型，简单地渲染为<audio>和<video>元素
  */
 export const DefaultRenderMap: Readonly<RendererMap> = {
+
+	audio(src: string) {
+		return `<audio src=${src} controls></audio>`
+	},
 
 	video(src: string, poster: string, md: MarkdownIt) {
 		let attrs = `src="${src}"`;
@@ -97,7 +103,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
 	},
 
 	gif(src: string) {
-		return `<video src="${src}" loop muted></video>`;
+		return `<video src="${src}" loop muted controls></video>`;
 	},
 }
 
