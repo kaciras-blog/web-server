@@ -1,4 +1,4 @@
-import sharp, { Sharp } from "sharp";
+import sharp from "sharp";
 import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
@@ -31,9 +31,6 @@ function isGif(buffer: Buffer) {
 	return buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
 }
 
-// 又一个喜欢内联类型的……
-type WebpOutput = ReturnType<Sharp["toBuffer"]>;
-
 /**
  * 尝试将图片转换为更优化的 WebP 格式。
  * WebP 并不一定比原图的编码更好，它有更高的解码消耗，所以只有 WebP 能明显降低图片大小时才有意义。
@@ -57,24 +54,18 @@ async function encodeWebp(buffer: Buffer) {
 	 * 【官网也有对此问题的描述】
 	 * https://developers.google.com/speed/webp/faq#can_a_webp_image_grow_larger_than_its_source_image
 	 */
-	const candidates: WebpOutput[] = [
+	const candidates: Promise<Buffer>[] = [
 
 		// Google 官网说 libwebp 默认的质量 75 是比较均衡的，但 sharp 默认80，这里还是用 Google 的
-		input.webp({ quality: 75 }).toBuffer({ resolveWithObject: true }),
+		input.webp({ quality: 75 }).toBuffer(),
 	];
 
 	if (isPng(buffer)) {
-		candidates.push(input.webp({ lossless: true }).toBuffer({ resolveWithObject: true }))
+		candidates.push(input.webp({ lossless: true }).toBuffer())
 	}
 
-	const webp = (await Promise.all(candidates))
-		.reduce((best, candidate) => candidate.info.size < best.info.size ? candidate : best);
-
-	if (webp.info.size < buffer.length * WEBP_MIN_COMPRESS_RATE) {
-		return webp.data;
-	}
-
-	throw new ImageFilterException("Webp格式无法优化该图片的大小");
+	return (await Promise.all(candidates))
+		.reduce((best, candidate) => candidate.length < best.length ? candidate : best);
 }
 
 /**
