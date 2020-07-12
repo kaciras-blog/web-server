@@ -69,7 +69,7 @@ function redirectHandler(origin: string): OnRequestHandler {
  * @param port 端口
  * @param hostname 绑定的主机名
  */
-function listenAsync(server: Server, port: number, hostname: string) {
+function listenAsync(server: Server, port: number, hostname?: string) {
 	return new Promise<void>((resolve) => server.listen(port, hostname, resolve));
 }
 
@@ -114,7 +114,7 @@ export class ServerGroup {
  * @return 服务器组
  */
 export default function startServer(handler: OnRequestHandler, options: ServerOptions) {
-	const { hostname = "localhost", connectors } = options;
+	const { hostname, connectors } = options;
 
 	const servers: Server[] = [];
 	const connections = new Set<Socket>();

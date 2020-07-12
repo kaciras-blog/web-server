@@ -8,7 +8,6 @@ import generateCssLoaders from "./css";
 
 export default function (options: DevelopmentOptions) {
 
-	// @ts-ignore
 	return merge(baseConfig(options, "server"), {
 		entry: ["./src/entry-server"],
 		target: "node",
