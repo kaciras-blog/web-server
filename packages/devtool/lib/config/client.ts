@@ -1,6 +1,6 @@
 import path from "path";
 import { Configuration, DefinePlugin, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
-import merge from "webpack-merge";
+import { merge } from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";

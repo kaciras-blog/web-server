@@ -1,6 +1,6 @@
 import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
 import { DefinePlugin } from "webpack";
-import merge from "webpack-merge";
+import { merge } from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
 import baseConfig from "./base";
 import { DevelopmentOptions } from "../options";
@@ -8,6 +8,7 @@ import generateCssLoaders from "./css";
 
 export default function (options: DevelopmentOptions) {
 
+	// @ts-ignore
 	return merge(baseConfig(options, "server"), {
 		entry: ["./src/entry-server"],
 		target: "node",
@@ -31,7 +32,8 @@ export default function (options: DevelopmentOptions) {
 		// 被排除的依赖要求在运行时由服务器提供，需要单独安装。
 		// whitelist 中的文件将不会被排除，包括样式表、vue文件以及需要构建的第三方库。
 		externals: nodeExternals({
-			whitelist: [/\.css$/, /\?vue&type=style/, /\.less$/, /\.vue$/, /@kaciras-blog\/uikit/],
+			// @ts-ignore
+			allowlist: [/\.css$/, /\?vue&type=style/, /\.less$/, /\.vue$/, /@kaciras-blog\/uikit/],
 		}),
 
 		plugins: [
