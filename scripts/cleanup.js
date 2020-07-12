@@ -1,5 +1,5 @@
 const { dirname } = require("path");
-const fs = require("fs-extra");
+const { promises: fs } = require("fs");
 const chalk = require("chalk");
 const globby = require("globby");
 
@@ -8,13 +8,13 @@ async function cleanup() {
 	const files = await globby([
 		"packages/**/*.{js,map}",
 		"!packages/*/bin/*.js",
-		"!**/node_modules/**",
+		"!**/node_modules",
 		"!**/__mocks__",
 		"!**/__tests__/fixtures",
 	]);
 
 	for (const file of files) {
-		await fs.remove(file);
+		await fs.unlink(file);
 		console.log(`Remove ${file}`);
 	}
 
