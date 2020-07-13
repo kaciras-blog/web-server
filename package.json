@@ -15,11 +15,7 @@
 		"publish": "tsc && lerna publish"
 	},
 	"devDependencies": {
-		"@types/case-sensitive-paths-webpack-plugin": "^2.1.4",
-		"@types/copy-webpack-plugin": "^6.0.0",
 		"@types/fs-extra": "^9.0.1",
-		"@types/hash-sum": "^1.0.0",
-		"@types/http-errors": "^1.8.0",
 		"@types/jest": "^26.0.4",
 		"@types/koa": "^2.11.3",
 		"@types/koa-compress": "^4.0.0",
