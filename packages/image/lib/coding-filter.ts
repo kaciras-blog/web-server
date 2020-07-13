@@ -32,31 +32,34 @@ function isGif(buffer: Buffer) {
  * 尝试将图片转换为更优化的 WebP 格式。
  * WebP 并不一定比原图的编码更好，它有更高的解码消耗，所以只有 WebP 能明显降低图片大小时才有意义。
  *
- * TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败
- *
  * @param buffer 图片数据
  * @throws 如果转换效果不理想则抛出 ImageFilterException
  */
 async function encodeWebp(buffer: Buffer) {
+
+	// TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败
 	if (isGif(buffer)) {
-		throw new ImageFilterException("暂不支持GIF转WEBP");
+		throw new ImageFilterException("暂不支持GIF转WebP");
 	}
 	const input = sharp(buffer);
+
+	const candidates: Promise<Buffer>[] = [
+
+		// Google 官网说默认的质量 75 是比较均衡的，但 sharp 默认80，这里还是用 Google 的。
+		// 经测试 smartSubsample (-sharp_yuv) 可以降低色彩失真，且不明显增加体积和编码时间。
+		input.webp({ quality: 75, smartSubsample: true }).toBuffer(),
+	];
 
 	/*
 	 * 测试中发现黑色背景+彩色文字的图片从PNG转WEBP之后更大了，且失真严重。
 	 * 但是使用 -lossless 反而对这类图片有较好的效果。
 	 * 目前也不知道怎么检测图像是哪种，只能比较有损和无损两种结果选出最好的。
 	 *
-	 * 【官网也有对此问题的描述】
+	 * 根据官网的描述：
 	 * https://developers.google.com/speed/webp/faq#can_a_webp_image_grow_larger_than_its_source_image
+	 *
+	 * 此问题主要出现在无损图像上，故仅 png 格式增加 lossless 模式候选。
 	 */
-	const candidates: Promise<Buffer>[] = [
-
-		// Google 官网说 libwebp 默认的质量 75 是比较均衡的，但 sharp 默认80，这里还是用 Google 的
-		input.webp({ quality: 75 }).toBuffer(),
-	];
-
 	if (isPng(buffer)) {
 		candidates.push(input.webp({ lossless: true }).toBuffer())
 	}
