@@ -32,7 +32,7 @@ export async function uploadFile(directory: string, ctx: Context) {
 		.update(buffer)
 		.digest("hex");
 
-	const name = hash + "." + extname(originalname);
+	const name = hash + extname(originalname);
 	try {
 		await fs.writeFile(join(directory, name), buffer, { flag: "wx" });
 	} catch (e) {
