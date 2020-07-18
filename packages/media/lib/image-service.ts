@@ -19,10 +19,9 @@ const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
 const SVG_COMPRESS_THRESHOLD = 1024;
 
 /**
- * 能够处理的输入图片格式。
- * 不支持WebP作为输入，因为很难从WebP转换回传统格式。
+ * 能够处理的图片格式，不支持 WebP 作为输入。
  */
-const INPUT_FORMATS = ["jpg", "png", "gif", "bmp", "svg"];
+const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
 /**
  * 附加的文件属性，因为SVG可以用Brotli压缩，而HTTP响应需要一些额外的头部来处理。
@@ -42,6 +41,8 @@ interface WebImageOutput extends WebImageAttribute {
  * 预先生成的优点是缓存一定命中，没有实时生成的等待时间。而另一种做法是实时生成，
  * 大多数图片服务像twitter的都是这种，其优点是更加灵活、允许缓存过期节省空间。
  * 考虑到个人博客不会有太多的图，而且廉价VPS的性能也差，所以暂时选择了预先生成。
+ *
+ * TODO: 这里假设了优化后的图片文件一定不大于原图，没有对它们的大小做检查。
  */
 export class PreGenerateImageService {
 
@@ -62,9 +63,7 @@ export class PreGenerateImageService {
 	 * @return 返回保存的文件名
 	 */
 	async save(buffer: Buffer, type: string) {
-		if (type === "jpeg") {
-			type = "jpg";
-		} else if (type === "bmp") {
+		if (type === "bmp") {
 			type = "png";
 			buffer = await sharp(buffer).png().toBuffer();
 		}
@@ -130,22 +129,18 @@ export class PreGenerateImageService {
 	}
 
 	private async saveNewImage(slot: LocalFileSlot, hash: string, type: string, buffer: Buffer) {
+		const tasks: Array<Promise<void>> = [slot.save(buffer)];
 
-		const buildCache = async (tags: ImageTags) => {
+		async function encodeRasterImage(tags: ImageTags) {
 			try {
-				const output = await runFilters(buffer, filters, tags);
-				return await slot.putCache(tags, output);
+				return await runFilters(buffer, filters, tags);
 			} catch (error) {
 				if (!(error instanceof ImageFilterException)) {
 					throw error;
 				}
-				logger.warn(`忽略转换：${error.message}，hash=${hash}`);
+				logger.debug(`${error.message}，hash=${hash}`);
 			}
-		};
-
-		const tasks: Array<Promise<void>> = [
-			slot.save(buffer),
-		];
+		}
 
 		// 过滤器链只用于光栅图，矢量图只能压缩一下。
 		if (type === "svg") {
@@ -157,8 +152,20 @@ export class PreGenerateImageService {
 				tasks.push(slot.putCache({ encoding: "brotli" }, brotli));
 			}
 		} else {
-			tasks.push(buildCache({ type }));
-			tasks.push(buildCache({ type: "webp" }));
+			const [compressed, webp] = await Promise.all([
+				encodeRasterImage({ type }),
+				encodeRasterImage({ type: "webp" }),
+			]);
+
+			// TODO: 下一版改为候选模式
+			tasks.push(slot.putCache({ type }, compressed!));
+
+			// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
+			if (webp && webp.length < compressed!.length) {
+				tasks.push(slot.putCache({ type: "webp" }, webp));
+			} else {
+				logger.trace(`${hash} 转WebP格式效果不佳`);
+			}
 		}
 
 		// 全部缓存生成完才能返回，不然会漏掉异常，但这也增加了请求处理的时间

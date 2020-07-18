@@ -17,12 +17,14 @@
  *
  * 【附加属性的语法】
  * 有一种提案是在后面用大括号：@type[...](...){ key="value" }
- * 目前只有宽高两个附加属性的需求，在图片上已经加在URL参数上，为了统一还是使用URL参数。
+ * 目前只有宽高两个附加属性，且图片已经用加在URL参数上的形式了，为了统一暂时选择URL参数。
  *
  * 【为什么不用 GitLab Flavored Markdown】
  * 复用图片的语法，依靠扩展名来区分媒体类型有两个缺陷：
  * - 无法解决用视频来模拟GIF图片的需求
  * - URL必须要有扩展名，但并不是所有系统都是这样（比如Twitter）
+ *
+ * https://gitlab.com/help/user/markdown#videos
  *
  * 【为何不直接写HTML】
  * Markdown本身是跟渲染结果无关的，不应该和HTML绑死，而且写HTML不利于修改。
@@ -64,7 +66,7 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 
 	if (!silent) {
 		const token = state.push("media", type, 0);
-		token.attrs = [["src", href]]
+		token.attrs = [["href", href]]
 		token.content = unescapeMd(label);
 		token.map = [startLine, state.line];
 	}
@@ -81,9 +83,13 @@ export interface RendererMap {
 }
 
 /**
- * 默认的渲染函数，支持 video 和 gif 类型，简单地渲染为<video>元素
+ * 默认的渲染函数，支持 audio、video 和 gif 类型，简单地渲染为<audio>和<video>元素
  */
 export const DefaultRenderMap: Readonly<RendererMap> = {
+
+	audio(src: string) {
+		return `<audio src=${src} controls></audio>`
+	},
 
 	video(src: string, poster: string, md: MarkdownIt) {
 		let attrs = `src="${src}"`;
@@ -97,7 +103,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
 	},
 
 	gif(src: string) {
-		return `<video src="${src}" loop muted></video>`;
+		return `<video src="${src}" loop muted controls></video>`;
 	},
 }
 
@@ -114,7 +120,7 @@ export default function install(markdownIt: MarkdownIt, map: RendererMap = Defau
 	markdownIt.renderer.rules.media = (tokens, idx) => {
 		const token = tokens[idx];
 		const { tag } = token;
-		const href = token.attrGet("src")!;
+		const href = token.attrGet("href")!;
 
 		const renderFn = map[tag];
 		if (!renderFn) {

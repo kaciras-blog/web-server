@@ -74,9 +74,12 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
 	}
 
 	// mime.extension() 对 undefined 以及不支持的返回 false
-	const type = mime.extension(file.mimetype);
+	let type = mime.extension(file.mimetype);
 	if (!type) {
 		return ctx.status = 400;
+	}
+	if (type === "jpeg") {
+		type = "jpg";
 	}
 
 	try {

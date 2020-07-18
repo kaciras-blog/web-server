@@ -93,6 +93,7 @@ describe("uploadImage", () => {
 		await supertest(callback)
 			.post("/image")
 			.expect(400);
+
 		expect(mockService.save.mock.calls).toHaveLength(0);
 	});
 
@@ -101,6 +102,7 @@ describe("uploadImage", () => {
 			.post("/image")
 			.attach("file", IMAGE_DATA, { filename: "test.gif", contentType: "text/json" })
 			.expect(400);
+
 		expect(mockService.save.mock.calls).toHaveLength(0);
 	});
 
@@ -120,6 +122,25 @@ describe("uploadImage", () => {
 			.post("/image")
 			.attach("file", IMAGE_DATA, { filename: "test.gif", contentType: "image/gif" })
 			.expect(500);
+	});
+
+	const typeTests = test.each([
+		["test.gif", "image/gif", "gif"],
+		["test.jpeg", "image/jpeg", "jpg"],
+		["test.jpg", "image/jpeg", "jpg"],
+		["test.png", "image/png", "png"],
+		["test.svg", "image/svg+xml", "svg"],
+	]);
+
+	typeTests("should accept %s(%s) with type %s", async (filename, contentType, type) => {
+		mockService.save.mockResolvedValueOnce("/");
+
+		await supertest(callback)
+			.post("/image")
+			.attach("file", IMAGE_DATA, { filename, contentType })
+			.expect(200);
+
+		expect(mockService.save.mock.calls[0][1]).toBe(type);
 	});
 });
 

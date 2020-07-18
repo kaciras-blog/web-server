@@ -15,7 +15,7 @@ import { BlogServerOptions } from "./options";
 import { downloadImage, uploadImage } from "./koa/image";
 import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
-import { downloadVideo, uploadVideo } from "./koa/video";
+import { downloadFile, uploadFile } from "./koa/filestore";
 import { configureForProxy } from "./axios-helper";
 
 const logger = getLogger();
@@ -137,10 +137,17 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 
 		const videoDir = path.join(app.dataDir, "video");
 		fs.ensureDirSync(videoDir);
-		router.get("/video/:name", ctx => downloadVideo(videoDir, ctx));
+		router.get("/video/:name", ctx => downloadFile(videoDir, ctx));
 
 		// @ts-ignore
-		router.post("/video", adminFilter, uploader, (ctx: any) => uploadVideo(videoDir, ctx));
+		router.post("/video", adminFilter, uploader, (ctx: any) => uploadFile(videoDir, ctx));
+
+		const audioDir = path.join(app.dataDir, "audio");
+		fs.ensureDirSync(audioDir);
+		router.get("/audio/:name", ctx => downloadFile(audioDir, ctx));
+
+		// @ts-ignore
+		router.post("/audio", adminFilter, uploader, (ctx: any) => uploadFile(audioDir, ctx));
 
 		api.useResource(router.routes());
 	};

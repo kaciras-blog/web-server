@@ -17,23 +17,28 @@ describe("tokenizer", () => {
 		markdownIt.render("@gif[A gif video](/video/foo.mp4)");
 		expect(token.tag).toBe("gif");
 		expect(token.content).toBe("A gif video");
-		expect(token.attrGet("src")).toBe("/video/foo.mp4");
+		expect(token.attrGet("href")).toBe("/video/foo.mp4");
 	});
 
 	it("should allow empty label and href", () => {
 		markdownIt.render("@gif[]()");
 		expect(token.content).toBe("");
-		expect(token.attrGet("src")).toBe("");
+		expect(token.attrGet("href")).toBe("");
 	});
 
-	it("should support escape ]", () => {
-		markdownIt.render("@gif[A [gif\\] video]()");
-		expect(token.content).toBe("A [gif] video");
+	it("should restrict statement is filled with a whole line", () => {
+		expect(markdownIt.render("@gif[]() text after")).toMatchSnapshot();
 	});
 
-	it("should support escape )", () => {
-		markdownIt.render("@gif[](/video/foo(bar\\).mp4)");
-		expect(token.attrGet("src")).toBe("/video/foo(bar).mp4");
+	it("should support escape \\](", () => {
+		markdownIt.render("@gif[A [gif\\](video)](/video/foo.mp4)");
+		expect(token.content).toBe("A [gif](video)");
+		expect(token.attrGet("href")).toBe("/video/foo.mp4");
+	});
+
+	it("should support () in href", () => {
+		markdownIt.render("@gif[](/video/foo(bar).mp4)");
+		expect(token.attrGet("href")).toBe("/video/foo(bar).mp4");
 	});
 });
 
@@ -52,8 +57,12 @@ text after
 		expect(markdownIt.render(markdown)).toMatchSnapshot();
 	});
 
+	it("should render audio", () => {
+		expect(markdownIt.render("@audio[unused](/audio/music.flac)")).toMatchSnapshot();
+	});
+
 	it("should render gif video", () => {
-		expect(markdownIt.render("@gif[A gif video](/video/foo.mp4)")).toMatchSnapshot();
+		expect(markdownIt.render("@gif[A gif video](https://example.com/video/foo.mp4)")).toMatchSnapshot();
 	});
 
 	it("should render video", () => {
@@ -72,7 +81,7 @@ text after
 	it("should avoid XSS attack", () => {
 		expect(markdownIt.render("@gif[](javascript:alert(1\\);)")).toMatchSnapshot();
 		expect(markdownIt.render("@gif[<script>alert(1)</script>]()")).toMatchSnapshot();
-		expect(markdownIt.render("@video[](javascript:alert(1\\);)")).toMatchSnapshot();
+		expect(markdownIt.render("@audio[](javascript:alert(1\\);)")).toMatchSnapshot();
 		expect(markdownIt.render("@video[javascript:alert(1\\);]()")).toMatchSnapshot();
 	});
 });
