@@ -39,7 +39,8 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
 	const thirdPartyEnv: { [key: string]: CodeValueObject } = {};
-	Object.entries(options.thirdParty).forEach(([k, v]) => thirdPartyEnv["process.env." + k] = v)
+	Object.entries(options.thirdParty)
+		.forEach(([k, v]) => thirdPartyEnv["process.env." + k] = JSON.stringify(v));
 
 	return {
 		mode: webpackOpts.mode,
