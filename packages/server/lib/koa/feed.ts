@@ -34,8 +34,8 @@ export default function createFeedMiddleware(options: BlogServerOptions) {
 		const feed = new Feed({
 			title,
 			id: origin + "/",
-			link: origin,
-			language: "zh",
+			link: origin + "/",
+			language: "zh-CN",
 			favicon: `${origin}/favicon.ico`,
 			copyright: `All rights reserved 2020, ${author}`,
 			feedLinks: getLinksFor(origin),
