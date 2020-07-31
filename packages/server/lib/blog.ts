@@ -23,23 +23,21 @@ const logger = getLogger();
 const CSP_REPORT_URI = "/csp-report";
 
 /**
- * 设置 CSP 和 HSTS 头的中间件，能提高点安全性。
+ * 设置 CSP 头的中间件，能提高点安全性。一些指令在 <meta> 元素中无效，所以要在服务端配置。
  *
- * 一些CSP指令在<meta>元素中无效，所以要在服务端配置。
+ * 【Content-Security-Policy】
+ * frame-ancestors: 没想出有什么嵌入其它网站的必要
+ * object-src: 禁止一些过时元素
+ * block-all-mixed-content: 我全站都是HTTPS，也不太会去用HTTP的服务
+ * 其他的限制太死了，暂时没开启
  *
- * Content-Security-Policy：
- *   frame-ancestors: 没想出有什么嵌入其它网站的必要
- *   object-src: 禁止一些过时元素
- *   block-all-mixed-content: 我全站都是HTTPS，也不太会去用HTTP的服务
- *   其他的限制太死了，暂时没开启
- *
- * Strict-Transport-Security：直接设个最长时间就行，我的网站也不可能退回 HTTP
+ * 【HSTS】
+ * HSTS纯粹是跟底层TLS相关的头，不应该在这里配置，而且在localhost下会弹出一大堆警告。
  *
  * TODO: 目前的配置比较简单就直接写死了，复杂了再考虑 koa-helmet
  */
 async function securityFilter(ctx: BaseContext, next: Next) {
 	await next();
-	ctx.set("Strict-Transport-Security", "max-age=31536000; preload");
 	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; " +
 		"object-src 'none'; block-all-mixed-content; report-uri " + CSP_REPORT_URI);
 }
