@@ -6,6 +6,7 @@ import staticFiles from "../koa/static-files";
 import startServer from "../create-server";
 import { configureGlobalAxios } from "../axios-helper";
 import { BlogServerOptions, SimpleLogConfig } from "../options";
+import { combineRegexOr } from "../functions";
 
 /**
  * 运行生产模式需要更详细的日志输出格式。
@@ -59,7 +60,10 @@ export default async function run(options: BlogServerOptions) {
 
 	// 除了static目录外文件名都不带Hash，所以要禁用外层的缓存
 	builder.useResource(staticFiles(options.outputDir, {
-		staticAssets: new RegExp("^/" + options.assetsDir),
+		staticAssets: combineRegexOr([
+			new RegExp("^/favicon"),
+			new RegExp("^/" + options.assetsDir),
+		]),
 	}));
 
 	const app = builder.build();
