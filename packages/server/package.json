@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/server",
-	"version": "0.10.5",
+	"version": "0.10.6",
 	"description": "Web page and assets server of Kaciras Blog",
 	"license": "MIT",
 	"repository": {
