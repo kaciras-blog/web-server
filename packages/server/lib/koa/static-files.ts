@@ -1,5 +1,5 @@
 /**
- * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是缓存控制的部分，所以就自己撸一个。
+ * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是WebP图片选择，所以就自己撸一个。
  *
  * https://github.com/koajs/send
  * https://github.com/koajs/static
@@ -13,11 +13,18 @@ import sendFileRange from "./send-range";
 
 interface Options {
 
-	/** 请求路径匹配的文件将发送缓存头 */
-	staticAssets?: RegExp;
-
-	/** 静态资源缓响应的 Cache-Control 头中 maxAge 的值 */
-	maxAge?: number;
+	/**
+	 * 自定义修改相应的方法，在处理的最后调用，此时文件已确定，相关头部也都设置好了。
+	 * 通常用来设置缓存，或者其它自定义的响应头部。
+	 *
+	 * 【为什么不用中间件来做】
+	 * 中间件难以获取执行细节，如被选中的文件，和是否在本中间件返回。
+	 *
+	 * @param ctx Koa上下文
+	 * @param filename 发送的文件的完整路径
+	 * @param stats 文件属性
+	 */
+	customResponse?: (ctx: BaseContext, filename: string, stats: fs.Stats) => void;
 }
 
 const UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/
@@ -101,17 +108,14 @@ async function send(root: string, options: Options, ctx: BaseContext, next: Next
 		ctx.type = extname(file);
 	}
 
-	if (options.staticAssets?.test(path)) {
-		ctx.set("Cache-Control", `public,max-age=${options.maxAge},immutable`);
-	}
-
 	ctx.set("Last-Modified", stats.mtime.toUTCString());
-	await sendFileRange(ctx, file, stats.size);
+	sendFileRange(ctx, file, stats.size);
+
+	if (options.customResponse) {
+		options.customResponse(ctx, file, stats);
+	}
 }
 
 export default function (root: string, options: Options = {}): Middleware {
-	if (options.maxAge === undefined) {
-		options.maxAge = 31536000;
-	}
 	return (ctx, next) => send(root, options, ctx, next);
 }

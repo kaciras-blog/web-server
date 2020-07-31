@@ -1,3 +1,4 @@
+import { BaseContext } from "koa";
 import log4js from "log4js";
 import AppBuilder from "../AppBuilder";
 import getBlogPlugin from "../blog";
@@ -6,7 +7,6 @@ import staticFiles from "../koa/static-files";
 import startServer from "../create-server";
 import { configureGlobalAxios } from "../axios-helper";
 import { BlogServerOptions, SimpleLogConfig } from "../options";
-import { combineRegexOr } from "../functions";
 
 /**
  * 运行生产模式需要更详细的日志输出格式。
@@ -48,6 +48,18 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 	log4js.configure(logConfig);
 }
 
+/**
+ * /static 目录下的文件是有Hash名的，可以永久缓存，图标资源缓存的时间短点，其它不缓存。
+ */
+function staticFilesCacheControl(ctx: BaseContext) {
+	const { path } = ctx;
+	if (path.startsWith("/static/")) {
+		ctx.set("Cache-Control", "public,max-age=31536000,immutable");
+	} else if (/^\/(favicon|icons)/.test(path)) {
+		ctx.set("Cache-Control", "public,max-age=604800,s-maxage=43200");
+	}
+}
+
 export default async function run(options: BlogServerOptions) {
 	configureLog4js(options.app.logging);
 	const logger = log4js.getLogger();
@@ -58,12 +70,8 @@ export default async function run(options: BlogServerOptions) {
 	builder.addPlugin(getBlogPlugin(options));
 	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
-	// 除了static目录外文件名都不带Hash，所以要禁用外层的缓存
 	builder.useResource(staticFiles(options.outputDir, {
-		staticAssets: combineRegexOr([
-			new RegExp("^/favicon"),
-			new RegExp("^/" + options.assetsDir),
-		]),
+		customResponse: staticFilesCacheControl,
 	}));
 
 	const app = builder.build();
