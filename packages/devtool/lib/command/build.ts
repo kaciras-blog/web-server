@@ -17,15 +17,20 @@ const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 async function invokeWebpack(config: Configuration) {
 	const stats = await promisify<Configuration, Stats>(webpack)(config);
 
-	console.log(stats.toString("errors-warnings"));
-
 	if (stats.hasErrors()) {
+		console.log(stats.toString({
+			colors: true,
+			modules: false,
+			children: true,
+			chunks: false,
+			chunkModules: false,
+		}));
 		console.log(chalk.red("Build failed with errors.\n"));
 		process.exit(1);
 	}
 }
 
-export default async function (options: DevelopmentOptions)  {
+export default async function (options: DevelopmentOptions) {
 	await fs.remove(options.outputDir);
 
 	let clientConfig = ClientConfiguration(options)
