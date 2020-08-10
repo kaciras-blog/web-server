@@ -34,45 +34,76 @@ import MarkdownIt from "markdown-it";
 import { unescapeMd } from "markdown-it/lib/common/utils";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
-/**
- * 括号里的字段仅支持斜杠转义，没有实现括号计数。
- * 通常是两种都支持，但斜杠转义可以代替计数，而且它是必需的，再者斜杠转义用环视写起来也简单。
- *
- * 前后不允许空白，也没想到留空白能有什么用，语法严点能避免一些不必要的坑。
- */
-const BASE_RE = function () {
-	const type = /([a-z][a-z0-9\-_]*)/.source;
-	const label = /\[(.*?)(?<!\\)]/.source;
-	const href = /\((.*?)(?<!\\)\)/.source;
-	return new RegExp(`^@${type}${label}${href}$`, "i")
-}();
-
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
-	const { src, md } = state;
+	const { md } = state;
+	const offset = state.tShift[startLine] + state.bMarks[startLine];
+	const src = state.src.slice(offset, state.eMarks[startLine]);
 
-	const pMax = state.eMarks[startLine];
-	const p = state.tShift[startLine] + state.bMarks[startLine];
+	try {
+		const { type, label, href } = tokenize(src);
 
-	const match = BASE_RE.exec(src.slice(p, pMax));
-	if (!match) {
+		let checkedHref = md.normalizeLink(href);
+		if (!md.validateLink(checkedHref)) checkedHref = "";
+
+		if (!silent) {
+			const token = state.push("media", type, 0);
+			token.content = label;
+			token.map = [startLine, state.line];
+			token.attrs = [["href", checkedHref]];
+		}
+
+		state.line = startLine + 1;
+		return true;
+	} catch (e) {
 		return false;
 	}
+}
 
-	const [, type, label] = match;
-
-	let href = unescapeMd(match[3]);
-	href = md.normalizeLink(href);
-	if (!md.validateLink(href)) href = "";
-
-	if (!silent) {
-		const token = state.push("media", type, 0);
-		token.attrs = [["href", href]]
-		token.content = unescapeMd(label);
-		token.map = [startLine, state.line];
+function tokenize(src: string) {
+	const match = /^@([a-z][a-z0-9\-_]*)/i.exec(src);
+	if (!match) {
+		throw new Error("Invalid type syntax");
 	}
 
-	state.line = startLine + 1;
-	return true;
+	const [typePart, type] = match;
+	const labelEnd = readBracket(src, typePart.length, 0x5B, 0x5D);
+	const srcEnd = readBracket(src, labelEnd + 1, 0x28, 0x29);
+
+	if (srcEnd + 1 !== src.length) {
+		throw new Error("There are extra strings after the directive");
+	}
+
+	const href = unescapeMd(src.slice(labelEnd + 2, srcEnd));
+	const label = unescapeMd(src.slice(typePart.length + 1, labelEnd));
+
+	return { type, label, href };
+}
+
+function readBracket(src: string, i: number, begin: number, end: number) {
+	if (src.charCodeAt(i) !== begin) {
+		const expect = String.fromCharCode(begin)
+		const actual = src.charAt(i);
+		throw new Error(`Expect ${expect}, but found ${actual}`);
+	}
+
+	let level = 1;
+
+	while (++i < src.length) {
+		switch (src.charCodeAt(i)) {
+			case 0x5C:
+				++i;
+				break;
+			case begin:
+				level++;
+				break;
+			case end:
+				level--;
+				break;
+		}
+		if (level === 0) return i;
+	}
+
+	throw new Error(`Bracket number does not match, level=${level}`);
 }
 
 /**

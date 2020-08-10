@@ -31,7 +31,7 @@ describe("tokenizer", () => {
 	});
 
 	it("should support escape \\](", () => {
-		markdownIt.render("@gif[A [gif\\](video)](/video/foo.mp4)");
+		markdownIt.render("@gif[A \\[gif\\](video)](/video/foo.mp4)");
 		expect(token.content).toBe("A [gif](video)");
 		expect(token.attrGet("href")).toBe("/video/foo.mp4");
 	});
@@ -79,10 +79,10 @@ text after
 
 	// 因为我用的 MarkdownIt 自带的 normalizeLink & validateLink，所以只测一种形式避免忘记检查
 	it("should avoid XSS attack", () => {
-		expect(markdownIt.render("@gif[](javascript:alert(1\\);)")).toMatchSnapshot();
+		expect(markdownIt.render("@gif[](javascript:alert(1))")).toMatchSnapshot();
 		expect(markdownIt.render("@gif[<script>alert(1)</script>]()")).toMatchSnapshot();
-		expect(markdownIt.render("@audio[](javascript:alert(1\\);)")).toMatchSnapshot();
-		expect(markdownIt.render("@video[javascript:alert(1\\);]()")).toMatchSnapshot();
+		expect(markdownIt.render("@audio[](javascript:alert(1))")).toMatchSnapshot();
+		expect(markdownIt.render("@video[javascript:alert(1)]()")).toMatchSnapshot();
 	});
 });
 
