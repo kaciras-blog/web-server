@@ -38,21 +38,29 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	const offset = state.tShift[startLine] + state.bMarks[startLine];
 	const src = state.src.slice(offset, state.eMarks[startLine]);
 
+	let directive: GenericDirective;
 	try {
-		const { type, label, href } = tokenize(src);
-
-		if (!silent) {
-			const token = state.push("media", type, 0);
-			token.attrs = [["href", href]];
-			token.content = label;
-			token.map = [startLine, state.line];
-		}
-
-		state.line = startLine + 1;
-		return true;
+		directive = tokenize(src);
 	} catch (e) {
 		return false;
 	}
+	const { type, label, href } = directive
+
+	if (!silent) {
+		const token = state.push("media", type, 0);
+		token.attrs = [["href", href]];
+		token.content = label;
+		token.map = [startLine, state.line];
+	}
+
+	state.line = startLine + 1;
+	return true;
+}
+
+interface GenericDirective {
+	type: string;
+	label: string;
+	href: string;
 }
 
 /**
@@ -66,7 +74,7 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
  * @return 包含各个部分的对象
  * @throws 如果给定的文本不符合指令语法
  */
-function tokenize(src: string) {
+function tokenize(src: string): GenericDirective {
 	const match = /^@([a-z][a-z0-9\-_]*)/i.exec(src);
 	if (!match) {
 		throw new Error("Invalid type syntax");
