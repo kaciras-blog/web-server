@@ -68,7 +68,7 @@ interface GenericDirective {
  *
  * 【坑爹的兼容性】
  * 原本是用环视处理转义，不支持括号计数，直接一个正则就能搞定。
- * 但是傻逼 Safari 不支持环视，非要让劳资手写 Parser艹。
+ * 但是傻逼 Safari 不支持环视，非要让劳资手写 Parser 艹。
  *
  * @param src 待解析的文本
  * @return 包含各个部分的对象
@@ -128,9 +128,17 @@ function readBracket(src: string, i: number, begin: number, end: number) {
 		if (level === 0) return i;
 	}
 
-	throw new Error(`Bracket number does not match, level=${level}`);
+	throw new Error(`Bracket count does not match, level=${level}`);
 }
 
+/**
+ * 检查链接，处理 URL 转义和 XSS 攻击。
+ * 如果链接具有 XSS 风险则返回空字符串。
+ *
+ * @param md MarkdownIt 的实例
+ * @param link 需要检查的链接
+ * @return 安全的链接，可以直接写进HTML
+ */
 export function checkLink(md: MarkdownIt, link: string) {
 	link = md.normalizeLink(link);
 	return md.validateLink(link) ? link : "";
@@ -150,7 +158,7 @@ export interface RendererMap {
 }
 
 /**
- * 默认的渲染函数，支持 audio、video 和 gif 类型，简单地渲染为<audio>和<video>元素
+ * 默认的指令表，有 audio、video 和 gif 类型，简单地渲染为<audio>和<video>元素
  */
 export const DefaultRenderMap: Readonly<RendererMap> = {
 
@@ -169,6 +177,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
 		return `<video ${attrs} controls></video>`;
 	},
 
+	// 仍然加上 controls 避免无法播放
 	gif(src: string) {
 		return `<video src="${src}" loop muted controls></video>`;
 	},
