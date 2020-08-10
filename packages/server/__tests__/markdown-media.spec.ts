@@ -29,16 +29,44 @@ describe("tokenizer", () => {
 	it("should restrict statement is filled with a whole line", () => {
 		expect(markdownIt.render("@gif[]() text after")).toMatchSnapshot();
 	});
+});
 
-	it("should support escape \\](", () => {
-		markdownIt.render("@gif[A \\[gif\\](video)](/video/foo.mp4)");
-		expect(token.content).toBe("A [gif](video)");
-		expect(token.attrGet("href")).toBe("/video/foo.mp4");
+describe("escaping", () => {
+	let token: Token;
+
+	const markdownIt = new MarkdownIt();
+	markdownIt.use(MediaPlugin);
+
+	markdownIt.renderer.rules.media = (t, i) => {
+		token = t[i];
+		return "No render result for tokenizer test";
+	}
+
+	it("should support escape \\]", () => {
+		markdownIt.render("@gif[A \\[gif\\] video](/video/foobar.mp4)");
+		expect(token.content).toBe("A [gif] video");
+		expect(token.attrGet("href")).toBe("/video/foobar.mp4");
 	});
 
-	it("should support () in href", () => {
+	it("should support escape \\)", () => {
+		markdownIt.render("@gif[](/video/foo\\)bar.mp4)");
+		expect(token.attrGet("href")).toBe("/video/foo)bar.mp4");
+	});
+
+	it("should support bracket counting in label", () => {
+		markdownIt.render("@gif[A [gif] video](/video/foobar.mp4)");
+		expect(token.content).toBe("A [gif] video");
+		expect(token.attrGet("href")).toBe("/video/foobar.mp4");
+	});
+
+	it("should support bracket counting in href", () => {
 		markdownIt.render("@gif[](/video/foo(bar).mp4)");
 		expect(token.attrGet("href")).toBe("/video/foo(bar).mp4");
+	});
+
+	it("should support show \\", () => {
+		markdownIt.render("@gif[](/video\\\\foobar.mp4)");
+		expect(token.attrGet("href")).toBe("/video\\foobar.mp4");
 	});
 });
 
