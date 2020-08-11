@@ -9,8 +9,9 @@
 import crypto from "crypto";
 import { performance } from "perf_hooks";
 import { murmurHash128 } from "murmurhash-native";
+import { hashName } from "../lib/common";
 
-const buffer = crypto.randomBytes(1024 * 1024);
+const buffer = crypto.randomBytes(4 * 1024 * 1024);
 
 function md5() {
 	return crypto.createHash("md5").update(buffer).digest("base64");
@@ -28,10 +29,14 @@ function murmurHash3_sync() {
 	return murmurHash128(buffer, "base64");
 }
 
+function hashNameImpl() {
+	return hashName(buffer);
+}
+
 async function test(func: any) {
 	const start = performance.now();
 	let result;
-	for (let i = 0; i < 32; i++) {
+	for (let i = 0; i < 100; i++) {
 		result = func();
 	}
 	const end = performance.now();
@@ -45,3 +50,4 @@ test(sha3_256);
 test(sha2_256);
 test(md5);
 test(murmurHash3_sync);
+test(hashNameImpl);
