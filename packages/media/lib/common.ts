@@ -1,4 +1,5 @@
 import { basename, join } from "path";
+import { platform, release } from "os"
 import fs from "fs-extra";
 import { murmurHash128x64 } from "murmurhash-native";
 import log4js from "log4js";
@@ -34,7 +35,9 @@ function makeFilenameSafe(base64: string) {
  * base64 是大小写敏感的，但有些文件系统不敏感（HFS+, exFAT, etc...），
  * 使用大小写不敏感的文件系统会提升碰撞率，应该避免。
  *
- * 为什么不用hex？
+ * 【为什么不用HEX】
+ * 我有强迫症，能省几个字符坚决不用更长的，至于某些文件系统大小写不敏感那是它的事，
+ * 只要 URL 是敏感的我这就要用！
  *
  * @param buffer 数据
  * @return 字符串标识
@@ -68,9 +71,15 @@ export function isCaseSensitive(folder: string) {
 	}
 }
 
-export function checkCaseSeneitive(folder: string) {
+export function checkCaseSensitive(folder: string) {
 	if (isCaseSensitive(folder)) {
 		return;
 	}
-	log4js.getLogger().warn(`${folder} 下的文件名对大小写不敏感，这会提高碰撞率`)
+	const logger = log4js.getLogger();
+	logger.warn(`${folder} 下的文件名对大小写不敏感，这会提高碰撞率`);
+
+	if (platform() === "win32" && release().startsWith("10")) {
+		logger.warn("你可以使用下列命令设置目录为大小写敏感：")
+		logger.warn(`fsutil.exe file SetCaseSensitiveInfo ${folder} enable`)
+	}
 }
