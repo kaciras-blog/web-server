@@ -31,7 +31,6 @@ export default function (options: DevelopmentOptions) {
 		// 被排除的依赖要求在运行时由服务器提供，需要单独安装。
 		// whitelist 中的文件将不会被排除，包括样式表、vue文件以及需要构建的第三方库。
 		externals: nodeExternals({
-			// @ts-ignore
 			allowlist: [/\.css$/, /\?vue&type=style/, /\.less$/, /\.vue$/, /@kaciras-blog\/uikit/],
 		}),
 

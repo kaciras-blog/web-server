@@ -30,6 +30,7 @@ export interface AppOptions {
 	dataDir: string;
 
 	serviceWorker?: boolean;
+	requestTimeout: number;
 
 	logging: SimpleLogConfig;
 }

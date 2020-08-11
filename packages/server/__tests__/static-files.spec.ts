@@ -1,5 +1,7 @@
+import { basename } from "path";
+import fs from "fs";
 import supertest from "supertest";
-import Koa from "koa";
+import Koa, { BaseContext } from "koa";
 import { FIXTURE_DIR } from "./test-utils";
 import serve from "../lib/koa/static-files";
 
@@ -126,32 +128,35 @@ it("should return webp image when requested and if possible", () => {
 		.expect("Content-Length", "5354");
 });
 
-describe("Cache-Control", () => {
-	it("should be set for static files", () => {
+describe("custom headers", () => {
+
+	it("should accept ctx and path", async () => {
+		const customHeader = jest.fn<void, [BaseContext, string, fs.Stats]>();
+
 		const app = new Koa()
-		app.use(serve(FIXTURE_DIR, { staticAssets: /^\/static/, maxAge: 666 }));
+		app.use(serve(FIXTURE_DIR, { customResponse: customHeader }));
+
+		await supertest(app.callback())
+			.get("/hello.txt")
+			.set("Accept-Encoding", "gzip, deflate, br")
+			.expect(200);
+
+		const call = customHeader.mock.calls[0];
+		expect(basename(call[1])).toBe("hello.txt.br");
+		expect(call[2].size).toBe(9);
+	});
+
+	it("should add custom headers", () => {
+		const app = new Koa()
+		app.use(serve(FIXTURE_DIR, {
+			customResponse(ctx) {
+				ctx.set("Cache-Control", "public,max-age=666,immutable");
+			},
+		}));
 
 		return supertest(app.callback())
 			.get("/static/hello.json")
 			.expect(200)
 			.expect("Cache-Control", "public,max-age=666,immutable");
-	});
-
-	it("should be set with maxAge=31536000 by default", () => {
-		const app = new Koa()
-		app.use(serve(FIXTURE_DIR, { staticAssets: /^\/static/ }));
-
-		return supertest(app.callback())
-			.get("/static/hello.json")
-			.expect(200)
-			.expect("Cache-Control", "public,max-age=31536000,immutable");
-	});
-
-	it("should not be set for non-static files", async () => {
-		const app = new Koa()
-		app.use(serve(FIXTURE_DIR, { staticAssets: /^\/static/ }));
-
-		const res = await supertest(app.callback()).get("/hello.txt").expect(200);
-		expect("cache-control" in res.header).toBe(false);
 	});
 });

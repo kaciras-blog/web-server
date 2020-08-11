@@ -34,40 +34,22 @@ import MarkdownIt from "markdown-it";
 import { unescapeMd } from "markdown-it/lib/common/utils";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 
-/**
- * 括号里的字段仅支持斜杠转义，没有实现括号计数。
- * 通常是两种都支持，但斜杠转义可以代替计数，而且它是必需的，再者斜杠转义用环视写起来也简单。
- *
- * 前后不允许空白，也没想到留空白能有什么用，语法严点能避免一些不必要的坑。
- */
-const BASE_RE = function () {
-	const type = /([a-z][a-z0-9\-_]*)/.source;
-	const label = /\[(.*?)(?<!\\)]/.source;
-	const href = /\((.*?)(?<!\\)\)/.source;
-	return new RegExp(`^@${type}${label}${href}$`, "i")
-}();
-
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
-	const { src, md } = state;
+	const offset = state.tShift[startLine] + state.bMarks[startLine];
+	const src = state.src.slice(offset, state.eMarks[startLine]);
 
-	const pMax = state.eMarks[startLine];
-	const p = state.tShift[startLine] + state.bMarks[startLine];
-
-	const match = BASE_RE.exec(src.slice(p, pMax));
-	if (!match) {
+	let directive: GenericDirective;
+	try {
+		directive = tokenize(src);
+	} catch (e) {
 		return false;
 	}
-
-	const [, type, label] = match;
-
-	let href = unescapeMd(match[3]);
-	href = md.normalizeLink(href);
-	if (!md.validateLink(href)) href = "";
+	const { type, label, href } = directive
 
 	if (!silent) {
 		const token = state.push("media", type, 0);
-		token.attrs = [["href", href]]
-		token.content = unescapeMd(label);
+		token.attrs = [["href", href]];
+		token.content = label;
 		token.map = [startLine, state.line];
 	}
 
@@ -75,15 +57,108 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	return true;
 }
 
+interface GenericDirective {
+	type: string;
+	label: string;
+	href: string;
+}
+
 /**
- * 自定义渲染函数，以 type 作为键，值为渲染函数
+ * 解析指令语法，从中提取出各个部分并处理转义。
+ *
+ * 【坑爹的兼容性】
+ * 原本是用环视处理转义，不支持括号计数，直接一个正则就能搞定。
+ * 但是傻逼 Safari 不支持环视，非要让劳资手写 Parser 艹。
+ *
+ * @param src 待解析的文本
+ * @return 包含各个部分的对象
+ * @throws 如果给定的文本不符合指令语法
+ */
+function tokenize(src: string): GenericDirective {
+	const match = /^@([a-z][a-z0-9\-_]*)/i.exec(src);
+	if (!match) {
+		throw new Error("Invalid type syntax");
+	}
+
+	const [typePart, type] = match;
+	const labelEnd = readBracket(src, typePart.length, 0x5B, 0x5D);
+	const srcEnd = readBracket(src, labelEnd + 1, 0x28, 0x29);
+
+	if (srcEnd + 1 !== src.length) {
+		throw new Error("There are extra strings after the directive");
+	}
+
+	const href = unescapeMd(src.slice(labelEnd + 2, srcEnd));
+	const label = unescapeMd(src.slice(typePart.length + 1, labelEnd));
+
+	return { type, label, href };
+}
+
+/**
+ * 解析左右分别是正反括号的内容，找到结束的位置，支持括号计数和斜杠转义。
+ *
+ * @param src 文本
+ * @param i 起始位置
+ * @param begin 左括号的字符码
+ * @param end 右括号字符码
+ * @return 结束位置
+ * @throws 如果给定的片段不符合语法
+ */
+function readBracket(src: string, i: number, begin: number, end: number) {
+	if (src.charCodeAt(i) !== begin) {
+		const expect = String.fromCharCode(begin)
+		const actual = src.charAt(i);
+		throw new Error(`Expect ${expect}, but found ${actual}`);
+	}
+
+	let level = 1;
+
+	while (++i < src.length) {
+		switch (src.charCodeAt(i)) {
+			case 0x5C:
+				++i;
+				break;
+			case begin:
+				level++;
+				break;
+			case end:
+				level--;
+				break;
+		}
+		if (level === 0) return i;
+	}
+
+	throw new Error(`Bracket count does not match, level=${level}`);
+}
+
+/**
+ * 检查链接，处理 URL 转义和 XSS 攻击。
+ * 如果链接具有 XSS 风险则返回空字符串。
+ *
+ * @param md MarkdownIt 的实例
+ * @param link 需要检查的链接
+ * @return 安全的链接，可以直接写进HTML
+ */
+export function checkLink(md: MarkdownIt, link: string) {
+	link = md.normalizeLink(link);
+	return md.validateLink(link) ? link : "";
+}
+
+/**
+ * 自定义渲染函数，以 type 作为键，值为渲染函数。
+ * 其中 href 已经使用上面的 checkLink 对 XSS 做了检查。
+ *
+ * 【为何在渲染函数中检查链接】
+ * 与传统的 Markdown 语法不同，通用指令旨在支持一系列的扩展功能，其几个片段的意义由指令决定，
+ * 解析器只做提取，故只有在渲染函数中才能确定字段是不是链接。
  */
 export interface RendererMap {
+
 	[type: string]: (href: string, label: string, md: MarkdownIt) => string;
 }
 
 /**
- * 默认的渲染函数，支持 audio、video 和 gif 类型，简单地渲染为<audio>和<video>元素
+ * 默认的指令表，有 audio、video 和 gif 类型，简单地渲染为<audio>和<video>元素
  */
 export const DefaultRenderMap: Readonly<RendererMap> = {
 
@@ -102,6 +177,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
 		return `<video ${attrs} controls></video>`;
 	},
 
+	// 仍然加上 controls 避免无法播放
 	gif(src: string) {
 		return `<video src="${src}" loop muted controls></video>`;
 	},
@@ -119,7 +195,7 @@ export default function install(markdownIt: MarkdownIt, map: RendererMap = Defau
 
 	markdownIt.renderer.rules.media = (tokens, idx) => {
 		const token = tokens[idx];
-		const { tag } = token;
+		const { tag, content } = token;
 		const href = token.attrGet("href")!;
 
 		const renderFn = map[tag];
@@ -127,7 +203,7 @@ export default function install(markdownIt: MarkdownIt, map: RendererMap = Defau
 			return `[Unknown media type: ${tag}]`;
 		}
 
-		return renderFn(href, token.content, markdownIt);
+		return renderFn(checkLink(markdownIt, href), content, markdownIt);
 	};
 
 	markdownIt.block.ruler.before("html_block", "media", parseMedia);

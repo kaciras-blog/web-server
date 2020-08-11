@@ -3,6 +3,49 @@ import MediaPlugin from "../lib/markdown-media";
 import Token from "markdown-it/lib/token";
 
 describe("tokenizer", () => {
+	let token: Token | null = null;
+
+	const markdownIt = new MarkdownIt();
+	markdownIt.use(MediaPlugin);
+
+	markdownIt.renderer.rules.media = (t, i) => {
+		token = t[i];
+		return "No render result for tokenizer test";
+	};
+
+	beforeEach(() => token = null);
+
+	it("should parse type, label, and href", () => {
+		markdownIt.render("@gif[A gif video](/video/foo.mp4)");
+
+		expect(token!.tag).toBe("gif");
+		expect(token!.content).toBe("A gif video");
+		expect(token!.attrGet("href")).toBe("/video/foo.mp4");
+	});
+
+	it("should allow empty label and href", () => {
+		markdownIt.render("@gif[]()");
+
+		expect(token!.content).toBe("");
+		expect(token!.attrGet("href")).toBe("");
+	});
+
+	test.each([
+		"@",
+		"@gif(/video/foobar.mp4)",
+		"@gif[A gif video()",
+		"@gif[](/video/foobar",
+	])("should ignore truncated text", text => {
+		markdownIt.render(text);
+		expect(token).toBeNull();
+	});
+
+	it("should restrict statement is filled with a whole line", () => {
+		expect(markdownIt.render("@gif[]() text after")).toMatchSnapshot();
+	});
+});
+
+describe("escaping", () => {
 	let token: Token;
 
 	const markdownIt = new MarkdownIt();
@@ -11,34 +54,33 @@ describe("tokenizer", () => {
 	markdownIt.renderer.rules.media = (t, i) => {
 		token = t[i];
 		return "No render result for tokenizer test";
-	}
+	};
 
-	it("should parse type, label, and href", () => {
-		markdownIt.render("@gif[A gif video](/video/foo.mp4)");
-		expect(token.tag).toBe("gif");
-		expect(token.content).toBe("A gif video");
-		expect(token.attrGet("href")).toBe("/video/foo.mp4");
+	it("should support escape \\]", () => {
+		markdownIt.render("@gif[A \\[gif\\] video](/video/foobar.mp4)");
+		expect(token.content).toBe("A [gif] video");
+		expect(token.attrGet("href")).toBe("/video/foobar.mp4");
 	});
 
-	it("should allow empty label and href", () => {
-		markdownIt.render("@gif[]()");
-		expect(token.content).toBe("");
-		expect(token.attrGet("href")).toBe("");
+	it("should support escape \\)", () => {
+		markdownIt.render("@gif[](/video/foo\\)bar.mp4)");
+		expect(token.attrGet("href")).toBe("/video/foo)bar.mp4");
 	});
 
-	it("should restrict statement is filled with a whole line", () => {
-		expect(markdownIt.render("@gif[]() text after")).toMatchSnapshot();
+	it("should support bracket counting in label", () => {
+		markdownIt.render("@gif[A [gif] video](/video/foobar.mp4)");
+		expect(token.content).toBe("A [gif] video");
+		expect(token.attrGet("href")).toBe("/video/foobar.mp4");
 	});
 
-	it("should support escape \\](", () => {
-		markdownIt.render("@gif[A [gif\\](video)](/video/foo.mp4)");
-		expect(token.content).toBe("A [gif](video)");
-		expect(token.attrGet("href")).toBe("/video/foo.mp4");
-	});
-
-	it("should support () in href", () => {
+	it("should support bracket counting in href", () => {
 		markdownIt.render("@gif[](/video/foo(bar).mp4)");
 		expect(token.attrGet("href")).toBe("/video/foo(bar).mp4");
+	});
+
+	it("should support show \\", () => {
+		markdownIt.render("@gif[](/video\\\\foobar.mp4)");
+		expect(token.attrGet("href")).toBe("/video\\foobar.mp4");
 	});
 });
 
@@ -79,10 +121,10 @@ text after
 
 	// 因为我用的 MarkdownIt 自带的 normalizeLink & validateLink，所以只测一种形式避免忘记检查
 	it("should avoid XSS attack", () => {
-		expect(markdownIt.render("@gif[](javascript:alert(1\\);)")).toMatchSnapshot();
+		expect(markdownIt.render("@gif[](javascript:alert(1))")).toMatchSnapshot();
 		expect(markdownIt.render("@gif[<script>alert(1)</script>]()")).toMatchSnapshot();
-		expect(markdownIt.render("@audio[](javascript:alert(1\\);)")).toMatchSnapshot();
-		expect(markdownIt.render("@video[javascript:alert(1\\);]()")).toMatchSnapshot();
+		expect(markdownIt.render("@audio[](javascript:alert(1))")).toMatchSnapshot();
+		expect(markdownIt.render("@video[javascript:alert(1)]()")).toMatchSnapshot();
 	});
 });
 

@@ -70,13 +70,15 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 				ctx.redirect(e.location);
 				return;
 		}
-		logger.error("服务端渲染出错", e);
+
 		ctx.status = 503;
 		ctx.body = await render.renderToString({
 			...DEFAULT_CONTEXT,
 			request: ctx,
 			url: new URL("/error/500", ctx.href),
 		});
+
+		logger.error("服务端渲染出错", e);
 	}
 }
 

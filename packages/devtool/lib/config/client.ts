@@ -69,7 +69,7 @@ export default function (options: DevelopmentOptions) {
 			}],
 		}),
 		new ServiceWorkerWebpackPlugin({
-			entry: "./src/service-worker/index",
+			entry: "./src/service-worker/server/index",
 
 			// 支持ServiceWorker的浏览器也支持woff2，其他字体就不需要了
 			excludes: ["**/.*", "**/*.{map,woff,eot,ttf}"],

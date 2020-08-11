@@ -32,14 +32,24 @@ const vieCacheIdentifier = (options: WebpackOptions) => {
 	return hash(variables);
 };
 
+function getBaseEnvironment(options: DevelopmentOptions) {
+	const variables = {
+		...options.thirdParty,
+		TIMEOUT: options.app.requestTimeout,
+	}
+
+	const baseEnvironment: { [key: string]: CodeValueObject } = {};
+	Object.entries(variables)
+		.forEach(([k, v]) => baseEnvironment["process.env." + k] = JSON.stringify(v));
+
+	return baseEnvironment;
+}
+
 export default function (options: DevelopmentOptions, side: "client" | "server"): Configuration {
 	const webpackOpts = options.webpack;
 
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
-
-	const thirdPartyEnv: { [key: string]: CodeValueObject } = {};
-	Object.entries(options.thirdParty).forEach(([k, v]) => thirdPartyEnv["process.env." + k] = v)
 
 	return {
 		mode: webpackOpts.mode,
@@ -154,7 +164,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			],
 		},
 		plugins: [
-			new DefinePlugin(thirdPartyEnv),
+			new DefinePlugin(getBaseEnvironment(options)),
 			new VueLoaderPlugin(),
 			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],
