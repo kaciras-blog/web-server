@@ -99,7 +99,7 @@ async function send(root: string, options: Options, ctx: BaseContext, next: Next
 			return next();
 		}
 		err.status = 500;
-		throw err;
+		throw err; // TODO: 这个异常不好做测试
 	}
 
 	if (encodingExt) {

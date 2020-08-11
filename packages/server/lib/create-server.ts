@@ -119,7 +119,7 @@ export default function startServer(handler: OnRequestHandler, options: ServerOp
 	const servers: Server[] = [];
 	const connections = new Set<Socket>();
 
-	const tasks = connectors.map((connector) => {
+	const tasks = connectors.map(connector => {
 		const { redirect } = connector;
 		const server = createConnector(connector);
 
