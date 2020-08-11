@@ -3,7 +3,7 @@ import MediaPlugin from "../lib/markdown-media";
 import Token from "markdown-it/lib/token";
 
 describe("tokenizer", () => {
-	let token: Token;
+	let token: Token | null = null;
 
 	const markdownIt = new MarkdownIt();
 	markdownIt.use(MediaPlugin);
@@ -11,19 +11,33 @@ describe("tokenizer", () => {
 	markdownIt.renderer.rules.media = (t, i) => {
 		token = t[i];
 		return "No render result for tokenizer test";
-	}
+	};
+
+	beforeEach(() => token = null);
 
 	it("should parse type, label, and href", () => {
 		markdownIt.render("@gif[A gif video](/video/foo.mp4)");
-		expect(token.tag).toBe("gif");
-		expect(token.content).toBe("A gif video");
-		expect(token.attrGet("href")).toBe("/video/foo.mp4");
+
+		expect(token!.tag).toBe("gif");
+		expect(token!.content).toBe("A gif video");
+		expect(token!.attrGet("href")).toBe("/video/foo.mp4");
 	});
 
 	it("should allow empty label and href", () => {
 		markdownIt.render("@gif[]()");
-		expect(token.content).toBe("");
-		expect(token.attrGet("href")).toBe("");
+
+		expect(token!.content).toBe("");
+		expect(token!.attrGet("href")).toBe("");
+	});
+
+	test.each([
+		"@",
+		"@gif(/video/foobar.mp4)",
+		"@gif[A gif video()",
+		"@gif[](/video/foobar",
+	])("should ignore truncated text", text => {
+		markdownIt.render(text);
+		expect(token).toBeNull();
 	});
 
 	it("should restrict statement is filled with a whole line", () => {
@@ -40,7 +54,7 @@ describe("escaping", () => {
 	markdownIt.renderer.rules.media = (t, i) => {
 		token = t[i];
 		return "No render result for tokenizer test";
-	}
+	};
 
 	it("should support escape \\]", () => {
 		markdownIt.render("@gif[A \\[gif\\] video](/video/foobar.mp4)");
