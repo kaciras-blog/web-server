@@ -84,12 +84,18 @@ export default function (options: DevelopmentOptions) {
 				return { assets };
 			},
 		}),
+
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:8].css"),
 		}),
+
 		new OptimizeCSSPlugin({
 			cssProcessorOptions: { map: { inline: false } },
+			cssProcessorPluginOptions: {
+				preset: ["default", { discardComments: { removeAll: true } }],
+			},
 		}),
+
 		new VueSSRClientPlugin(),
 		new HashedModuleIdsPlugin(),
 		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
