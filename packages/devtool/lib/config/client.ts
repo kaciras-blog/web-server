@@ -184,7 +184,7 @@ export default function (options: DevelopmentOptions) {
 		plugins.push(new ImageOptimizePlugin(new RegExp("static/")));
 
 		const compressSource = {
-			test: /\.(js|css|html|svg)$/,
+			test: /\.(js|json|css|html|svg)$/,
 			threshold: 1024,
 		};
 		plugins.push(new CompressionPlugin({
