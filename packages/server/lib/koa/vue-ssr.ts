@@ -93,6 +93,10 @@ export async function createSSRProductionPlugin(workingDir: string) {
 		return path.resolve(workingDir, file);
 	}
 
+	/*
+	 * Webpack 的样式表都是动态加载的，而 vue-ssr 也没有提供获取首屏所用到的 CSS 文件清单的方式。
+	 * 故必须保留内联样式注入，否则会产生布局抖动。
+	 */
 	const renderer = createBundleRenderer(resolve("vue-ssr-server-bundle.json"), {
 		runInNewContext: false,
 		template: await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" }),
