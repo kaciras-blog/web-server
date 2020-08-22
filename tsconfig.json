@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "ESNext",
+		"target": "ES2019",
 		"lib": ["ESNext"],
 
 		// 输出到其他目录会导致另外的包引用不到

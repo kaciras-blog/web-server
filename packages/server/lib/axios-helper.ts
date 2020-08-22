@@ -36,7 +36,7 @@ const logger = log4js.getLogger();
  */
 export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestConfig = {}) {
 	const srcHeaders = ctx.headers;
-	const distHeaders = (config.headers = config.headers || {});
+	const distHeaders = config.headers ||= {};
 
 	// 转发请求记得带上 X-Forwarded-For
 	distHeaders["X-Forwarded-For"] = ctx.ip;
@@ -54,7 +54,7 @@ export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestCo
 	const csrfToken = ctx.cookies.get(CSRF_COOKIE_NAME)
 	if (csrfToken) {
 		distHeaders[CSRF_HEADER_NAME] = csrfToken;
-		// config.params = config.params || {};
+		// config.params ||= {};
 		// config.params[CSRF_PARAMETER_NAME] = csrfQuery;
 	}
 
@@ -114,7 +114,7 @@ export class CachedFetcher<T, R> {
 		const entry = cache.get(cacheKey);
 
 		if (entry) {
-			config.headers = config.headers || {};
+			config.headers ||= {};
 			config.headers["If-Modified-Since"] = entry.time.toUTCString();
 			config.validateStatus = (status) => status >= 200 && status < 400;
 		}
