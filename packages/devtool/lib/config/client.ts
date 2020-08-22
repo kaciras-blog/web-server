@@ -190,7 +190,7 @@ export default function (options: DevelopmentOptions) {
 		plugins.push(new CompressionPlugin({
 			...compressSource,
 			algorithm: "brotliCompress",
-			filename: "[path].br[query]",
+			filename: "[path].br",
 		}));
 		plugins.push(new CompressionPlugin(compressSource));
 	}
