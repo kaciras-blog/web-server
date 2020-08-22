@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs-extra";
-import { PreGenerateImageService } from "../lib/image-service";
-import { LocalFileSlot } from "../lib/image-store";
+import { PreGenerateImageService } from "../image-service";
+import { LocalFileSlot } from "../image-store";
 
 // @formatter:off
 class IgnoreOriginSlot extends LocalFileSlot {

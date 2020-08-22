@@ -1,7 +1,7 @@
 import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
-import { buildCache } from "@kaciras-blog/image/command/build-image-cache";
+import { buildCache } from "@kaciras-blog/image/lib/command/build-image-cache";
 import { BlogServerOptions } from "./options";
 import run from "./command/run";
 
