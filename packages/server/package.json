@@ -25,7 +25,7 @@
 		"@kaciras-blog/image": "^1.0.0",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^9.4.0",
-		"axios": "^0.19.2",
+		"axios": "^0.20.0",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.1",
 		"fs-extra": "^9.0.1",
@@ -44,7 +44,7 @@
 		"replace-ext": "^2.0.0",
 		"sitemap": "^6.2.0",
 		"source-map-support": "^0.5.19",
-		"vue-server-renderer": "2.6.11"
+		"vue-server-renderer": "2.6.12"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.2",
