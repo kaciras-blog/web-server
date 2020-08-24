@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/media",
-	"version": "0.10.5",
+	"version": "1.0.1",
 	"description": "Media resource processing library for Kaciras Blog",
 	"license": "MIT",
 	"repository": {

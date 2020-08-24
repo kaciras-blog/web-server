@@ -36,7 +36,7 @@ const logger = log4js.getLogger();
  */
 export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestConfig = {}) {
 	const srcHeaders = ctx.headers;
-	const distHeaders = (config.headers = config.headers || {});
+	const distHeaders = config.headers ||= {};
 
 	// 转发请求记得带上 X-Forwarded-For
 	distHeaders["X-Forwarded-For"] = ctx.ip;
@@ -54,7 +54,7 @@ export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestCo
 	const csrfToken = ctx.cookies.get(CSRF_COOKIE_NAME)
 	if (csrfToken) {
 		distHeaders[CSRF_HEADER_NAME] = csrfToken;
-		// config.params = config.params || {};
+		// config.params ||= {};
 		// config.params[CSRF_PARAMETER_NAME] = csrfQuery;
 	}
 
@@ -114,7 +114,7 @@ export class CachedFetcher<T, R> {
 		const entry = cache.get(cacheKey);
 
 		if (entry) {
-			config.headers = config.headers || {};
+			config.headers ||= {};
 			config.headers["If-Modified-Since"] = entry.time.toUTCString();
 			config.validateStatus = (status) => status >= 200 && status < 400;
 		}
@@ -195,12 +195,9 @@ export function configureAxiosHttp2(
 		});
 	}
 
-	// 修改 AxiosRequestConfig 的 transport 属性，该属性是内部使用的没有类型定义。
-	const transport = { request };
-	axios.interceptors.request.use(config => {
-		(config as any).transport = transport;
-		return config;
-	});
+	// 修改Axios默认的transport属性，该属性是内部使用的，没有定义在接口里。
+	// 0.19.0 修改了相关逻辑，导致该字段无法合并，但在 0.20.0 修复了这个问题
+	(axios.defaults as any).transport = { request };
 
 	return () => cache.forEach((session) => session.destroy());
 }

@@ -84,12 +84,18 @@ export default function (options: DevelopmentOptions) {
 				return { assets };
 			},
 		}),
+
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:8].css"),
 		}),
+
 		new OptimizeCSSPlugin({
 			cssProcessorOptions: { map: { inline: false } },
+			cssProcessorPluginOptions: {
+				preset: ["default", { discardComments: { removeAll: true } }],
+			},
 		}),
+
 		new VueSSRClientPlugin(),
 		new HashedModuleIdsPlugin(),
 		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
@@ -178,13 +184,13 @@ export default function (options: DevelopmentOptions) {
 		plugins.push(new ImageOptimizePlugin(new RegExp("static/")));
 
 		const compressSource = {
-			test: /\.(js|css|html|svg)$/,
+			test: /\.(js|json|css|html|svg)$/,
 			threshold: 1024,
 		};
 		plugins.push(new CompressionPlugin({
 			...compressSource,
 			algorithm: "brotliCompress",
-			filename: "[path].br[query]",
+			filename: "[path].br",
 		}));
 		plugins.push(new CompressionPlugin(compressSource));
 	}

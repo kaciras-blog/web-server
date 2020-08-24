@@ -1,7 +1,7 @@
+import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import fs from "fs-extra";
-import { buildCache } from "../command/build-image-cache";
+import { buildCache } from "../lib/command/build-image-cache";
 
 const ROOT = fs.mkdtempSync(path.join(os.tmpdir(), "test-"));
 const NAME = "742c5c7e26d80750f1c32f0bbcf0caab4e41678d03f5d610c3a1057b274b2268.png";

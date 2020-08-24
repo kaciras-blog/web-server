@@ -70,6 +70,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			alias: {
 				"vue$": "vue/dist/vue.runtime.esm.js",
 				"@": resolve("src"),
+				"@assets":  resolve("src/assets"),
 			},
 
 			/*

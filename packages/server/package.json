@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/server",
-	"version": "0.10.9",
+	"version": "1.0.1",
 	"description": "Web page and assets server of Kaciras Blog",
 	"license": "MIT",
 	"repository": {
@@ -22,10 +22,10 @@
 	},
 	"dependencies": {
 		"@iktakahiro/markdown-it-katex": "^4.0.0",
-		"@kaciras-blog/media": "^0.10.5",
+		"@kaciras-blog/media": "^1.0.1",
 		"@koa/multer": "^3.0.0",
-		"@koa/router": "^9.3.1",
-		"axios": "^0.19.2",
+		"@koa/router": "^9.4.0",
+		"axios": "^0.20.0",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.1",
 		"fs-extra": "^9.0.1",
@@ -44,7 +44,7 @@
 		"replace-ext": "^2.0.0",
 		"sitemap": "^6.2.0",
 		"source-map-support": "^0.5.19",
-		"vue-server-renderer": "2.6.11"
+		"vue-server-renderer": "2.6.12"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.2",
