@@ -93,8 +93,7 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
 		ctx.status = 400;
 		ctx.body = err.message;
 
-		// 虽然在请求中返回了错误信息，但还是记录一下日志
-		logger.warn(err.message, err);
+		logger.warn(err.message);
 	}
 }
 

@@ -20,6 +20,5 @@ node_modules
 # Build files
 *.js.map
 packages/*/lib/**/*.js
-packages/*/command/*.js
 **/__tests__/*.js
 **/__perfs__/*.js
