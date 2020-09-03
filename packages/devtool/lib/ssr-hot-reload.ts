@@ -177,6 +177,7 @@ export default class VueSSRHotReloader {
 	private updateRenderer() {
 		this.renderer = createBundleRenderer(this.serverBundle, {
 			runInNewContext: false,
+			inject: false,
 			template: this.template,
 			clientManifest: this.clientManifest,
 		});

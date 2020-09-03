@@ -95,6 +95,7 @@ export async function createSSRProductionPlugin(workingDir: string) {
 
 	const renderer = createBundleRenderer(resolve("vue-ssr-server-bundle.json"), {
 		runInNewContext: false,
+		inject: false,
 		template: await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" }),
 		clientManifest: require(resolve("vue-ssr-client-manifest.json")),
 	});
