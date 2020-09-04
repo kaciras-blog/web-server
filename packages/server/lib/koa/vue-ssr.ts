@@ -129,6 +129,9 @@ export async function createSSRProductionPlugin(workingDir: string) {
 		inject: false,
 		template: await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" }),
 		clientManifest: require(resolve("vue-ssr-client-manifest.json")),
+
+		// 其它页面的资源不预载，已经有 ServiceWorker 来做这件事了。
+		shouldPrefetch: () => false,
 	});
 
 	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(renderer, ctx));
