@@ -8,6 +8,17 @@ import AppBuilder from "../AppBuilder";
 
 const logger = log4js.getLogger("SSR");
 
+/**
+ * getPreloadFiles() 返回的数组元素，连个类型定义都没有还要我自己写。
+ * 恕我直言 Vue2 我真的垃圾！
+ */
+interface PreloadFile {
+	asType: string;
+	file: string;
+	extension: string;
+	fileWithoutQuery: string;
+}
+
 /** 传递给服务端入口的上下文信息，其属性可以在渲染中被修改 */
 export interface RenderContext {
 
@@ -32,9 +43,29 @@ export interface RenderContext {
 	request: Context;
 }
 
-const DEFAULT_CONTEXT = {
+/**
+ * 由 renderToXXX 处理后的渲染上下文，注入了页面相关的属性和方法。
+ */
+interface ProcessedContext extends RenderContext {
+
+	/**
+	 * 这是 Vue 内置的方法，同样没有 TS 的类型定义。
+	 * https://ssr.vuejs.org/guide/build-config.html#manual-asset-injection
+	 */
+	getPreloadFiles(): PreloadFile[];
+}
+
+function renderCommonStyle(this: ProcessedContext) {
+	return this.getPreloadFiles()
+		.filter(asset => asset.asType === "style")
+		.map(asset => `<link rel=stylesheet href="/${asset.file}">`)
+		.join("");
+}
+
+const BASE_CONTEXT = {
 	title: "Kaciras的博客",
 	meta: "",
+	renderCommonStyle,
 };
 
 /**
@@ -48,7 +79,7 @@ const DEFAULT_CONTEXT = {
  */
 export async function renderPage(render: BundleRenderer, ctx: Context) {
 	const renderContext: RenderContext = {
-		...DEFAULT_CONTEXT,
+		...BASE_CONTEXT,
 		request: ctx,
 		url: new URL(ctx.href),
 	};
@@ -73,7 +104,7 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 
 		ctx.status = 503;
 		ctx.body = await render.renderToString({
-			...DEFAULT_CONTEXT,
+			...BASE_CONTEXT,
 			request: ctx,
 			url: new URL("/error/500", ctx.href),
 		});
