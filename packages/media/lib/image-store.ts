@@ -63,7 +63,8 @@ export class LocalFileSlot {
 		return path.join(this.root, "image", `${this.key.name}.${this.key.type}`);
 	}
 
-	// Object.keys(tags) 对于非 ASCII 字符串的键返回的顺序不确定，必须排序一下
+	// Object.keys(tags) 对于非 ASCII 字符串的键返回的顺序不确定，必须排序
+	// TODO: 两个不同的键有相同的值怎么办
 	private cachePath(tags: ImageTags) {
 		const tagValues = Object.keys(tags).sort().map((key) => tags[key]);
 		let { type } = this.key;
