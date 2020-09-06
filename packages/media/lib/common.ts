@@ -1,28 +1,8 @@
 import { basename, join } from "path";
 import { platform, release } from "os"
 import fs from "fs-extra";
-import { murmurHash128x64 } from "murmurhash-native";
 import log4js from "log4js";
-
-const BASE64_REPLACE_TABLE = { "/": "_", "+": "-", "=": "" };
-
-/**
- * Base64 标准代码表里有 "/" 和 "+" 两个字符，用在文件名和URL上会出现问题。
- * 该函数将其分别替换为 "_" 和 "-"，并去除末尾填充的等号。
- *
- * 【末尾等号的问题】
- * 因为等号看着很多余所以就删了（设计的目标是让文件名最短），解码时记得把等号加回来。
- *
- * @internal
- * @param base64 原Base64字符串
- * @return 替换后的字符串
- *
- * @see https://tools.ietf.org/html/rfc4648#section-5
- */
-function makeFilenameSafe(base64: string) {
-	type UnsafeChar = keyof typeof BASE64_REPLACE_TABLE;
-	return base64.replace(/[+/=]/g, c => BASE64_REPLACE_TABLE[c as UnsafeChar])
-}
+import { xxHash3_128 } from "@kaciras-blog/nativelib";
 
 /**
  * 对数据执行 Hash 运算，返回一个固定长度且唯一的字符串，可用于文件名。
@@ -43,11 +23,14 @@ function makeFilenameSafe(base64: string) {
  * 我有强迫症，能省几个字符坚决不用更长的，至于某些文件系统大小写不敏感那是它的事，
  * 只要 URL 是敏感的我这就要用！
  *
+ * 【末尾等号的问题】
+ * 最后两个填充的等号看着很多余就删了，解码时记得把等号加回来。
+ *
  * @param buffer 数据
  * @return 22位字符串标识
  */
 export function hashName(buffer: Buffer) {
-	return makeFilenameSafe(murmurHash128x64(buffer, "base64") as string);
+	return xxHash3_128(buffer, "base64u").slice(0, 22);
 }
 
 /**
