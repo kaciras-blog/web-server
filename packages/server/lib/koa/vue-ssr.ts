@@ -87,11 +87,12 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 	// 显式设置，虽然Koa内部也会用 '<' 开头来判断是否是HTML
 	ctx.type = "html";
 
+	// 流式渲染不方便在外层捕获异常，先不用
 	try {
 		ctx.body = await render.renderToString(renderContext);
 
 		if (renderContext.notFound) {
-			ctx.status = 404; // 懒得管是返回页面还是空响应体了
+			ctx.status = 404;
 		}
 	} catch (e) {
 		switch (e.code) {
