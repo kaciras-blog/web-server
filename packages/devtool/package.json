@@ -66,6 +66,7 @@
 		"@types/loader-utils": "^2.0.1",
 		"@types/webpack": "^4.41.22",
 		"@types/webpack-hot-middleware": "^2.25.3",
-		"@types/webpack-node-externals": "^2.5.0"
+		"@types/webpack-node-externals": "^2.5.0",
+		"less": "^3.12.2"
 	}
 }
