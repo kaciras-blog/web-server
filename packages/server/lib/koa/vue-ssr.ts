@@ -8,6 +8,17 @@ import AppBuilder from "../AppBuilder";
 
 const logger = log4js.getLogger("SSR");
 
+/**
+ * getPreloadFiles() 返回的数组元素，连个类型定义都没有还要我自己写。
+ * 恕我直言 Vue2 我真的垃圾！
+ */
+interface PreloadFile {
+	asType: string;
+	file: string;
+	extension: string;
+	fileWithoutQuery: string;
+}
+
 /** 传递给服务端入口的上下文信息，其属性可以在渲染中被修改 */
 export interface RenderContext {
 
@@ -32,9 +43,29 @@ export interface RenderContext {
 	request: Context;
 }
 
-const DEFAULT_CONTEXT = {
+/**
+ * 由 renderToXXX 处理后的渲染上下文，注入了页面相关的属性和方法。
+ */
+interface ProcessedContext extends RenderContext {
+
+	/**
+	 * 这是 Vue 内置的方法，同样没有 TS 的类型定义。
+	 * https://ssr.vuejs.org/guide/build-config.html#manual-asset-injection
+	 */
+	getPreloadFiles(): PreloadFile[];
+}
+
+function renderCommonStyle(this: ProcessedContext) {
+	return this.getPreloadFiles()
+		.filter(asset => asset.asType === "style")
+		.map(asset => `<link rel=stylesheet href="/${asset.file}">`)
+		.join("");
+}
+
+const BASE_CONTEXT = {
 	title: "Kaciras的博客",
 	meta: "",
+	renderCommonStyle,
 };
 
 /**
@@ -48,7 +79,7 @@ const DEFAULT_CONTEXT = {
  */
 export async function renderPage(render: BundleRenderer, ctx: Context) {
 	const renderContext: RenderContext = {
-		...DEFAULT_CONTEXT,
+		...BASE_CONTEXT,
 		request: ctx,
 		url: new URL(ctx.href),
 	};
@@ -56,11 +87,12 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 	// 显式设置，虽然Koa内部也会用 '<' 开头来判断是否是HTML
 	ctx.type = "html";
 
+	// 流式渲染不方便在外层捕获异常，先不用
 	try {
 		ctx.body = await render.renderToString(renderContext);
 
 		if (renderContext.notFound) {
-			ctx.status = 404; // 懒得管是返回页面还是空响应体了
+			ctx.status = 404;
 		}
 	} catch (e) {
 		switch (e.code) {
@@ -73,7 +105,7 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 
 		ctx.status = 503;
 		ctx.body = await render.renderToString({
-			...DEFAULT_CONTEXT,
+			...BASE_CONTEXT,
 			request: ctx,
 			url: new URL("/error/500", ctx.href),
 		});
@@ -99,8 +131,12 @@ export async function createSSRProductionPlugin(workingDir: string) {
 	 */
 	const renderer = createBundleRenderer(resolve("vue-ssr-server-bundle.json"), {
 		runInNewContext: false,
+		inject: false,
 		template: await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" }),
 		clientManifest: require(resolve("vue-ssr-client-manifest.json")),
+
+		// 其它页面的资源不预载，已经有 ServiceWorker 来做这件事了。
+		shouldPrefetch: () => false,
 	});
 
 	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(renderer, ctx));
