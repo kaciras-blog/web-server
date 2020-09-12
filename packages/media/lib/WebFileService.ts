@@ -1,13 +1,24 @@
-import { Context } from "koa";
+export interface Params {
+	[key: string]: string;
+}
 
-/**
- *
- */
+export interface MediaSaveRequest {
+	buffer: Buffer;
+	mimetype: string;
+	name: string;
+	parameters: Params;
+}
+
+export interface MediaLoadRequest {
+	name: string;
+	acceptTypes: string[];
+	acceptEncodings: string[];
+	parameters: Params;
+}
+
 export interface WebFileService {
 
-	save(ctx: Context): Promise<any>;
+	save(request: MediaSaveRequest): Promise<string>;
 
-	load(name: string, ctx: Context): Promise<any>;
-
-	getAllNames(): Promise<string[]>;
+	load(request: MediaLoadRequest): Promise<any>;
 }

@@ -1,5 +1,10 @@
-export interface Params {
-	[key: string]: string;
+import { join } from "path";
+import fs from "fs-extra";
+import { Params } from "./WebFileService";
+
+export interface FileSaveResult {
+	filename: string;
+	alreadyExists: boolean;
 }
 
 export default class LocalFileStore {
@@ -10,17 +15,43 @@ export default class LocalFileStore {
 		this.directory = directory;
 	}
 
-	save(name: string, data: Buffer) {
+	async save(filename: string, buffer: Buffer) {
+		const path = join(this.directory, name);
+		let alreadyExists = false;
+
+		try {
+			await fs.writeFile(path, buffer, { flag: "wx" });
+		} catch (e) {
+			if (e.code !== "EEXIST") {
+				throw e;
+			}
+			alreadyExists = true;
+		}
+
+		return { filename, alreadyExists };
+	}
+
+	getCache(filename: string, params: Params): Promise<ReadableStream | null> {
 
 	}
 
-	load(name: string): Promise<ReadableStream> {
+	async putCache(filename: string, buffer: any, params: Params) {
 
 	}
 
+
+	/**
+	 *
+	 * Object.keys(tags) 对于非 ASCII 字符串的键返回的顺序不确定，必须排序。
+	 *
+	 * @param name
+	 * @param params
+	 * @private
+	 */
 	private getFilePath(name: string, params: Params) {
-		const tagValues = Object.keys(params)
+		const parts = Object.keys(params)
 			.sort()
-			.map(k => `${k}-${params[k]}`);
+			.map(k => `${k}=${params[k]}`);
+		return join(this.directory, ...parts, name);
 	}
 }

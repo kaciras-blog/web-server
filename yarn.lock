@@ -594,6 +594,26 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@kaciras-blog/image@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@kaciras-blog/image/-/image-1.0.2.tgz#4e50c2c71ed2f5410c1524735107d40d51abd470"
+  integrity sha512-gnchracSw6SqrWC5h31BrDwwFry0EwI4bpR7Ek0jctUlgvro0qdwwOwTqFZQbqOIwj1vU7gof74Ix81HwbNhdg==
+  dependencies:
+    execa "^4.0.3"
+    imagemin-gifsicle "^7.0.0"
+    imagemin-pngquant "^9.0.0"
+    is-png "^2.0.0"
+    make-error "^1.3.6"
+    mozjpeg "^7.0.0"
+    sharp "^0.26.0"
+    svgo "^1.3.2"
+
+"@kaciras-blog/nativelib@git://github.com/kaciras-blog/nativelib#v0.1.1":
+  version "0.1.1"
+  resolved "git://github.com/kaciras-blog/nativelib#a811d2bd7f8f076a779c6d0f8b5beebfd3226754"
+  dependencies:
+    nan "^2.14.1"
+
 "@koa/multer@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@koa/multer/-/multer-3.0.0.tgz#439777949f28097d7b329c0b4ce3048074c862f8"
@@ -8634,7 +8654,7 @@ mz@^2.5.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-nan@^2.12.1:
+nan@^2.12.1, nan@^2.14.1:
   version "2.14.1"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.1.tgz#d7be34dfa3105b91494c3147089315eff8874b01"
   integrity sha512-isWHgVjnFjh2x2yuJ/tj3JbwoHu3UC2dX5G/88Cm24yB6YopVgxvBObDY7n5xW6ExmFhJpSEQqFPvq9zaXc8Jw==
