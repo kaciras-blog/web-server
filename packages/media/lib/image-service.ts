@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { getLogger } from "log4js";
 import SVGO from "svgo";
 import { ImageStore, LocalFileSlot } from "./image-store";
-import { BadImageError, ImageFilterException } from "./errors";
+import { BadDataError, ImageFilterException } from "./errors";
 import { hashName } from "./common";
 
 export interface ImageTags {
@@ -69,7 +69,7 @@ export class PreGenerateImageService {
 		}
 
 		if (INPUT_FORMATS.indexOf(type) < 0) {
-			throw new BadImageError(`不支持的图片格式：${type}`);
+			throw new BadDataError(`不支持的图片格式：${type}`);
 		}
 
 		const hash = hashName(buffer);

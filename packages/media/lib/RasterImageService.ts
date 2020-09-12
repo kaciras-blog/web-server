@@ -1,7 +1,7 @@
 import { getLogger } from "log4js";
 import sharp, { Sharp } from "sharp";
 import mime from "mime-types";
-import { BadImageError } from "./errors";
+import { BadDataError } from "./errors";
 import { hashName } from "./common";
 import LocalFileStore from "./LocalFileStore";
 import { MediaSaveRequest, Params } from "./WebFileService";
@@ -23,7 +23,7 @@ async function preprocess(request: MediaSaveRequest): Promise<ImageInfo> {
 
 	let type = mime.extension(request.mimetype);
 	if (!type) {
-		throw new BadImageError(`不支持的MimeType: ${type}`);
+		throw new BadDataError(`不支持的MimeType: ${type}`);
 	}
 
 	let image: Sharp | null = null;
@@ -37,7 +37,7 @@ async function preprocess(request: MediaSaveRequest): Promise<ImageInfo> {
 	}
 
 	if (INPUT_FORMATS.indexOf(type) < 0) {
-		throw new BadImageError(`不支持的图片格式：${type}`);
+		throw new BadDataError(`不支持的图片格式：${type}`);
 	}
 
 	return { type, buffer: image ? await image.toBuffer() : buffer };

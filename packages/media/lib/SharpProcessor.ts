@@ -1,10 +1,10 @@
 import sharp, { Sharp } from "sharp";
-import { FilterArgumentError } from "./errors";
+import { ParamsError } from "./errors";
 
 export function crop(image: Sharp, argument: string) {
 	const match = /^(\d+)-(\d+)-(\d+)-(\d+)$/.exec(argument);
 	if (!match) {
-		throw new FilterArgumentError("裁剪参数错误：" + argument);
+		throw new ParamsError("裁剪参数错误：" + argument);
 	}
 	const [, left, top, width, height] = match;
 
@@ -25,7 +25,7 @@ export function crop(image: Sharp, argument: string) {
 export function resize(image: Sharp, argument: string) {
 	const match = /^(\d*)x(\d*)$/.exec(argument);
 	if (!match) {
-		throw new FilterArgumentError("缩放参数错误：" + argument);
+		throw new ParamsError("缩放参数错误：" + argument);
 	}
 	const [, width, height] = match;
 

@@ -1,5 +1,5 @@
 import sharp, { Metadata, Region } from "sharp";
-import { BadImageError, FilterArgumentError } from "./errors";
+import { BadDataError, ParamsError } from "./errors";
 
 /**
  * 预设集合，所有的裁剪方式都事先在这里配置，然后才能使用。
@@ -21,12 +21,12 @@ export default function createPresetCropFilter(presets: Presets) {
 	return async (buffer: Buffer, name: string) => {
 		const preset = presets[name];
 		if (!preset) {
-			throw new FilterArgumentError(`不存在的预设名：${name}`);
+			throw new ParamsError(`不存在的预设名：${name}`);
 		}
 		const image = sharp(buffer);
 		const metadata = await image.metadata()
 			.catch(() => {
-				throw new BadImageError();
+				throw new BadDataError();
 			});
 		return image.extract(preset(metadata)).toBuffer();
 	};

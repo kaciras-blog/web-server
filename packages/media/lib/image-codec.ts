@@ -4,14 +4,14 @@ import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
-import { BadImageError, FilterArgumentError, ImageFilterException } from "./errors";
+import { BadDataError, ImageFilterException, ParamsError } from "./errors";
 
 const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
 
 /** 转换一下异常以便上层处理 */
 function throwInvalidData(error: Error): never {
-	throw new BadImageError(error.message);
+	throw new BadDataError(error.message);
 }
 
 /**
@@ -79,7 +79,7 @@ export default async function optimize(buffer: Buffer, targetType: string) {
 	switch (targetType) {
 		case "gif":
 			if (!isGif(buffer)) {
-				throw new BadImageError("不支持非GIF图转GIF");
+				throw new BadDataError("不支持非GIF图转GIF");
 			}
 			return gifsicle(buffer).catch(throwInvalidData);
 		case "jpg":
@@ -93,12 +93,12 @@ export default async function optimize(buffer: Buffer, targetType: string) {
 			// 1) pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
 			// 2) 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用。
 			if (!isPng(buffer)) {
-				throw new BadImageError("请先转成PNG再压缩");
+				throw new BadDataError("请先转成PNG再压缩");
 			}
 			return pngquant(buffer).catch(throwInvalidData);
 		case "webp":
 			return encodeWebp(buffer);
 		default:
-			throw new FilterArgumentError("不支持的输出格式：" + targetType);
+			throw new ParamsError("不支持的输出格式：" + targetType);
 	}
 }

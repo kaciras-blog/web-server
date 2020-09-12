@@ -106,7 +106,7 @@ describe("uploadImage", () => {
 		expect(mockService.save.mock.calls).toHaveLength(0);
 	});
 
-	it("should fail on InputDataError", async () => {
+	it("should fail on MediaError", async () => {
 		mockService.save.mockRejectedValueOnce(new FilterArgumentError());
 
 		await supertest(callback)

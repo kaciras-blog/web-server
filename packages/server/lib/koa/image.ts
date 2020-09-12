@@ -11,7 +11,7 @@ import fs from "fs-extra";
 import { BaseContext, Context, Middleware, Next, ParameterizedContext } from "koa";
 import { getLogger } from "log4js";
 import mime from "mime-types";
-import { InputDataError } from "@kaciras-blog/media/lib/errors";
+import { MediaError } from "@kaciras-blog/media/lib/errors";
 import { PreGenerateImageService } from "@kaciras-blog/media/lib/image-service";
 
 const logger = getLogger("Image");
@@ -87,7 +87,7 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
 		ctx.status = 200;
 		ctx.set("Location", `${ctx.path}/${name}`);
 	} catch (err) {
-		if (!(err instanceof InputDataError)) {
+		if (!(err instanceof MediaError)) {
 			throw err;
 		}
 		ctx.status = 400;

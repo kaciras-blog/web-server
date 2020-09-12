@@ -1,19 +1,19 @@
 import path from "path";
 import fs from "fs-extra";
 import imageCodec from "../lib/image-codec";
-import { BadImageError, FilterArgumentError } from "../lib/errors";
+import { BadDataError, ParamsError } from "../lib/errors";
 
-it("should throw FilterArgumentError on unsupported type", () => {
+it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
-	return expect(imageCodec(buffer, "invalid")).rejects.toBeInstanceOf(FilterArgumentError);
+	return expect(imageCodec(buffer, "invalid")).rejects.toBeInstanceOf(ParamsError);
 });
 
-// 对于非图片数据的输入，应当抛出 InputDataError 异常
+// 对于非图片数据的输入，应当抛出 MediaError 异常
 describe("For non-image data", () => {
 	const buffer = Buffer.from("invalid");
 
 	function testFor(type: string) {
-		return expect(imageCodec(buffer, type)).rejects.toBeInstanceOf(BadImageError);
+		return expect(imageCodec(buffer, type)).rejects.toBeInstanceOf(BadDataError);
 	}
 
 	it("should throw jpg", () => testFor("jpg"));
@@ -22,12 +22,12 @@ describe("For non-image data", () => {
 	it("should throw webp", () => testFor("webp"));
 });
 
-// 对于损坏的图片数据，应当抛出 InputDataError 异常
+// 对于损坏的图片数据，应当抛出 MediaError 异常
 describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "bad_image." + srcType));
-		await expect(imageCodec(buffer, targetType)).rejects.toBeInstanceOf(BadImageError);
+		await expect(imageCodec(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
 	}
 
 	it("should throws on optimize gif", () => testFor("gif", "gif"));

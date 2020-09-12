@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import sharp from "sharp";
 import PresetCropFilter from "../lib/crop-filter";
-import { BadImageError, FilterArgumentError } from "../lib/errors";
+import { BadDataError, ParamsError } from "../lib/errors";
 
 const buffer = fs.readFileSync(path.join(__dirname, "fixtures", "tile_16x16.png"));
 
@@ -38,7 +38,7 @@ it("should crop image", async () => {
 
 it("should throws on preset not found", () => {
 	const filter = PresetCropFilter({});
-	expect(filter(buffer, "_")).rejects.toBeInstanceOf(FilterArgumentError);
+	expect(filter(buffer, "_")).rejects.toBeInstanceOf(ParamsError);
 });
 
 it("should throws on bad data", () => {
@@ -46,5 +46,5 @@ it("should throws on bad data", () => {
 		test: (() => ({ left: 0, top: 0, width: 8, height: 8 })),
 	});
 	const badData = Buffer.from("invalid");
-	expect(filter(badData, "test")).rejects.toBeInstanceOf(BadImageError);
+	expect(filter(badData, "test")).rejects.toBeInstanceOf(BadDataError);
 });
