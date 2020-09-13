@@ -2,11 +2,6 @@ import { join } from "path";
 import fs from "fs-extra";
 import { Params } from "./WebFileService";
 
-export interface FileSaveResult {
-	filename: string;
-	alreadyExists: boolean;
-}
-
 export default class LocalFileStore {
 
 	private readonly directory: string;
@@ -36,9 +31,8 @@ export default class LocalFileStore {
 	}
 
 	async putCache(filename: string, buffer: any, params: Params) {
-
+		this.getFilePath()
 	}
-
 
 	/**
 	 *

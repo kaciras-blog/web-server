@@ -1,9 +1,9 @@
-import LocalFileStore from "./LocalFileStore";
-import { MediaLoadRequest, MediaSaveRequest, Params } from "./WebFileService";
-import { hashName } from "./common";
 import zlib, { InputType } from "zlib";
 import { promisify } from "util";
 import SVGO from "svgo";
+import LocalFileStore from "./LocalFileStore";
+import { MediaLoadRequest, MediaSaveRequest, Params } from "./WebFileService";
+import { hashName } from "./common";
 
 const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
 const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
@@ -52,15 +52,22 @@ export default class SVGImageService {
 	}
 
 	async load(request: MediaLoadRequest) {
-		const { name, parameters, acceptEncodings } = request;
+		const { name, acceptEncodings } = request;
 
 		if (acceptEncodings.includes("br")) {
-			const data = await this.store.getCache(name, parameters);
-			if(data) {
+			const data = await this.store.getCache(name, { encoding: "br" });
+			if (data) {
 				return data;
 			}
 		}
 
+		if (acceptEncodings.includes("gz")) {
+			const data = await this.store.getCache(name, { encoding: "gz" });
+			if (data) {
+				return data;
+			}
+		}
 
+		return this.store.getCache(name, {});
 	}
 }

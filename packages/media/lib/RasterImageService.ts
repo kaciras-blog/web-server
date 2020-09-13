@@ -5,6 +5,7 @@ import { BadDataError } from "./errors";
 import { hashName } from "./common";
 import LocalFileStore from "./LocalFileStore";
 import { MediaSaveRequest, Params } from "./WebFileService";
+import { crop } from "./image-processors";
 
 interface ImageInfo {
 	buffer: Buffer;
@@ -19,7 +20,7 @@ const logger = getLogger("Image");
 const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
 async function preprocess(request: MediaSaveRequest): Promise<ImageInfo> {
-	const { buffer } = request;
+	const { buffer, parameters } = request;
 
 	let type = mime.extension(request.mimetype);
 	if (!type) {
@@ -27,8 +28,8 @@ async function preprocess(request: MediaSaveRequest): Promise<ImageInfo> {
 	}
 
 	let image: Sharp | null = null;
-	if (request.parameters.crop) {
-		image = sharp(buffer).extract();
+	if (parameters.crop) {
+		image = crop(sharp(buffer), parameters.crop);
 	}
 
 	if (type === "bmp") {
