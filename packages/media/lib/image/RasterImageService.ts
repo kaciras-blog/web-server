@@ -2,7 +2,6 @@ import { getLogger } from "log4js";
 import sharp, { Sharp } from "sharp";
 import mime from "mime-types";
 import { BadDataError } from "../errors";
-import { hashName } from "../common";
 import LocalFileStore from "../LocalFileStore";
 import { MediaSaveRequest, Params } from "../WebFileService";
 import { crop } from "./param-processor";
@@ -54,15 +53,15 @@ export default class RasterImageService {
 
 	async save(request: MediaSaveRequest) {
 		const info = await preprocess(request);
-		const hash = hashName(info.buffer);
+		const { buffer, type } = info;
 
-		const { filename, alreadyExists } = await this.store.save();
+		const { name, createNew } = await this.store.save(buffer, type, request.name);
 
-		if (!alreadyExists) {
-			await this.buildCache(filename, info, request.parameters);
+		if (createNew) {
+			await this.buildCache(name, info, request.parameters);
 		}
 
-		return filename;
+		return name;
 	}
 
 	async buildCache(name: string, info: ImageInfo, parameters: Params) {

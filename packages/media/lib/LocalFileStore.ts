@@ -1,45 +1,69 @@
 import { join } from "path";
 import fs from "fs-extra";
+import { hashName } from "./common";
 import { Params } from "./WebFileService";
+import { FileStore } from "./FileStore";
 
-export default class LocalFileStore {
+/**
+ * 把文件和缓存都保存在本地的磁盘上。
+ */
+export default class LocalFileStore implements FileStore {
 
 	private readonly directory: string;
 
 	constructor(directory: string) {
 		this.directory = directory;
+		fs.ensureDirSync(directory);
 	}
 
-	async save(filename: string, buffer: Buffer) {
+	async save(data: Buffer, type: string, rawName: string) {
+		const name = `${hashName(data)}.${type}`;
 		const path = join(this.directory, name);
-		let alreadyExists = false;
 
+		let createNew = true;
 		try {
-			await fs.writeFile(path, buffer, { flag: "wx" });
+			await fs.writeFile(path, data, { flag: "wx" });
 		} catch (e) {
 			if (e.code !== "EEXIST") {
 				throw e;
 			}
-			alreadyExists = true;
+			createNew = false;
 		}
 
-		return { filename, alreadyExists };
+		return { name, createNew };
 	}
 
-	getCache(filename: string, params: Params): Promise<ReadableStream | null> {
-
+	async load(name: string) {
+		fs.createReadStream(join(this.directory, name))
 	}
 
-	async putCache(filename: string, buffer: any, params: Params) {
-		this.getFilePath()
+	getCache(name: string, params: Params) {
+		const path = this.getFilePath(name, params);
+		try {
+			return Promise.resolve(fs.createReadStream(path));
+		} catch (e) {
+			if (e.code !== "ENOENT") {
+				return Promise.reject(e);
+			}
+			return Promise.resolve(null);
+		}
+	}
+
+	async putCache(data: Buffer, name: string, params: Params) {
+		const path = this.getFilePath(name, params);
+		await fs.ensureFile(path);
+		return fs.writeFile(path, data);
 	}
 
 	/**
+	 * 获取缓存文件的路径，其由参数生成目录，然后再加上文件名组成。
 	 *
-	 * Object.keys(tags) 对于非 ASCII 字符串的键返回的顺序不确定，必须排序。
+	 * 【实现注意】
+	 * 每个参数必须在目录名上包含键和值两者，不能只有值，因为有同值不同键的可能。
+	 * Object.keys(tags) 对于非 ASCII 字符的键返回的顺序不确定，所以需要排序。
 	 *
-	 * @param name
-	 * @param params
+	 * @param name 文件名
+	 * @param params 参数
 	 * @private
 	 */
 	private getFilePath(name: string, params: Params) {
