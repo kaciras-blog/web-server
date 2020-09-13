@@ -1,5 +1,5 @@
 import sharp, { Metadata, Region } from "sharp";
-import { BadDataError, ParamsError } from "./errors";
+import { BadDataError, ParamsError } from "../errors";
 
 /**
  * 预设集合，所有的裁剪方式都事先在这里配置，然后才能使用。

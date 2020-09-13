@@ -1,11 +1,11 @@
 import { getLogger } from "log4js";
 import sharp, { Sharp } from "sharp";
 import mime from "mime-types";
-import { BadDataError } from "./errors";
-import { hashName } from "./common";
-import LocalFileStore from "./LocalFileStore";
-import { MediaSaveRequest, Params } from "./WebFileService";
-import { crop } from "./image-processors";
+import { BadDataError } from "../errors";
+import { hashName } from "../common";
+import LocalFileStore from "../LocalFileStore";
+import { MediaSaveRequest, Params } from "../WebFileService";
+import { crop } from "./param-processor";
 
 interface ImageInfo {
 	buffer: Buffer;

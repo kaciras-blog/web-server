@@ -1,9 +1,9 @@
 import zlib, { InputType } from "zlib";
 import { promisify } from "util";
 import SVGO from "svgo";
-import LocalFileStore from "./LocalFileStore";
-import { MediaLoadRequest, MediaSaveRequest, Params } from "./WebFileService";
-import { hashName } from "./common";
+import LocalFileStore from "../LocalFileStore";
+import { MediaLoadRequest, MediaSaveRequest, Params } from "../WebFileService";
+import { hashName } from "../common";
 
 const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
 const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
