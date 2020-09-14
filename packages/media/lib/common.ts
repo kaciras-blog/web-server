@@ -22,6 +22,12 @@ import { xxHash3_128 } from "@kaciras-blog/nativelib";
  * 可以得出，在不敏感的系统上 base64 有效位数降低为原来的 0.86 倍。
  * 20 位 base64 拥有 120 bit 信息，在不敏感的系统上降低为 103.4 bit，碰撞几率仍然很低。
  *
+ * 【碰撞率】
+ * 通过生日问题可以计算，103 bit 的 Hash 需要一千四百亿输入才能达到一亿分之一的碰撞率。
+ * https://en.wikipedia.org/wiki/Birthday_attack
+ *
+ * 当然这要求 Hash 算法没有缺陷，目前使用的 xxHash3_128 没有足够的分析所以不知道行不行。
+ *
  * 【为什么不用 HEX】
  * 我有强迫症，能省几个字符坚决不用更长的。
  *
