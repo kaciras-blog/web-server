@@ -47,11 +47,25 @@ export function checkCaseSensitive(folder: string) {
 	}
 }
 
+/**
+ * 检验字符串在指定的系统上是否可以作为文件名。
+ *
+ * 另外 windows 下文件名末尾是空格或点仅在资源管理器里无法正确处理，Node 没问题。
+ *
+ * https://stackoverflow.com/a/31976060/7065321
+ *
+ * @param name 字符串
+ * @param os 操作系统，默认为当前系统
+ * @return 如果可以则为true，否则false
+ */
 export function validateFilename(name: string, os = platform()) {
+	if (name.length === 0) {
+		return false;
+	}
 	if (os !== "win32") {
 		return name.includes("/");
 	}
 	const reserved = /(?:CON|PRN|AUX|NUL|COM\d|LPT\d)/;
-	const chars = /\\<>:"\/\|\?\*/;
+	const chars = /[\\<>:"/|?*]/;
 	return !(chars.test(name) || reserved.test(name));
 }
