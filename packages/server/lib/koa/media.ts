@@ -1,12 +1,12 @@
 import { Context, ExtendableContext, Middleware, Next, ParameterizedContext } from "koa";
-import { InputDataError } from "@kaciras-blog/image/lib/errors";
-import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
 import { getLogger } from "log4js";
+import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
+import { MediaError } from "@kaciras-blog/media/lib/errors";
 
 const logger = getLogger("media");
 
 /**
- * 下载图片时的 Koa 上下文，文件名通过 ctx.params.name 来传递。
+ * 下载图片时的 Koa 上下文，文件名通过 ctx.params.rawName 来传递。
  * 之所以这么设计是为了跟 @koa/router 一致。
  */
 export interface DownloadContext extends ExtendableContext {
@@ -20,7 +20,32 @@ export interface DownloadContext extends ExtendableContext {
  * @param ctx 请求上下文
  */
 export async function download(service: WebFileService, ctx: DownloadContext) {
+	const { name } = ctx.params;
 
+	const result = await service.load({
+		name: ctx.params.name,
+		acceptTypes: ctx.accepts(),
+		acceptEncodings: ctx.acceptsEncodings(),
+		parameters: ctx.query,
+	});
+
+	if (!result) {
+		logger.warn(`请求了不存在的图片：${name}`);
+		return ctx.status = 404;
+	}
+
+	const { mtime, data, size } = result.file;
+
+	ctx.type = result.mimetype;
+	ctx.body = data;
+
+	if (result.encoding) {
+		ctx.set("Content-Encoding", result.encoding);
+	} else {
+		ctx.set("Content-Length", size.toString());
+	}
+	ctx.set("Last-Modified", mtime.toUTCString());
+	ctx.set("Cache-Control", "public,max-age=31536000");
 }
 
 /**
@@ -36,9 +61,14 @@ export async function upload(service: WebFileService, ctx: Context) {
 	}
 
 	try {
-		ctx.body = await service.save(file, ctx.query);
+		ctx.body = await service.save({
+			buffer: file.buffer,
+			mimetype: file.mimetype,
+			rawName: file.originalname,
+			parameters: ctx.query,
+		});
 	} catch (err) {
-		if (!(err instanceof InputDataError)) {
+		if (!(err instanceof MediaError)) {
 			throw err;
 		}
 		ctx.status = 400;
@@ -53,14 +83,14 @@ export async function upload(service: WebFileService, ctx: Context) {
  * 该函数的作用类似 @koa/router，组合上传和下载函数，返回新的中间件。
  *
  * 【新中间件的功能】
- * 1）GET 方法映射到 downloadFn，并自动设置 ctx.params.name。
+ * 1）GET 方法映射到 downloadFn，并自动设置 ctx.params.rawName。
  * 2）POST 方法映射到 uploadFn。
  * 3）其他方法返回405.
  * 4）指定 contextPath，非此路径下的请求将原样传递给下一个中间件。
  *
  * 相当于用@koa/router的代码：
  * @example
- * router.get(`${contextPath}/:name`, downloadFn);
+ * router.get(`${contextPath}/:rawName`, downloadFn);
  * router.post(contextPath, uploadFn);
  *
  * @param contextPath 上下文路径

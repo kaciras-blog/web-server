@@ -34,6 +34,6 @@ import { xxHash3_128 } from "@kaciras-blog/nativelib";
  * @param buffer 数据
  * @return 字符串形式的 Hash 值
  */
-export function hashName(buffer: Buffer) {
+export function hashName(buffer: Buffer | string) {
 	return xxHash3_128(buffer, "base64u").slice(0, 20);
 }

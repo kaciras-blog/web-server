@@ -1,6 +1,10 @@
 import { Params } from "./WebFileService";
 import ReadableStream = NodeJS.ReadableStream;
 
+export type Data = string | Buffer;
+
+export type FileBody = ReadableStream | Buffer | string;
+
 /**
  * 表示保存文件的结果。
  */
@@ -13,6 +17,12 @@ export interface FileSaveResult {
 	createNew: boolean;
 }
 
+export interface FileInfo {
+	size: number;
+	mtime: Date;
+	data: FileBody;
+}
+
 export interface FileStore {
 
 	/**
@@ -22,14 +32,14 @@ export interface FileStore {
 	 * @param type 类型
 	 * @param rawName 名字提示
 	 */
-	save(data: Buffer, type: string, rawName: string): Promise<FileSaveResult>;
+	save(data: Data, type: string, rawName: string): Promise<FileSaveResult>;
 
 	/**
 	 * 读取原始文件。
 	 *
 	 * @param name 文件名
 	 */
-	load(name: string): Promise<ReadableStream | null>;
+	load(name: string): Promise<FileInfo | null>;
 
 	/**
 	 * 保存缓存文件，缓存文件是原文件的优化版本。
@@ -38,7 +48,7 @@ export interface FileStore {
 	 * @param name 文件名
 	 * @param params 参数
 	 */
-	putCache(data: Buffer, name: string, params: Params): Promise<void>;
+	putCache(data: Data, name: string, params: Params): Promise<void>;
 
 	/**
 	 * 读取缓存文件。
@@ -46,5 +56,5 @@ export interface FileStore {
 	 * @param name 文件名
 	 * @param params 参数
 	 */
-	getCache(name: string, params: Params): Promise<ReadableStream | null>;
+	getCache(name: string, params: Params): Promise<FileInfo | null>;
 }

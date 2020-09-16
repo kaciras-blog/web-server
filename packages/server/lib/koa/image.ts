@@ -17,7 +17,7 @@ import { PreGenerateImageService } from "@kaciras-blog/media/lib/image-service";
 const logger = getLogger("Image");
 
 /**
- * 下载图片时的 Koa 上下文，文件名通过 ctx.params.name 来传递。
+ * 下载图片时的 Koa 上下文，文件名通过 ctx.params.rawName 来传递。
  * 之所以这么设计是为了跟 @koa/router 一致。
  */
 export interface DownloadContext extends BaseContext {
@@ -101,14 +101,14 @@ export async function uploadImage(service: PreGenerateImageService, ctx: Context
  * 该函数的作用类似 @koa/router，组合上传和下载函数，返回新的中间件。
  *
  * 【新中间件的功能】
- * 1）GET 方法映射到 downloadFn，并自动设置 ctx.params.name。
+ * 1）GET 方法映射到 downloadFn，并自动设置 ctx.params.rawName。
  * 2）POST 方法映射到 uploadFn。
  * 3）其他方法返回405.
  * 4）指定 contextPath，非此路径下的请求将原样传递给下一个中间件。
  *
  * 相当于用@koa/router的代码：
  * @example
- * router.get(`${contextPath}/:name`, downloadFn);
+ * router.get(`${contextPath}/:rawName`, downloadFn);
  * router.post(contextPath, uploadFn);
  *
  * @param contextPath 上下文路径

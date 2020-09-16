@@ -23,39 +23,40 @@ export default class SVGImageService {
 	}
 
 	async save(request: MediaSaveRequest) {
-		const { buffer } = request;
+		const { buffer, rawName } = request;
 
-		const { filename, alreadyExists } = await this.store.save(buffer, );
+		const { name, createNew } = await this.store.save(buffer, "svg", rawName);
 
-		if (!alreadyExists) {
+		if (createNew) {
 			const start = performance.now();
-			await this.buildCache(filename, buffer, request.parameters);
+			await this.buildCache(name, buffer, request.parameters);
 			const time = performance.now() - start;
 
-			logger.info(`处理图片 ${filename} 用时 ${time.toFixed()}ms`);
+			logger.info(`处理图片 ${name} 用时 ${time.toFixed()}ms`);
 		}
 
-		return filename;
+		return name;
 	}
 
 	async buildCache(name: string, buffer: Buffer, parameters: Params) {
+		const { store } = this;
 		const tasks = new Array(3);
 		const { data } = await this.svgo.optimize(buffer.toString());
 
-		tasks.push(this.store.putCache(name, data, {}));
-		tasks.push(this.compress(data, gzipCompress, "gz"));
+		const compress = async (algorithm: typeof gzipCompress, encoding: string) => {
+			const compressed = await algorithm(data);
+			return store.putCache(name, compressed, { encoding })
+		}
 
 		if (data.length > BROTLI_THRESHOLD) {
-			tasks.push(this.compress(data, brotliCompress, "br"));
+			tasks.push(compress(brotliCompress, "br"));
 		}
+		tasks.push(compress(gzipCompress, "gz"));
+		tasks.push(store.putCache(name, data, {}));
 
 		return Promise.all(tasks);
 	}
 
-	private async compress(data: string, algorithm: typeof gzipCompress, encoding: string) {
-		const buffer = await algorithm(data);
-		return this.store.putCache(name, buffer, { encoding })
-	}
 
 	async load(request: MediaLoadRequest) {
 		const { name, acceptEncodings } = request;
@@ -67,7 +68,7 @@ export default class SVGImageService {
 			}
 		}
 
-		if (acceptEncodings.includes("gz")) {
+		if (acceptEncodings.includes("gzip")) {
 			const cache = await this.store.getCache(name, { encoding: "gz" });
 			if (cache) {
 				return cache;

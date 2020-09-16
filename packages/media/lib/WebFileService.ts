@@ -1,3 +1,5 @@
+import { FileInfo } from "./FileStore";
+
 export interface Params {
 	[key: string]: string;
 }
@@ -5,7 +7,7 @@ export interface Params {
 export interface MediaSaveRequest {
 	buffer: Buffer;
 	mimetype: string;
-	name: string;
+	rawName: string;
 	parameters: Params;
 }
 
@@ -16,9 +18,15 @@ export interface MediaLoadRequest {
 	parameters: Params;
 }
 
+export interface MediaResponse {
+	file: FileInfo;
+	mimetype: string;
+	encoding: string;
+}
+
 export interface WebFileService {
 
 	save(request: MediaSaveRequest): Promise<string>;
 
-	load(request: MediaLoadRequest): Promise<any>;
+	load(request: MediaLoadRequest): Promise<MediaResponse>;
 }

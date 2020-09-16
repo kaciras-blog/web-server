@@ -1,8 +1,10 @@
 import { join } from "path";
 import fs from "fs-extra";
 import { hashName } from "./common";
+import { checkCaseSensitive } from "./fs-utils";
 import { Params } from "./WebFileService";
-import { FileStore } from "./FileStore";
+import { Data, FileStore } from "./FileStore";
+
 
 /**
  * 把文件和缓存都保存在本地的磁盘上。
@@ -14,9 +16,10 @@ export default class LocalFileStore implements FileStore {
 	constructor(directory: string) {
 		this.directory = directory;
 		fs.ensureDirSync(directory);
+		checkCaseSensitive(directory);
 	}
 
-	async save(data: Buffer, type: string, rawName: string) {
+	async save(data: Data, type: string, rawName: string) {
 		const name = `${hashName(data)}.${type}`;
 		const path = join(this.directory, name);
 
@@ -33,23 +36,16 @@ export default class LocalFileStore implements FileStore {
 		return { name, createNew };
 	}
 
-	async load(name: string) {
-		fs.createReadStream(join(this.directory, name))
+	load(name: string) {
+		return this.getFileInfo(join(this.directory, name));
 	}
 
 	getCache(name: string, params: Params) {
 		const path = this.getFilePath(name, params);
-		try {
-			return Promise.resolve(fs.createReadStream(path));
-		} catch (e) {
-			if (e.code !== "ENOENT") {
-				return Promise.reject(e);
-			}
-			return Promise.resolve(null);
-		}
+		return this.getFileInfo(path);
 	}
 
-	async putCache(data: Buffer, name: string, params: Params) {
+	async putCache(data: Data, name: string, params: Params) {
 		const path = this.getFilePath(name, params);
 		await fs.ensureFile(path);
 		return fs.writeFile(path, data);
@@ -71,5 +67,18 @@ export default class LocalFileStore implements FileStore {
 			.sort()
 			.map(k => `${k}=${params[k]}`);
 		return join(this.directory, ...parts, name);
+	}
+
+	private async getFileInfo(path: string) {
+		try {
+			const data = fs.createReadStream(path);
+			const { size, mtime } = await fs.stat(path);
+			return { size, mtime, data };
+		} catch (e) {
+			if (e.code !== "ENOENT") {
+				throw e;
+			}
+			return null;
+		}
 	}
 }
