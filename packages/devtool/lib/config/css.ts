@@ -61,7 +61,6 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 				// 在 css-loader 之前的有 postcss-loader 和一个可选的预处理器。
 				importLoaders: 1,
 				esModule: false,
-				sourceMap,
 				modules: modules && {
 					localIdentName: options.production
 						? "[hash:base64:5]"
@@ -70,19 +69,20 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 			},
 		};
 
-		const postcssLoader: any = {
-			loader: "postcss-loader",
-			options: { sourceMap },
-		};
+		const postcssOptions: any = {};
 		if (options.production) {
-			postcssLoader.options.plugins = [require("cssnano")()];
+			postcssOptions.plugins = [require("cssnano")()];
 		}
 
 		const loaderChain: RuleSetUseItem[] = [
 			outputLoader,
 			cssLoader,
-			postcssLoader,
+			{
+				loader: "postcss-loader",
+				options: { postcssOptions },
+			},
 		];
+
 		if (preProcessor) {
 			loaderChain.push(preProcessor);
 			cssLoader.options.importLoaders += 1;
