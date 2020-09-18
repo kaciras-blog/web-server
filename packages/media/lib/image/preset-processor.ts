@@ -1,11 +1,17 @@
-import sharp, { Metadata, Region } from "sharp";
+import sharp, { Metadata, Region, Sharp, Stats } from "sharp";
 import { BadDataError, ParamsError } from "../errors";
 
 /**
  * 预设集合，所有的裁剪方式都事先在这里配置，然后才能使用。
  */
 export interface Presets {
-	[key: string]: (metadata: Metadata) => Region;
+	[key: string]: (metadata: Metadata, stats: Stats) => Region;
+}
+
+async function getPresetArgs(image: Sharp) {
+	const stats = await image.stats().catch(BadDataError.convert);
+	const metadata = await image.metadata().catch(BadDataError.convert);
+	return [metadata, stats] as [Metadata, Stats];
 }
 
 /**
@@ -19,15 +25,14 @@ export default function createPresetCropFilter(presets: Presets) {
 
 	// 返回的图片格式跟原图一样
 	return async (buffer: Buffer, name: string) => {
-		const preset = presets[name];
-		if (!preset) {
+		const presetFn = presets[name];
+		if (!presetFn) {
 			throw new ParamsError(`不存在的预设名：${name}`);
 		}
+
 		const image = sharp(buffer);
-		const metadata = await image.metadata()
-			.catch(() => {
-				throw new BadDataError();
-			});
-		return image.extract(preset(metadata)).toBuffer();
+		const args = await getPresetArgs(image);
+
+		return image.extract(presetFn(...args)).toBuffer();
 	};
 }

@@ -10,7 +10,17 @@ export abstract class MediaError extends BaseError {}
 /**
  * 文件数据已损坏，或是输入了无法处理的数据。
  */
-export class BadDataError extends MediaError {}
+export class BadDataError extends MediaError {
+
+	/**
+	 * 对异常进行转换，捕获原始异常然后抛出 BadDataError。
+	 *
+	 * @param error 原始异常
+	 */
+	static convert(error: Error): never {
+		throw new BadDataError(error.message);
+	}
+}
 
 /**
  * 输入的参数无法解析，或是无效的值。

@@ -1,12 +1,12 @@
 import { Context, ExtendableContext, Middleware, Next, ParameterizedContext } from "koa";
 import { getLogger } from "log4js";
-import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
 import { MediaError } from "@kaciras-blog/media/lib/errors";
+import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
 
 const logger = getLogger("media");
 
 /**
- * 下载图片时的 Koa 上下文，文件名通过 ctx.params.rawName 来传递。
+ * 下载图片时的 Koa 上下文，文件名通过 ctx.params.name 来传递。
  * 之所以这么设计是为了跟 @koa/router 一致。
  */
 export interface DownloadContext extends ExtendableContext {
@@ -24,8 +24,8 @@ export async function download(service: WebFileService, ctx: DownloadContext) {
 
 	const result = await service.load({
 		name: ctx.params.name,
-		acceptTypes: ctx.accepts(),
-		acceptEncodings: ctx.acceptsEncodings(),
+		acceptTypes: ctx.headers["Accept"].split(/,\s*/g),
+		acceptEncodings: ctx.headers["Accept-Encoding"].split(/,\s*/g),
 		parameters: ctx.query,
 	});
 
@@ -44,6 +44,8 @@ export async function download(service: WebFileService, ctx: DownloadContext) {
 	} else {
 		ctx.set("Content-Length", size.toString());
 	}
+
+	// 修改时间要以被请求的图片为准而不是原图，因为处理器可能被修改并重新生成了缓存
 	ctx.set("Last-Modified", mtime.toUTCString());
 	ctx.set("Cache-Control", "public,max-age=31536000");
 }

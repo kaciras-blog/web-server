@@ -9,17 +9,12 @@ import { BadDataError, ImageFilterException, ParamsError } from "../errors";
 const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
 
-/** 转换一下异常以便上层处理 */
-function throwInvalidData(error: Error): never {
-	throw new BadDataError(error.message);
-}
-
 /**
  * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这仨字。
  *
  * 【造轮子】
  * 有个 is-gif 包提供同样的功能，但它使用 file-type 很多余。
- * 反观 is-png 倒是直接读取 MagicNumber，所以PNG直接用 is-png 包而GIF自己写个函数判断。
+ * 反观 is-png 倒是直接读取 magic number，所以 PNG 使用用 is-png 包而 GIF 自己实现。
  *
  * @param buffer 图片数据
  * @return 如果是GIF格式返回true，否则false
@@ -29,76 +24,62 @@ function isGif(buffer: Buffer) {
 }
 
 /**
- * 尝试将图片转换为更优化的 WebP 格式。
- * WebP 并不一定比原图的编码更好，它有更高的解码消耗，所以只有 WebP 能明显降低图片大小时才有意义。
+ * 尝试将图片转换为 WebP 格式，图片可能被有损压缩。
+ *
+ * 由于 sharp 0.26.0 不支持 webp 动画，gif2webp-bin 也安装失败，所以暂不支持 GIF 输入。
+ *
+ * 注意 WebP 并不一定比原图的更好，请在外部判断是否需要 WebP 格式。
  *
  * @param buffer 图片数据
- * @throws 如果转换效果不理想则抛出 ImageFilterException
+ * @return WebP 编码的图片
  */
-async function encodeWebp(buffer: Buffer) {
-
-	// TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败
+export async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
-		throw new ImageFilterException("暂不支持GIF转WebP");
+		throw new ImageFilterException("暂不支持 GIF 转 WebP");
 	}
+
+	const candidates = new Array<Promise<Buffer>>(2);
 	const input = sharp(buffer);
 
-	const candidates: Promise<Buffer>[] = [
+	candidates.push(input.webp({ quality: 75, smartSubsample: true }).toBuffer());
 
-		// Google 官网说默认的质量 75 是比较均衡的，但 sharp 默认80，这里还是用 Google 的。
-		// 经测试 smartSubsample (-sharp_yuv) 可以降低色彩失真，且不明显增加体积和编码时间。
-		input.webp({ quality: 75, smartSubsample: true }).toBuffer(),
-	];
-
-	/*
-	 * 测试中发现黑色背景+彩色文字的图片从PNG转WEBP之后更大了，且失真严重。
-	 * 但是使用 -lossless 反而对这类图片有较好的效果。
-	 * 目前也不知道怎么检测图像是哪种，只能比较有损和无损两种结果选出最好的。
-	 *
-	 * 根据官网的描述：
-	 * https://developers.google.com/speed/webp/faq#can_a_webp_image_grow_larger_than_its_source_image
-	 *
-	 * 此问题主要出现在无损图像上，故仅 png 格式增加 lossless 模式候选。
-	 */
 	if (isPng(buffer)) {
 		candidates.push(input.webp({ lossless: true }).toBuffer())
 	}
 
-	return (await Promise.all(candidates).catch(throwInvalidData))
+	return (await Promise.all(candidates).catch(BadDataError.convert))
 		.reduce((best, candidate) => candidate.length < best.length ? candidate : best);
 }
 
 /**
- * 压缩和转码图片，将输入的图片转换为指定的格式，并会应用合适的有损压缩来降低图片大小。
+ * 相同格式的优化，都是有损压缩。
  *
- * @param buffer 图片数据
- * @param targetType 目标格式
- * @return 转码后的图片数据
+ * @param buffer 图片
+ * @param type 图片的格式
+ * @return 优化后的图片
  */
-export default async function optimize(buffer: Buffer, targetType: string) {
-	switch (targetType) {
+export async function optimize(buffer: Buffer, type: string) {
+	switch (type) {
 		case "gif":
 			if (!isGif(buffer)) {
 				throw new BadDataError("不支持非GIF图转GIF");
 			}
-			return gifsicle(buffer).catch(throwInvalidData);
+			return gifsicle(buffer).catch(BadDataError.convert);
 		case "jpg":
 			// imagemin-mozjpeg 限制输入必须为JPEG格式所以不能用，而且它还没类型定义。
 			return (await execa(mozjpeg, {
 				maxBuffer: Infinity,
 				input: buffer,
 				encoding: null,
-			}).catch(throwInvalidData)).stdout;
+			}).catch(BadDataError.convert)).stdout;
 		case "png":
 			// 1) pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
 			// 2) 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用。
 			if (!isPng(buffer)) {
-				throw new BadDataError("请先转成PNG再压缩");
+				throw new BadDataError("请先转成 PNG 再压缩");
 			}
-			return pngquant(buffer).catch(throwInvalidData);
-		case "webp":
-			return encodeWebp(buffer);
+			return pngquant(buffer).catch(BadDataError.convert);
 		default:
-			throw new ParamsError("不支持的输出格式：" + targetType);
+			throw new ParamsError("不支持的格式：" + type);
 	}
 }

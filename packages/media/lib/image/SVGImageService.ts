@@ -2,9 +2,9 @@ import zlib, { InputType } from "zlib";
 import { promisify } from "util";
 import SVGO from "svgo";
 import { getLogger } from "log4js";
-import LocalFileStore from "../LocalFileStore";
-import { MediaLoadRequest, MediaSaveRequest, Params } from "../WebFileService";
+import { LoadRequest, Params, SaveRequest } from "../WebFileService";
 import { performance } from "perf_hooks";
+import { FileStore } from "../FileStore";
 
 const logger = getLogger("Image");
 
@@ -16,13 +16,13 @@ const BROTLI_THRESHOLD = 1024;
 export default class SVGImageService {
 
 	private readonly svgo = new SVGO();
-	private readonly store: LocalFileStore;
+	private readonly store: FileStore;
 
-	constructor(store: LocalFileStore) {
+	constructor(store: FileStore) {
 		this.store = store;
 	}
 
-	async save(request: MediaSaveRequest) {
+	async save(request: SaveRequest) {
 		const { buffer, rawName } = request;
 
 		const { name, createNew } = await this.store.save(buffer, "svg", rawName);
@@ -58,7 +58,7 @@ export default class SVGImageService {
 	}
 
 
-	async load(request: MediaLoadRequest) {
+	async load(request: LoadRequest) {
 		const { name, acceptEncodings } = request;
 
 		if (acceptEncodings.includes("br")) {

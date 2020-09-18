@@ -2,10 +2,11 @@ import { getLogger } from "log4js";
 import sharp, { Sharp } from "sharp";
 import mime from "mime-types";
 import { BadDataError, ImageFilterException } from "../errors";
-import LocalFileStore from "../LocalFileStore";
-import { MediaSaveRequest, Params } from "../WebFileService";
+import { LoadRequest, Params, SaveRequest, WebFileService } from "../WebFileService";
 import { crop } from "./param-processor";
 import optimize from "./encoder";
+import { FileStore } from "../FileStore";
+import SVGImageService from "./SVGImageService";
 
 interface ImageInfo {
 	buffer: Buffer;
@@ -20,7 +21,7 @@ const logger = getLogger("Image");
 const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
 
-async function preprocess(request: MediaSaveRequest): Promise<ImageInfo> {
+async function preprocess(request: SaveRequest): Promise<ImageInfo> {
 	const { buffer, parameters } = request;
 
 	let type = mime.extension(request.mimetype);
@@ -45,15 +46,46 @@ async function preprocess(request: MediaSaveRequest): Promise<ImageInfo> {
 	return { type, buffer: image ? await image.toBuffer() : buffer };
 }
 
+class ImageService implements WebFileService {
+
+	private svgService: SVGImageService;
+	private rasterService: RasterImageService;
+
+	constructor(store: FileStore) {
+		this.svgService = new SVGImageService(store);
+		this.rasterService = new RasterImageService(store);
+	}
+
+	save(request: SaveRequest) {
+		if (request.mimetype === "image/svg+xml") {
+			return this.saveSvg(request);
+		} else {
+			return this.saveRaster(request);
+		}
+	}
+
+	load(request: LoadRequest) {
+		return Promise.resolve(null);
+	}
+
+	private saveSvg(request: SaveRequest) {
+
+	}
+
+	private saveRaster(request: SaveRequest) {
+
+	}
+}
+
 export default class RasterImageService {
 
-	private readonly store: LocalFileStore;
+	private readonly store: FileStore;
 
-	constructor(store: LocalFileStore) {
+	constructor(store: FileStore) {
 		this.store = store;
 	}
 
-	async save(request: MediaSaveRequest) {
+	async save(request: SaveRequest) {
 		const info = await preprocess(request);
 		const { buffer, type } = info;
 
@@ -94,5 +126,7 @@ export default class RasterImageService {
 		} else {
 			logger.trace(`${name} 转WebP格式效果不佳`);
 		}
+
+		await Promise.all(tasks);
 	}
 }

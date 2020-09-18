@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs-extra";
-import imageCodec from "../lib/image-codec";
+import imageCodec from "../lib/image/encoder";
 import { BadDataError, ParamsError } from "../lib/errors";
 
 it("should throw ParamsError on unsupported type", () => {

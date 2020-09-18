@@ -1,9 +1,9 @@
 import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
-import { buildCache } from "@kaciras-blog/image/lib/command/build-image-cache";
-import { BlogServerOptions } from "./options";
+import { buildCache } from "@kaciras-blog/media/lib/command/build-cache";
 import run from "./command/run";
+import { BlogServerOptions } from "./options";
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
