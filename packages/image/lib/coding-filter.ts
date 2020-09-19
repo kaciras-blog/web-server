@@ -4,6 +4,8 @@ import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
+import wasm_avif from "@saschazar/wasm-avif";
+import defaultOptions from "@saschazar/wasm-avif/options";
 import { BadImageError, FilterArgumentError, ImageFilterException } from "./errors";
 
 const pngquant = Pngquant({ strip: true });
@@ -68,6 +70,31 @@ async function encodeWebp(buffer: Buffer) {
 		.reduce((best, candidate) => candidate.length < best.length ? candidate : best);
 }
 
+async function encodeAvif(buffer: Buffer) {
+	const { data, info } = await sharp(buffer)
+		.raw()
+		.toBuffer({ resolveWithObject: true });
+
+	const WasmAvif = await wasm_avif();
+
+	// defaultOptions.minQuantizer = 33;
+	// defaultOptions.maxQuantizer = 63;
+	// defaultOptions.minQuantizerAlpha = 33;
+	// defaultOptions.maxQuantizerAlpha = 63;
+
+	const output = WasmAvif.encode(
+		data,
+		info.width,
+		info.height,
+		info.channels,
+		defaultOptions,
+		1,
+	);
+
+	WasmAvif.free();
+	return Buffer.from(output);
+}
+
 /**
  * 压缩和转码的过滤器，将输入的图片转换为指定的格式，并会应用合适的有损压缩来降低图片大小。
  *
@@ -98,6 +125,8 @@ export default async function codingFilter(buffer: Buffer, targetType: string) {
 			return pngquant(buffer).catch(throwInvalidData);
 		case "webp":
 			return encodeWebp(buffer);
+		case "avif":
+			return encodeAvif(buffer);
 		default:
 			throw new FilterArgumentError("不支持的输出格式：" + targetType);
 	}

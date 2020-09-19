@@ -12,6 +12,7 @@
 		"node": ">=14.1.0"
 	},
 	"dependencies": {
+		"@saschazar/wasm-avif": "^1.0.0",
 		"execa": "^4.0.3",
 		"imagemin-gifsicle": "^7.0.0",
 		"imagemin-pngquant": "^9.0.1",

@@ -1445,6 +1445,11 @@
   dependencies:
     "@types/node" ">= 8"
 
+"@saschazar/wasm-avif@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@saschazar/wasm-avif/-/wasm-avif-1.0.0.tgz#c4213b8c51830bff872b5878a5af78ad39d076f7"
+  integrity sha512-N7wd3+1/KcPmlxkmU4xsCw441PAy2bTRieYU62Z2Xey+9uny7QQHAn0GRY8h2zyttGFahgHsdixbjRFBYvHBIw==
+
 "@sindresorhus/is@^0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"

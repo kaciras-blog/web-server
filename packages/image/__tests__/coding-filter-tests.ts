@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs-extra";
-import codingFilter from "../lib/coding-filter";
 import { BadImageError, FilterArgumentError } from "../lib/errors";
+import codingFilter from "../lib/coding-filter";
 
 it("should throw FilterArgumentError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
@@ -45,6 +45,14 @@ describe("optimization", () => {
 	it("should effect on particular image", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
 		const result = await codingFilter(buffer, "webp");
+		expect(result.length).toBeLessThan(buffer.length / 2);
+	});
+
+	it("should encode image to avif", async () => {
+
+		// 这图片有毒？
+		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
+		const result = await codingFilter(buffer, "avif");
 		expect(result.length).toBeLessThan(buffer.length / 2);
 	});
 });
