@@ -1,11 +1,11 @@
+import { join } from "path";
+import { Worker } from "worker_threads";
 import sharp from "sharp";
 import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
-import wasm_avif from "@saschazar/wasm-avif";
-import defaultOptions, { EncodeOptions } from "@saschazar/wasm-avif/options";
 import { BadImageError, FilterArgumentError, ImageFilterException } from "./errors";
 
 const pngquant = Pngquant({ strip: true });
@@ -70,39 +70,24 @@ async function encodeWebp(buffer: Buffer) {
 		.reduce((best, candidate) => candidate.length < best.length ? candidate : best);
 }
 
+const AVIF_WORKER = join(__dirname, "avif-worker.js");
+
 async function encodeAvif(buffer: Buffer) {
-	const { data, info } = await sharp(buffer)
+	const workerData = await sharp(buffer)
 		.raw()
 		.toBuffer({ resolveWithObject: true });
 
-	const WasmAvif = await wasm_avif();
+	const worker = new Worker(AVIF_WORKER, { workerData });
 
-	const options: EncodeOptions = {
-		...defaultOptions,
-		minQuantizer: 33,
-		maxQuantizer: 63,
-		minQuantizerAlpha: 33,
-		maxQuantizerAlpha: 63,
-	}
-
-	try {
-		const output = WasmAvif.encode(
-			data,
-			info.width,
-			info.height,
-			info.channels,
-			options,
-			1,
-		);
-		return Buffer.from(output);
-	} catch (e) {
-		if (e.name !== "RuntimeError") {
-			throw e;
-		}
-		throw new ImageFilterException("AVIF 编码器错误");
-	} finally {
-		WasmAvif.free();
-	}
+	return new Promise<Buffer>((resolve, reject) => {
+		worker.on("exit", (code) => {
+			if (code !== 0) {
+				reject(new Error(`Worker stopped with exit code ${code}`));
+			}
+		});
+		worker.on("error", reject);
+		worker.on("message", resolve);
+	});
 }
 
 /**
