@@ -99,7 +99,7 @@ async function encodeAvif(buffer: Buffer) {
 		if (e.name !== "RuntimeError") {
 			throw e;
 		}
-		throw new ImageFilterException();
+		throw new ImageFilterException("AVIF 编码器错误");
 	} finally {
 		WasmAvif.free();
 	}

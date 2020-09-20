@@ -174,7 +174,7 @@ export class PreGenerateImageService {
 
 			// 异步转码
 			encodeRasterImage({ type: "avif" })
-				.then(data => data && slot.putCache({ type }, data));
+				.then(data => data && slot.putCache({ type: "avif" }, data));
 
 			// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
 			if (webp && webp.length < compressed!.length) {
