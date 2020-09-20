@@ -15,11 +15,11 @@ function mockStore(ignore: string) {
 
 describe("get", () => {
 	const service = new PreGenerateImageService(mockStore as any);
-	
+
 	it("should short-circuit", async () => {
 		mockSlot.getCache.mockResolvedValue("image file");
 
-		await service.get("test", "svg", true, true);
+		await service.get("test", "svg", { brotli: true });
 		expect(mockSlot.getCache.mock.calls).toHaveLength(1);
 	});
 
@@ -28,7 +28,7 @@ describe("get", () => {
 			.mockResolvedValueOnce(null)
 			.mockResolvedValue("image file");
 
-		await service.get("test", "svg", true, true);
+		await service.get("test", "svg", { brotli: true });
 		expect(mockSlot.getCache.mock.calls).toHaveLength(2);
 	});
 });

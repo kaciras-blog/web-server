@@ -5,7 +5,7 @@ import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
 import wasm_avif from "@saschazar/wasm-avif";
-import defaultOptions from "@saschazar/wasm-avif/options";
+import defaultOptions, { EncodeOptions } from "@saschazar/wasm-avif/options";
 import { BadImageError, FilterArgumentError, ImageFilterException } from "./errors";
 
 const pngquant = Pngquant({ strip: true });
@@ -77,22 +77,32 @@ async function encodeAvif(buffer: Buffer) {
 
 	const WasmAvif = await wasm_avif();
 
-	// defaultOptions.minQuantizer = 33;
-	// defaultOptions.maxQuantizer = 63;
-	// defaultOptions.minQuantizerAlpha = 33;
-	// defaultOptions.maxQuantizerAlpha = 63;
+	const options: EncodeOptions = {
+		...defaultOptions,
+		minQuantizer: 33,
+		maxQuantizer: 63,
+		minQuantizerAlpha: 33,
+		maxQuantizerAlpha: 63,
+	}
 
-	const output = WasmAvif.encode(
-		data,
-		info.width,
-		info.height,
-		info.channels,
-		defaultOptions,
-		1,
-	);
-
-	WasmAvif.free();
-	return Buffer.from(output);
+	try {
+		const output = WasmAvif.encode(
+			data,
+			info.width,
+			info.height,
+			info.channels,
+			options,
+			1,
+		);
+		return Buffer.from(output);
+	} catch (e) {
+		if (e.name !== "RuntimeError") {
+			throw e;
+		}
+		throw new ImageFilterException();
+	} finally {
+		WasmAvif.free();
+	}
 }
 
 /**

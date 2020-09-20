@@ -35,11 +35,13 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Downl
 
 	// 浏览器的Accept头总是有一个*/*，导致ctx.accept.type("image/webp")总是true
 	// 故只能去匹配原始字符串
-	const acceptWebp = (ctx.accepts() as string[]).indexOf("image/webp") > -1;
-	const acceptBrotli = !!ctx.acceptsEncodings("br");
+	const supportTable = {
+		avif: (ctx.accepts() as string[]).includes("image/avif"),
+		webp: (ctx.accepts() as string[]).includes("image/webp"),
+		brotli: !!ctx.acceptsEncodings("br"),
+	}
 
-	const result = await service.get(hash, ext, acceptWebp, acceptBrotli);
-
+	const result = await service.get(hash, ext, supportTable);
 	if (!result) {
 		logger.warn(`请求了不存在的图片：${hash}.${ext}`);
 		return ctx.status = 404;

@@ -10,7 +10,6 @@ import codingFilter from "./coding-filter";
 import { ImageStore, LocalFileSlot } from "./image-store";
 import { BadImageError, ImageFilterException } from "./errors";
 
-
 const logger = getLogger("Image");
 
 const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
@@ -35,6 +34,12 @@ interface WebImageAttribute {
 
 interface WebImageOutput extends WebImageAttribute {
 	path: string;
+}
+
+export interface SupportTable {
+	webp?: boolean;
+	avif?: boolean;
+	brotli?: boolean;
 }
 
 /**
@@ -100,11 +105,10 @@ export class PreGenerateImageService {
 	 *
 	 * @param name 图片名
 	 * @param type 图片类型
-	 * @param webp 是否支持WebP格式
-	 * @param brotli 是否支持Brotli压缩
+	 * @param supports 客户端支持表
 	 * @return 图片信息，如果没有该图的缓存则返回null
 	 */
-	get(name: string, type: string, webp: boolean, brotli: boolean): Promise<WebImageOutput | null> {
+	get(name: string, type: string, supports: SupportTable): Promise<WebImageOutput | null> {
 		const slot = this.store({ name, type });
 		let selectTask = Promise.resolve<WebImageOutput | null>(null);
 
@@ -119,12 +123,15 @@ export class PreGenerateImageService {
 		};
 
 		if (type === "svg") {
-			if (brotli) {
+			if (supports.brotli) {
 				addCandidate({ encoding: "brotli" }, { encoding: "br" });
 			}
 			addCandidate({});
 		} else {
-			if (webp) {
+			if (supports.avif) {
+				addCandidate({ type: "avif" });
+			}
+			if (supports.webp) {
 				addCandidate({ type: "webp" });
 			}
 			addCandidate({ type });
@@ -164,6 +171,10 @@ export class PreGenerateImageService {
 
 			// TODO: 下一版改为候选模式
 			tasks.push(slot.putCache({ type }, compressed!));
+
+			// 异步转码
+			encodeRasterImage({ type: "avif" })
+				.then(data => data && slot.putCache({ type }, data));
 
 			// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
 			if (webp && webp.length < compressed!.length) {
