@@ -89,11 +89,9 @@ export default function (options: DevelopmentOptions) {
 			filename: assetsPath("css/[name].[contenthash:8].css"),
 		}),
 
+		// 版权注释还是留着吧
 		new OptimizeCSSPlugin({
 			cssProcessorOptions: { map: { inline: false } },
-			cssProcessorPluginOptions: {
-				preset: ["default", { discardComments: { removeAll: true } }],
-			},
 		}),
 
 		new VueSSRClientPlugin(),
