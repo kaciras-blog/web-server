@@ -164,18 +164,18 @@ export class PreGenerateImageService {
 				tasks.push(slot.putCache({ encoding: "brotli" }, brotli));
 			}
 		} else {
-			const [compressed, avif, webp] = await Promise.all([
+			const [compressed, webp] = await Promise.all([
 				encodeRasterImage({ type }),
-				encodeRasterImage({ type: "avif" }),
+				// encodeRasterImage({ type: "avif" }),
 				encodeRasterImage({ type: "webp" }),
 			]);
 
 			// TODO: 下一版改为候选模式
 			tasks.push(slot.putCache({ type }, compressed!));
 
-			if (avif) {
-				tasks.push(slot.putCache({ type: "avif" }, avif));
-			}
+			// if (avif) {
+			// 	tasks.push(slot.putCache({ type: "avif" }, avif));
+			// }
 
 			// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
 			if (webp && webp.length < compressed!.length) {
