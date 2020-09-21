@@ -1,4 +1,5 @@
 import path from "path";
+import FileType from "file-type";
 import fs from "fs-extra";
 import { BadImageError, FilterArgumentError } from "../lib/errors";
 import codingFilter from "../lib/coding-filter";
@@ -45,13 +46,16 @@ describe("optimization", () => {
 	it("should effect on particular image", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
 		const result = await codingFilter(buffer, "webp");
+
+		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(buffer.length / 2);
 	});
 
-	it.skip("should encode image to avif", async () => {
-		// 这图片有毒
+	it("should encode image to avif", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
 		const result = await codingFilter(buffer, "avif");
+
+		expect((await FileType.fromBuffer(result))?.mime).toBe("image/avif");
 		expect(result.length).toBeLessThan(buffer.length / 2);
 	});
 });
