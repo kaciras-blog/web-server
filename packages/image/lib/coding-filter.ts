@@ -36,14 +36,12 @@ function isGif(buffer: Buffer) {
  * 尝试将图片转换为更优化的 WebP 格式。
  * WebP 并不一定比原图的编码更好，它有更高的解码消耗，所以只有 WebP 能明显降低图片大小时才有意义。
  *
- * TODO: sharp 0.23.0 不支持 webp 动画，gif2webp-bin 安装失败，故暂不支持动图
- *
  * @param buffer 图片数据
  * @throws 如果转换效果不理想则抛出 ImageFilterException
  */
 async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
-		throw new ImageFilterException("暂不支持 GIF 转 WebP");
+		throw new ImageFilterException("GIF 转 WebP 效果不行");
 	}
 	const input = sharp(buffer);
 

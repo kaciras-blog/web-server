@@ -3,6 +3,7 @@ import FileType from "file-type";
 import fs from "fs-extra";
 import { BadImageError, FilterArgumentError } from "../lib/errors";
 import codingFilter from "../lib/coding-filter";
+import sharp from "sharp";
 
 it("should throw FilterArgumentError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
@@ -42,7 +43,7 @@ describe("For bad image", () => {
 
 describe("optimization", () => {
 
-	// 这张图片如果用默认的参数转换为webp反而会变大，且失真严重
+	// 这张图片如果用默认的参数转换为 webp 反而会变大，且失真严重
 	it("should effect on particular image", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
 		const result = await codingFilter(buffer, "webp");
@@ -59,5 +60,16 @@ describe("optimization", () => {
 
 		// 现有的两个 WASM 编码器效果不理想
 		// expect(result.length).toBeLessThan(buffer.length / 2);
+	});
+
+	it("has bad compression ratio in GIF", async() => {
+		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "animated.gif"));
+		const result = await sharp(buffer, { pages: -1 })
+			.webp({ quality: 40, smartSubsample: true })
+			.toBuffer();
+
+		await fs.writeFile("test.webp", result);
+		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
+		expect(result.length).toBeLessThan(buffer.length * 0.7);
 	});
 });
