@@ -9,3 +9,5 @@ git:
   quiet: true
 
 cache: yarn
+
+before_script: yarn compile

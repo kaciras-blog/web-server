@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/server",
-	"version": "1.0.2",
+	"version": "1.1.2",
 	"description": "Web page and assets server of Kaciras Blog",
 	"license": "MIT",
 	"repository": {
@@ -22,7 +22,7 @@
 	},
 	"dependencies": {
 		"@iktakahiro/markdown-it-katex": "^4.0.0",
-		"@kaciras-blog/media": "^1.0.2",
+		"@kaciras-blog/media": "^1.1.2",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^9.4.0",
 		"axios": "^0.20.0",

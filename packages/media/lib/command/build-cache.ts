@@ -30,7 +30,7 @@ export async function buildCache(root: string) {
 		const parsed = path.parse(name);
 		const type = parsed.ext.substring(1);
 
-		if (await service.get(parsed.name, type, false, false)) {
+		if (await service.get(parsed.name, type, {})) {
 			continue;
 		}
 

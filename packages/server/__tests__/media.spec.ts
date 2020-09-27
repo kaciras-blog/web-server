@@ -32,10 +32,6 @@ describe("downloadImage", () => {
 			.get(FILE_PATH)
 			.expect(200)
 			.expect(Buffer.from(IMAGE_DATA));
-
-		const args = mockService.get.mock.calls[0];
-		expect(args[2]).toBe(false);
-		expect(args[3]).toBe(false);
 	});
 
 	it("should fail on non exists file", async () => {
@@ -52,9 +48,10 @@ describe("downloadImage", () => {
 			.set("Accept-Encoding", "gzip, deflate, br")
 			.expect(404);
 
-		const args = mockService.get.mock.calls[0];
-		expect(args[2]).toBe(true);
-		expect(args[3]).toBe(true);
+		const supportTable = mockService.get.mock.calls[0][2];
+		expect(supportTable.avif).toBe(false);
+		expect(supportTable.webp).toBe(true);
+		expect(supportTable.brotli).toBe(true);
 	});
 
 	it("should set Content-Encoding", async () => {
@@ -124,15 +121,13 @@ describe("uploadImage", () => {
 			.expect(500);
 	});
 
-	const typeTests = test.each([
+	test.each([
 		["test.gif", "image/gif", "gif"],
 		["test.jpeg", "image/jpeg", "jpg"],
 		["test.jpg", "image/jpeg", "jpg"],
 		["test.png", "image/png", "png"],
 		["test.svg", "image/svg+xml", "svg"],
-	]);
-
-	typeTests("should accept %s(%s) with type %s", async (filename, contentType, type) => {
+	])("should accept %s(%s) with type %s", async (filename, contentType, type) => {
 		mockService.save.mockResolvedValueOnce("/");
 
 		await supertest(callback)
