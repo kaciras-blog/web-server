@@ -13,7 +13,7 @@ const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
 
 const BROTLI_THRESHOLD = 1024;
 
-export default class SVGImageService {
+export default class SVGService {
 
 	private readonly svgo = new SVGO();
 	private readonly store: FileStore;

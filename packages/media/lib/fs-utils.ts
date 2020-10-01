@@ -65,7 +65,7 @@ export function validateFilename(name: string, os = platform()) {
 	if (os !== "win32") {
 		return name.includes("/");
 	}
-	const reserved = /(?:CON|PRN|AUX|NUL|COM\d|LPT\d)/;
+	const reserved = /CON|PRN|AUX|NUL|COM\d|LPT\d/;
 	const chars = /[\\<>:"/|?*]/;
 	return !(chars.test(name) || reserved.test(name));
 }

@@ -6,7 +6,7 @@ import { LoadRequest, Params, SaveRequest, WebFileService } from "../WebFileServ
 import { crop } from "./param-processor";
 import optimize from "./encoder";
 import { FileStore } from "../FileStore";
-import SVGImageService from "./SVGImageService";
+import SVGService from "./SVGImageService";
 
 interface ImageInfo {
 	buffer: Buffer;
@@ -48,12 +48,12 @@ async function preprocess(request: SaveRequest): Promise<ImageInfo> {
 
 class ImageService implements WebFileService {
 
-	private svgService: SVGImageService;
-	private rasterService: RasterImageService;
+	private svgService: SVGService;
+	private rasterService: RasterService;
 
 	constructor(store: FileStore) {
-		this.svgService = new SVGImageService(store);
-		this.rasterService = new RasterImageService(store);
+		this.svgService = new SVGService(store);
+		this.rasterService = new RasterService(store);
 	}
 
 	save(request: SaveRequest) {
@@ -77,7 +77,7 @@ class ImageService implements WebFileService {
 	}
 }
 
-export default class RasterImageService {
+export default class RasterService {
 
 	private readonly store: FileStore;
 

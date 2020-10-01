@@ -11,7 +11,8 @@ it.each([
 	"foo:bar.png",
 	"foo|bar.png",
 	"fo>o<bar.png",
-	"COM2",
+	"NUL",
+	"LPT9",
 ])("should validate filename %s", name => {
 	expect(validateFilename(name, "win32")).toBe(false);
 });
