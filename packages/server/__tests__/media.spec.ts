@@ -2,8 +2,8 @@ import fs from "fs-extra";
 import Koa, { Context } from "koa";
 import multer from "@koa/multer";
 import supertest from "supertest";
-import { FilterArgumentError } from "@kaciras-blog/image/lib/errors";
-import { DownloadContext, downloadImage, route, uploadImage } from "../lib/koa/image";
+import { ParamsError } from "@kaciras-blog/media/lib/errors";
+import { DownloadContext, downloadImage, route, uploadImage } from "../lib/koa/media";
 
 jest.mock("fs");
 
@@ -104,7 +104,7 @@ describe("uploadImage", () => {
 	});
 
 	it("should fail on MediaError", async () => {
-		mockService.save.mockRejectedValueOnce(new FilterArgumentError());
+		mockService.save.mockRejectedValueOnce(new ParamsError());
 
 		await supertest(callback)
 			.post("/image")
