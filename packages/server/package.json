@@ -36,7 +36,7 @@
 		"koa-conditional-get": "^3.0.0",
 		"log4js": "^6.3.0",
 		"markdown-it": "^11.0.1",
-		"markdown-it-anchor": "^5.3.0",
+		"markdown-it-anchor": "^6.0.0",
 		"markdown-it-toc-done-right": "^4.1.0",
 		"minimist": "^1.2.5",
 		"multer": "^1.4.2",
@@ -55,7 +55,7 @@
 		"@types/koa__router": "^8.0.3",
 		"@types/markdown-it": "^10.0.2",
 		"@types/range-parser": "^1.2.3",
-		"@types/replace-ext": "^0.0.27",
+		"@types/replace-ext": "^2.0.0",
 		"koa-static": "^5.0.0"
 	}
 }

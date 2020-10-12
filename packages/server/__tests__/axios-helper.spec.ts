@@ -119,10 +119,9 @@ describe("configureForProxy", () => {
 		await supertest(app.callback()).get("/");
 
 		// 检查不要添加多余的头部
-		expect(Object.keys(config.headers)).toHaveLength(2);
+		expect(Object.keys(config.headers)).toHaveLength(1);
 
 		expect(config.headers["X-Forwarded-For"]).toBe("::ffff:127.0.0.1");
-		expect(config.headers["User-Agent"]).toMatch("superagent");
 	});
 
 	it("should add principal info", async () => {
@@ -132,7 +131,7 @@ describe("configureForProxy", () => {
 			.get("/")
 			.set("Cookie", ["CSRF-Token=hello"]);
 
-		expect(Object.keys(config.headers)).toHaveLength(4);
+		expect(Object.keys(config.headers)).toHaveLength(3);
 		expect(config.headers[CSRF_HEADER_NAME]).toBe("hello");
 		expect(config.headers.Cookie).toBe("CSRF-Token=hello");
 	});
