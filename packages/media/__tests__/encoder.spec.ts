@@ -21,7 +21,6 @@ describe("For non-image data", () => {
 	it("should throw jpg", () => testFor("jpg"));
 	it("should throw png", () => testFor("png"));
 	it("should throw gif", () => testFor("gif"));
-	it("should throw webp", () => testFor("webp"));
 });
 
 // 对于损坏的图片数据，应当抛出 MediaError 异常
@@ -32,13 +31,9 @@ describe("For bad image", () => {
 		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
 	}
 
-	it("should throws on optimize gif", () => testFor("gif", "gif"));
-
 	it("should throws on optimize jpg", () => testFor("jpg", "jpg"));
-	it("should throws on jpg to webp", () => testFor("jpg", "webp"));
-
 	it("should throws on optimize png", () => testFor("png", "png"));
-	it("should throws on png to webp", () => testFor("png", "webp"));
+	it("should throws on optimize gif", () => testFor("gif", "gif"));
 });
 
 describe("optimization", () => {
@@ -46,19 +41,22 @@ describe("optimization", () => {
 	// 这张图片如果用默认的参数转换为 webp 反而会变大，且失真严重
 	it("should effect on particular image", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
+
 		const result = await encodeWebp(buffer);
 
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(buffer.length / 2);
 	});
 
-	it("has bad compression ratio in GIF", async() => {
+	// GIF 转 WebP 效果不理想
+	it("has bad compression ratio in GIF", async () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "animated.gif"));
-		const result = await sharp(buffer, { pages: -1 })
-			.webp({ quality: 40, smartSubsample: true })
-			.toBuffer();
 
-		await fs.writeFile("test.webp", result);
+		const result = await sharp(buffer, { pages: -1 })
+			.webp({ quality: 40, smartSubsample: true }).toBuffer();
+
+		// await fs.writeFile("test.webp", result);
+
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(buffer.length * 0.7);
 	});

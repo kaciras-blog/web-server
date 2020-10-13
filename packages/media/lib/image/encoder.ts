@@ -26,9 +26,9 @@ function isGif(buffer: Buffer) {
 /**
  * 尝试将图片转换为 WebP 格式，图片可能被有损压缩。
  *
- * 由于 sharp 0.26.0 不支持 webp 动画，gif2webp-bin 也安装失败，所以暂不支持 GIF 输入。
- *
- * 注意 WebP 并不一定比原图的更好，请在外部判断是否需要 WebP 格式。
+ * 【注意】
+ * WebP 并不一定比原图的更好，请在外部判断是否需要 WebP 格式。
+ * 经测试 GIF 转 WebP 效果不理想，故暂不支持该转换。
  *
  * @param buffer 图片数据
  * @return WebP 编码的图片
@@ -38,7 +38,7 @@ export async function encodeWebp(buffer: Buffer) {
 		throw new ImageFilterException("暂不支持 GIF 转 WebP");
 	}
 
-	const candidates = new Array<Promise<Buffer>>(2);
+	const candidates: Promise<Buffer>[] = [];
 	const input = sharp(buffer);
 
 	candidates.push(input.webp({ quality: 75, smartSubsample: true }).toBuffer());
