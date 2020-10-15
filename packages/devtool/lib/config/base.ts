@@ -122,7 +122,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 					options: {
 						esModule: false,
 						limit: 10000,
-						name: assetsPath("media/[name].[hash:8].[ext]"),
+						name: assetsPath("media/[name].[hash:5].[ext]"),
 					},
 				},
 				{
@@ -131,7 +131,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 					options: {
 						esModule: false,
 						limit: 10000,
-						name: assetsPath("fonts/[name].[hash:8].[ext]"),
+						name: assetsPath("fonts/[name].[hash:5].[ext]"),
 					},
 				},
 				{
@@ -142,7 +142,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 							options: {
 								esModule: false,
 								limit: 2048,
-								name: assetsPath("img/[name].[hash:8].[ext]"),
+								name: assetsPath("img/[name].[hash:5].[ext]"),
 							},
 						},
 						{
@@ -157,7 +157,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 							loader: "file-loader",
 							options: {
 								esModule: false,
-								name: assetsPath("img/[name].[hash:8].[ext]"),
+								name: assetsPath("img/[name].[hash:5].[ext]"),
 							},
 						},
 					],

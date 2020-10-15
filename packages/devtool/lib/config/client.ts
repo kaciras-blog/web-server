@@ -86,7 +86,7 @@ export default function (options: DevelopmentOptions) {
 		}),
 
 		new MiniCssExtractPlugin({
-			filename: assetsPath("css/[name].[contenthash:8].css"),
+			filename: assetsPath("css/[name].[contenthash:5].css"),
 		}),
 
 		// 版权注释还是留着吧
@@ -174,8 +174,8 @@ export default function (options: DevelopmentOptions) {
 
 		// 默认文件名不带hash，生产模式带上以便区分不同版本的文件
 		config.output = {
-			filename: assetsPath("js/[name].[contenthash].js"),
-			chunkFilename: assetsPath("js/[name].[contenthash].js"),
+			filename: assetsPath("js/[name].[contenthash:5].js"),
+			chunkFilename: assetsPath("js/[name].[contenthash:5].js"),
 		};
 
 		// 该插件必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
