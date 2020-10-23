@@ -68,7 +68,6 @@ describe("optimization", () => {
 			.webp({ quality: 40, smartSubsample: true })
 			.toBuffer();
 
-		await fs.writeFile("test.webp", result);
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(buffer.length * 0.7);
 	});
