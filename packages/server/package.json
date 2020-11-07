@@ -24,7 +24,7 @@
 		"@iktakahiro/markdown-it-katex": "^4.0.1",
 		"@kaciras-blog/image": "^1.2.0",
 		"@koa/multer": "^3.0.0",
-		"@koa/router": "^9.4.0",
+		"@koa/router": "^10.0.0",
 		"axios": "^0.21.0",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.1",
