@@ -88,12 +88,12 @@ export async function createHotMiddleware(config: Configuration) {
 	const middleware: Middleware = (ctx, next) => {
 
 		// wait for webpack-dev-middleware to signal that the build is ready
-		const ready = new Promise((resolve, reject) => {
+		const ready = new Promise<void>((resolve, reject) => {
 			compiler.hooks.failed.tap("KoaWebpack", reject);
 			devMiddleware.waitUntilValid(resolve);
 		});
 
-		const handling = new Promise((resolve) => {
+		const handling = new Promise<void>((resolve) => {
 			const innerNext = () => {
 				hotMiddleware(ctx.req, ctx.res, () => resolve(next()));
 			};
