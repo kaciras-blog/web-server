@@ -9,10 +9,10 @@ import { once } from "../functions";
 import { CachedFetcher } from "../axios-helper";
 import { BlogServerOptions } from "../options";
 
-const markdown = new MarkdownIt();
-markdown.use(KaTeX);
-markdown.use(TableOfContent);
-markdown.use(MediaPlugin);
+const markdownIt = new MarkdownIt();
+markdownIt.use(KaTeX);
+markdownIt.use(TableOfContent);
+markdownIt.use(MediaPlugin);
 
 interface FeedContext extends ExtendableContext {
 	params: { type: string };
@@ -51,7 +51,7 @@ export default function createFeedMiddleware(options: BlogServerOptions) {
 				name: author,
 			},
 			link: `${origin}/article/${article.id}/${article.urlTitle}`,
-			content: markdown.render(article.content),
+			content: markdownIt.render(article.content),
 		}));
 
 		// 几个输出的结果也缓存一下，一个大约占60K内存
