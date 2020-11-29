@@ -57,7 +57,7 @@ export default function generateCssLoaders(options: LoaderChainOptions): RuleSet
 		const cssLoader = {
 			loader: "css-loader",
 			options: {
-				// importLoaders指定了用CSS的 @import 语法导入文件时需要用 css-loader 前面的几个加载器处理。
+				// importLoaders 指定了用 CSS 的 @import 语法导入文件时需要用 css-loader 前面的几个加载器处理。
 				// 在 css-loader 之前的有 postcss-loader 和一个可选的预处理器。
 				importLoaders: 1,
 				esModule: false,

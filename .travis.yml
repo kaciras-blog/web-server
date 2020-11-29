@@ -2,7 +2,7 @@ if: branch = master
 
 language: node_js
 node_js:
-  - 14
+  - 15
 
 git:
   depth: false

@@ -23,13 +23,13 @@ export function once<T, R>(func: (...args: any[]) => R) {
 }
 
 /**
- * 异步节流函数，在被封装函数的Promise没有返回前不会再次调用，而是返回第一次的Promise。
+ * 异步防抖函数，在被封装函数的Promise没有返回前不会再次调用，而是返回第一次的Promise。
  *
  * 第一次未返回前，即使再次调用的参数不同，也只返回第一次的结果，使用时请注意，或者尽量
  * 不要使用返回值而是在Promise里处理。
  *
  * @param func 被包装函数
- * @return 节流后的函数
+ * @return 防抖后的函数
  */
 export function debounceFirst<T, R>(func: (...args: any[]) => Promise<R>) {
 	let task: Promise<R> | null = null;

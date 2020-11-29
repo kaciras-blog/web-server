@@ -154,7 +154,7 @@ export default class VueSSRHotReloader {
 		const compiler = webpack(this.serverConfig);
 		compiler.outputFileSystem = new MFS();
 
-		return new Promise(resolve => {
+		return new Promise<void>(resolve => {
 			this.watching = compiler.watch({}, (err, stats) => {
 				if (err) {
 					throw err;

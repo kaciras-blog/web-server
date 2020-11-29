@@ -4,6 +4,7 @@ import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/media/lib/command/build-cache";
 import run from "./command/run";
 import { BlogServerOptions } from "./options";
+import { once } from "./functions";
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
@@ -78,14 +79,15 @@ export default class Launcher<T extends BlogServerOptions> {
 
 		process.title = `Kaciras Blog - ${command}`;
 
-		Promise.resolve(handler(config)).then((shutdownHook) => {
-			const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
-			signals.forEach((signal) => process.on(signal, () => {
+		Promise.resolve(handler(config)).then(shutdownHook => {
+			const shutdownHandler = once(() => {
 				if (shutdownHook) {
 					shutdownHook();
 				}
 				logger.info("Stopping application...");
-			}));
+			});
+			const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
+			signals.forEach(signal => process.on(signal, shutdownHandler));
 		});
 	}
 }

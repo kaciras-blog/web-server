@@ -115,14 +115,15 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 					},
 				},
 
-				// 下面几个加载器需要设置 esModule: false，因为引用方有使用 CJS require 加载的
+				// 下面几个以及 CSS 的加载器需要设置 esModule: false
+				// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
 				{
 					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
 					loader: "url-loader",
 					options: {
 						esModule: false,
 						limit: 10000,
-						name: assetsPath("media/[name].[hash:8].[ext]"),
+						name: assetsPath("media/[name].[hash:5].[ext]"),
 					},
 				},
 				{
@@ -131,7 +132,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 					options: {
 						esModule: false,
 						limit: 10000,
-						name: assetsPath("fonts/[name].[hash:8].[ext]"),
+						name: assetsPath("fonts/[name].[hash:5].[ext]"),
 					},
 				},
 				{
@@ -142,7 +143,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 							options: {
 								esModule: false,
 								limit: 2048,
-								name: assetsPath("img/[name].[hash:8].[ext]"),
+								name: assetsPath("img/[name].[hash:5].[ext]"),
 							},
 						},
 						{
@@ -157,7 +158,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 							loader: "file-loader",
 							options: {
 								esModule: false,
-								name: assetsPath("img/[name].[hash:8].[ext]"),
+								name: assetsPath("img/[name].[hash:5].[ext]"),
 							},
 						},
 					],
