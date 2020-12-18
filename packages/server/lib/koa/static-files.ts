@@ -1,6 +1,6 @@
 /**
  * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是WebP图片选择，所以就自己撸一个。
- *
+ * 主要参考了它俩的设计：
  * https://github.com/koajs/send
  * https://github.com/koajs/static
  */
@@ -54,30 +54,34 @@ function resolvePath(root: string, path: string) {
 	return normalize(join(resolve(root), path));
 }
 
-async function send(root: string, options: Options, ctx: BaseContext, next: Next) {
+async function serve(root: string, options: Options, ctx: BaseContext, next: Next) {
 	const { method, path } = ctx;
 	let file: string;
 
-	if (method !== "GET" && method !== "HEAD") {
-		return next();
+	switch (method) {
+		case "GET":
+		case "HEAD":
+		case "OPTIONS":
+			break;
+		default:
+			return next();
 	}
 
 	try {
 		file = decodeURIComponent(path);
 	} catch (e) {
-		return ctx.throw(400, "failed to decode");
+		ctx.throw(400, "failed to decode");
 	}
 	file = resolvePath(root, file);
 
 	let encodingExt = "";
-	let webp = "";
 
-	if ((ctx.accepts() as string[]).indexOf("image/webp") > -1) {
-		webp = replaceExt(file, ".webp");
-		if (await fs.pathExists(webp)) file = webp;
-	}
-	if (file === webp) {
-		// pass
+	// TODO: 这些行太长了，而且 pathExists 可以用 stat 来实现，多了一次 IO
+	//  怎么能抽象一下？
+	if ((ctx.accepts() as string[]).indexOf("image/avif") > -1 && await fs.pathExists(replaceExt(file, ".avif"))) {
+		file = replaceExt(file, ".avif");
+	} else if ((ctx.accepts() as string[]).indexOf("image/webp") > -1 && await fs.pathExists(replaceExt(file, ".webp"))) {
+		file = replaceExt(file, ".webp");
 	} else if (ctx.acceptsEncodings("br", "identity") === "br" && (await fs.pathExists(file + ".br"))) {
 		file = file + ".br";
 		encodingExt = ".br";
@@ -99,11 +103,13 @@ async function send(root: string, options: Options, ctx: BaseContext, next: Next
 			return next();
 		}
 		err.status = 500;
-		throw err; // TODO: 这个异常不好做测试
+		throw err; // 这个异常不好做测试
 	}
 
 	if (encodingExt) {
 		ctx.type = extname(basename(file, encodingExt));
+	} else if (file.endsWith(".avif")) {
+		ctx.type = "image/avif"; // TODO: 等 mime-types 更新后删除
 	} else {
 		ctx.type = extname(file);
 	}
@@ -116,6 +122,6 @@ async function send(root: string, options: Options, ctx: BaseContext, next: Next
 	}
 }
 
-export default function (root: string, options: Options = {}): Middleware {
-	return (ctx, next) => send(root, options, ctx, next);
+export default function createMiddleware(root: string, options: Options = {}): Middleware {
+	return (ctx, next) => serve(root, options, ctx, next);
 }
