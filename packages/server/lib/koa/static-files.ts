@@ -4,7 +4,7 @@
  * https://github.com/koajs/send
  * https://github.com/koajs/static
  */
-import { basename, extname, join, normalize, parse, resolve, sep } from "path";
+import { extname, join, normalize, parse, resolve, sep } from "path";
 import { BaseContext, Middleware, Next } from "koa";
 import fs from "fs-extra";
 import replaceExt from "replace-ext";
@@ -26,6 +26,108 @@ interface Options {
 	 */
 	customResponse?: (ctx: BaseContext, filename: string, stats: fs.Stats) => void;
 }
+
+/**
+ * 包含一类文件选择逻辑，当接受一个请求时判断
+ */
+interface FileSelector {
+
+	/**
+	 * 尝试选择一个文件，如果客户端支持则返回文件名，否则返回 falsy 的值。
+	 *
+	 * @param ctx Koa上下文
+	 * @param path 请求的文件路径
+	 */
+	select(ctx: BaseContext, path: string): string | false | undefined;
+
+	/**
+	 * 已确定使用被选中的文件，设置相关的 Content-* 头。
+	 *
+	 * @param ctx Koa上下文
+	 * @param path 请求的文件路径
+	 */
+	setHeaders(ctx: BaseContext, path: string): void;
+}
+
+/**
+ * 文件类型升级策略，如果 Accept 请求头接受指定的类型，则尝试选用该类型的文件。
+ * 升级版文件替换了原文件的扩展名，例如 image.png -> image.webp
+ */
+class TypeUpgrade implements FileSelector {
+
+	private readonly name: string;
+	private readonly extension: string;
+
+	/**
+	 * @param name 文件的 MIME 类型
+	 * @param extension 替换的扩展名
+	 */
+	constructor(name: string, extension: string) {
+		this.name = name;
+		this.extension = extension;
+	}
+
+	select(ctx: BaseContext, path: string) {
+		const support = (ctx.accepts() as string[]).includes(this.name);
+		return support && replaceExt(path, this.extension);
+	}
+
+	setHeaders(ctx: BaseContext, path: string) {
+		ctx.type = this.name;
+	}
+}
+
+/**
+ * 编码升级策略，如果 Accept-Encoding 请求头接受指定的类型，则尝试选用该类型的文件。
+ * 升级版文件将扩展名附加到原文件名之后，例如 index.html -> index.html.br
+ */
+class EncodingUpgrade implements FileSelector {
+
+	private readonly name: string;
+	private readonly extension: string;
+
+	/**
+	 * @param name 编码名，也是 Content-Encoding 的值
+	 * @param extension 附加的扩展名
+	 */
+	constructor(name: string, extension: string) {
+		this.name = name;
+		this.extension = extension;
+	}
+
+	select(ctx: BaseContext, path: string) {
+		const { name, extension } = this;
+		const support = ctx.acceptsEncodings(name, "identity") === name
+		return support && path + extension;
+	}
+
+	setHeaders(ctx: BaseContext, path: string) {
+		ctx.type = extname(path);
+		ctx.set("Content-Encoding", this.name);
+	}
+}
+
+/**
+ * 默认规则，直接选用路径所对应的文件，从文件扩展名中获取 MIME 类型。
+ */
+class DefaultFileSelector implements FileSelector {
+
+	select(ctx: BaseContext, path: string) {
+		return path;
+	}
+
+	setHeaders(ctx: BaseContext, path: string) {
+		ctx.type = extname(path);
+	}
+}
+
+const Selectors: FileSelector[] = [
+	new TypeUpgrade("image/avif", ".avif"),
+	new TypeUpgrade("image/webp", ".webp"),
+	new EncodingUpgrade("br", ".br"),
+	new EncodingUpgrade("gzip", ".gz"),
+	new DefaultFileSelector(),
+];
 
 const UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/
 
@@ -55,10 +157,7 @@ function resolvePath(root: string, path: string) {
 }
 
 async function serve(root: string, options: Options, ctx: BaseContext, next: Next) {
-	const { method, path } = ctx;
-	let file: string;
-
-	switch (method) {
+	switch (ctx.method) {
 		case "GET":
 		case "HEAD":
 		case "OPTIONS":
@@ -67,58 +166,47 @@ async function serve(root: string, options: Options, ctx: BaseContext, next: Nex
 			return next();
 	}
 
+	let { path } = ctx;
 	try {
-		file = decodeURIComponent(path);
+		path = decodeURIComponent(path);
 	} catch (e) {
 		ctx.throw(400, "failed to decode");
 	}
-	file = resolvePath(root, file);
+	path = resolvePath(root, path);
 
-	let encodingExt = "";
-
-	// TODO: 这些行太长了，而且 pathExists 可以用 stat 来实现，多了一次 IO
-	//  怎么能抽象一下？
-	if ((ctx.accepts() as string[]).indexOf("image/avif") > -1 && await fs.pathExists(replaceExt(file, ".avif"))) {
-		file = replaceExt(file, ".avif");
-	} else if ((ctx.accepts() as string[]).indexOf("image/webp") > -1 && await fs.pathExists(replaceExt(file, ".webp"))) {
-		file = replaceExt(file, ".webp");
-	} else if (ctx.acceptsEncodings("br", "identity") === "br" && (await fs.pathExists(file + ".br"))) {
-		file = file + ".br";
-		encodingExt = ".br";
-		ctx.set("Content-Encoding", "br");
-	} else if (ctx.acceptsEncodings("gzip", "identity") === "gzip" && (await fs.pathExists(file + ".gz"))) {
-		file = file + ".gz";
-		encodingExt = ".gz";
-		ctx.set("Content-Encoding", "gzip");
-	}
-
+	let file: string | false | undefined;
 	let stats: fs.Stats;
-	try {
-		stats = await fs.stat(file);
-		if (stats.isDirectory()) {
-			return next();
+
+	for (const selector of Selectors) {
+		const selected = selector.select(ctx, path);
+		if (!selected) {
+			continue;
 		}
-	} catch (err) {
-		if (NOT_FOUND.includes(err.code)) {
-			return next();
+		try {
+			stats = await fs.stat(selected);
+			if (!stats.isDirectory()) {
+				file = selected;
+				selector.setHeaders(ctx, path);
+				break;
+			}
+		} catch (err) {
+			if (NOT_FOUND.includes(err.code)) {
+				continue;
+			}
+			err.status = 500;
+			throw err; // 这个异常不好做测试
 		}
-		err.status = 500;
-		throw err; // 这个异常不好做测试
 	}
 
-	if (encodingExt) {
-		ctx.type = extname(basename(file, encodingExt));
-	} else if (file.endsWith(".avif")) {
-		ctx.type = "image/avif"; // TODO: 等 mime-types 更新后删除
-	} else {
-		ctx.type = extname(file);
+	if (!file) {
+		return next();
 	}
 
-	ctx.set("Last-Modified", stats.mtime.toUTCString());
-	sendFileRange(ctx, file, stats.size);
+	ctx.set("Last-Modified", stats!.mtime.toUTCString());
+	sendFileRange(ctx, file, stats!.size);
 
 	if (options.customResponse) {
-		options.customResponse(ctx, file, stats);
+		options.customResponse(ctx, file, stats!);
 	}
 }
 
