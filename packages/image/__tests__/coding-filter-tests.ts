@@ -60,7 +60,7 @@ describe("optimization", () => {
 
 		// 现有的两个 WASM 编码器效果不理想
 		// expect(result.length).toBeLessThan(buffer.length / 2);
-	});
+	}, 10_000);
 
 	it("has bad compression ratio in GIF", async() => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "animated.gif"));

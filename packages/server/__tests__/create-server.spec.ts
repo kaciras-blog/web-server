@@ -89,7 +89,7 @@ describe("SNI callback", () => {
 			port: 41000,
 			rejectUnauthorized: false,
 		});
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			socket.on("secureConnect", () => {
 				const cert = socket.getPeerCertificate();
 				expect(cert.subject.CN).toEqual(servername);

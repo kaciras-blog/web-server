@@ -18,6 +18,7 @@
 	},
 	"include": [
 		"packages/*/lib/**/*.ts",
-		"packages/*/__perfs__/**/*.ts"
+		"packages/*/__perfs__/**/*.ts",
+		"packages/*/__tests__/**/*.ts"
 	]
 }
