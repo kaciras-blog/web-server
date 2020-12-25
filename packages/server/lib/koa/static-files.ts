@@ -1,5 +1,5 @@
 /**
- * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是WebP图片选择，所以就自己撸一个。
+ * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是升级规则，所以就自己撸一个。
  * 主要参考了它俩的设计：
  * https://github.com/koajs/send
  * https://github.com/koajs/static
@@ -28,7 +28,8 @@ interface Options {
 }
 
 /**
- * 包含一类文件选择逻辑，当接受一个请求时判断
+ * 包含一类文件的选择逻辑，接受请求时将使用该类来选择文件回复。
+ * 本接口主要用于渐进升级，比如客户端支持 gzip 时发送压缩的版本。
  */
 interface FileSelector {
 
@@ -50,7 +51,7 @@ interface FileSelector {
 }
 
 /**
- * 文件类型升级策略，如果 Accept 请求头接受指定的类型，则尝试选用该类型的文件。
+ * 文件类型升级，如果 Accept 请求头接受指定的类型，则尝试选用该类型的文件。
  * 升级版文件替换了原文件的扩展名，例如 image.png -> image.webp
  */
 class TypeUpgrade implements FileSelector {
@@ -78,7 +79,7 @@ class TypeUpgrade implements FileSelector {
 }
 
 /**
- * 编码升级策略，如果 Accept-Encoding 请求头接受指定的类型，则尝试选用该类型的文件。
+ * 编码升级，如果 Accept-Encoding 请求头接受指定的类型，则尝试选用该类型的文件。
  * 升级版文件将扩展名附加到原文件名之后，例如 index.html -> index.html.br
  */
 class EncodingUpgrade implements FileSelector {
@@ -121,6 +122,9 @@ class DefaultFileSelector implements FileSelector {
 	}
 }
 
+/**
+ * 选择器列表，靠前的优先。
+ */
 const Selectors: FileSelector[] = [
 	new TypeUpgrade("image/avif", ".avif"),
 	new TypeUpgrade("image/webp", ".webp"),
@@ -156,6 +160,14 @@ function resolvePath(root: string, path: string) {
 	return normalize(join(resolve(root), path));
 }
 
+/**
+ * 处理 Koa 请求，如果该请求访问了本地文件则发送，否则调用下一个中间件。
+ *
+ * @param root 静态资源目录
+ * @param options 选项
+ * @param ctx Koa请求
+ * @param next 调用下一个中间件的函数
+ */
 async function serve(root: string, options: Options, ctx: BaseContext, next: Next) {
 	switch (ctx.method) {
 		case "GET":
