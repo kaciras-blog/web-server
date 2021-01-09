@@ -5,6 +5,10 @@ import { BadImageError, FilterArgumentError } from "../lib/errors";
 import codingFilter from "../lib/coding-filter";
 import sharp from "sharp";
 
+function resolveFixture(name: string) {
+	return path.join(__dirname, "fixtures", name)
+}
+
 it("should throw FilterArgumentError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
 	return expect(codingFilter(buffer, "invalid")).rejects.toBeInstanceOf(FilterArgumentError);
@@ -28,7 +32,7 @@ describe("For non-image data", () => {
 describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
-		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "bad_image." + srcType));
+		const buffer = await fs.readFile(resolveFixture("bad_image." + srcType));
 		await expect(codingFilter(buffer, targetType)).rejects.toBeInstanceOf(BadImageError);
 	}
 
@@ -45,7 +49,7 @@ describe("optimization", () => {
 
 	// 这张图片如果用默认的参数转换为 webp 反而会变大，且失真严重
 	it("should effect on particular image", async () => {
-		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
+		const buffer = await fs.readFile(resolveFixture("color_text_black_bg.png"));
 		const result = await codingFilter(buffer, "webp");
 
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
@@ -53,7 +57,7 @@ describe("optimization", () => {
 	});
 
 	it("should encode image to avif", async () => {
-		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
+		const buffer = await fs.readFile(resolveFixture("color_text_black_bg.png"));
 		const result = await codingFilter(buffer, "avif");
 
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/avif");
@@ -63,7 +67,7 @@ describe("optimization", () => {
 	}, 10_000);
 
 	it("has bad compression ratio in GIF", async() => {
-		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "animated.gif"));
+		const buffer = await fs.readFile(resolveFixture("animated.gif"));
 		const result = await sharp(buffer, { pages: -1 })
 			.webp({ quality: 40, smartSubsample: true })
 			.toBuffer();

@@ -80,6 +80,9 @@ async function encodeAvif(buffer: Buffer) {
 		throw new ImageFilterException("暂不支持 GIF 转 AVIF");
 	}
 
+	// TODO: sharp 的转码器有问题无法创建无损图
+	// return sharp(buffer).avif({ quality: 100, lossless: true }).toBuffer();
+
 	const workerData = await sharp(buffer)
 		.ensureAlpha() // squoosh 的实现不支持指定通道数，必须填充透明通道
 		.raw()
