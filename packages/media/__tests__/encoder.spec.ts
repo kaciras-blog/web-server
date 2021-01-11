@@ -5,6 +5,11 @@ import { encodeWebp, optimize } from "../lib/image/encoder";
 import { BadDataError, ParamsError } from "../lib/errors";
 import sharp from "sharp";
 
+function resolveFixture(name: string) {
+	return path.join(__dirname, "fixtures", name)
+}
+
+it("should throw FilterArgumentError on unsupported type", () => {
 it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
 	return expect(optimize(buffer, "invalid")).rejects.toBeInstanceOf(ParamsError);
@@ -27,8 +32,8 @@ describe("For non-image data", () => {
 describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
-		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "bad_image." + srcType));
-		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
+		const buffer = await fs.readFile(resolveFixture("bad_image." + srcType));
+		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadImageError);
 	}
 
 	it("should throws on optimize jpg", () => testFor("jpg", "jpg"));
@@ -40,7 +45,7 @@ describe("optimization", () => {
 
 	// 这张图片如果用默认的参数转换为 webp 反而会变大，且失真严重
 	it("should effect on particular image", async () => {
-		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "color_text_black_bg.png"));
+		const buffer = await fs.readFile(resolveFixture("color_text_black_bg.png"));
 
 		const result = await encodeWebp(buffer);
 
@@ -53,9 +58,8 @@ describe("optimization", () => {
 		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "animated.gif"));
 
 		const result = await sharp(buffer, { pages: -1 })
-			.webp({ quality: 40, smartSubsample: true }).toBuffer();
-
-		// await fs.writeFile("test.webp", result);
+			.webp({ quality: 40, smartSubsample: true })
+			.toBuffer();
 
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(buffer.length * 0.7);

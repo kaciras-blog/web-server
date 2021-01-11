@@ -21,7 +21,7 @@ describe("configureAxiosHttp2", () => {
 	beforeEach(async () => {
 		cleanSessions = () => 0;
 		server = http2.createServer(helloHandler);
-		await new Promise((resolve) => server.listen(0, resolve));
+		await new Promise<void>(resolve => server.listen(0, resolve));
 		url = "http://localhost:" + (server.address() as AddressInfo).port;
 	});
 

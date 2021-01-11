@@ -1,14 +1,15 @@
 /**
- * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是WebP图片选择，所以就自己撸一个。
- *
+ * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是升级规则，所以就自己撸一个。
+ * 主要参考了它俩的设计：
  * https://github.com/koajs/send
  * https://github.com/koajs/static
  */
-import { basename, extname, join, normalize, parse, resolve, sep } from "path";
+import { extname, join, normalize, parse, resolve, sep } from "path";
 import { BaseContext, Middleware, Next } from "koa";
 import fs from "fs-extra";
 import replaceExt from "replace-ext";
 import createError from "http-errors";
+import sendFileRange from "./send-range";
 
 interface Options {
 
@@ -25,6 +26,112 @@ interface Options {
 	 */
 	customResponse?: (ctx: BaseContext, filename: string, stats: fs.Stats) => void;
 }
+
+/**
+ * 包含一类文件的选择逻辑，接受请求时将使用该类来选择文件回复。
+ * 本接口主要用于渐进升级，比如客户端支持 gzip 时发送压缩的版本。
+ */
+interface FileSelector {
+
+	/**
+	 * 尝试选择一个文件，如果客户端支持则返回文件名，否则返回 falsy 的值。
+	 *
+	 * @param ctx Koa上下文
+	 * @param path 请求的文件路径
+	 */
+	select(ctx: BaseContext, path: string): string | false | undefined;
+
+	/**
+	 * 已确定使用被选中的文件，设置相关的 Content-* 头。
+	 *
+	 * @param ctx Koa上下文
+	 * @param path 请求的文件路径
+	 */
+	setHeaders(ctx: BaseContext, path: string): void;
+}
+
+/**
+ * 文件类型升级，如果 Accept 请求头接受指定的类型，则尝试选用该类型的文件。
+ * 升级版文件替换了原文件的扩展名，例如 image.png -> image.webp
+ */
+class TypeUpgrade implements FileSelector {
+
+	private readonly name: string;
+	private readonly extension: string;
+
+	/**
+	 * @param name 文件的 MIME 类型
+	 * @param extension 替换的扩展名
+	 */
+	constructor(name: string, extension: string) {
+		this.name = name;
+		this.extension = extension;
+	}
+
+	select(ctx: BaseContext, path: string) {
+		const support = (ctx.accepts() as string[]).includes(this.name);
+		return support && replaceExt(path, this.extension);
+	}
+
+	setHeaders(ctx: BaseContext, path: string) {
+		ctx.type = this.name;
+	}
+}
+
+/**
+ * 编码升级，如果 Accept-Encoding 请求头接受指定的类型，则尝试选用该类型的文件。
+ * 升级版文件将扩展名附加到原文件名之后，例如 index.html -> index.html.br
+ */
+class EncodingUpgrade implements FileSelector {
+
+	private readonly name: string;
+	private readonly extension: string;
+
+	/**
+	 * @param name 编码名，也是 Content-Encoding 的值
+	 * @param extension 附加的扩展名
+	 */
+	constructor(name: string, extension: string) {
+		this.name = name;
+		this.extension = extension;
+	}
+
+	select(ctx: BaseContext, path: string) {
+		const { name, extension } = this;
+		const support = ctx.acceptsEncodings(name, "identity") === name
+		return support && path + extension;
+	}
+
+	setHeaders(ctx: BaseContext, path: string) {
+		ctx.type = extname(path);
+		ctx.set("Content-Encoding", this.name);
+	}
+}
+
+/**
+ * 默认规则，直接选用路径所对应的文件，从文件扩展名中获取 MIME 类型。
+ */
+class DefaultFileSelector implements FileSelector {
+
+	select(ctx: BaseContext, path: string) {
+		return path;
+	}
+
+	setHeaders(ctx: BaseContext, path: string) {
+		ctx.type = extname(path);
+	}
+}
+
+/**
+ * 选择器列表，靠前的优先。
+ */
+const Selectors: FileSelector[] = [
+	new TypeUpgrade("image/avif", ".avif"),
+	new TypeUpgrade("image/webp", ".webp"),
+	new EncodingUpgrade("br", ".br"),
+	new EncodingUpgrade("gzip", ".gz"),
+	new DefaultFileSelector(),
+];
 
 const UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/
 
@@ -53,69 +160,68 @@ function resolvePath(root: string, path: string) {
 	return normalize(join(resolve(root), path));
 }
 
-async function send(root: string, options: Options, ctx: BaseContext, next: Next) {
-	const { method, path } = ctx;
-	let file: string;
+/**
+ * 处理 Koa 请求，如果该请求访问了本地文件则发送，否则调用下一个中间件。
+ *
+ * @param root 静态资源目录
+ * @param options 选项
+ * @param ctx Koa请求
+ * @param next 调用下一个中间件的函数
+ */
+async function serve(root: string, options: Options, ctx: BaseContext, next: Next) {
+	switch (ctx.method) {
+		case "GET":
+		case "HEAD":
+		case "OPTIONS":
+			break;
+		default:
+			return next();
+	}
 
-	if (method !== "GET" && method !== "HEAD") {
+	let { path } = ctx;
+	try {
+		path = decodeURIComponent(path);
+	} catch (e) {
+		ctx.throw(400, "failed to decode");
+	}
+	path = resolvePath(root, path);
+
+	let file: string | false | undefined;
+	let stats: fs.Stats;
+
+	for (const selector of Selectors) {
+		const selected = selector.select(ctx, path);
+		if (!selected) {
+			continue;
+		}
+		try {
+			stats = await fs.stat(selected);
+			if (!stats.isDirectory()) {
+				file = selected;
+				selector.setHeaders(ctx, path);
+				break;
+			}
+		} catch (err) {
+			if (NOT_FOUND.includes(err.code)) {
+				continue;
+			}
+			err.status = 500;
+			throw err; // 这个异常不好做测试
+		}
+	}
+
+	if (!file) {
 		return next();
 	}
 
-	try {
-		file = decodeURIComponent(path);
-	} catch (e) {
-		return ctx.throw(400, "failed to decode");
-	}
-	file = resolvePath(root, file);
-
-	let encodingExt = "";
-	let webp = "";
-
-	if ((ctx.accepts() as string[]).indexOf("image/webp") > -1) {
-		webp = replaceExt(file, ".webp");
-		if (await fs.pathExists(webp)) file = webp;
-	}
-	if (file === webp) {
-		// pass
-	} else if (ctx.acceptsEncodings("br", "identity") === "br" && (await fs.pathExists(file + ".br"))) {
-		file = file + ".br";
-		encodingExt = ".br";
-		ctx.set("Content-Encoding", "br");
-	} else if (ctx.acceptsEncodings("gzip", "identity") === "gzip" && (await fs.pathExists(file + ".gz"))) {
-		file = file + ".gz";
-		encodingExt = ".gz";
-		ctx.set("Content-Encoding", "gzip");
-	}
-
-	let stats: fs.Stats;
-	try {
-		stats = await fs.stat(file);
-		if (stats.isDirectory()) {
-			return next();
-		}
-	} catch (err) {
-		if (NOT_FOUND.includes(err.code)) {
-			return next();
-		}
-		err.status = 500;
-		throw err; // TODO: 这个异常不好做测试
-	}
-
-	if (encodingExt) {
-		ctx.type = extname(basename(file, encodingExt));
-	} else {
-		ctx.type = extname(file);
-	}
-
-	ctx.set("Content-Length", stats.size.toString());
-	ctx.set("Last-Modified", stats.mtime.toUTCString());
-	ctx.body = fs.createReadStream(file);
+	ctx.set("Last-Modified", stats!.mtime.toUTCString());
+	sendFileRange(ctx, file, stats!.size);
 
 	if (options.customResponse) {
-		options.customResponse(ctx, file, stats);
+		options.customResponse(ctx, file, stats!);
 	}
 }
 
-export default function (root: string, options: Options = {}): Middleware {
-	return (ctx, next) => send(root, options, ctx, next);
+export default function createMiddleware(root: string, options: Options = {}): Middleware {
+	return (ctx, next) => serve(root, options, ctx, next);
 }

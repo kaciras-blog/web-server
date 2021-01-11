@@ -102,8 +102,7 @@ export default class VueSSRHotReloader {
 		return (ctx: Context) => renderPage(this.renderer, ctx);
 	}
 
-	close(callback = () => {
-	}) {
+	close(callback = () => {}) {
 		if (!this.watching) {
 			throw new Error("Not started yet.")
 		}

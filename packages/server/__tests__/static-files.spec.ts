@@ -116,7 +116,19 @@ it("should return .br version when requested and if possible", () => {
 		.expect("Content-Encoding", "br");
 });
 
-it("should return webp image when requested and if possible", () => {
+it("should return avif image if possible", () => {
+	const app = new Koa()
+	app.use(serve(FIXTURE_DIR));
+
+	return supertest(app.callback())
+		.get("/static/image.png")
+		.set("Accept", "image/webp,image/avif,*/*")
+		.expect(200)
+		.expect("Content-Type", /image\/avif/)
+		.expect("Content-Length", "7114");
+});
+
+it("should return webp image if possible", () => {
 	const app = new Koa()
 	app.use(serve(FIXTURE_DIR));
 
@@ -131,17 +143,18 @@ it("should return webp image when requested and if possible", () => {
 describe("custom headers", () => {
 
 	it("should accept ctx and path", async () => {
-		const customHeader = jest.fn<void, [BaseContext, string, fs.Stats]>();
+		const customResponse = jest.fn<void, [BaseContext, string, fs.Stats]>();
 
 		const app = new Koa()
-		app.use(serve(FIXTURE_DIR, { customResponse: customHeader }));
+		app.use(serve(FIXTURE_DIR, { customResponse }));
 
 		await supertest(app.callback())
 			.get("/hello.txt")
 			.set("Accept-Encoding", "gzip, deflate, br")
 			.expect(200);
 
-		const call = customHeader.mock.calls[0];
+		const call = customResponse.mock.calls[0];
+		expect(call[0].path).toBe("/hello.txt");
 		expect(basename(call[1])).toBe("hello.txt.br");
 		expect(call[2].size).toBe(9);
 	});

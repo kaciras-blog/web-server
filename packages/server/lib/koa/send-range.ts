@@ -100,7 +100,7 @@ export default function sendFileRange(ctx: BaseContext, reader: RangeReader) {
  * 主要参考了：
  * https://github.com/rexxars/send-ranges
  *
- * boundary的定义(RFC)：
+ * boundary 的定义(RFC)：
  * https://tools.ietf.org/html/rfc2046#section-5.1.1
  *
  * @param ctx Koa上下文
