@@ -9,7 +9,6 @@ function resolveFixture(name: string) {
 	return path.join(__dirname, "fixtures", name)
 }
 
-it("should throw FilterArgumentError on unsupported type", () => {
 it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
 	return expect(optimize(buffer, "invalid")).rejects.toBeInstanceOf(ParamsError);
@@ -33,7 +32,7 @@ describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
 		const buffer = await fs.readFile(resolveFixture("bad_image." + srcType));
-		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadImageError);
+		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
 	}
 
 	it("should throws on optimize jpg", () => testFor("jpg", "jpg"));
@@ -55,7 +54,7 @@ describe("optimization", () => {
 
 	// GIF 转 WebP 效果不理想
 	it("has bad compression ratio in GIF", async () => {
-		const buffer = await fs.readFile(path.join(__dirname, "fixtures", "animated.gif"));
+		const buffer = await fs.readFile(resolveFixture("animated.gif"));
 
 		const result = await sharp(buffer, { pages: -1 })
 			.webp({ quality: 40, smartSubsample: true })
