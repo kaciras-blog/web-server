@@ -116,6 +116,7 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		const adminFilter = adminOnlyFilter(address);
 		const router = new Router();
 
+		// @ts-ignore Record 默认有 undefined 了，没想好怎么改。
 		router.get("/feed/:type", feedHandler(options));
 		router.get("/sw-check", toggleSW(app.serviceWorker));
 		router.get("/sitemap.xml", sitemapHandler(address));
@@ -128,6 +129,8 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		// 用 image-middleware 里的函数组合成图片处理中间件。
 		// TODO: 支持评论插入图片
 		const service = new PreGenerateImageService(localFileStore(app.dataDir));
+
+		// @ts-ignore
 		router.get("/image/:name", ctx => downloadImage(service, ctx));
 
 		// @ts-ignore
@@ -135,6 +138,8 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 
 		const videoDir = path.join(app.dataDir, "video");
 		fs.ensureDirSync(videoDir);
+
+		// @ts-ignore
 		router.get("/video/:name", ctx => downloadFile(videoDir, ctx));
 
 		// @ts-ignore
@@ -142,6 +147,8 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 
 		const audioDir = path.join(app.dataDir, "audio");
 		fs.ensureDirSync(audioDir);
+
+		// @ts-ignore
 		router.get("/audio/:name", ctx => downloadFile(audioDir, ctx));
 
 		// @ts-ignore
