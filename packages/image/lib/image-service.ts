@@ -3,7 +3,7 @@ import { performance } from "perf_hooks";
 import { promisify } from "util";
 import sharp from "sharp";
 import { brotliCompress, InputType } from "zlib";
-import SVGO from "svgo";
+import * as svgo from "svgo";
 import { getLogger } from "log4js";
 import { ImageFilter, ImageTags, runFilters } from "./filter-runner";
 import codingFilter from "./coding-filter";
@@ -13,7 +13,6 @@ import { BadImageError, ImageFilterException } from "./errors";
 const logger = getLogger("Image");
 
 const brotliCompressAsync = promisify<InputType, Buffer>(brotliCompress);
-const svgOptimizer = new SVGO();
 
 const filters = new Map<string, ImageFilter>();
 filters.set("type", codingFilter);
@@ -156,7 +155,7 @@ export class PreGenerateImageService {
 
 		// 过滤器链只用于光栅图，矢量图我还不知道怎么做裁剪、缩放、加水印等操作，只能压缩一下。
 		if (type === "svg") {
-			const { data } = await svgOptimizer.optimize(buffer.toString());
+			const { data } = svgo.optimize(buffer.toString());
 			tasks.push(slot.putCache({}, data));
 
 			if (data.length > SVG_COMPRESS_THRESHOLD) {

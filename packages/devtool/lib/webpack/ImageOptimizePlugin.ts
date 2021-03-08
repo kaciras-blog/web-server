@@ -1,5 +1,5 @@
 import { Compiler, Plugin } from "webpack";
-import SVGO from "svgo";
+import * as svgo from "svgo";
 import codingFilter from "@kaciras-blog/image/lib/coding-filter";
 
 /** webpack-sources 类型定义过时了，还得我自己搞 */
@@ -19,8 +19,6 @@ class MyRawAssets {
 		return this.data.length;
 	}
 }
-
-const svgOptimizer = new SVGO();
 
 /**
  * 优化图片资源的插件，能够压缩图片资源，同时还会为一些图片额外生成WebP格式的转码，
@@ -62,8 +60,7 @@ export default class ImageOptimizePlugin implements Plugin {
 			// 只用 SVGO 优化，压缩由其他的插件实现
 			if (type === "svg") {
 				const text = assets[rawName].source().toString();
-				tasks.push(svgOptimizer.optimize(text)
-					.then((result) => assets[rawName] = new MyRawAssets(result.data)));
+				assets[rawName] = new MyRawAssets(svgo.optimize(text).data);
 
 			} else if (/^(jpe?g|png|gif)$/.test(type)) {
 				const rawBuffer = assets[rawName].source();
