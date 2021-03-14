@@ -9,7 +9,7 @@
 		"directory": "packages/image"
 	},
 	"engines": {
-		"node": ">=15.11.0"
+		"node": ">=14.1.0"
 	},
 	"dependencies": {
 		"@saschazar/wasm-avif": "^1.0.0",

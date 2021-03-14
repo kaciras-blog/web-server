@@ -14,7 +14,7 @@
 		"lib"
 	],
 	"engines": {
-		"node": ">=15.11.0"
+		"node": ">=14.1.0"
 	},
 	"bin": {
 		"blog-devtool": "bin/blog-devtool.js"
