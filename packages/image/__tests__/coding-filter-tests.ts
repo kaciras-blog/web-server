@@ -6,7 +6,7 @@ import codingFilter from "../lib/coding-filter";
 import sharp from "sharp";
 
 function resolveFixture(name: string) {
-	return path.join(__dirname, "fixtures", name)
+	return path.join(__dirname, "fixtures", name);
 }
 
 it("should throw FilterArgumentError on unsupported type", () => {
@@ -66,7 +66,7 @@ describe("optimization", () => {
 		// expect(result.length).toBeLessThan(buffer.length / 2);
 	}, 10_000);
 
-	it("has bad compression ratio in GIF", async() => {
+	it("has bad compression ratio in GIF", async () => {
 		const buffer = await fs.readFile(resolveFixture("animated.gif"));
 		const result = await sharp(buffer, { pages: -1 })
 			.webp({ quality: 40, smartSubsample: true })

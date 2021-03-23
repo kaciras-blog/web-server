@@ -63,7 +63,7 @@ describe("configureAxiosHttp2", () => {
 			jest.runOnlyPendingTimers();
 			await sleep();
 			response.on("close", () => jest.runOnlyPendingTimers());
-		})
+		});
 
 		const tokenSource = Axios.CancelToken.source();
 		const res = axios.get(url, { cancelToken: tokenSource.token }).catch(e => e);

@@ -27,7 +27,7 @@ export class ClientSSRHotUpdatePlugin extends EventEmitter implements Plugin {
 	template: any;
 
 	constructor(manifestName = "vue-ssr-client-manifest.json",
-				templateName = "index.template.html") {
+		templateName = "index.template.html") {
 		super();
 		this.manifestName = manifestName;
 		this.templateName = templateName;
@@ -104,7 +104,7 @@ export default class VueSSRHotReloader {
 
 	close(callback = () => {}) {
 		if (!this.watching) {
-			throw new Error("Not started yet.")
+			throw new Error("Not started yet.");
 		}
 		this.watching.close(callback);
 	}
@@ -124,7 +124,7 @@ export default class VueSSRHotReloader {
 
 		const plugin = clientPlugins.find((v) => v instanceof ClientSSRHotUpdatePlugin);
 		if (!plugin) {
-			throw new Error("请将ClientSSRHotUpdatePlugin加入到客户端构建配置里。")
+			throw new Error("请将ClientSSRHotUpdatePlugin加入到客户端构建配置里。");
 		}
 		const hotUpdatePlugin = plugin as ClientSSRHotUpdatePlugin;
 
@@ -137,7 +137,7 @@ export default class VueSSRHotReloader {
 			}
 			this.clientManifest = JSON.parse(manifest.source());
 			this.updateRenderer();
-		}
+		};
 
 		hotUpdatePlugin.on("update", updateClientResources);
 
@@ -167,7 +167,7 @@ export default class VueSSRHotReloader {
 				this.serverBundle = JSON.parse(stats.compilation.assets[this.bundleName].source());
 				this.updateRenderer();
 			});
-		})
+		});
 	}
 
 	/**

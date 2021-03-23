@@ -93,7 +93,7 @@ export default function createFeedMiddleware(options: BlogServerOptions) {
 				break;
 			default:
 				ctx.status = 404;
-				ctx.body = { message: "请求的Feed类型不支持", links: getLinksFor(ctx.origin) };
+				ctx.body = { message: "请求的 Feed 类型不支持", links: getLinksFor(ctx.origin) };
 		}
 	};
 }

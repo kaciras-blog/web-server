@@ -11,14 +11,14 @@ import { DevelopmentOptions } from "../options";
 /**
  * 启动开发服务器，它提供了热重载功能。
  */
-export default async function (options: DevelopmentOptions) {
+export default async function(options: DevelopmentOptions) {
 	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
 	const builder = new AppBuilder();
 	builder.addPlugin(getBlogPlugin(options));
 
 	const clientConfig = ClientConfiguration(options);
-	clientConfig.plugins!.push(new ClientSSRHotUpdatePlugin())
+	clientConfig.plugins!.push(new ClientSSRHotUpdatePlugin());
 
 	let devMiddleware: ClosableMiddleware;
 	if (options.dev.useHotClient !== false) {
@@ -43,5 +43,5 @@ export default async function (options: DevelopmentOptions) {
 		devMiddleware.close();
 		serverGroup.forceClose();
 		closeHttp2Sessions();
-	}
+	};
 }

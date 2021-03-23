@@ -63,7 +63,7 @@ async function encodeWebp(buffer: Buffer) {
 	 * 此问题主要出现在无损图像上，故仅 png 格式增加 lossless 模式候选。
 	 */
 	if (isPng(buffer)) {
-		candidates.push(input.webp({ lossless: true }).toBuffer())
+		candidates.push(input.webp({ lossless: true }).toBuffer());
 	}
 
 	return (await Promise.all(candidates).catch(throwInvalidData))

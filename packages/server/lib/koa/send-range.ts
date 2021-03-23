@@ -86,7 +86,7 @@ function sendMultipartRanges(ctx: BaseContext, filename: string, size: number, r
 		const { start, end } = range;
 		const header = getMultipartHeader(start, end);
 
-		stream.append(header)
+		stream.append(header);
 		stream.append(fs.createReadStream(filename, range));
 		stream.append("\r\n");
 

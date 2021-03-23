@@ -115,7 +115,7 @@ export async function createHotMiddleware(config: Configuration) {
 	(middleware as ClosableMiddleware).close = () => {
 		devMiddleware.close();
 		hotMiddleware.close();
-	}
+	};
 
 	return middleware as ClosableMiddleware;
 }

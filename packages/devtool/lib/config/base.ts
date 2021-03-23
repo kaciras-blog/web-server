@@ -36,7 +36,7 @@ function getBaseEnvironment(options: DevelopmentOptions) {
 	const variables = {
 		...options.thirdParty,
 		TIMEOUT: options.app.requestTimeout,
-	}
+	};
 
 	const baseEnvironment: { [key: string]: CodeValueObject } = {};
 	Object.entries(variables)
@@ -45,7 +45,7 @@ function getBaseEnvironment(options: DevelopmentOptions) {
 	return baseEnvironment;
 }
 
-export default function (options: DevelopmentOptions, side: "client" | "server"): Configuration {
+export default function(options: DevelopmentOptions, side: "client" | "server"): Configuration {
 	const webpackOpts = options.webpack;
 
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致

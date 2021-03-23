@@ -46,7 +46,7 @@ describe("app.startServer", () => {
 		return supertest(serverGroup.servers[0])
 			.get("/")
 			.expect(301)
-			.expect("location", HTTPS_URL + "/")
+			.expect("location", HTTPS_URL + "/");
 	});
 });
 

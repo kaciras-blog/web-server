@@ -82,7 +82,7 @@ it("should serve the file", () => {
 });
 
 it("should set the Content-Type", () => {
-	const app = new Koa()
+	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
 	return supertest(app.callback())
@@ -91,7 +91,7 @@ it("should set the Content-Type", () => {
 });
 
 it("should support Range header", () => {
-	const app = new Koa()
+	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
 	return supertest(app.callback())
@@ -105,7 +105,7 @@ it("should support Range header", () => {
 });
 
 it("should return .gz version when requested and if possible", () => {
-	const app = new Koa()
+	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
 	return supertest(app.callback())
@@ -118,7 +118,7 @@ it("should return .gz version when requested and if possible", () => {
 });
 
 it("should return .br version when requested and if possible", () => {
-	const app = new Koa()
+	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
 	return supertest(app.callback())
@@ -131,7 +131,7 @@ it("should return .br version when requested and if possible", () => {
 });
 
 it("should return avif image if possible", () => {
-	const app = new Koa()
+	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
 	return supertest(app.callback())
@@ -143,7 +143,7 @@ it("should return avif image if possible", () => {
 });
 
 it("should return webp image if possible", () => {
-	const app = new Koa()
+	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
 	return supertest(app.callback())
@@ -159,7 +159,7 @@ describe("custom headers", () => {
 	it("should accept ctx and path", async () => {
 		const customResponse = jest.fn<void, [BaseContext, string, fs.Stats]>();
 
-		const app = new Koa()
+		const app = new Koa();
 		app.use(serve(FIXTURE_DIR, { customResponse }));
 
 		await supertest(app.callback())
@@ -174,7 +174,7 @@ describe("custom headers", () => {
 	});
 
 	it("should add custom headers", () => {
-		const app = new Koa()
+		const app = new Koa();
 		app.use(serve(FIXTURE_DIR, {
 			customResponse(ctx) {
 				ctx.set("Cache-Control", "public,max-age=666,immutable");

@@ -30,7 +30,7 @@ describe("debounceFirst", () => {
 			debounced(1, 2)
 				.then((v) => expect(v).toBe(123))
 				.then(done);
-		})
+		});
 	});
 
 	it("should call after first resolved", async () => {

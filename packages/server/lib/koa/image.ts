@@ -39,7 +39,7 @@ export async function downloadImage(service: PreGenerateImageService, ctx: Downl
 		avif: (ctx.accepts() as string[]).includes("image/avif"),
 		webp: (ctx.accepts() as string[]).includes("image/webp"),
 		brotli: !!ctx.acceptsEncodings("br"),
-	}
+	};
 
 	const result = await service.get(hash, ext, supportTable);
 	if (!result) {

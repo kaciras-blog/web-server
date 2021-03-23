@@ -91,7 +91,7 @@ export function adminOnlyFilter(host: string) {
 	return async (ctx: ExtendableContext, next: Next) => {
 		const { data } = await Axios.get(url, configureForProxy(ctx));
 		return data.id === 2 ? next() : (ctx.status = 403);
-	}
+	};
 }
 
 /*
