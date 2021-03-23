@@ -1,12 +1,14 @@
 module.exports = {
 	root: true,
-	plugins: ["jest"],
-	env: {
-		node: true,
-	},
 	extends: [
 		"@kaciras/core",
 		"@kaciras/typescript",
+	],
+	env: {
+		node: true,
+	},
+	plugins: [
+		"jest",
 	],
 	rules: {
 		"@typescript-eslint/no-var-requires": "off",
@@ -14,10 +16,7 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: ["**/__tests__/*.spec.{j,t}s?(x)"],
-			env: {
-				jest: true,
-			},
+			files: ["**/__tests__/*.spec.{j,t}s"],
 			extends: [
 				"plugin:jest/style",
 				"plugin:jest/recommended",
