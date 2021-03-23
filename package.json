@@ -16,6 +16,8 @@
 		"publish": "tsc && lerna publish"
 	},
 	"devDependencies": {
+		"@kaciras/eslint-config-core": "^1.0.0",
+		"@kaciras/eslint-config-typescript": "^1.0.0",
 		"@types/fs-extra": "^9.0.8",
 		"@types/jest": "^26.0.20",
 		"@types/koa": "^2.13.1",
@@ -28,8 +30,6 @@
 		"@types/minimist": "^1.2.1",
 		"@types/optimize-css-assets-webpack-plugin": "^5.0.2",
 		"@types/supertest": "^2.0.10",
-		"@typescript-eslint/eslint-plugin": "^4.16.1",
-		"@typescript-eslint/parser": "^4.16.1",
 		"eslint": "^7.21.0",
 		"eslint-plugin-jest": "^24.1.8",
 		"execa": "^5.0.0",

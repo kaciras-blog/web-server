@@ -1,26 +1,23 @@
 module.exports = {
 	root: true,
-	plugins: ["jest", "@typescript-eslint"],
+	plugins: ["jest"],
 	env: {
-		es2020: true,
 		node: true,
 	},
 	extends: [
-		"eslint:recommended",
+		"@kaciras/core",
+		"@kaciras/typescript",
 	],
 	rules: {
-		"quotes": ["error", "double", {
-			avoidEscape: true,
-		}],
-		"no-unused-vars": "off",
-		"require-atomic-updates": "off",
-		"eqeqeq": "error",
-		"comma-dangle": ["error", "always-multiline"],
+		"@typescript-eslint/no-var-requires": "off",
+		"@typescript-eslint/no-unused-vars": "off",
 	},
 	overrides: [
 		{
 			files: ["**/__tests__/*.spec.{j,t}s?(x)"],
-			env: { jest: true },
+			env: {
+				jest: true,
+			},
 			extends: [
 				"plugin:jest/style",
 				"plugin:jest/recommended",
@@ -28,26 +25,6 @@ module.exports = {
 			rules: {
 				"jest/expect-expect": "off",
 				"jest/no-done-callback": "off",
-			},
-		},
-		{
-			files: ["*.ts", "*.tsx"],
-			parser: "@typescript-eslint/parser",
-			extends: [
-				"plugin:@typescript-eslint/eslint-recommended",
-				"plugin:@typescript-eslint/recommended",
-			],
-			rules: {
-				"@typescript-eslint/ban-ts-comment": "off",
-				"@typescript-eslint/no-unused-vars": "off",
-				"@typescript-eslint/no-empty-function": "off",
-				"@typescript-eslint/explicit-function-return-type": "off",
-				"@typescript-eslint/no-explicit-any": "off",
-				"@typescript-eslint/no-non-null-assertion": "off",
-				"@typescript-eslint/no-use-before-define": "off",
-				"@typescript-eslint/naming-convention": "off",
-				"@typescript-eslint/no-var-requires": "off",
-				"@typescript-eslint/explicit-module-boundary-types": "off",
 			},
 		},
 	],
