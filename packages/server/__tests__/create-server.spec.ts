@@ -4,7 +4,6 @@ import startServer, { createSNICallback, ServerGroup } from "../lib/create-serve
 import { ServerOptions } from "../lib/options";
 import { resolveFixture } from "./test-utils";
 
-const HTTP_URL = "http://localhost:12500";
 const HTTPS_URL = "https://localhost:12501";
 
 describe("app.startServer", () => {

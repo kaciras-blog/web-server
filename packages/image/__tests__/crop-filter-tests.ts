@@ -6,12 +6,6 @@ import { BadImageError, FilterArgumentError } from "../lib/errors";
 
 const buffer = fs.readFileSync(path.join(__dirname, "fixtures", "tile_16x16.png"));
 
-const transparent8x8 = Buffer.from(
-	"iVBORw0KGgoAAAANSUhEUgAAAAgAAAA" +
-	"ICAYAAADED76LAAAACXBIWXMAAAsSAA" +
-	"ALEgHS3X78AAAADUlEQVQY02NgGAUgA" +
-	"AABCAABzu35wgAAAABJRU5ErkJggg==", "base64");
-
 it("should pass metadata to preset function", () => {
 	const filter = PresetCropFilter({
 		test: ((metadata) => {
