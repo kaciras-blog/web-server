@@ -1,3 +1,5 @@
+const jestConfig = require("./jest.config");
+
 module.exports = {
 	root: true,
 	extends: [
@@ -7,12 +9,9 @@ module.exports = {
 	env: {
 		node: true,
 	},
-	plugins: [
-		"jest",
-	],
 	overrides: [
 		{
-			files: ["**/__tests__/*.spec.{j,t}s"],
+			files: jestConfig.testMatch,
 			extends: [
 				"plugin:jest/style",
 				"plugin:jest/recommended",
