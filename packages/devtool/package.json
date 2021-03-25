@@ -28,7 +28,7 @@
 		"chalk": "^4.1.0",
 		"compression-webpack-plugin": "^6.1.1",
 		"copy-webpack-plugin": "^6.4.0",
-		"css-loader": "^5.1.1",
+		"css-loader": "^5.2.0",
 		"file-loader": "^6.2.0",
 		"fs-extra": "^9.1.0",
 		"hash-sum": "^2.0.0",

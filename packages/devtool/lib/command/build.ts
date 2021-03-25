@@ -30,7 +30,7 @@ async function invokeWebpack(config: Configuration) {
 	}
 }
 
-export default async function(options: DevelopmentOptions) {
+export default async function (options: DevelopmentOptions) {
 	await fs.remove(options.outputDir);
 
 	let clientConfig = ClientConfiguration(options);

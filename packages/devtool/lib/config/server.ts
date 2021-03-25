@@ -6,7 +6,7 @@ import baseConfig from "./base";
 import { DevelopmentOptions } from "../options";
 import generateCssLoaders from "./css";
 
-export default function(options: DevelopmentOptions) {
+export default function (options: DevelopmentOptions) {
 
 	return merge(baseConfig(options, "server"), {
 		entry: ["./src/entry-server"],

@@ -52,7 +52,7 @@ function setupBabel(config: any, options: DevelopmentOptions) {
 	});
 }
 
-export default function(options: DevelopmentOptions) {
+export default function (options: DevelopmentOptions) {
 	const webpackOpts = options.webpack;
 
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
