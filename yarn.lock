@@ -520,6 +520,13 @@
   resolved "https://registry.yarnpkg.com/@kaciras/eslint-config-core/-/eslint-config-core-1.1.0.tgz#ffca0f309d3236abb0389cc025f59f2257132c36"
   integrity sha512-tYF35ArFQhjKEjnztVFK3ogoTHwEDxiv3IvS4NVBJjDzWeE8oUPxbiOEwSxTZYH5tWvLRks37feok1IFfDrYcA==
 
+"@kaciras/eslint-config-jest@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@kaciras/eslint-config-jest/-/eslint-config-jest-1.2.0.tgz#a39de5ee2d73d4905f4f7ec1c18cc6c3dda9ee37"
+  integrity sha512-na/1nw7ujfdOGHjxExNHP7dDelnk8Rz3X5DlsgSIKeQJiY64fwvRDGWLMdsJjaCDl2wFX7fZwAoYH+3lIHqTTA==
+  dependencies:
+    eslint-plugin-jest "^24.3.2"
+
 "@kaciras/eslint-config-typescript@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@kaciras/eslint-config-typescript/-/eslint-config-typescript-1.1.0.tgz#9e8d2a2374af3261ab4d153287a6eb3eb2ffd9e6"
