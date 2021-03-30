@@ -86,7 +86,7 @@ export function intercept(pattern: RegExp) {
  * @return 拦截中间件
  */
 export function adminOnlyFilter(host: string) {
-	const url = host + "/session/user";
+	const url = host + "/user";
 
 	return async (ctx: ExtendableContext, next: Next) => {
 		const { data } = await Axios.get(url, configureForProxy(ctx));
