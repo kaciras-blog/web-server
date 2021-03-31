@@ -26,13 +26,13 @@ it("should crop image", async () => {
 	const cropped = await filter(buffer, "test");
 	const pixels = await sharp(cropped).raw().toBuffer();
 
-	expect(pixels.length).toBe(256); // 8(width) x 8(height) x 4(RGBA)
+	expect(pixels).toHaveLength(256); // 8(width) x 8(height) x 4(RGBA)
 	pixels.forEach(bit8 => expect(bit8).toBe(0)); // all pixels are rgba(0,0,0,0)
 });
 
 it("should throws on preset not found", () => {
 	const filter = PresetCropFilter({});
-	expect(filter(buffer, "_")).rejects.toBeInstanceOf(FilterArgumentError);
+	return expect(filter(buffer, "_")).rejects.toBeInstanceOf(FilterArgumentError);
 });
 
 it("should throws on bad data", () => {
@@ -40,5 +40,5 @@ it("should throws on bad data", () => {
 		test: (() => ({ left: 0, top: 0, width: 8, height: 8 })),
 	});
 	const badData = Buffer.from("invalid");
-	expect(filter(badData, "test")).rejects.toBeInstanceOf(BadImageError);
+	return expect(filter(badData, "test")).rejects.toBeInstanceOf(BadImageError);
 });
