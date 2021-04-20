@@ -12,7 +12,6 @@
 		"node": ">=14.1.0"
 	},
 	"dependencies": {
-		"@saschazar/wasm-avif": "^1.0.0",
 		"execa": "^5.0.0",
 		"imagemin-gifsicle": "^7.0.0",
 		"imagemin-pngquant": "^9.0.2",
@@ -29,8 +28,5 @@
 		"@types/sharp": "^0.28.0",
 		"@types/svgo": "^2.3.0",
 		"file-type": "^16.3.0"
-	},
-	"resolutions": {
-		"gifsicle": "4.0.1"
 	}
 }
