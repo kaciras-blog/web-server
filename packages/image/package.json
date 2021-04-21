@@ -9,7 +9,7 @@
 		"directory": "packages/image"
 	},
 	"engines": {
-		"node": ">=14.1.0"
+		"node": ">=16"
 	},
 	"dependencies": {
 		"execa": "^5.0.0",
