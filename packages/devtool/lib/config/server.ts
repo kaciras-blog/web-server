@@ -35,6 +35,7 @@ export default function (options: DevelopmentOptions) {
 		}),
 
 		plugins: [
+			// TODO: https://github.com/vuejs/vue/issues/11718
 			new VueSSRServerPlugin(),
 			new DefinePlugin({
 				"process.env.API_ORIGIN": JSON.stringify(options.contentServer.internalOrigin),

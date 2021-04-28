@@ -1,4 +1,3 @@
-import { Options } from "webpack";
 import { VueLoaderOptions } from "vue-loader";
 import { BlogServerOptions } from "@kaciras-blog/server/lib/options";
 
@@ -19,12 +18,12 @@ export interface WebpackOptions {
 
 	client: {
 		useBabel: boolean;
-		devtool: Options.Devtool;
+		devtool: string | false;
 		cssSourceMap: boolean;
 	};
 
 	server: {
-		devtool: Options.Devtool;
+		devtool: string | false;
 		cssSourceMap: boolean;
 	};
 

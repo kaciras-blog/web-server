@@ -13,7 +13,6 @@ export interface ClosableMiddleware extends Middleware {
  * webpack-hot-middleware 使用 Server-Sent-Event 来通知前端更新资源，兼容性比WebpackHotClient好。
  *
  * @param config webpack的配置
- * @deprecated 尽量使用上面的 createKoaWebpack
  */
 export async function createHotMiddleware(config: Configuration) {
 	if (!config.entry) {

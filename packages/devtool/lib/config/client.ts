@@ -1,5 +1,5 @@
 import path from "path";
-import { Configuration, DefinePlugin, RuleSetLoader } from "webpack";
+import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
 import { merge } from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
@@ -11,15 +11,14 @@ import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
 import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
 
-// 这个没有类型定义
-const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
-
-interface ServiceWorkerOption {
-	assets: string[];
-}
+// const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
+//
+// interface ServiceWorkerOption {
+// 	assets: string[];
+// }
 
 function setupBabel(config: any, options: DevelopmentOptions) {
-	const loaders: RuleSetLoader[] = [{
+	const loaders: RuleSetRule[] = [{
 		loader: "babel-loader",
 		options: {
 			cacheDirectory: true,

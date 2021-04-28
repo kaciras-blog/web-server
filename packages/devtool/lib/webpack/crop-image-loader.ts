@@ -1,3 +1,4 @@
+// TODO: https://github.com/webpack/webpack/pull/13164
 import { loader } from "webpack";
 import { Metadata, Region } from "sharp";
 import * as loaderUtils from "loader-utils";

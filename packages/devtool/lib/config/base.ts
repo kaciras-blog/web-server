@@ -1,3 +1,4 @@
+import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
@@ -60,7 +61,6 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		resolve: {
 			extensions: [
 				".ts", ".tsx",		// TypeScript
-				".wasm",			// WebAssembly
 				".mjs",				// ES Module JavaScript
 				".js", ".jsx",		// JavaScript
 				".vue", ".json",	// Others
@@ -117,56 +117,38 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 				// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
 				{
 					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-					loader: "url-loader",
-					options: {
-						esModule: false,
-						limit: 10000,
-						name: assetsPath("media/[name].[hash:5].[ext]"),
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("media/[name].[hash][ext]"),
 					},
 				},
 				{
 					test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-					loader: "url-loader",
-					options: {
-						esModule: false,
-						limit: 10000,
-						name: assetsPath("fonts/[name].[hash:5].[ext]"),
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("fonts/[name].[hash][ext]"),
 					},
 				},
 				{
 					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-					use: [
-						{
-							loader: "url-loader",
-							options: {
-								esModule: false,
-								limit: 2048,
-								name: assetsPath("img/[name].[hash:5].[ext]"),
-							},
-						},
-						{
-							loader: require.resolve("../webpack/crop-image-loader"),
-						},
-					],
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("img/[name].[hash][ext]"),
+					},
 				},
 				{
 					test: /\.(svg)(\?.*)?$/,
-					use: [
-						{
-							loader: "file-loader",
-							options: {
-								esModule: false,
-								name: assetsPath("img/[name].[hash:5].[ext]"),
-							},
-						},
-					],
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("img/[name].[hash][ext]"),
+					},
 				},
 			],
 		},
 		plugins: [
 			new DefinePlugin(getBaseEnvironment(options)),
 			new VueLoaderPlugin(),
-			// new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
+			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],
 		optimization: {
 			noEmitOnErrors: true,
