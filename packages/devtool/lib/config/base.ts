@@ -1,10 +1,8 @@
-import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
 import { DevelopmentOptions, WebpackOptions } from "../options";
-import CodeValueObject = DefinePlugin.CodeValueObject;
 
 /**
  * 将相对于 process.cwd 的路径转换为绝对路径。
@@ -38,7 +36,7 @@ function getBaseEnvironment(options: DevelopmentOptions) {
 		TIMEOUT: options.app.requestTimeout,
 	};
 
-	const baseEnvironment: { [key: string]: CodeValueObject } = {};
+	const baseEnvironment: { [key: string]: any } = {};
 	Object.entries(variables)
 		.forEach(([k, v]) => baseEnvironment["process.env." + k] = JSON.stringify(v));
 
@@ -70,7 +68,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			alias: {
 				"vue$": "vue/dist/vue.runtime.esm.js",
 				"@": resolve("src"),
-				"@assets":  resolve("src/assets"),
+				"@assets": resolve("src/assets"),
 			},
 
 			/*
@@ -168,25 +166,11 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		plugins: [
 			new DefinePlugin(getBaseEnvironment(options)),
 			new VueLoaderPlugin(),
-			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
+			// new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],
 		optimization: {
 			noEmitOnErrors: true,
 		},
-		node: {
-			setImmediate: false,
-
-			// [Vue-Cli] process is injected via DefinePlugin, although some
-			// 3rd party libraries may require a mock to work properly (#934)
-			process: "mock",
-
-			dgram: "empty",
-			fs: "empty",
-			net: "empty",
-			tls: "empty",
-			child_process: "empty",
-		},
-
 		// 不提示资源过大等没啥用的信息
 		performance: false,
 	};

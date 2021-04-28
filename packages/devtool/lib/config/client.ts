@@ -1,10 +1,9 @@
 import path from "path";
-import { Configuration, DefinePlugin, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
+import { Configuration, DefinePlugin, RuleSetLoader } from "webpack";
 import { merge } from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
-import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
 import baseWebpackConfig, { resolve } from "./base";
@@ -68,34 +67,28 @@ export default function (options: DevelopmentOptions) {
 				},
 			}],
 		}),
-		new ServiceWorkerWebpackPlugin({
-			entry: "./src/service-worker/server/index",
-
-			// 支持ServiceWorker的浏览器也支持woff2，其他字体就不需要了
-			excludes: ["**/.*", "**/*.{map,woff,eot,ttf}"],
-			includes: [assetsPath("**/*")],
-
-			// 图片就不预载了，浪费流量。
-			// 这个傻B插件都不晓得把路径分隔符转换下。
-			transformOptions(data: ServiceWorkerOption) {
-				let { assets } = data;
-				assets = assets.filter(name => !name.startsWith("/static/img/") && !/KaTeX/.test(name));
-				assets = assets.map(name => name.replace(/\\/g, "/"));
-				return { assets };
-			},
-		}),
+		// new ServiceWorkerWebpackPlugin({
+		// 	entry: "./src/service-worker/server/index",
+		//
+		// 	// 支持ServiceWorker的浏览器也支持woff2，其他字体就不需要了
+		// 	excludes: ["**/.*", "**/*.{map,woff,eot,ttf}"],
+		// 	includes: [assetsPath("**/*")],
+		//
+		// 	// 图片就不预载了，浪费流量。
+		// 	// 这个傻B插件都不晓得把路径分隔符转换下。
+		// 	transformOptions(data: ServiceWorkerOption) {
+		// 		let { assets } = data;
+		// 		assets = assets.filter(name => !name.startsWith("/static/img/") && !/KaTeX/.test(name));
+		// 		assets = assets.map(name => name.replace(/\\/g, "/"));
+		// 		return { assets };
+		// 	},
+		// }),
 
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:5].css"),
 		}),
 
-		// 版权注释还是留着吧
-		new OptimizeCSSPlugin({
-			cssProcessorOptions: { map: { inline: false } },
-		}),
-
 		new VueSSRClientPlugin(),
-		new HashedModuleIdsPlugin(),
 		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
 	];
 
