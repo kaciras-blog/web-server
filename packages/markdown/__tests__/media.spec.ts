@@ -1,5 +1,5 @@
 import MarkdownIt from "markdown-it/lib";
-import MediaPlugin from "../lib/markdown-media";
+import MediaPlugin from "../lib/media";
 import Token from "markdown-it/lib/token";
 
 describe("tokenizer", () => {

@@ -4,7 +4,7 @@ import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
 import KaTeX from "@iktakahiro/markdown-it-katex";
 import TableOfContent from "markdown-it-toc-done-right";
-import MediaPlugin from "../markdown-media";
+import { MediaPlugin } from "@kaciras-blog/markdown";
 import { once } from "../functions";
 import { CachedFetcher } from "../axios-helper";
 import { BlogServerOptions } from "../options";
@@ -37,7 +37,7 @@ export default function createFeedMiddleware(options: BlogServerOptions) {
 			link: origin + "/",
 			language: "zh-CN",
 			favicon: `${origin}/favicon.ico`,
-			copyright: `All rights reserved 2020, ${author}`,
+			copyright: `All rights reserved 2020-2021, ${author}`,
 			feedLinks: getLinksFor(origin),
 		});
 
