@@ -21,7 +21,6 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@iktakahiro/markdown-it-katex": "^4.0.1",
 		"@kaciras-blog/image": "^1.2.5",
 		"@kaciras-blog/markdown": "^1.2.5",
 		"@koa/multer": "^3.0.0",

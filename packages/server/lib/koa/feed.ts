@@ -2,7 +2,6 @@ import Axios, { AxiosResponse } from "axios";
 import { Feed } from "feed";
 import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
-import KaTeX from "@iktakahiro/markdown-it-katex";
 import TableOfContent from "markdown-it-toc-done-right";
 import { MediaPlugin } from "@kaciras-blog/markdown";
 import { once } from "../functions";
@@ -10,7 +9,6 @@ import { CachedFetcher } from "../axios-helper";
 import { BlogServerOptions } from "../options";
 
 const markdownIt = new MarkdownIt();
-markdownIt.use(KaTeX);
 markdownIt.use(TableOfContent);
 markdownIt.use(MediaPlugin);
 
