@@ -11,8 +11,8 @@
 		"clean": "tsc --build --clean",
 		"compile": "tsc",
 		"lint": "eslint --fix --ext .ts packages",
-		"test": "jest --silent",
-		"test:coverage": "yarn test --coverage",
+		"test": "jest",
+		"test:coverage": "jest --coverage",
 		"publish": "tsc && lerna publish"
 	},
 	"devDependencies": {
