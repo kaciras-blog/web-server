@@ -1,5 +1,4 @@
-// TODO: https://github.com/webpack/webpack/pull/13164
-import { loader } from "webpack";
+import { LoaderContext } from "webpack";
 import { Metadata, Region } from "sharp";
 import * as loaderUtils from "loader-utils";
 import CreateCropFilter from "@kaciras-blog/image/lib/crop-filter";
@@ -21,16 +20,16 @@ const processor = CreateCropFilter({
 });
 
 /**
- * 裁剪和缩放图片的加载器，通过url中的参数来裁剪和缩放图片。
- * 该加载器仅支持位图，SVG等矢量图没法简单地裁剪，且无需缩放。
+ * 裁剪和缩放图片的加载器，通过 url 中的参数来裁剪和缩放图片。
+ * 该加载器仅支持位图，SVG 等矢量图没法简单地裁剪，且无需缩放。
  *
  * @param content 图片数据
  */
-export default async function CropImageLoader(this: loader.LoaderContext, content: Buffer) {
+export default async function CropImageLoader(this: LoaderContext<never>, content: Buffer) {
 	if (!this.resourceQuery) {
 		return content;
 	}
-	const loaderCallback = this.async()!;
+	const loaderCallback = this.async();
 	const query = loaderUtils.parseQuery(this.resourceQuery);
 
 	if (typeof query.size !== "string") {
