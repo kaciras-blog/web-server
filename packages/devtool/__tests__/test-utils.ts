@@ -15,7 +15,7 @@ export function runWebpack(config: Configuration) {
 		compiler.outputFileSystem = outputFs;
 
 		compiler.run((err, stats) => {
-			if (err) {
+			if (err || !stats) {
 				return reject(err);
 			}
 			if (stats.hasErrors()) {

@@ -2,11 +2,11 @@ import path from "path";
 import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
 import { merge } from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import CopyWebpackPlugin from "copy-webpack-plugin";
+import HtmlPlugin from "html-webpack-plugin";
+import CopyPlugin from "copy-webpack-plugin";
 import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
-import baseWebpackConfig, { resolve } from "./base";
+import baseConfig, { resolve } from "./base";
 import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
 import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
@@ -56,7 +56,7 @@ export default function (options: DevelopmentOptions) {
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
 	const plugins = [
-		new CopyWebpackPlugin({
+		new CopyPlugin({
 			patterns: [{
 				from: "./public",
 				to: ".",
@@ -101,7 +101,7 @@ export default function (options: DevelopmentOptions) {
 		removeAttributeQuotes: true,
 	};
 
-	plugins.push(new HtmlWebpackPlugin({
+	plugins.push(new HtmlPlugin({
 		title: "Kaciras的博客",
 		template: "public/index.html",
 		filename: "app-shell.html",
@@ -111,7 +111,7 @@ export default function (options: DevelopmentOptions) {
 	}));
 
 	// 服务端渲染的入口，要把 chunks 全部去掉以便渲染器注入资源
-	plugins.push(new HtmlWebpackPlugin({
+	plugins.push(new HtmlPlugin({
 		chunks: [],
 		template: "public/index.template.html",
 		filename: "index.template.html",
@@ -164,13 +164,13 @@ export default function (options: DevelopmentOptions) {
 
 	if (webpackOpts.mode === "production") {
 
-		// 默认文件名不带hash，生产模式带上以便区分不同版本的文件
+		// 默认文件名不带 hash，生产模式带上以便区分不同版本的文件
 		config.output = {
 			filename: assetsPath("js/[name].[contenthash:5].js"),
 			chunkFilename: assetsPath("js/[name].[contenthash:5].js"),
 		};
 
-		// 该插件必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
+		// 该插件必须放在 CopyPlugin 后面才能处理由其复制的图片
 		plugins.push(new ImageOptimizePlugin(new RegExp("static/")));
 
 		const compressSource = {
@@ -185,5 +185,5 @@ export default function (options: DevelopmentOptions) {
 		plugins.push(new CompressionPlugin(compressSource));
 	}
 
-	return merge(baseWebpackConfig(options, "client"), config);
+	return merge(baseConfig(options, "client"), config);
 }

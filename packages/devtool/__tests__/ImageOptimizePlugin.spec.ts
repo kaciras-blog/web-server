@@ -1,8 +1,9 @@
 import path from "path";
 import MemoryFs from "memory-fs";
 import fs from "fs-extra";
-import CopyWebpackPlugin from "copy-webpack-plugin";
+import { Configuration } from "webpack";
 import CompressionPlugin from "compression-webpack-plugin";
+import CopyPlugin from "copy-webpack-plugin";
 import ImageOptimizePlugin from "../lib/webpack/ImageOptimizePlugin";
 import { resolveFixture, runWebpack } from "./test-utils";
 
@@ -30,27 +31,37 @@ async function expectSmallerSize(output: MemoryFs, name: string) {
 	expect(optimized.length).toBeLessThan(source.size);
 }
 
-it("should compress images", async () => {
-	const output = await runWebpack({
-		entry: resolveFixture("entry-images.js"),
-		output: {
-			path: "/",
-		},
-		module: {
-			rules: [
-				{
-					test: /\.(svg|png|jpe?g|gif|webp)(\?.*)?$/,
-					loader: "file-loader",
-					options: {
-						name: "/[name].[ext]",
-					},
+const baseConfig: Configuration = {
+	mode: "development",
+	entry: resolveFixture("entry-images.js"),
+	output: {
+		path: "/",
+	},
+	module: {
+		rules: [
+			{
+				test: /\.(png|jpg|gif|webp)$/,
+				type: "asset/resource",
+				generator: {
+					filename: "[name][ext]",
 				},
-			],
-		},
-		plugins: [
-			new ImageOptimizePlugin(),
+			},
+			{
+				test: /\.svg$/,
+				type: "asset/resource",
+				generator: {
+					filename: "[name][ext]",
+				},
+			},
 		],
-	});
+	},
+};
+
+it("should compress images", async () => {
+	const config = {
+		plugins: [new ImageOptimizePlugin()],
+	};
+	const output = await runWebpack({ ...baseConfig, ...config });
 
 	// 断言没有生成多余的文件，3个图片输出，1个额外的webp，1个打包的输出。
 	expect(output.readdirSync("/")).toHaveLength(5);
@@ -61,26 +72,10 @@ it("should compress images", async () => {
 });
 
 it("should include files matches the regexp", async () => {
-	const output = await runWebpack({
-		entry: resolveFixture("entry-images.js"),
-		output: {
-			path: "/",
-		},
-		module: {
-			rules: [
-				{
-					test: /\.(svg|png|jpe?g|gif|webp)(\?.*)?$/,
-					loader: "file-loader",
-					options: {
-						name: "/[name].[ext]",
-					},
-				},
-			],
-		},
-		plugins: [
-			new ImageOptimizePlugin(/\.gif$/),
-		],
-	});
+	const config = {
+		plugins: [new ImageOptimizePlugin(/\.gif$/)],
+	};
+	const output = await runWebpack({ ...baseConfig, ...config });
 
 	await expectUnoptimized(output, "icon-rss.svg");
 	await expectUnoptimized(output, "test.png");
@@ -88,26 +83,11 @@ it("should include files matches the regexp", async () => {
 });
 
 it("should generate additional webp file", async () => {
-	const output = await runWebpack({
-		entry: resolveFixture("entry-images.js"),
-		output: {
-			path: "/",
-		},
-		module: {
-			rules: [
-				{
-					test: /\.(svg|png|jpe?g|gif|webp)(\?.*)?$/,
-					loader: "file-loader",
-					options: {
-						name: "/[name].[ext]",
-					},
-				},
-			],
-		},
-		plugins: [
-			new ImageOptimizePlugin(),
-		],
-	});
+	const config = {
+		plugins: [new ImageOptimizePlugin(/\.gif$/)],
+	};
+	const output = await runWebpack({ ...baseConfig, ...config });
+
 	const webp = output.readFileSync("/test.webp");
 	const source = await fs.stat(resolveFixture("test.png"));
 	expect(webp.length).toBeLessThan(source.size);
@@ -121,9 +101,8 @@ it("should cooperate with other plugins", async () => {
 		entry: resolveFixture("entry-empty.js"),
 		output: { path: "/" },
 		plugins: [
-			new CopyWebpackPlugin({
-				// @ts-ignore
-				patterns:[{
+			new CopyPlugin({
+				patterns: [{
 					from: "icon-rss.svg",
 					to: "icon-rss.svg",
 					context: path.join(__dirname, "fixtures"),
