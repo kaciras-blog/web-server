@@ -84,7 +84,7 @@ it("should include files matches the regexp", async () => {
 
 it("should generate additional webp file", async () => {
 	const config = {
-		plugins: [new ImageOptimizePlugin(/\.gif$/)],
+		plugins: [new ImageOptimizePlugin(/\.png$/)],
 	};
 	const output = await runWebpack({ ...baseConfig, ...config });
 
