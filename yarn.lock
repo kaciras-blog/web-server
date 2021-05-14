@@ -1974,6 +1974,15 @@
   dependencies:
     source-map "^0.6.1"
 
+"@types/webpack-dev-middleware@^4.2.0":
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@types/webpack-dev-middleware/-/webpack-dev-middleware-4.2.0.tgz#1dd330c2fca51cd0567b599b2249df5bef4eef04"
+  integrity sha512-UJQXfgiuiKhDoWq1biSuctvGK1gDZVVY0UJDA+f9S8GGxPykMNFGHAw95YkAWEl8U0CcjzJnjN2vD9FCmBafhg==
+  dependencies:
+    "@types/connect" "*"
+    tapable "^2.2.0"
+    webpack "^5"
+
 "@types/webpack-hot-middleware@^2.25.4":
   version "2.25.4"
   resolved "https://registry.yarnpkg.com/@types/webpack-hot-middleware/-/webpack-hot-middleware-2.25.4.tgz#e439e9a3694158badf23b094bc1ad6051767ca05"

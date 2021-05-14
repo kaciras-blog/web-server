@@ -1,8 +1,7 @@
 import webpack, { Configuration } from "webpack";
 import { Middleware } from "koa";
-import { NextHandleFunction } from "connect";
-import WebpackHotMiddlewareType from "webpack-hot-middleware";
-import WebpackHotMiddleware from "webpack-hot-middleware";
+import newDevMiddleware from "webpack-dev-middleware";
+import newHotMiddleware from "webpack-hot-middleware";
 
 export interface ClosableMiddleware extends Middleware {
 	close(callback?: () => any): void;
@@ -32,25 +31,19 @@ export async function createHotMiddleware(config: Configuration) {
 	config.plugins!.push(new webpack.HotModuleReplacementPlugin());
 
 	const compiler = webpack(config);
-	const devMiddleware = require("webpack-dev-middleware")(compiler, {
-		publicPath: config.output.publicPath,
+	const devMiddleware = newDevMiddleware(compiler, {
 		stats: "minimal",
+		publicPath: config.output.publicPath as string,
 	});
 
-	// 使用 TypeScript 的延迟加载，保证在调用时才会 require("webpack-hot-middleware")
-	let hotMiddleware: NextHandleFunction & WebpackHotMiddleware.EventStream;
-	try {
-		const ctor: typeof WebpackHotMiddlewareType = require("webpack-hot-middleware");
-		hotMiddleware = ctor(compiler, { heartbeat: 5000 });
-	} catch (e) {
-		throw new Error("You need install `webpack-hot-middleware`, try `npm i -D webpack-hot-middleware`");
-	}
+	// @ts-ignore 这个库的类型没跟上
+	const hotMiddleware = newHotMiddleware(compiler, { heartbeat: 5000 });
 
 	// 这下面的部分参考了 koa-webpack https://github.com/shellscape/koa-webpack/blob/master/lib/middleware.js
 	const middleware: Middleware = (ctx, next) => {
 
 		// wait for webpack-dev-middleware to signal that the build is ready
-		const ready = new Promise<void>((resolve, reject) => {
+		const ready = new Promise((resolve, reject) => {
 			compiler.hooks.failed.tap("KoaWebpack", reject);
 			devMiddleware.waitUntilValid(resolve);
 		});
@@ -59,7 +52,7 @@ export async function createHotMiddleware(config: Configuration) {
 			const innerNext = () => {
 				hotMiddleware(ctx.req, ctx.res, () => resolve(next()));
 			};
-			const resAdapter = {
+			const resAdapter: any = {
 				end: (content: any) => {
 					resolve();
 					ctx.body = content;

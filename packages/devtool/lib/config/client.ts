@@ -82,11 +82,9 @@ export default function (options: DevelopmentOptions) {
 		// 		return { assets };
 		// 	},
 		// }),
-
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:5].css"),
 		}),
-
 		new VueSSRClientPlugin(),
 		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
 	];
