@@ -1,7 +1,7 @@
 import { LoaderContext } from "webpack";
+import { parseQuery } from "loader-utils";
 import { Metadata, Region } from "sharp";
-import * as loaderUtils from "loader-utils";
-import CreateCropFilter from "@kaciras-blog/image/lib/crop-filter";
+import createCropFilter from "@kaciras-blog/image/lib/crop-filter";
 
 export const raw = true;
 
@@ -15,25 +15,25 @@ function IndexBannerMobile(metadata: Metadata): Region {
 	};
 }
 
-const processor = CreateCropFilter({
+const process = createCropFilter({
 	IndexBannerMobile,
 });
 
 /**
  * 裁剪和缩放图片的加载器，通过 url 中的参数来裁剪和缩放图片。
- * 该加载器仅支持位图，SVG 等矢量图没法简单地裁剪，且无需缩放。
+ * 仅支持位图，矢量图 SVG 没法简单地裁剪且无需缩放。
  *
  * @param content 图片数据
  */
-export default async function CropImageLoader(this: LoaderContext<never>, content: Buffer) {
+export default function (this: LoaderContext<never>, content: Buffer) {
 	if (!this.resourceQuery) {
 		return content;
 	}
-	const loaderCallback = this.async();
-	const query = loaderUtils.parseQuery(this.resourceQuery);
+	const callback = this.async();
+	const query = parseQuery(this.resourceQuery);
 
 	if (typeof query.size !== "string") {
-		throw new Error("Invalid size parameter: " + query.size);
+		throw new Error("Invalid preset name: " + query.size);
 	}
-	loaderCallback(null, await processor(content, query.size));
+	process(content, query.size).then(v => callback(null, v));
 }

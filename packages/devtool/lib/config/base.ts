@@ -132,6 +132,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 				{
 					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
 					type: "asset/resource",
+					loader: require.resolve("../webpack/crop-image-loader"),
 					generator: {
 						filename: assetsPath("img/[name].[hash][ext]"),
 					},
