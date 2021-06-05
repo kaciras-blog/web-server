@@ -4,7 +4,6 @@ import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
 import { DevelopmentOptions, WebpackOptions } from "../options";
-import CodeValueObject = DefinePlugin.CodeValueObject;
 
 /**
  * 将相对于 process.cwd 的路径转换为绝对路径。
@@ -38,7 +37,7 @@ function getBaseEnvironment(options: DevelopmentOptions) {
 		TIMEOUT: options.app.requestTimeout,
 	};
 
-	const baseEnvironment: { [key: string]: CodeValueObject } = {};
+	const baseEnvironment: { [key: string]: any } = {};
 	Object.entries(variables)
 		.forEach(([k, v]) => baseEnvironment["process.env." + k] = JSON.stringify(v));
 
@@ -62,7 +61,6 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		resolve: {
 			extensions: [
 				".ts", ".tsx",		// TypeScript
-				".wasm",			// WebAssembly
 				".mjs",				// ES Module JavaScript
 				".js", ".jsx",		// JavaScript
 				".vue", ".json",	// Others
@@ -70,7 +68,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			alias: {
 				"vue$": "vue/dist/vue.runtime.esm.js",
 				"@": resolve("src"),
-				"@assets":  resolve("src/assets"),
+				"@assets": resolve("src/assets"),
 			},
 
 			/*
@@ -119,49 +117,32 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 				// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
 				{
 					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-					loader: "url-loader",
-					options: {
-						esModule: false,
-						limit: 10000,
-						name: assetsPath("media/[name].[hash:5].[ext]"),
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("media/[name].[hash][ext]"),
 					},
 				},
 				{
 					test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-					loader: "url-loader",
-					options: {
-						esModule: false,
-						limit: 10000,
-						name: assetsPath("fonts/[name].[hash:5].[ext]"),
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("fonts/[name].[hash][ext]"),
 					},
 				},
 				{
 					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-					use: [
-						{
-							loader: "url-loader",
-							options: {
-								esModule: false,
-								limit: 2048,
-								name: assetsPath("img/[name].[hash:5].[ext]"),
-							},
-						},
-						{
-							loader: require.resolve("../webpack/crop-image-loader"),
-						},
-					],
+					type: "asset/resource",
+					loader: require.resolve("../webpack/crop-image-loader"),
+					generator: {
+						filename: assetsPath("img/[name].[hash][ext]"),
+					},
 				},
 				{
 					test: /\.(svg)(\?.*)?$/,
-					use: [
-						{
-							loader: "file-loader",
-							options: {
-								esModule: false,
-								name: assetsPath("img/[name].[hash:5].[ext]"),
-							},
-						},
-					],
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("img/[name].[hash][ext]"),
+					},
 				},
 			],
 		},
@@ -173,20 +154,6 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		optimization: {
 			noEmitOnErrors: true,
 		},
-		node: {
-			setImmediate: false,
-
-			// [Vue-Cli] process is injected via DefinePlugin, although some
-			// 3rd party libraries may require a mock to work properly (#934)
-			process: "mock",
-
-			dgram: "empty",
-			fs: "empty",
-			net: "empty",
-			tls: "empty",
-			child_process: "empty",
-		},
-
 		// 不提示资源过大等没啥用的信息
 		performance: false,
 	};

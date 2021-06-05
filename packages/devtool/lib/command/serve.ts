@@ -5,7 +5,7 @@ import getBlogPlugin from "@kaciras-blog/server/lib/blog";
 import ClientConfiguration from "../config/client";
 import ServerConfiguration from "../config/server";
 import VueSSRHotReloader, { ClientSSRHotUpdatePlugin } from "../ssr-hot-reload";
-import { ClosableMiddleware, createHotMiddleware, createKoaWebpack } from "../dev-middleware";
+import { createHotMiddleware } from "../dev-middleware";
 import { DevelopmentOptions } from "../options";
 
 /**
@@ -20,12 +20,8 @@ export default async function (options: DevelopmentOptions) {
 	const clientConfig = ClientConfiguration(options);
 	clientConfig.plugins!.push(new ClientSSRHotUpdatePlugin());
 
-	let devMiddleware: ClosableMiddleware;
-	if (options.dev.useHotClient !== false) {
-		devMiddleware = await createKoaWebpack(clientConfig);
-	} else {
-		devMiddleware = await createHotMiddleware(clientConfig);
-	}
+	const devMiddleware = await createHotMiddleware(clientConfig);
+
 	builder.useBeforeFilter(devMiddleware);
 
 	const vueSSRHotReloader = new VueSSRHotReloader(clientConfig, ServerConfiguration(options));
