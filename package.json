@@ -13,7 +13,7 @@
 		"lint": "eslint --fix --ext .ts packages",
 		"test": "jest",
 		"test:coverage": "jest --coverage",
-		"publish": "tsc && lerna publish"
+		"release": "tsc && lerna publish"
 	},
 	"devDependencies": {
 		"@kaciras/eslint-config-core": "^1.5.0",
