@@ -123,7 +123,7 @@ it("should cooperate with other plugins", async () => {
 		plugins: [
 			new CopyWebpackPlugin({
 				// @ts-ignore
-				patterns:[{
+				patterns: [{
 					from: "icon-rss.svg",
 					to: "icon-rss.svg",
 					context: path.join(__dirname, "fixtures"),
