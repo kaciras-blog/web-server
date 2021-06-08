@@ -12,7 +12,7 @@
 		"node": ">=16"
 	},
 	"dependencies": {
-		"execa": "^5.1.0",
+		"execa": "^5.1.1",
 		"imagemin-gifsicle": "^7.0.0",
 		"imagemin-pngquant": "^9.0.2",
 		"is-png": "^2.0.0",
@@ -23,7 +23,6 @@
 	},
 	"devDependencies": {
 		"@types/imagemin-gifsicle": "^7.0.0",
-		"@types/imagemin-pngquant": "^8.0.0",
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.28.3",
 		"@types/svgo": "^2.3.0",
