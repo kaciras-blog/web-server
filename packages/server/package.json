@@ -36,6 +36,8 @@
 		"koa-compress": "^5.0.1",
 		"koa-conditional-get": "^3.0.0",
 		"log4js": "^6.3.0",
+		"hash-sum": "^2.0.0",
+		"http-errors": "^1.8.0",
 		"markdown-it": "^12.0.6",
 		"markdown-it-toc-done-right": "^4.2.0",
 		"minimist": "^1.2.5",
