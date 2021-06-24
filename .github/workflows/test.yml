@@ -13,15 +13,14 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 16.x
+          node-version: 16
           check-latest: true
 
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
+      - run: pnpm install
 
-      - run: yarn compile
+      - run: pnpm run compile
 
-      - run: yarn test
+      - run: pnpm test
