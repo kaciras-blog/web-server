@@ -39,12 +39,12 @@ describe("adminOnlyFilter", () => {
 	app.use(ctx => ctx.body = "hello world");
 
 	it("should 403 for guests", () => {
-		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 0 }});
+		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 0 } });
 		return supertest(app.callback()).get("/").expect(403);
 	});
 
 	it("should continue for admin", () => {
-		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 2 }});
+		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 2 } });
 		return supertest(app.callback()).get("/").expect(200, "hello world");
 	});
 });
