@@ -1,9 +1,8 @@
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
-import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin } from "webpack";
-import { DevelopmentOptions, WebpackOptions } from "../options";
+import { DevelopmentOptions } from "../options";
 
 /**
  * 将相对于 process.cwd 的路径转换为绝对路径。
@@ -14,22 +13,6 @@ import { DevelopmentOptions, WebpackOptions } from "../options";
 export function resolve(relativePath: string) {
 	return path.join(process.cwd(), relativePath);
 }
-
-/**
- * 生成一个标识字符串，当 cache-loader 使用默认的读写选项时，这个字符串将
- * 参与缓存 hash 值的计算，以便在源码没变而构建配置变了后更新缓存。
- *
- * @param options 选项
- */
-const vieCacheIdentifier = (options: WebpackOptions) => {
-	const variables = {
-		"cache-loader": require("cache-loader/package.json").version,
-		"vue-loader": require("vue-loader/package.json").version,
-		"vue-template-compiler": require("vue-template-compiler/package.json").version,
-		"mode": options.mode,
-	};
-	return hash(variables);
-};
 
 function getBaseEnvironment(options: DevelopmentOptions) {
 	const variables = {
@@ -106,17 +89,12 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 				{
 					test: /\.vue$/,
 					loader: "vue-loader",
-					options: {
-						...webpackOpts.vueLoader,
-						cacheDirectory: resolve("node_modules/.cache/vue-loader-" + side),
-						cacheIdentifier: vieCacheIdentifier(webpackOpts),
-					},
 				},
 
 				// 下面几个以及 CSS 的加载器需要设置 esModule: false
 				// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
 				{
-					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+					test: /\.(ogg|mp3|flac|aac)(\?.*)?$/,
 					type: "asset/resource",
 					generator: {
 						filename: assetsPath("media/[name].[hash][ext]"),
