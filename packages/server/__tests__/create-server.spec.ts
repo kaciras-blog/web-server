@@ -74,7 +74,9 @@ describe("SNI callback", () => {
 	});
 
 	// 记得关闭服务器，不然测试进程无法退出
-	afterAll((done) => server.close(done));
+	afterAll(done=> {
+		server.close(done);
+	});
 
 	/**
 	 * 连接服务器并验证证书和响应是否正确。

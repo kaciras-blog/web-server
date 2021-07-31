@@ -93,7 +93,9 @@ describe("certificate verification", () => {
 		server.on("request", helloHandler);
 	});
 
-	afterAll((done) => server.close(done));
+	afterAll(done => {
+		server.close(done);
+	});
 
 	it("should success with trust", async () => {
 		const axios = Axios.create();
