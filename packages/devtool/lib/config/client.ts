@@ -4,18 +4,12 @@ import { merge } from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlPlugin from "html-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
-import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import { InjectManifest } from "workbox-webpack-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
 import baseConfig, { resolve } from "./base";
 import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
 import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
-
-// const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
-//
-// interface ServiceWorkerOption {
-// 	assets: string[];
-// }
 
 function setupBabel(config: any, options: DevelopmentOptions) {
 	const loaders: RuleSetRule[] = [{
@@ -66,22 +60,19 @@ export default function (options: DevelopmentOptions) {
 				},
 			}],
 		}),
-		// new ServiceWorkerWebpackPlugin({
-		// 	entry: "./src/service-worker/server/index",
-		//
-		// 	// 支持ServiceWorker的浏览器也支持woff2，其他字体就不需要了
-		// 	excludes: ["**/.*", "**/*.{map,woff,eot,ttf}"],
-		// 	includes: [assetsPath("**/*")],
-		//
-		// 	// 图片就不预载了，浪费流量。
-		// 	// 这个傻B插件都不晓得把路径分隔符转换下。
-		// 	transformOptions(data: ServiceWorkerOption) {
-		// 		let { assets } = data;
-		// 		assets = assets.filter(name => !name.startsWith("/static/img/") && !/KaTeX/.test(name));
-		// 		assets = assets.map(name => name.replace(/\\/g, "/"));
-		// 		return { assets };
-		// 	},
-		// }),
+		/*
+		 * workbox-webpack-plugin 包含两个插件，都可用于构建 ServiceWorker：
+		 * 1）GenerateSW 替你做所有的事情，自动生成代码并缓存资源，但这样一来无法定制。
+		 * 2）InjectManifest 使用指定的源文件，只帮你注入资源信息和构建，定制程度更高。
+		 *
+		 * https://developers.google.com/web/tools/workbox/modules/workbox-webpack-plugin
+		 */
+		new InjectManifest({
+			swSrc: "./src/service-worker/server/index",
+			swDest: "sw.js",
+			include: [assetsPath("**/*")],
+			exclude: ["**/.*", "**/*.{map,woff,eot,ttf}"],
+		}),
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:5].css"),
 		}),
