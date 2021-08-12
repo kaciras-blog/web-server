@@ -1,7 +1,7 @@
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
-import { Configuration, DefinePlugin } from "webpack";
+import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
 import { DevelopmentOptions } from "../options";
 
 /**
@@ -33,6 +33,66 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
+	const loaders: RuleSetRule[] = [
+		{
+			test: /\.tsx?$/,
+			use: {
+				loader: "ts-loader",
+				options: {
+					transpileOnly: true, // 能加快编译速度
+					appendTsSuffixTo: ["\\.vue$"], // vue文件里使用TS必须得加上
+				},
+			},
+		},
+		{
+			test: /\.vue$/,
+			loader: "vue-loader",
+		},
+
+		// 下面几个以及 CSS 的加载器需要设置 esModule: false
+		// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
+		{
+			test: /\.(ogg|mp3|flac|aac)(\?.*)?$/,
+			type: "asset/resource",
+			generator: {
+				filename: assetsPath("media/[name].[hash][ext]"),
+			},
+		},
+		{
+			test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+			type: "asset/resource",
+			generator: {
+				filename: assetsPath("fonts/[name].[hash][ext]"),
+			},
+		},
+		{
+			test: /\.(png|jpg|gif|webp)(\?.*)?$/,
+			type: "asset/resource",
+			loader: require.resolve("../webpack/crop-image-loader"),
+			generator: {
+				filename: assetsPath("img/[name].[hash][ext]"),
+			},
+		},
+		{
+			test: /\.(svg)(\?.*)?$/,
+			oneOf: [
+				{
+					include: /[?&]resource/,
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("img/[name].[hash][ext]"),
+					},
+				},
+				{
+					use: [
+						"vue-loader",
+						require.resolve("../webpack/vue-svg-loader"),
+					],
+				},
+			],
+		},
+	];
+
 	return {
 		mode: webpackOpts.mode,
 		context: process.cwd(),
@@ -42,12 +102,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			publicPath: webpackOpts.publicPath,
 		},
 		resolve: {
-			extensions: [
-				".ts", ".tsx",		// TypeScript
-				".mjs",				// ES Module JavaScript
-				".js", ".jsx",		// JavaScript
-				".vue", ".json",	// Others
-			],
+			extensions: [".ts", ".vue", ".js", ".json"],
 			alias: {
 				"vue$": "vue/dist/vue.runtime.esm.js",
 				"@": resolve("src"),
@@ -64,65 +119,18 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			 */
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../../../node_modules"),
+				path.join(__dirname, "../../node_modules"),
 			],
 			symlinks: false,
 		},
 		resolveLoader: {
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../../../node_modules"),
+				path.join(__dirname, "../../node_modules"),
 			],
 		},
 		module: {
-			rules: [
-				{
-					test: /\.tsx?$/,
-					use: {
-						loader: "ts-loader",
-						options: {
-							transpileOnly: true, // 能加快编译速度
-							appendTsSuffixTo: ["\\.vue$"], // vue文件里使用TS必须得加上
-						},
-					},
-				},
-				{
-					test: /\.vue$/,
-					loader: "vue-loader",
-				},
-
-				// 下面几个以及 CSS 的加载器需要设置 esModule: false
-				// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
-				{
-					test: /\.(ogg|mp3|flac|aac)(\?.*)?$/,
-					type: "asset/resource",
-					generator: {
-						filename: assetsPath("media/[name].[hash][ext]"),
-					},
-				},
-				{
-					test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-					type: "asset/resource",
-					generator: {
-						filename: assetsPath("fonts/[name].[hash][ext]"),
-					},
-				},
-				{
-					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-					type: "asset/resource",
-					loader: require.resolve("../webpack/crop-image-loader"),
-					generator: {
-						filename: assetsPath("img/[name].[hash][ext]"),
-					},
-				},
-				{
-					test: /\.(svg)(\?.*)?$/,
-					type: "asset/resource",
-					generator: {
-						filename: assetsPath("img/[name].[hash][ext]"),
-					},
-				},
-			],
+			rules: loaders,
 		},
 		plugins: [
 			new DefinePlugin(getBaseEnvironment(options)),
