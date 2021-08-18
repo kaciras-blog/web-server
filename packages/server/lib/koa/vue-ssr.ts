@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import { Context } from "koa";
 import log4js from "log4js";
 import path from "path";
-import { BundleRenderer, createBundleRenderer } from "vue-server-renderer";
+import { renderToString } from "@vue/server-renderer";
 import AppBuilder from "../AppBuilder";
 
 const logger = log4js.getLogger("SSR");
@@ -77,7 +77,7 @@ const BASE_CONTEXT = {
  * @param render 渲染器
  * @param ctx Koa上下文
  */
-export async function renderPage(render: BundleRenderer, ctx: Context) {
+export async function renderPage(template: string, manifest: any, createApp: any, ctx: Context) {
 	const renderContext: RenderContext = {
 		...BASE_CONTEXT,
 		request: ctx,
@@ -89,7 +89,10 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 
 	// 流式渲染不方便在外层捕获异常，先不用
 	try {
-		ctx.body = await render.renderToString(renderContext);
+		const app = await createApp(renderContext);
+		const result = await renderToString(app);
+
+		ctx.body = template.replace("<!--vue-ssr-outlet-->", result);
 
 		if (renderContext.notFound) {
 			ctx.status = 404;
@@ -104,11 +107,11 @@ export async function renderPage(render: BundleRenderer, ctx: Context) {
 		}
 
 		ctx.status = 503;
-		ctx.body = await render.renderToString({
-			...BASE_CONTEXT,
-			request: ctx,
-			url: new URL("/error/500", ctx.href),
-		});
+		// ctx.body = await render.renderToString({
+		// 	...BASE_CONTEXT,
+		// 	request: ctx,
+		// 	url: new URL("/error/500", ctx.href),
+		// });
 
 		logger.error("服务端渲染出错", e);
 	}
@@ -125,15 +128,10 @@ export async function createSSRProductionPlugin(workingDir: string) {
 		return path.resolve(workingDir, file);
 	}
 
-	const renderer = createBundleRenderer(resolve("vue-ssr-server-bundle.json"), {
-		runInNewContext: false,
-		inject: false,
-		template: await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" }),
-		clientManifest: require(resolve("vue-ssr-client-manifest.json")),
+	// TODO: 其它页面的资源不预载，已经有 ServiceWorker 来做这件事了。
+	const template =  await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" });
+	const manifest = require(resolve("ssr-manifest.json"));
+	const createApp = require(resolve("entry-server.js"));
 
-		// 其它页面的资源不预载，已经有 ServiceWorker 来做这件事了。
-		shouldPrefetch: () => false,
-	});
-
-	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(renderer, ctx));
+	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(template,manifest,createApp, ctx));
 }
