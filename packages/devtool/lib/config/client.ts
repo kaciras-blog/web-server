@@ -10,6 +10,7 @@ import baseConfig, { resolve } from "./base";
 import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
 import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
+import { WebpackManifestPlugin } from "webpack-manifest-plugin";
 
 function setupBabel(config: any, options: DevelopmentOptions) {
 	const loaders: RuleSetRule[] = [{
@@ -50,6 +51,8 @@ export default function (options: DevelopmentOptions) {
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
 	const plugins = [
+		new WebpackManifestPlugin({ fileName: "ssr-manifest.json" }),
+
 		new CopyPlugin({
 			patterns: [{
 				from: "./public",
@@ -76,7 +79,6 @@ export default function (options: DevelopmentOptions) {
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:5].css"),
 		}),
-		new VueSSRClientPlugin(),
 		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
 	];
 

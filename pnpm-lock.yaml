@@ -82,6 +82,7 @@ importers:
       thread-loader: ^3.0.4
       ts-loader: ^9.2.5
       vue-loader: ^16.5.0
+      vue-style-loader: ^4.1.3
       webpack: ^5.50.0
       webpack-bundle-analyzer: ^4.4.2
       webpack-dev-middleware: ^5.0.0
@@ -116,6 +117,7 @@ importers:
       thread-loader: 3.0.4_webpack@5.50.0
       ts-loader: 9.2.5_typescript@4.3.5+webpack@5.50.0
       vue-loader: 16.5.0_59b8c882dd8ca5248360e97f450c6718
+      vue-style-loader: 4.1.3
       webpack: 5.50.0
       webpack-bundle-analyzer: 4.4.2
       webpack-dev-middleware: 5.0.0_webpack@5.50.0
@@ -6452,6 +6454,10 @@ packages:
     dependencies:
       function-bind: 1.1.1
 
+  /hash-sum/1.0.2:
+    resolution: {integrity: sha1-M7QHd3VMZDJXPBIMw4CLvRDUfwQ=}
+    dev: false
+
   /hash-sum/2.0.0:
     resolution: {integrity: sha512-WdZTbAByD+pHfl/g9QSsBIIwy8IT+EsPiKDs0KNX+zSHhdDLFKdZu0BQHljvO+0QI/BasbMSUa8wYNCZTvhslg==}
     dev: false
@@ -11448,6 +11454,13 @@ packages:
       hash-sum: 2.0.0
       loader-utils: 2.0.0
       webpack: 5.50.0
+    dev: false
+
+  /vue-style-loader/4.1.3:
+    resolution: {integrity: sha512-sFuh0xfbtpRlKfm39ss/ikqs9AbKCoXZBpHeVZ8Tx650o0k0q/YCM7FRvigtxpACezfq6af+a7JeqVTWvncqDg==}
+    dependencies:
+      hash-sum: 1.0.2
+      loader-utils: 1.4.0
     dev: false
 
   /vue/3.1.5:

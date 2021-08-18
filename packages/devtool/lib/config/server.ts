@@ -1,4 +1,3 @@
-import VueSSRServerPlugin from "vue-server-renderer/server-plugin";
 import { DefinePlugin } from "webpack";
 import { merge } from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
@@ -36,8 +35,6 @@ export default function (options: DevelopmentOptions) {
 				/@kaciras-blog\/uikit/],
 		}),
 		plugins: [
-			// TODO: https://github.com/vuejs/vue/issues/11718
-			new VueSSRServerPlugin(),
 			new DefinePlugin({
 				"process.env.API_ORIGIN": JSON.stringify(options.contentServer.internalOrigin),
 				"process.env.VUE_ENV": "'server'",

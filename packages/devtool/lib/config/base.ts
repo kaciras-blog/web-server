@@ -77,7 +77,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			test: /\.(svg)(\?.*)?$/,
 			oneOf: [
 				{
-					include: /[?&]resource/,
+					include: /[?&]url/,
 					type: "asset/resource",
 					generator: {
 						filename: assetsPath("img/[name].[hash][ext]"),
@@ -138,7 +138,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],
 		optimization: {
-			noEmitOnErrors: true,
+			emitOnErrors: false,
 		},
 		// 不提示资源过大等没啥用的信息
 		performance: false,
