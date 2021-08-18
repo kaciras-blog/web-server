@@ -1,5 +1,5 @@
 import { LoaderContext } from "webpack";
-import { CustomPlugin, extendDefaultPlugins, optimize } from "svgo";
+import { CustomPlugin, optimize } from "svgo";
 
 /**
  * 调整 SVG 的属性，使其能够用容器元素的 CSS 控制：
@@ -30,9 +30,14 @@ const reactiveRootAttributePlugin: CustomPlugin = {
 
 const svgoConfig = {
 	plugins: [
-		...extendDefaultPlugins([
-			{ name: "removeViewBox", active: false },
-		]),
+		{
+			name: "preset-default",
+			params: {
+				overrides: {
+					removeViewBox: false,
+				},
+			},
+		},
 		reactiveRootAttributePlugin,
 	],
 };
