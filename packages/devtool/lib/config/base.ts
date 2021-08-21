@@ -86,7 +86,8 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 				{
 					use: [
 						"vue-loader",
-						require.resolve("../webpack/vue-svg-loader"),
+						require.resolve("../webpack/vue-template-loader"),
+						require.resolve("../webpack/reactive-svg-loader"),
 					],
 				},
 			],

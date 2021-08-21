@@ -1,6 +1,7 @@
 import path from "path";
-import webpack, { Configuration } from "webpack";
+import webpack, { Configuration, StatsCompilation } from "webpack";
 import MemoryFs from "memory-fs";
+import { merge } from "webpack-merge";
 
 /**
  * 运行webpack，返回输出到内存中的结果。
@@ -9,7 +10,15 @@ import MemoryFs from "memory-fs";
  * @return 内存文件系统，包含了构建的输出。
  */
 export function runWebpack(config: Configuration) {
-	return new Promise<MemoryFs>((resolve, reject) => {
+	const baseConfig: Configuration = {
+		mode: "development",
+		output: {
+			path: "/",
+		},
+	};
+	config = merge(baseConfig, config);
+
+	return new Promise<StatsCompilation>((resolve, reject) => {
 		const outputFs = new MemoryFs();
 		const compiler = webpack(config);
 		compiler.outputFileSystem = outputFs;
@@ -24,9 +33,17 @@ export function runWebpack(config: Configuration) {
 				});
 				return reject(new Error(msg));
 			}
-			return resolve(outputFs);
+			return resolve(stats.toJson({ source: true }));
 		});
 	});
+}
+
+export function getModuleSource(stats: StatsCompilation, id: string) {
+	const module = stats.modules!.find((m) => m.name!.endsWith(id));
+	if (module) {
+		return module.source!;
+	}
+	throw new Error(`module ${id} not found in complition`);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { LoaderContext } from "webpack";
-import { CustomPlugin, optimize } from "svgo";
+import { CustomPlugin, optimize, Plugin } from "svgo";
 
 /**
  * 调整 SVG 的属性，使其能够用容器元素的 CSS 控制：
@@ -9,7 +9,7 @@ import { CustomPlugin, optimize } from "svgo";
  * 代码从另一个项目复制的：
  * https://github.com/Kaciras/browser-theme/blob/master/rollup/svg.js
  */
-const reactiveRootAttributePlugin: CustomPlugin = {
+const reactivePlugin: CustomPlugin = {
 	name: "reactiveSVGAttribute",
 	type: "perItem",
 	fn(ast) {
@@ -28,33 +28,32 @@ const reactiveRootAttributePlugin: CustomPlugin = {
 	},
 };
 
-const svgoConfig = {
-	plugins: [
-		{
-			name: "preset-default",
-			params: {
-				overrides: {
-					removeViewBox: false,
-				},
-			},
+const minifyPreset = {
+	name: "preset-default",
+	params: {
+		overrides: {
+			removeViewBox: false,
 		},
-		reactiveRootAttributePlugin,
-	],
+	},
 };
 
 /**
- * SVG 组件的加载器，优化 SVG 并将宽高、颜色等属性设为能够响应的值，
- * 然后在 SVG 外层加上 <template> 包裹。
- *
- * 本加载器需要配合 vue-loader 使用。
+ * SVG 组件的加载器，优化 SVG 并将宽高、颜色等属性设为能够响应的值。
  *
  * @param svg SVG 内容
- * @see https://github.com/visualfanatic/vue-svg-loader/blob/dev/index.js
  */
 export default function (this: LoaderContext<void>, svg: string) {
-	const { data } = optimize(svg, {
-		...svgoConfig,
-		path: this.resourcePath,
-	});
-	return `<template>${data}</template>`;
+	const { mode, resourcePath } = this;
+
+	const plugins: Plugin[] = [
+		reactivePlugin,
+	];
+
+	// 它会把 #000000 改为 none 导致 reactivePlugin 失效，要放到最后。
+	if (mode === "production") {
+		// @ts-ignore TODO 等类型更新
+		plugins.push(minifyPreset);
+	}
+
+	return optimize(svg, { plugins, path: resourcePath }).data;
 }
