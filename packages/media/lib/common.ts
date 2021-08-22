@@ -74,7 +74,7 @@ export class FileSelector {
 			if (!file) {
 				return null;
 			}
-			return { file, mimetype }
+			return { file, mimetype };
 		});
 		return this;
 	}

@@ -20,7 +20,7 @@
 		"blog-devtool": "bin/blog-devtool.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/image": "^2.0.0-alpha.0",
+		"@kaciras-blog/media": "^2.0.0-alpha.0",
 		"@kaciras-blog/server": "^2.0.0-alpha.0",
 		"@vue/compiler-sfc": "^3.2.4",
 		"@vue/server-renderer": "^3.2.4",

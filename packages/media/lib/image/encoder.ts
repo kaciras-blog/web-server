@@ -38,7 +38,7 @@ export async function encodeWebp(buffer: Buffer) {
 		throw new ImageFilterException("暂不支持 GIF 转 WebP");
 	}
 
-	const candidates: Promise<Buffer>[] = [];
+	const candidates: Array<Promise<Buffer>> = [];
 	const input = sharp(buffer);
 
 	candidates.push(input.webp({ quality: 75, smartSubsample: true }).toBuffer());
@@ -49,6 +49,10 @@ export async function encodeWebp(buffer: Buffer) {
 
 	return (await Promise.all(candidates).catch(BadDataError.convert))
 		.reduce((best, candidate) => candidate.length < best.length ? candidate : best);
+}
+
+export function encodeAVIF(buffer: Buffer) {
+	return sharp(buffer).avif({ quality: 100, lossless: true, chromaSubsampling: "4:4:4" }).toBuffer();
 }
 
 /**
