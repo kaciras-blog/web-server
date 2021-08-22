@@ -44,7 +44,7 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	} catch (e) {
 		return false;
 	}
-	const { type, label, href } = directive
+	const { type, label, href } = directive;
 
 	if (!silent) {
 		const token = state.push("media", type, 0);
@@ -106,7 +106,7 @@ function tokenize(src: string): GenericDirective {
  */
 function readBracket(src: string, i: number, begin: number, end: number) {
 	if (src.charCodeAt(i) !== begin) {
-		const expect = String.fromCharCode(begin)
+		const expect = String.fromCharCode(begin);
 		const actual = src.charAt(i);
 		throw new Error(`Expect ${expect}, but found ${actual}`);
 	}
@@ -163,7 +163,7 @@ export interface RendererMap {
 export const DefaultRenderMap: Readonly<RendererMap> = {
 
 	audio(src: string) {
-		return `<audio src=${src} controls></audio>`
+		return `<audio src=${src} controls></audio>`;
 	},
 
 	video(src: string, poster: string, md: MarkdownIt) {
@@ -181,7 +181,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
 	gif(src: string) {
 		return `<video src="${src}" loop muted controls></video>`;
 	},
-}
+};
 
 /**
  * MarkdownIt的插件函数，用法：markdownIt.use(require("markdown-media"), { ... })

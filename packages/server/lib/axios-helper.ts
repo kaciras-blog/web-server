@@ -51,7 +51,7 @@ export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestCo
 	}
 
 	// HTTP 头是不区分大小写的，但是 Node 的 http 模块里会将其全部转换为小写
-	const csrfToken = ctx.cookies.get(CSRF_COOKIE_NAME)
+	const csrfToken = ctx.cookies.get(CSRF_COOKIE_NAME);
 	if (csrfToken) {
 		distHeaders[CSRF_HEADER_NAME] = csrfToken;
 		// config.params ||= {};

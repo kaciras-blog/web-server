@@ -8,7 +8,7 @@ import staticFiles from "../lib/koa/static-files";
  * 测试结果显示两者差距不大，并且都很快，不太可能成为性能瓶颈。
  */
 const sf = staticFiles("../__tests__");
-const ks = serve("../__tests__", { maxAge: 31536000 })
+const ks = serve("../__tests__", { maxAge: 31536000 });
 
 async function test(name: string, func: any) {
 

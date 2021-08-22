@@ -87,5 +87,5 @@ export default async function run(options: BlogServerOptions) {
 	return () => {
 		serverGroup.forceClose();
 		closeHttp2Sessions();
-	}
+	};
 }

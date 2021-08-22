@@ -128,7 +128,7 @@ function sendMultipartRanges(ctx: BaseContext, reader: RangeReader, ranges: Rang
 		const { start, end } = range;
 		const header = getMultipartHeader(start, end);
 
-		stream.append(header)
+		stream.append(header);
 		stream.append(reader.getData(range));
 		stream.append("\r\n");
 

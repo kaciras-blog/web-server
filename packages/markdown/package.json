@@ -1,0 +1,22 @@
+{
+	"name": "@kaciras-blog/markdown",
+	"version": "2.0.0-alpha.0",
+	"description": "Markdown-it plugins for Kaciras Blog",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kaciras-blog/web-server",
+		"directory": "packages/markdown"
+	},
+	"main": "lib/index.js",
+	"files": [
+		"lib"
+	],
+	"engines": {
+		"node": ">=16"
+	},
+	"devDependencies": {
+		"@types/markdown-it": "^12.2.0",
+		"markdown-it": "^12.2.0"
+	}
+}

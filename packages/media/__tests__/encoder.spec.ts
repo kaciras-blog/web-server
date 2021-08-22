@@ -6,7 +6,7 @@ import { BadDataError, ParamsError } from "../lib/errors";
 import sharp from "sharp";
 
 function resolveFixture(name: string) {
-	return path.join(__dirname, "fixtures", name)
+	return path.join(__dirname, "fixtures", name);
 }
 
 it("should throw ParamsError on unsupported type", () => {

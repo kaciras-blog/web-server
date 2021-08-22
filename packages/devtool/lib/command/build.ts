@@ -2,7 +2,7 @@ import { DevelopmentOptions } from "../options";
 import fs from "fs-extra";
 import ClientConfiguration from "../config/client";
 import ServerConfiguration from "../config/server";
-import chalk from "chalk";
+import { cyan, red } from "colorette";
 import webpack, { Configuration, Stats } from "webpack";
 import { promisify } from "util";
 
@@ -25,7 +25,7 @@ async function invokeWebpack(config: Configuration) {
 			chunks: false,
 			chunkModules: false,
 		}));
-		console.log(chalk.red("Build failed with errors.\n"));
+		console.log(red("Build failed with errors.\n"));
 		process.exit(1);
 	}
 }
@@ -33,7 +33,7 @@ async function invokeWebpack(config: Configuration) {
 export default async function (options: DevelopmentOptions) {
 	await fs.remove(options.outputDir);
 
-	let clientConfig = ClientConfiguration(options)
+	let clientConfig = ClientConfiguration(options);
 
 	if (options.webpack.speedMeasure) {
 		const smp = new SpeedMeasurePlugin();
@@ -41,8 +41,8 @@ export default async function (options: DevelopmentOptions) {
 	}
 
 	await invokeWebpack(clientConfig);
-	console.log(chalk.cyan("Client Build complete."));
+	console.log(cyan("Client Build complete."));
 
 	await invokeWebpack(ServerConfiguration(options));
-	console.log(chalk.cyan("Server build complete."));
+	console.log(cyan("Server build complete."));
 }

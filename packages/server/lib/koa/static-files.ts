@@ -98,7 +98,7 @@ class EncodingUpgrade implements FileSelector {
 
 	select(ctx: BaseContext, path: string) {
 		const { name, extension } = this;
-		const support = ctx.acceptsEncodings(name, "identity") === name
+		const support = ctx.acceptsEncodings(name, "identity") === name;
 		return support && path + extension;
 	}
 
@@ -133,7 +133,7 @@ const Selectors: FileSelector[] = [
 	new DefaultFileSelector(),
 ];
 
-const UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/
+const UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
 
 const NOT_FOUND = ["ENOENT", "ENAMETOOLONG", "ENOTDIR"];
 

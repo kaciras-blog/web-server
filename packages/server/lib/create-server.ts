@@ -59,7 +59,7 @@ function createConnector(connector: HttpServerOptions | HttpsServerOptions) {
  * @return HTTP请求处理器
  */
 function redirectHandler(origin: string): OnRequestHandler {
-	return (req, res) => res.writeHead(301, { Location: origin + req.url }).end()
+	return (req, res) => res.writeHead(301, { Location: origin + req.url }).end();
 }
 
 /**

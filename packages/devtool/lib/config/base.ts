@@ -1,10 +1,8 @@
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
-import hash from "hash-sum";
 import path from "path";
 import { VueLoaderPlugin } from "vue-loader";
-import { Configuration, DefinePlugin } from "webpack";
-import { DevelopmentOptions, WebpackOptions } from "../options";
-import CodeValueObject = DefinePlugin.CodeValueObject;
+import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
+import { DevelopmentOptions } from "../options";
 
 /**
  * 将相对于 process.cwd 的路径转换为绝对路径。
@@ -16,29 +14,13 @@ export function resolve(relativePath: string) {
 	return path.join(process.cwd(), relativePath);
 }
 
-/**
- * 生成一个标识字符串，当 cache-loader 使用默认的读写选项时，这个字符串将
- * 参与缓存 hash 值的计算，以便在源码没变而构建配置变了后更新缓存。
- *
- * @param options 选项
- */
-const vieCacheIdentifier = (options: WebpackOptions) => {
-	const variables = {
-		"cache-loader": require("cache-loader/package.json").version,
-		"vue-loader": require("vue-loader/package.json").version,
-		"vue-template-compiler": require("vue-template-compiler/package.json").version,
-		"mode": options.mode,
-	};
-	return hash(variables);
-};
-
 function getBaseEnvironment(options: DevelopmentOptions) {
 	const variables = {
 		...options.thirdParty,
 		TIMEOUT: options.app.requestTimeout,
-	}
+	};
 
-	const baseEnvironment: { [key: string]: CodeValueObject } = {};
+	const baseEnvironment: { [key: string]: any } = {};
 	Object.entries(variables)
 		.forEach(([k, v]) => baseEnvironment["process.env." + k] = JSON.stringify(v));
 
@@ -51,6 +33,67 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
+	const loaders: RuleSetRule[] = [
+		{
+			test: /\.tsx?$/,
+			use: {
+				loader: "ts-loader",
+				options: {
+					transpileOnly: true, // 能加快编译速度
+					appendTsSuffixTo: ["\\.vue$"], // vue文件里使用TS必须得加上
+				},
+			},
+		},
+		{
+			test: /\.vue$/,
+			loader: "vue-loader",
+		},
+
+		// 下面几个以及 CSS 的加载器需要设置 esModule: false
+		// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
+		{
+			test: /\.(ogg|mp3|flac|aac)(\?.*)?$/,
+			type: "asset/resource",
+			generator: {
+				filename: assetsPath("media/[name].[hash][ext]"),
+			},
+		},
+		{
+			test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+			type: "asset/resource",
+			generator: {
+				filename: assetsPath("fonts/[name].[hash][ext]"),
+			},
+		},
+		{
+			test: /\.(png|jpg|gif|webp)(\?.*)?$/,
+			type: "asset/resource",
+			loader: require.resolve("../webpack/crop-image-loader"),
+			generator: {
+				filename: assetsPath("img/[name].[hash][ext]"),
+			},
+		},
+		{
+			test: /\.(svg)(\?.*)?$/,
+			oneOf: [
+				{
+					include: /[?&]url/,
+					type: "asset/resource",
+					generator: {
+						filename: assetsPath("img/[name].[hash][ext]"),
+					},
+				},
+				{
+					use: [
+						"vue-loader",
+						require.resolve("../webpack/vue-template-loader"),
+						require.resolve("../webpack/reactive-svg-loader"),
+					],
+				},
+			],
+		},
+	];
+
 	return {
 		mode: webpackOpts.mode,
 		context: process.cwd(),
@@ -60,17 +103,11 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			publicPath: webpackOpts.publicPath,
 		},
 		resolve: {
-			extensions: [
-				".ts", ".tsx",		// TypeScript
-				".wasm",			// WebAssembly
-				".mjs",				// ES Module JavaScript
-				".js", ".jsx",		// JavaScript
-				".vue", ".json",	// Others
-			],
+			extensions: [".ts", ".vue", ".js", ".json"],
 			alias: {
 				"vue$": "vue/dist/vue.runtime.esm.js",
 				"@": resolve("src"),
-				"@assets":  resolve("src/assets"),
+				"@assets": resolve("src/assets"),
 			},
 
 			/*
@@ -83,87 +120,18 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			 */
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../../../node_modules"),
+				path.join(__dirname, "../../node_modules"),
 			],
 			symlinks: false,
 		},
 		resolveLoader: {
 			modules: [
 				"node_modules",
-				path.join(__dirname, "../../../../node_modules"),
+				path.join(__dirname, "../../node_modules"),
 			],
 		},
 		module: {
-			rules: [
-				{
-					test: /\.tsx?$/,
-					use: {
-						loader: "ts-loader",
-						options: {
-							transpileOnly: true, // 能加快编译速度
-							appendTsSuffixTo: ["\\.vue$"], // vue文件里使用TS必须得加上
-						},
-					},
-				},
-				{
-					test: /\.vue$/,
-					loader: "vue-loader",
-					options: {
-						...webpackOpts.vueLoader,
-						cacheDirectory: resolve("node_modules/.cache/vue-loader-" + side),
-						cacheIdentifier: vieCacheIdentifier(webpackOpts),
-					},
-				},
-
-				// 下面几个以及 CSS 的加载器需要设置 esModule: false
-				// 因为 vue-loader 的 transformAssetUrls 会把资源转换为 require 调用
-				{
-					test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-					loader: "url-loader",
-					options: {
-						esModule: false,
-						limit: 10000,
-						name: assetsPath("media/[name].[hash:5].[ext]"),
-					},
-				},
-				{
-					test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-					loader: "url-loader",
-					options: {
-						esModule: false,
-						limit: 10000,
-						name: assetsPath("fonts/[name].[hash:5].[ext]"),
-					},
-				},
-				{
-					test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-					use: [
-						{
-							loader: "url-loader",
-							options: {
-								esModule: false,
-								limit: 2048,
-								name: assetsPath("img/[name].[hash:5].[ext]"),
-							},
-						},
-						{
-							loader: require.resolve("../webpack/crop-image-loader"),
-						},
-					],
-				},
-				{
-					test: /\.(svg)(\?.*)?$/,
-					use: [
-						{
-							loader: "file-loader",
-							options: {
-								esModule: false,
-								name: assetsPath("img/[name].[hash:5].[ext]"),
-							},
-						},
-					],
-				},
-			],
+			rules: loaders,
 		},
 		plugins: [
 			new DefinePlugin(getBaseEnvironment(options)),
@@ -171,22 +139,8 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],
 		optimization: {
-			noEmitOnErrors: true,
+			emitOnErrors: false,
 		},
-		node: {
-			setImmediate: false,
-
-			// [Vue-Cli] process is injected via DefinePlugin, although some
-			// 3rd party libraries may require a mock to work properly (#934)
-			process: "mock",
-
-			dgram: "empty",
-			fs: "empty",
-			net: "empty",
-			tls: "empty",
-			child_process: "empty",
-		},
-
 		// 不提示资源过大等没啥用的信息
 		performance: false,
 	};

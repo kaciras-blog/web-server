@@ -4,7 +4,6 @@ import startServer, { createSNICallback, ServerGroup } from "../lib/create-serve
 import { ServerOptions } from "../lib/options";
 import { resolveFixture } from "./test-utils";
 
-const HTTP_URL = "http://localhost:12500";
 const HTTPS_URL = "https://localhost:12501";
 
 describe("app.startServer", () => {
@@ -46,7 +45,7 @@ describe("app.startServer", () => {
 		return supertest(serverGroup.servers[0])
 			.get("/")
 			.expect(301)
-			.expect("location", HTTPS_URL + "/")
+			.expect("location", HTTPS_URL + "/");
 	});
 });
 
@@ -75,7 +74,9 @@ describe("SNI callback", () => {
 	});
 
 	// 记得关闭服务器，不然测试进程无法退出
-	afterAll((done) => server.close(done));
+	afterAll(done=> {
+		server.close(done);
+	});
 
 	/**
 	 * 连接服务器并验证证书和响应是否正确。

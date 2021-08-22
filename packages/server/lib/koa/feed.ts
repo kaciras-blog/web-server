@@ -2,15 +2,13 @@ import Axios, { AxiosResponse } from "axios";
 import { Feed } from "feed";
 import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
-import KaTeX from "@iktakahiro/markdown-it-katex";
 import TableOfContent from "markdown-it-toc-done-right";
-import MediaPlugin from "../markdown-media";
+import { MediaPlugin } from "@kaciras-blog/markdown";
 import { once } from "../functions";
 import { CachedFetcher } from "../axios-helper";
 import { BlogServerOptions } from "../options";
 
 const markdownIt = new MarkdownIt();
-markdownIt.use(KaTeX);
 markdownIt.use(TableOfContent);
 markdownIt.use(MediaPlugin);
 
@@ -37,7 +35,7 @@ export default function createFeedMiddleware(options: BlogServerOptions) {
 			link: origin + "/",
 			language: "zh-CN",
 			favicon: `${origin}/favicon.ico`,
-			copyright: `All rights reserved 2020, ${author}`,
+			copyright: `All rights reserved 2020-2021, ${author}`,
 			feedLinks: getLinksFor(origin),
 		});
 
@@ -93,7 +91,7 @@ export default function createFeedMiddleware(options: BlogServerOptions) {
 				break;
 			default:
 				ctx.status = 404;
-				ctx.body = { message: "请求的Feed类型不支持", links: getLinksFor(ctx.origin) };
+				ctx.body = { message: "请求的 Feed 类型不支持", links: getLinksFor(ctx.origin) };
 		}
 	};
 }

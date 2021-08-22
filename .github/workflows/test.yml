@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          check-latest: true
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - run: pnpm install
+
+      - run: pnpm run compile
+
+      - run: pnpm test

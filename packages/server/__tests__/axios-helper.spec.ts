@@ -63,7 +63,7 @@ describe("configureAxiosHttp2", () => {
 			jest.runOnlyPendingTimers();
 			await sleep();
 			response.on("close", () => jest.runOnlyPendingTimers());
-		})
+		});
 
 		const tokenSource = Axios.CancelToken.source();
 		const res = axios.get(url, { cancelToken: tokenSource.token }).catch(e => e);
@@ -93,7 +93,9 @@ describe("certificate verification", () => {
 		server.on("request", helloHandler);
 	});
 
-	afterAll((done) => server.close(done));
+	afterAll(done => {
+		server.close(done);
+	});
 
 	it("should success with trust", async () => {
 		const axios = Axios.create();

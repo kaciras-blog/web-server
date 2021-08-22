@@ -1,26 +1,19 @@
 import path from "path";
-import { Configuration, DefinePlugin, HashedModuleIdsPlugin, RuleSetLoader } from "webpack";
+import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
 import { merge } from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import CopyWebpackPlugin from "copy-webpack-plugin";
-import OptimizeCSSPlugin from "optimize-css-assets-webpack-plugin";
-import VueSSRClientPlugin from "vue-server-renderer/client-plugin";
+import HtmlPlugin from "html-webpack-plugin";
+import CopyPlugin from "copy-webpack-plugin";
+import { InjectManifest } from "workbox-webpack-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
-import baseWebpackConfig, { resolve } from "./base";
+import baseConfig, { resolve } from "./base";
 import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
 import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
-
-// 这个没有类型定义
-const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
-
-interface ServiceWorkerOption {
-	assets: string[];
-}
+import { WebpackManifestPlugin } from "webpack-manifest-plugin";
 
 function setupBabel(config: any, options: DevelopmentOptions) {
-	const loaders: RuleSetLoader[] = [{
+	const loaders: RuleSetRule[] = [{
 		loader: "babel-loader",
 		options: {
 			cacheDirectory: true,
@@ -58,7 +51,9 @@ export default function (options: DevelopmentOptions) {
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
 	const plugins = [
-		new CopyWebpackPlugin({
+		new WebpackManifestPlugin({ fileName: "ssr-manifest.json" }),
+
+		new CopyPlugin({
 			patterns: [{
 				from: "./public",
 				to: ".",
@@ -68,34 +63,22 @@ export default function (options: DevelopmentOptions) {
 				},
 			}],
 		}),
-		new ServiceWorkerWebpackPlugin({
-			entry: "./src/service-worker/server/index",
-
-			// 支持ServiceWorker的浏览器也支持woff2，其他字体就不需要了
-			excludes: ["**/.*", "**/*.{map,woff,eot,ttf}"],
-			includes: [assetsPath("**/*")],
-
-			// 图片就不预载了，浪费流量。
-			// 这个傻B插件都不晓得把路径分隔符转换下。
-			transformOptions(data: ServiceWorkerOption) {
-				let { assets } = data;
-				assets = assets.filter(name => !name.startsWith("/static/img/") && !/KaTeX/.test(name));
-				assets = assets.map(name => name.replace(/\\/g, "/"));
-				return { assets };
-			},
+		/*
+		 * workbox-webpack-plugin 包含两个插件，都可用于构建 ServiceWorker：
+		 * 1）GenerateSW 替你做所有的事情，自动生成代码并缓存资源，但这样一来无法定制。
+		 * 2）InjectManifest 使用指定的源文件，只帮你注入资源信息和构建，定制程度更高。
+		 *
+		 * https://developers.google.com/web/tools/workbox/modules/workbox-webpack-plugin
+		 */
+		new InjectManifest({
+			swSrc: "./src/service-worker/server/index",
+			swDest: "sw.js",
+			include: [assetsPath("**/*")],
+			exclude: ["**/.*", "**/*.{map,woff,eot,ttf}"],
 		}),
-
 		new MiniCssExtractPlugin({
 			filename: assetsPath("css/[name].[contenthash:5].css"),
 		}),
-
-		// 版权注释还是留着吧
-		new OptimizeCSSPlugin({
-			cssProcessorOptions: { map: { inline: false } },
-		}),
-
-		new VueSSRClientPlugin(),
-		new HashedModuleIdsPlugin(),
 		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
 	];
 
@@ -109,7 +92,7 @@ export default function (options: DevelopmentOptions) {
 		removeAttributeQuotes: true,
 	};
 
-	plugins.push(new HtmlWebpackPlugin({
+	plugins.push(new HtmlPlugin({
 		title: "Kaciras的博客",
 		template: "public/index.html",
 		filename: "app-shell.html",
@@ -119,7 +102,7 @@ export default function (options: DevelopmentOptions) {
 	}));
 
 	// 服务端渲染的入口，要把 chunks 全部去掉以便渲染器注入资源
-	plugins.push(new HtmlWebpackPlugin({
+	plugins.push(new HtmlPlugin({
 		chunks: [],
 		template: "public/index.template.html",
 		filename: "index.template.html",
@@ -172,13 +155,13 @@ export default function (options: DevelopmentOptions) {
 
 	if (webpackOpts.mode === "production") {
 
-		// 默认文件名不带hash，生产模式带上以便区分不同版本的文件
+		// 默认文件名不带 hash，生产模式带上以便区分不同版本的文件
 		config.output = {
 			filename: assetsPath("js/[name].[contenthash:5].js"),
 			chunkFilename: assetsPath("js/[name].[contenthash:5].js"),
 		};
 
-		// 该插件必须放在 CopyWebpackPlugin 后面才能处理由其复制的图片
+		// 该插件必须放在 CopyPlugin 后面才能处理由其复制的图片
 		plugins.push(new ImageOptimizePlugin(new RegExp("static/")));
 
 		const compressSource = {
@@ -193,5 +176,5 @@ export default function (options: DevelopmentOptions) {
 		plugins.push(new CompressionPlugin(compressSource));
 	}
 
-	return merge(baseWebpackConfig(options, "client"), config);
+	return merge(baseConfig(options, "client"), config);
 }

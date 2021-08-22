@@ -1,26 +1,51 @@
-import { Compiler, Plugin } from "webpack";
-import SVGO from "svgo";
-import optimize from "@kaciras-blog/media/lib/image-codec";
+import { Compiler, sources } from "webpack";
+import { extname, parse } from "path";
+import * as svgo from "svgo";
+import codingFilter from "@kaciras-blog/image/lib/coding-filter";
+import { minifyPreset } from "./reactive-svg-loader";
 
-/** webpack-sources 类型定义过时了，还得我自己搞 */
-class MyRawAssets {
+// TODO: webpack 为什么不导出这些类型？
+type CompilationAssets = Record<string, sources.Source>;
 
-	private readonly data: Buffer | string;
+const { RawSource } = sources;
 
-	constructor(data: Buffer | string) {
-		this.data = data;
-	}
+const svgoConfig = {
+	plugins: [minifyPreset],
+};
 
-	source() {
-		return this.data;
-	}
+interface Optimizer {
 
-	size() {
-		return this.data.length;
-	}
+	test: RegExp;
+
+	optimize(assets: CompilationAssets, name: string): Promise<void>;
 }
 
-const svgOptimizer = new SVGO();
+const optimizers: Optimizer[] = [
+	{
+		test: /\.(jpe?g|png|gif)$/,
+		async optimize(assets: CompilationAssets, name: string) {
+			const buffer = assets[name].buffer();
+			const type = extname(name).slice(1);
+			assets[name] = new RawSource(await codingFilter(buffer, type));
+		},
+	},
+	{
+		test: /\.(jpe?g|png)$/,
+		async optimize(assets: CompilationAssets, name: string) {
+			const buffer = assets[name].buffer();
+			name = parse(name).name + ".webp";
+			assets[name] = new RawSource(await codingFilter(buffer, "webp"));
+		},
+	},
+	{
+		// 只用 SVGO 优化，压缩由其他的插件实现
+		test: /\.svg$/,
+		async optimize(assets: CompilationAssets, name: string) {
+			const text = assets[name].source().toString();
+			assets[name] = new RawSource(svgo.optimize(text, svgoConfig).data);
+		},
+	},
+];
 
 /**
  * 优化图片资源的插件，能够压缩图片资源，同时还会为一些图片额外生成WebP格式的转码，
@@ -32,53 +57,38 @@ const svgOptimizer = new SVGO();
  *    这样才能优化其生成的图片；但要放在像 CompressionPlugin 这种能够继续优化的插件前面。
  *
  * 【为什么使用插件而不是加载器】
- * 加载器无法处理非JS引用的资源，例如由 CopyWebpackPlugin 复制过去的。
+ * 加载器无法处理非 JS 引用的资源，例如由 copy-webpack-plugin 复制过去的。
  */
-export default class ImageOptimizePlugin implements Plugin {
+export default class ImageOptimizePlugin {
 
 	private readonly include?: RegExp;
 
 	constructor(include?: RegExp) {
 		this.include = include;
+		this.handleAssets = this.handleAssets.bind(this);
 	}
 
 	apply(compiler: Compiler) {
-		compiler.hooks.emit.tapPromise(ImageOptimizePlugin.name, this.handleAssets.bind(this));
+		compiler.hooks.compilation.tap(ImageOptimizePlugin.name, compilation => {
+			compilation.hooks.processAssets.tapPromise(ImageOptimizePlugin.name, this.handleAssets);
+		});
 	}
 
-	private handleAssets({ assets }: any): Promise<any> {
-		const tasks: Promise<any>[] = [];
+	private handleAssets(assets: CompilationAssets) {
+		const tasks: Array<Promise<void>> = [];
 
 		let names = Object.keys(assets);
 		if (this.include) {
 			names = names.filter(n => this.include!.test(n));
 		}
 
-		for (const rawName of names) {
-			const sep = rawName.lastIndexOf(".");
-			const basename = rawName.substring(0, sep);
-			const type = rawName.substring(sep + 1);
-
-			// 只用 SVGO 优化，压缩由其他的插件实现
-			if (type === "svg") {
-				const text = assets[rawName].source().toString();
-				tasks.push(svgOptimizer.optimize(text)
-					.then((result) => assets[rawName] = new MyRawAssets(result.data)));
-
-			} else if (/^(jpe?g|png|gif)$/.test(type)) {
-				const rawBuffer = assets[rawName].source();
-
-				const putOptimizedImage = async (name: string, targetType: string) => {
-					assets[name] = new MyRawAssets(await optimize(rawBuffer, targetType));
-				};
-
-				if (type !== "gif") {
-					tasks.push(putOptimizedImage(basename + ".webp", "webp"));
-				}
-				tasks.push(putOptimizedImage(rawName, type));
-			}
+		for (const name of names) {
+			optimizers
+				.filter(v => v.test.test(name))
+				.map(v => v.optimize(assets, name))
+				.forEach(v => tasks.push(v));
 		}
 
-		return Promise.all(tasks);
+		return Promise.all(tasks).then<void>();
 	}
 }
