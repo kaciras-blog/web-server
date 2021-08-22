@@ -4,11 +4,7 @@ import { resolveFixture, runWebpack } from "./test-utils";
 
 it("should", async () => {
 	const stats = await runWebpack({
-		mode: "development",
 		entry: resolveFixture("entry-empty.js"),
-		output: {
-			path: "/",
-		},
 		module: {
 			rules: [{
 				test: /\.(png|jpg|gif|webp)$/,

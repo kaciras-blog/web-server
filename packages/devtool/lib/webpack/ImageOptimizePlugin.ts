@@ -2,11 +2,16 @@ import { Compiler, sources } from "webpack";
 import { extname, parse } from "path";
 import * as svgo from "svgo";
 import codingFilter from "@kaciras-blog/image/lib/coding-filter";
+import { minifyPreset } from "./reactive-svg-loader";
 
 // TODO: webpack 为什么不导出这些类型？
 type CompilationAssets = Record<string, sources.Source>;
 
 const { RawSource } = sources;
+
+const svgoConfig = {
+	plugins: [minifyPreset],
+};
 
 interface Optimizer {
 
@@ -37,7 +42,7 @@ const optimizers: Optimizer[] = [
 		test: /\.svg$/,
 		async optimize(assets: CompilationAssets, name: string) {
 			const text = assets[name].source().toString();
-			assets[name] = new RawSource(svgo.optimize(text).data);
+			assets[name] = new RawSource(svgo.optimize(text, svgoConfig).data);
 		},
 	},
 ];

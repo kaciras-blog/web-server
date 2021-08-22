@@ -1,4 +1,4 @@
-import svg from "./icon-rss.svg";
+import svg from "./visible-off.svg";
 import png from "./test.png";
 import gif from "./tantrum.gif";
 
