@@ -1,5 +1,5 @@
 import { LoaderContext } from "webpack";
-import { CustomPlugin, optimize, Plugin } from "svgo";
+import { optimize, Plugin } from "svgo";
 
 /**
  * 调整 SVG 的属性，使其能够用容器元素的 CSS 控制：
@@ -9,7 +9,7 @@ import { CustomPlugin, optimize, Plugin } from "svgo";
  * 代码从另一个项目复制的：
  * https://github.com/Kaciras/browser-theme/blob/master/rollup/svg.js
  */
-const reactivePlugin: CustomPlugin = {
+const reactivePlugin: Plugin = {
 	name: "reactiveSVGAttribute",
 	type: "perItem",
 	fn(ast) {
@@ -28,7 +28,7 @@ const reactivePlugin: CustomPlugin = {
 	},
 };
 
-const minifyPreset = {
+export const minifyPreset: Plugin = {
 	name: "preset-default",
 	params: {
 		overrides: {
@@ -40,7 +40,10 @@ const minifyPreset = {
 /**
  * SVG 组件的加载器，优化 SVG 并将宽高、颜色等属性设为能够响应的值。
  *
- * @param svg SVG 内容
+ * 因为后面可能有其它的加载器，可能将内容转为非 SVG 导致插件无法优化，所以此处顺带优化了。
+ *
+ * @param svg SVG 文本
+ * @return 修改后的 SVG 文本
  */
 export default function (this: LoaderContext<void>, svg: string) {
 	const { mode, resourcePath } = this;
@@ -51,7 +54,6 @@ export default function (this: LoaderContext<void>, svg: string) {
 
 	// 它会把 #000000 改为 none 导致 reactivePlugin 失效，要放到最后。
 	if (mode === "production") {
-		// @ts-ignore TODO 等类型更新
 		plugins.push(minifyPreset);
 	}
 
