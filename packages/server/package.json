@@ -21,11 +21,11 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/media": "^2.0.0-alpha.0",
 		"@kaciras-blog/markdown": "^2.0.0-alpha.0",
+		"@kaciras-blog/media": "^2.0.0-alpha.0",
 		"@koa/multer": "^3.0.0",
-		"@koa/router": "^10.1.0",
-		"@vue/server-renderer": "^3.2.4",
+		"@koa/router": "^10.1.1",
+		"@vue/server-renderer": "^3.2.6",
 		"axios": "^0.21.1",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.2",
@@ -56,7 +56,7 @@
 		"@types/koa-conditional-get": "^2.0.0",
 		"@types/koa-static": "^4.0.2",
 		"@types/koa__router": "^8.0.7",
-		"@types/markdown-it": "^12.2.0",
+		"@types/markdown-it": "^12.2.1",
 		"@types/range-parser": "^1.2.4",
 		"@types/replace-ext": "^2.0.0",
 		"koa-static": "^5.0.0"
