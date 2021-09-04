@@ -1,12 +1,12 @@
 import { getLogger } from "log4js";
 import sharp, { Sharp } from "sharp";
 import mime from "mime-types";
-import { BadDataError, ImageFilterException } from "../errors";
-import { LoadRequest, Params, SaveRequest, WebFileService } from "../WebFileService";
+import { BadDataError } from "../errors";
+import { LoadRequest, LoadResponse, Params, SaveRequest, WebFileService } from "../WebFileService";
 import { crop } from "./param-processor";
-import optimize from "./encoder";
+import { optimize } from "./encoder";
 import { FileStore } from "../FileStore";
-import SVGService from "./SVGImageService";
+import SVGService from "./SVGService";
 
 interface ImageInfo {
 	buffer: Buffer;
@@ -20,7 +20,11 @@ const logger = getLogger("Image");
  */
 const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
-
+/**
+ * 预处理，在该阶段返回的结果视为原图。
+ *
+ * @param request 上传请求
+ */
 async function preprocess(request: SaveRequest): Promise<ImageInfo> {
 	const { buffer, parameters } = request;
 
@@ -69,15 +73,15 @@ class ImageService implements WebFileService {
 	}
 
 	private saveSvg(request: SaveRequest) {
-
+		return this.svgService.save(request);
 	}
 
 	private saveRaster(request: SaveRequest) {
-
+		return this.rasterService.save(request);
 	}
 }
 
-export default class RasterService {
+export default class RasterService implements WebFileService {
 
 	private readonly store: FileStore;
 
@@ -95,26 +99,27 @@ export default class RasterService {
 			await this.buildCache(name, info, request.parameters);
 		}
 
-		return name;
+		return { url: name };
 	}
 
 	async buildCache(name: string, info: ImageInfo, parameters: Params) {
 		const tasks: Array<Promise<void>> = [];
 
-		async function encodeRasterImage(type: string) {
-			try {
-				return await optimize(info.buffer, type);
-			} catch (error) {
-				if (!(error instanceof ImageFilterException)) {
-					throw error;
-				}
-				logger.debug(`${error.message}，name=${name}`);
-			}
-		}
+		// 	TODO: 还需要在优化器用异常内跳过吗
+		// async function encodeRasterImage(type: string) {
+		// 	try {
+		// 		return await optimize(info.buffer, type);
+		// 	} catch (error) {
+		// 		if (!(error instanceof ImageFilterException)) {
+		// 		throw error;
+		// 		}
+		// 		logger.debug(`${error.message}，name=${name}`);
+		// 	}
+		// }
 
 		const [compressed, webp] = await Promise.all([
-			encodeRasterImage(info.type),
-			encodeRasterImage("webp"),
+			optimize(info.buffer, info.type),
+			optimize(info.buffer, "webp"),
 		]);
 
 		// TODO: 下一版改为候选模式
@@ -128,5 +133,9 @@ export default class RasterService {
 		}
 
 		await Promise.all(tasks);
+	}
+
+	load(request: LoadRequest): Promise<LoadResponse | null> {
+		return Promise.resolve(undefined);
 	}
 }

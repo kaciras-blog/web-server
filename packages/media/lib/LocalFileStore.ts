@@ -5,7 +5,6 @@ import { checkCaseSensitive } from "./fs-utils";
 import { Params } from "./WebFileService";
 import { Data, FileStore } from "./FileStore";
 
-
 /**
  * 把文件和缓存都保存在本地的磁盘上。
  */

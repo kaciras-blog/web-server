@@ -44,7 +44,7 @@ export async function encodeWebp(buffer: Buffer) {
 	candidates.push(input.webp({ quality: 75, smartSubsample: true }).toBuffer());
 
 	if (isPng(buffer)) {
-		candidates.push(input.webp({ lossless: true }).toBuffer())
+		candidates.push(input.webp({ lossless: true }).toBuffer());
 	}
 
 	return (await Promise.all(candidates).catch(BadDataError.convert))

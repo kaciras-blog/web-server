@@ -1,8 +1,8 @@
 import zlib, { InputType } from "zlib";
 import { promisify } from "util";
-import SVGO from "svgo";
+import { optimize } from "svgo";
 import { getLogger } from "log4js";
-import { LoadRequest, Params, SaveRequest } from "../WebFileService";
+import { LoadRequest, Params, SaveRequest, WebFileService } from "../WebFileService";
 import { performance } from "perf_hooks";
 import { FileStore } from "../FileStore";
 
@@ -13,9 +13,8 @@ const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
 
 const BROTLI_THRESHOLD = 1024;
 
-export default class SVGService {
+export default class SVGService implements WebFileService {
 
-	private readonly svgo = new SVGO();
 	private readonly store: FileStore;
 
 	constructor(store: FileStore) {
@@ -35,18 +34,18 @@ export default class SVGService {
 			logger.info(`处理图片 ${name} 用时 ${time.toFixed()}ms`);
 		}
 
-		return name;
+		return { url: name };
 	}
 
 	async buildCache(name: string, buffer: Buffer, parameters: Params) {
 		const { store } = this;
 		const tasks = new Array(3);
-		const { data } = await this.svgo.optimize(buffer.toString());
+		const { data } = await optimize(buffer.toString());
 
 		const compress = async (algorithm: typeof gzipCompress, encoding: string) => {
 			const compressed = await algorithm(data);
-			return store.putCache(name, compressed, { encoding })
-		}
+			return store.putCache(name, compressed, { encoding });
+		};
 
 		if (data.length > BROTLI_THRESHOLD) {
 			tasks.push(compress(brotliCompress, "br"));
