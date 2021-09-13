@@ -1,5 +1,6 @@
+import { extname } from "path";
 import mime from "mime-types";
-import { FileSelector, hashName } from "./common";
+import { hashName } from "./common";
 import { BadDataError } from "./errors";
 import { LoadRequest, SaveRequest, WebFileService } from "./WebFileService";
 import { FileStore } from "./FileStore";
@@ -13,6 +14,14 @@ interface SaveParams {
 	variant?: string;
 }
 
+/**
+ *
+ *
+ * 目前不支持转码，所以仅支持两种封装格式。
+ *
+ * file-type 之类的使用文件头的库会更好些。
+ * 但即便检查了文件头，仍不能保证内容有效，除非完整地解码。
+ */
 const SUPPORTED_TYPES = ["mp4", "av1"];
 
 /**
@@ -31,24 +40,28 @@ export default class VideoService implements WebFileService {
 		this.store = store;
 	}
 
-	load(request: LoadRequest) {
-		return FileSelector
-			.for(request, this.store)
-			.addCache("video/av1")
-			.addOriginal()
-			.selectFirstMatch();
+	async load(request: LoadRequest) {
+		const { name } = request;
+		const file = await this.store.load(name);
+		if (!file) {
+			return null;
+		}
+		const mimetype = mime.contentType(name) as string;
+		return { file, mimetype };
 	}
 
 	async save(request: SaveRequest<SaveParams>) {
-		const { buffer, mimetype, parameters } = request;
-		const type = mime.extension(mimetype);
+		const { buffer, rawName, parameters } = request;
+		const type = extname(rawName);
 
 		if (!type || SUPPORTED_TYPES.includes(type)) {
-			throw new BadDataError("不支持的视频格式：" + mimetype);
+			throw new BadDataError("不支持的视频格式：" + type);
 		}
 
-		const name = parameters.variant ?? hashName(buffer);
-		await this.store.putCache(buffer, name, { type });
+		const name = parameters.variant
+			?? hashName(buffer) + "." + type;
+
+		await this.store.save(buffer, name);
 
 		return { url: name };
 	}

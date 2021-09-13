@@ -1,5 +1,3 @@
-import fs from "fs-extra";
-import path from "path";
 import Axios from "axios";
 import { getLogger } from "log4js";
 import { BaseContext, ExtendableContext, Next } from "koa";
@@ -8,15 +6,15 @@ import compress from "koa-compress";
 import multer from "@koa/multer";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
-import { PreGenerateImageService } from "@kaciras-blog/image/lib/image-service";
-import { localFileStore } from "@kaciras-blog/image/lib/image-store";
 import AppBuilder, { FunctionPlugin } from "./AppBuilder";
 import { BlogServerOptions } from "./options";
-import { downloadImage, uploadImage } from "./koa/image";
+import { download, upload } from "./koa/media";
 import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
-import { downloadFile, uploadFile } from "./koa/filestore";
 import { configureForProxy } from "./axios-helper";
+import { ImageService } from "@kaciras-blog/media/lib/image/RasterService";
+import LocalFileStore from "@kaciras-blog/media/lib/LocalFileStore";
+import VideoService from "@kaciras-blog/media/lib/VideoService";
 
 const logger = getLogger();
 
@@ -126,33 +124,20 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		const multerInstance = multer({ limits: { fileSize: 50 * 1024 * 1024 } });
 		const uploader = multerInstance.single("file");
 
-		// 用 image-middleware 里的函数组合成图片处理中间件。
-		// TODO: 支持评论插入图片
-		const service = new PreGenerateImageService(localFileStore(app.dataDir));
-
+		const service = new ImageService(new LocalFileStore(app.dataDir, "image"));
 		// @ts-ignore
-		router.get("/image/:name", ctx => downloadImage(service, ctx));
+		router.get("/image/:name", ctx => download(service, ctx));
+		router.post("/image", adminFilter, uploader, (ctx: any) => upload(service, ctx));
 
+		const vs = new VideoService(new LocalFileStore(app.dataDir, "video"));
 		// @ts-ignore
-		router.post("/image", adminFilter, uploader, (ctx: any) => uploadImage(service, ctx));
+		router.get("/video/:name", ctx => download(vs, ctx));
+		router.post("/video", adminFilter, uploader, (ctx: any) => upload(vs, ctx));
 
-		const videoDir = path.join(app.dataDir, "video");
-		fs.ensureDirSync(videoDir);
-
+		const as = new VideoService(new LocalFileStore(app.dataDir, "audio"));
 		// @ts-ignore
-		router.get("/video/:name", ctx => downloadFile(videoDir, ctx));
-
-		// @ts-ignore
-		router.post("/video", adminFilter, uploader, (ctx: any) => uploadFile(videoDir, ctx));
-
-		const audioDir = path.join(app.dataDir, "audio");
-		fs.ensureDirSync(audioDir);
-
-		// @ts-ignore
-		router.get("/audio/:name", ctx => downloadFile(audioDir, ctx));
-
-		// @ts-ignore
-		router.post("/audio", adminFilter, uploader, (ctx: any) => uploadFile(audioDir, ctx));
+		router.get("/audio/:name", ctx => download(as, ctx));
+		router.post("/audio", adminFilter, uploader, (ctx: any) => upload(as, ctx));
 
 		api.useResource(router.routes());
 	};

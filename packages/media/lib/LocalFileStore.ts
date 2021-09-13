@@ -1,26 +1,36 @@
 import { join } from "path";
 import fs from "fs-extra";
-import { hashName } from "./common";
 import { checkCaseSensitive } from "./fs-utils";
 import { Params } from "./WebFileService";
 import { Data, FileStore } from "./FileStore";
+import { DataDirectory } from "../../server/lib/options";
 
 /**
  * 把文件和缓存都保存在本地的磁盘上。
  */
 export default class LocalFileStore implements FileStore {
 
-	private readonly directory: string;
+	private readonly source: string;
+	private readonly cache: string;
 
-	constructor(directory: string) {
-		this.directory = directory;
-		fs.ensureDirSync(directory);
-		checkCaseSensitive(directory);
+	constructor(dataDir: DataDirectory, name: string) {
+		if(typeof dataDir === "string") {
+			this.source = join(dataDir, "data", name);
+			this.cache = join(dataDir, "cache", name);
+		} else {
+			this.source = join(dataDir.data, name);
+			this.cache = join(dataDir.cache, name);
+		}
+
+		fs.ensureDirSync(this.source);
+		fs.ensureDirSync(this.cache);
+
+		checkCaseSensitive(this.source);
+		checkCaseSensitive(this.cache);
 	}
 
-	async save(data: Data, type: string, rawName: string) {
-		const name = `${hashName(data)}.${type}`;
-		const path = join(this.directory, name);
+	async save(data: Data, name: string) {
+		const path = join(this.source, name);
 
 		let createNew = true;
 		try {
@@ -36,16 +46,15 @@ export default class LocalFileStore implements FileStore {
 	}
 
 	load(name: string) {
-		return this.getFileInfo(join(this.directory, name));
+		return this.getFileInfo(join(this.source, name));
 	}
 
-	getCache(name: string, params: Params) {
-		const path = this.getFilePath(name, params);
-		return this.getFileInfo(path);
+	getCache(id: string, params: Params) {
+		return this.getFileInfo(this.cachePath(id, params));
 	}
 
-	async putCache(data: Data, name: string, params: Params) {
-		const path = this.getFilePath(name, params);
+	async putCache(data: Data, id: string, params: Params) {
+		const path = this.cachePath(id, params);
 		await fs.ensureFile(path);
 		return fs.writeFile(path, data);
 	}
@@ -57,15 +66,20 @@ export default class LocalFileStore implements FileStore {
 	 * 每个参数必须在目录名上包含键和值两者，不能只有值，因为有同值不同键的可能。
 	 * Object.keys(tags) 对于非 ASCII 字符的键返回的顺序不确定，所以需要排序。
 	 *
-	 * @param name 文件名
+	 * 【文件名长度】
+	 * Windows 和 Linux 大部分文件系统的文件名最长小于 256 个字符，
+	 * https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+	 *
+	 * @param id 资源的 ID，一般为 HASH
 	 * @param params 参数
-	 * @private
 	 */
-	private getFilePath(name: string, params: Params) {
-		const parts = Object.keys(params)
+	private cachePath(id: string, params: Params) {
+		let filename = Object.keys(params)
 			.sort()
-			.map(k => `${k}=${params[k]}`);
-		return join(this.directory, ...parts, name);
+			.map(k => `${k}=${params[k]}`)
+			.join("_");
+		filename ||= "default";
+		return join(this.cache, id, filename);
 	}
 
 	private async getFileInfo(path: string) {

@@ -52,7 +52,7 @@ export async function encodeWebp(buffer: Buffer) {
 }
 
 export function encodeAVIF(buffer: Buffer) {
-	return sharp(buffer).avif({ quality: 100, lossless: true, chromaSubsampling: "4:4:4" }).toBuffer();
+	return sharp(buffer).avif().toBuffer();
 }
 
 /**

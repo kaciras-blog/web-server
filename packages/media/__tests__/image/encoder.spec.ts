@@ -1,8 +1,8 @@
 import path from "path";
 import FileType from "file-type";
 import fs from "fs-extra";
-import { encodeWebp, optimize } from "../lib/image/encoder";
-import { BadDataError, ParamsError } from "../lib/errors";
+import { encodeWebp, optimize } from "../../lib/image/encoder";
+import { BadDataError, ParamsError } from "../../lib/errors";
 import sharp from "sharp";
 
 function resolveFixture(name: string) {

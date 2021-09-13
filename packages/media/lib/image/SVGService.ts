@@ -1,9 +1,10 @@
 import zlib, { InputType } from "zlib";
+import { basename } from "path";
+import { performance } from "perf_hooks";
 import { promisify } from "util";
 import { optimize } from "svgo";
 import { getLogger } from "log4js";
-import { LoadRequest, Params, SaveRequest, WebFileService } from "../WebFileService";
-import { performance } from "perf_hooks";
+import { LoadRequest, SaveRequest, WebFileService } from "../WebFileService";
 import { FileStore } from "../FileStore";
 
 const logger = getLogger("Image");
@@ -28,7 +29,7 @@ export default class SVGService implements WebFileService {
 
 		if (createNew) {
 			const start = performance.now();
-			await this.buildCache(name, buffer, request.parameters);
+			await this.buildCache(name, buffer);
 			const time = performance.now() - start;
 
 			logger.info(`处理图片 ${name} 用时 ${time.toFixed()}ms`);
@@ -37,15 +38,16 @@ export default class SVGService implements WebFileService {
 		return { url: name };
 	}
 
-	async buildCache(name: string, buffer: Buffer, parameters: Params) {
+	async buildCache(name: string, buffer: Buffer) {
 		const { store } = this;
-		const tasks = new Array(3);
 		const { data } = await optimize(buffer.toString());
 
 		const compress = async (algorithm: typeof gzipCompress, encoding: string) => {
 			const compressed = await algorithm(data);
-			return store.putCache(name, compressed, { encoding });
+			return store.putCache(compressed, name, { encoding });
 		};
+
+		const tasks = new Array(3);
 
 		if (data.length > BROTLI_THRESHOLD) {
 			tasks.push(compress(brotliCompress, "br"));
@@ -56,24 +58,28 @@ export default class SVGService implements WebFileService {
 		return Promise.all(tasks);
 	}
 
-
 	async load(request: LoadRequest) {
 		const { name, acceptEncodings } = request;
+		const hash = basename(name);
 
 		if (acceptEncodings.includes("br")) {
-			const cache = await this.store.getCache(name, { encoding: "br" });
-			if (cache) {
-				return cache;
+			const file = await this.store.getCache(hash, { encoding: "br" });
+			if (file) {
+				return { file, mimetype: "image/svg+xml", encoding: "br" };
 			}
 		}
 
 		if (acceptEncodings.includes("gzip")) {
-			const cache = await this.store.getCache(name, { encoding: "gz" });
-			if (cache) {
-				return cache;
+			const file = await this.store.getCache(name, { encoding: "gz" });
+			if (file) {
+				return { file, mimetype: "image/svg+xml", encoding: "gzip" };
 			}
 		}
 
-		return this.store.getCache(name, {});
+		const file = await this.store.getCache(name, {});
+		if (!file) {
+			return null;
+		}
+		return { file, mimetype: "image/svg+xml" };
 	}
 }

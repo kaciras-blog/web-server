@@ -23,11 +23,23 @@ interface SimpleLogConfig {
 	noConsole?: boolean;
 }
 
+interface SeparatedStoreLocation {
+	data: string;
+	logs: string;
+	cache: string;
+}
+
+type DataDirectory = string | SeparatedStoreLocation;
+
 export interface AppOptions {
 	title: string;
 	author: string;
 
-	dataDir: string;
+	/**
+	 * 本地数据存储目录，分为缓存、日志、数据三部分，可以分别指定；
+	 * 也能只填一个字符串，此时将在该目录下创建三个子目录。
+	 */
+	dataDir: DataDirectory;
 
 	serviceWorker?: boolean;
 	requestTimeout: number;

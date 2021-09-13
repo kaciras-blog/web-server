@@ -1,4 +1,5 @@
-import { Context, ExtendableContext, Middleware, Next, ParameterizedContext } from "koa";
+import { ParsedUrlQuery } from "querystring";
+import { BaseContext, Context, ExtendableContext, Middleware, Next, ParameterizedContext } from "koa";
 import { getLogger } from "log4js";
 import { MediaError } from "@kaciras-blog/media/lib/errors";
 import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
@@ -13,6 +14,23 @@ export interface DownloadContext extends ExtendableContext {
 	params: { name: string };
 }
 
+function acceptList(ctx: BaseContext, name: string) {
+	let header = ctx.headers[name];
+	if (Array.isArray(header)) {
+		header = header[0];
+	}
+	if (!header) {
+		return [];
+	}
+	return header.split(/,\s*/g);
+}
+
+function getParams(query: ParsedUrlQuery) {
+	const kv = Object.entries(query);
+	const entries = kv.map(([k, v]) => [k, v ? v[0] : ""]);
+	return Object.fromEntries(entries);
+}
+
 /**
  * 处理下载图片的请求，自动下载最佳的资源。
  *
@@ -24,13 +42,13 @@ export async function download(service: WebFileService, ctx: DownloadContext) {
 
 	const result = await service.load({
 		name: ctx.params.name,
-		acceptTypes: ctx.headers["Accept"].split(/,\s*/g),
-		acceptEncodings: ctx.headers["Accept-Encoding"].split(/,\s*/g),
-		parameters: ctx.query,
+		acceptTypes: acceptList(ctx,"accept"),
+		acceptEncodings: acceptList(ctx,"accept-encoding"),
+		parameters: getParams(ctx.query),
 	});
 
 	if (!result) {
-		logger.warn(`请求了不存在的图片：${name}`);
+		logger.warn(`请求了不存在的资源：${name}`);
 		return ctx.status = 404;
 	}
 
@@ -45,7 +63,7 @@ export async function download(service: WebFileService, ctx: DownloadContext) {
 		ctx.set("Content-Length", size.toString());
 	}
 
-	// 修改时间要以被请求的图片为准而不是原图，因为处理器可能被修改并重新生成了缓存
+	// 修改时间要以被请求的资源为准而不是原图，因为处理器可能被修改并重新生成了缓存
 	ctx.set("Last-Modified", mtime.toUTCString());
 	ctx.set("Cache-Control", "public,max-age=31536000");
 }
@@ -67,7 +85,7 @@ export async function upload(service: WebFileService, ctx: Context) {
 			buffer: file.buffer,
 			mimetype: file.mimetype,
 			rawName: file.originalname,
-			parameters: ctx.query,
+			parameters: getParams(ctx.query),
 		});
 	} catch (err) {
 		if (!(err instanceof MediaError)) {
@@ -127,6 +145,6 @@ export function route(contextPath: string, downloadFn: Middleware, uploadFn: Mid
 		}
 
 		ctx.status = 405;
-		ctx.body = "该API仅支持POST和GET方法";
+		ctx.body = "该 API 仅支持 POST 和 GET 方法";
 	};
 }

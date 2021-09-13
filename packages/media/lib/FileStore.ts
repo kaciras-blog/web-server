@@ -29,10 +29,9 @@ export interface FileStore {
 	 * 保存原始文件，不一定要使用 rawName 作为文件名，任何对文件的访问将以返回值为准。
 	 *
 	 * @param data 数据
-	 * @param type 类型
-	 * @param rawName 名字提示
+	 * @param name 名字
 	 */
-	save(data: Data, type: string, rawName: string): Promise<FileSaveResult>;
+	save(data: Data, name: string): Promise<FileSaveResult>;
 
 	/**
 	 * 读取原始文件。

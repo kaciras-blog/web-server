@@ -1,4 +1,6 @@
 /**
+ * TODO：Error cause https://v8.dev/features/error-cause
+ *
  * 表示用户输入的数据或参数错误。
  * 它们无法由程序处理，需要返回错误信息。
  */

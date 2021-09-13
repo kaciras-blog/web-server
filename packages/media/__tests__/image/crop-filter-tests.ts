@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import sharp from "sharp";
 import PresetCropFilter from "../lib/crop-filter";
-import { BadDataError, ParamsError } from "../lib/errors";
+import { BadDataError, ParamsError } from "../../lib/errors";
 
 const buffer = fs.readFileSync(path.join(__dirname, "fixtures", "tile_16x16.png"));
 

@@ -7,6 +7,7 @@ import { crop } from "./param-processor";
 import { optimize } from "./encoder";
 import { FileStore } from "../FileStore";
 import SVGService from "./SVGService";
+import { basename } from "path";
 
 interface ImageInfo {
 	buffer: Buffer;
@@ -21,7 +22,7 @@ const logger = getLogger("Image");
 const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
 /**
- * 预处理，在该阶段返回的结果视为原图。
+ * 预处理，包括裁剪和格式检查，在该阶段返回的结果视为原图。
  *
  * @param request 上传请求
  */
@@ -50,7 +51,7 @@ async function preprocess(request: SaveRequest): Promise<ImageInfo> {
 	return { type, buffer: image ? await image.toBuffer() : buffer };
 }
 
-class ImageService implements WebFileService {
+export class ImageService implements WebFileService {
 
 	private svgService: SVGService;
 	private rasterService: RasterService;
@@ -91,9 +92,9 @@ export default class RasterService implements WebFileService {
 
 	async save(request: SaveRequest) {
 		const info = await preprocess(request);
-		const { buffer, type } = info;
+		const { buffer } = info;
 
-		const { name, createNew } = await this.store.save(buffer, type, request.rawName);
+		const { name, createNew } = await this.store.save(buffer, request.rawName);
 
 		if (createNew) {
 			await this.buildCache(name, info, request.parameters);
@@ -122,7 +123,6 @@ export default class RasterService implements WebFileService {
 			optimize(info.buffer, "webp"),
 		]);
 
-		// TODO: 下一版改为候选模式
 		tasks.push(this.store.putCache(compressed, name, { type: info.type }));
 
 		// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
@@ -135,7 +135,28 @@ export default class RasterService implements WebFileService {
 		await Promise.all(tasks);
 	}
 
-	load(request: LoadRequest): Promise<LoadResponse | null> {
-		return Promise.resolve(undefined);
+	async load(request: LoadRequest): Promise<LoadResponse | null> {
+		const { name, acceptTypes, parameters } = request;
+		const hash = basename(name);
+		const mimetype = mime.contentType(name) as string;
+		let file;
+
+		if (parameters.type === "orig") {
+			file = await this.store.load(name);
+		}
+		if (!file && acceptTypes.includes("image/avif")) {
+			file = await this.store.getCache(hash, { type: "avif" });
+		}
+		if (!file && acceptTypes.includes("image/webp")) {
+			file = await this.store.getCache(hash, { type: "webp" });
+		}
+		if (!file) {
+			file = await this.store.getCache(hash, {});
+		}
+
+		if (file) {
+			return { file, mimetype };
+		}
+		return Promise.resolve(null);
 	}
 }
