@@ -5,10 +5,11 @@
 		"module": "CommonJS",
 		"moduleResolution": "Node",
 		"sourceMap": true,
-		"strict": true,
 		"newLine": "LF",
-		"esModuleInterop": true,
 		"removeComments": true,
+		"strict": true,
+		"useUnknownInCatchVariables": false,
+		"esModuleInterop": true
 	},
 	"include": [
 		"packages/*/lib/**/*.ts",

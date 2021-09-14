@@ -5,22 +5,18 @@ it("should check case sensitive", () => {
 });
 
 it.each([
-	"",
-	"foobar*.png",
-	"foo/bar.png",
-	"foo:bar.png",
-	"foo|bar.png",
-	"fo>o<bar.png",
-	"NUL",
-	"LPT9",
-])("should validate filename %s", name => {
-	expect(validateFilename(name, "win32")).toBe(false);
-});
+	["foobar.png", true],
+	["com2.png", true],
+	["ends-with-dot.", true],
 
-it.each([
-	"foobar.png",
-	"com2.png",
-	"ends-with-dot.",
-])("should validate filename %s", name => {
-	expect(validateFilename(name, "win32")).toBe(true);
+	["", false],
+	["foobar*.png", false],
+	["foo/bar.png", false],
+	["foo:bar.png", false],
+	["foo|bar.png", false],
+	["fo>o<bar.png", false],
+	["NUL", false],
+	["LPT9", false],
+])("should validate filename %s", (name, result) => {
+	expect(validateFilename(name, "win32")).toBe(result);
 });
