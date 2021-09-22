@@ -21,13 +21,13 @@
 		"log4js": "^6.3.0",
 		"mozjpeg": "^7.1.0",
 		"sharp": "^0.29.1",
-		"svgo": "^2.5.0"
+		"svgo": "^2.6.1"
 	},
 	"devDependencies": {
 		"@types/imagemin-gifsicle": "^7.0.1",
 		"@types/mozjpeg": "^5.0.0",
-		"@types/sharp": "^0.29.1",
-		"@types/svgo": "^2.4.1",
+		"@types/sharp": "^0.29.2",
+		"@types/svgo": "^2.4.2",
 		"file-type": "^16.5.3"
 	}
 }
