@@ -37,10 +37,13 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		{
 			test: /\.tsx?$/,
 			use: {
-				loader: "ts-loader",
+				loader: "swc-loader",
 				options: {
-					transpileOnly: true, // 能加快编译速度
-					appendTsSuffixTo: ["\\.vue$"], // vue文件里使用TS必须得加上
+					jsc: {
+						parser: {
+							syntax: "typescript",
+						},
+					},
 				},
 			},
 		},
@@ -68,7 +71,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		{
 			test: /\.(png|jpg|gif|webp)(\?.*)?$/,
 			type: "asset/resource",
-			loader: require.resolve("../webpack/crop-image-loader"),
+			// loader: require.resolve("../webpack/crop-image-loader"),
 			generator: {
 				filename: assetsPath("img/[name].[hash][ext]"),
 			},
