@@ -14,9 +14,10 @@ const reactivePlugin: Plugin = {
 	type: "perItem",
 	fn(ast) {
 		const { type, name, attributes } = ast;
-		const { fill, stroke } = attributes;
 
 		if (type === "element" && name === "svg") {
+			const { fill, stroke } = attributes;
+
 			if (stroke && stroke !== "none") {
 				attributes.stroke = "currentColor";
 			}

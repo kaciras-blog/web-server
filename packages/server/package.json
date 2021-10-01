@@ -26,6 +26,7 @@
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^10.1.1",
 		"@vue/server-renderer": "^3.2.19",
+		"vue": "^3.2.19",
 		"axios": "^0.21.4",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.2",

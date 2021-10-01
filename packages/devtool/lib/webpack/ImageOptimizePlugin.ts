@@ -1,7 +1,7 @@
 import { Compiler, sources } from "webpack";
 import { extname, parse } from "path";
 import * as svgo from "svgo";
-import codingFilter from "@kaciras-blog/image/lib/coding-filter";
+import { encodeWebp, optimize } from "@kaciras-blog/media/lib/image/encoder";
 import { minifyPreset } from "./reactive-svg-loader";
 
 // TODO: webpack 为什么不导出这些类型？
@@ -26,7 +26,7 @@ const optimizers: Optimizer[] = [
 		async optimize(assets: CompilationAssets, name: string) {
 			const buffer = assets[name].buffer();
 			const type = extname(name).slice(1);
-			assets[name] = new RawSource(await codingFilter(buffer, type));
+			assets[name] = new RawSource(await optimize(buffer, type));
 		},
 	},
 	{
@@ -34,7 +34,7 @@ const optimizers: Optimizer[] = [
 		async optimize(assets: CompilationAssets, name: string) {
 			const buffer = assets[name].buffer();
 			name = parse(name).name + ".webp";
-			assets[name] = new RawSource(await codingFilter(buffer, "webp"));
+			assets[name] = new RawSource(await encodeWebp(buffer));
 		},
 	},
 	{
