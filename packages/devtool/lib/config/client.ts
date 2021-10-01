@@ -1,49 +1,16 @@
 import path from "path";
-import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
+import { Configuration, DefinePlugin } from "webpack";
 import { merge } from "webpack-merge";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import HtmlPlugin from "html-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import { InjectManifest } from "workbox-webpack-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
-import baseConfig, { resolve } from "./base";
+import baseConfig from "./base";
 import generateCssLoaders from "./css";
 import { DevelopmentOptions } from "../options";
 import ImageOptimizePlugin from "../webpack/ImageOptimizePlugin";
 import { WebpackManifestPlugin } from "webpack-manifest-plugin";
-
-function setupBabel(config: any, options: DevelopmentOptions) {
-	const loaders: RuleSetRule[] = [{
-		loader: "babel-loader",
-		options: {
-			cacheDirectory: true,
-			cacheCompression: false,
-		},
-	}];
-
-	if (options.webpack.parallel) {
-		loaders.unshift({ loader: "thread-loader" });
-	}
-
-	if (!config.module) {
-		config.module = { rules: [] };
-	}
-
-	// 【坑】webpack-hot-client 不能放进来，否则报错 module.exports is read-only
-	config.module.rules.push({
-		test: /\.(mjs|jsx?)$/,
-		use: loaders,
-		include: [
-			resolve("node_modules/@kaciras-blog/uikit/src"),
-			resolve("src"),
-			resolve("test"),
-			/node_modules\/webpack-hot-middleware\/client/,
-		],
-		exclude: [
-			resolve("src/service-worker"),
-		],
-	});
-}
 
 export default function (options: DevelopmentOptions) {
 	const webpackOpts = options.webpack;
@@ -143,10 +110,6 @@ export default function (options: DevelopmentOptions) {
 			}),
 		},
 	};
-
-	if (webpackOpts.client.useBabel) {
-		setupBabel(config, options);
-	}
 
 	if (webpackOpts.bundleAnalyzerReport) {
 		const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;

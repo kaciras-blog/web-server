@@ -17,7 +17,6 @@ export interface WebpackOptions {
 	speedMeasure?: boolean;
 
 	client: {
-		useBabel: boolean;
 		devtool: string | false;
 		cssSourceMap: boolean;
 	};
