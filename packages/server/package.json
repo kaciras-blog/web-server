@@ -15,7 +15,7 @@
 		"*.d.ts"
 	],
 	"engines": {
-		"node": ">=16"
+		"node": ">=17"
 	},
 	"bin": {
 		"blog-server": "bin/blog-server.js"

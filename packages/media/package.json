@@ -9,7 +9,7 @@
 		"directory": "packages/media"
 	},
 	"engines": {
-		"node": ">=16"
+		"node": ">=17"
 	},
 	"dependencies": {
 		"@kaciras-blog/nativelib": "^0.2.10",
