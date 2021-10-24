@@ -20,7 +20,7 @@
 		"is-png": "^2.0.0",
 		"log4js": "^6.3.0",
 		"mozjpeg": "^7.1.1",
-		"sharp": "^0.29.1",
+		"sharp": "^0.29.2",
 		"svgo": "^2.7.0"
 	},
 	"devDependencies": {

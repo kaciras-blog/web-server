@@ -1,5 +1,4 @@
 import { LoaderContext } from "webpack";
-import { parseQuery } from "loader-utils";
 import { Metadata, Region } from "sharp";
 import createCropFilter from "@kaciras-blog/image/lib/crop-filter";
 
@@ -30,10 +29,7 @@ export default function (this: LoaderContext<never>, content: Buffer) {
 		return content;
 	}
 	const callback = this.async();
-	const query = parseQuery(this.resourceQuery);
+	const query = new URLSearchParams(this.resourceQuery.slice(1));
 
-	if (typeof query.size !== "string") {
-		throw new Error("Invalid preset name: " + query.size);
-	}
-	process(content, query.size).then(v => callback(null, v));
+	process(content, query.get("size")).then(v => callback(null, v));
 }
