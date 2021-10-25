@@ -5,7 +5,9 @@ module.exports = {
 	moduleFileExtensions: [
 		"ts", "js", "mjs", "json",
 	],
-	preset: "ts-jest",
+	transform: {
+		"^.+\\.ts$": "@swc/jest",
+	},
 	clearMocks: true,
 	collectCoverageFrom: [
 		"packages/*/lib/**/*.ts",
