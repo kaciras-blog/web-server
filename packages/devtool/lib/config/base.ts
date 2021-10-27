@@ -41,6 +41,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 				options: {
 					jsc: {
 						parser: {
+							decorators: true,
 							syntax: "typescript",
 						},
 					},
@@ -101,6 +102,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		mode: webpackOpts.mode,
 		context: process.cwd(),
 		output: {
+			hashFunction: "xxhash64",
 			filename: assetsPath("js/[name].js"),
 			path: options.outputDir,
 			publicPath: webpackOpts.publicPath,
@@ -108,7 +110,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		resolve: {
 			extensions: [".ts", ".vue", ".js", ".json"],
 			alias: {
-				"vue$": "vue/dist/vue.runtime.esm.js",
+				"vue$": "vue/dist/vue.runtime.esm-bundler.js",
 				"@": resolve("src"),
 				"@assets": resolve("src/assets"),
 			},

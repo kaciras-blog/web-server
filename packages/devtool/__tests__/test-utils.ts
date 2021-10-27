@@ -14,13 +14,16 @@ export function runWebpack(config: Configuration, fs = new MemoryFs()) {
 	const baseConfig: Configuration = {
 		mode: "development",
 		devtool: false,
-		output: { path: "/" },
+		output: {
+			path: "/",
+			hashFunction: "xxhash64",
+		},
 	};
 	config = merge(baseConfig, config);
 
 	return new Promise<StatsCompilation>((resolve, reject) => {
 		const compiler = webpack(config);
-		compiler.outputFileSystem =fs;
+		compiler.outputFileSystem = fs;
 
 		compiler.run((err, stats) => {
 			if (err || !stats) {
