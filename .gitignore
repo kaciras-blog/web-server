@@ -15,7 +15,6 @@ node_modules
 *.ntvs*
 *.njsproj
 *.sln
-*.sw*
 
 # Build files
 *.js.map
