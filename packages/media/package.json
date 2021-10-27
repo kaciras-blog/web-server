@@ -12,7 +12,7 @@
 		"node": ">=17"
 	},
 	"dependencies": {
-		"@kaciras-blog/nativelib": "^0.2.10",
+		"@kaciras-blog/nativelib": "^0.3.0",
 		"execa": "^5.1.1",
 		"fs-extra": "^10.0.0",
 		"imagemin-gifsicle": "^7.0.0",

@@ -1,7 +1,5 @@
-import mime from "mime-types";
 import { xxHash3_128 } from "@kaciras-blog/nativelib";
-import { FileStore } from "./FileStore";
-import { LoadRequest, LoadResponse } from "./WebFileService";
+import { LoadResponse } from "./WebFileService";
 
 /**
  * 对数据执行 Hash 运算，返回 20 个字符的 base64 字符串，可用作文件名。
@@ -32,50 +30,8 @@ import { LoadRequest, LoadResponse } from "./WebFileService";
  * @param buffer 数据
  * @return 字符串形式的 Hash 值
  */
-export function hashName(buffer: Buffer | string) {
-	return xxHash3_128(buffer, "base64u").slice(0, 20);
+export function hashName(buffer: Buffer) {
+	return xxHash3_128(buffer).toString("base64url").slice(0, 20);
 }
 
 type SelectFn = () => Promise<LoadResponse | null>;
-
-export class FileSelector {
-
-	static for(request: LoadRequest, store: FileStore) {
-		return new FileSelector(request, store);
-	}
-
-	private readonly request: LoadRequest;
-	private readonly store: FileStore;
-
-	private chain = Promise.resolve<LoadResponse | null>(null);
-
-	private constructor(request: LoadRequest, store: FileStore) {
-		this.request = request;
-		this.store = store;
-	}
-
-	private addCandidate(selectFn: SelectFn) {
-		this.chain = this.chain.then(file => file || selectFn());
-	}
-
-	selectFirstMatch() {
-		return this.chain;
-	}
-
-	addCache(mimetype: string) {
-		this.addCandidate(async () => {
-			const type = mime.extension(mimetype);
-			const file = await this.store.getCache(this.request.name, { type });
-			if (!file) {
-				return null;
-			}
-			return { file, mimetype };
-		});
-		return this;
-	}
-
-	addOriginal() {
-		this.addCandidate(() => this.store.load(this.request.name));
-		return this;
-	}
-}
