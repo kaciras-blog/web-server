@@ -1,5 +1,6 @@
-import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
+import { cwd } from "process";
 import path from "path";
+import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
 import { DevelopmentOptions } from "../options";
@@ -11,7 +12,7 @@ import { DevelopmentOptions } from "../options";
  * @return 对应的绝对路径
  */
 export function resolve(relativePath: string) {
-	return path.join(process.cwd(), relativePath);
+	return path.join(cwd(), relativePath);
 }
 
 function getBaseEnvironment(options: DevelopmentOptions) {
@@ -100,7 +101,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 
 	return {
 		mode: webpackOpts.mode,
-		context: process.cwd(),
+		context: cwd(),
 		output: {
 			hashFunction: "xxhash64",
 			filename: assetsPath("js/[name].js"),

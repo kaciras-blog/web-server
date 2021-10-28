@@ -1,3 +1,4 @@
+import { performance } from "perf_hooks";
 import assert from "assert";
 import { AddressInfo } from "net";
 import http2 from "http2";
@@ -23,12 +24,11 @@ async function run() {
 	assert.strictEqual(res.data, "benchmark");
 
 	async function iterate() {
-		const from = process.hrtime();
+		const from = performance.now();
 		for (let i = 0; i < 1000; i++) {
 			await axios.get(url);
 		}
-		const to = process.hrtime();
-		return (to[0] - from[0]) * 1000 + (to[1] - from[1]) / 1000000;
+		return performance.now() - from;
 	}
 
 	let results = 0;

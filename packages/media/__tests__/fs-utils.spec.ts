@@ -1,7 +1,8 @@
+import { platform } from "process";
 import { isCaseSensitive, validateFilename } from "../lib/fs-utils";
 
 it("should check case sensitive", () => {
-	expect(isCaseSensitive(".")).toBe(process.platform !== "win32");
+	expect(isCaseSensitive(".")).toBe(platform !== "win32");
 });
 
 it.each([

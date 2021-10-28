@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 require("source-map-support").install();
+
+const { argv } = require("node:process");
 const launcher = require("../lib/main").default;
 
-launcher.run(process.argv.slice(2));
+launcher.run(argv.slice(2));

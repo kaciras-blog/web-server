@@ -1,10 +1,11 @@
-import { DevelopmentOptions } from "../options";
-import fs from "fs-extra";
-import ClientConfiguration from "../config/client";
-import ServerConfiguration from "../config/server";
+import { promisify } from "util";
+import process from "process";
 import { cyan, red } from "colorette";
 import webpack, { Configuration, Stats } from "webpack";
-import { promisify } from "util";
+import fs from "fs-extra";
+import { DevelopmentOptions } from "../options";
+import ClientConfiguration from "../config/client";
+import ServerConfiguration from "../config/server";
 
 // 没有类型定义
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");

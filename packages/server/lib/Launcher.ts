@@ -1,7 +1,7 @@
+import process from "process";
 import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
-import { buildCache } from "@kaciras-blog/media/lib/command/build-cache";
 import run from "./command/run";
 import { BlogServerOptions } from "./options";
 import { once } from "./functions";
@@ -22,7 +22,7 @@ export default class Launcher<T extends BlogServerOptions> {
 	// 注册几个内置命令
 	constructor() {
 		this.registerCommand("run", run);
-		this.registerCommand("build-image-cache", buildCache);
+		// this.registerCommand("build-image-cache", buildCache);
 	}
 
 	registerCommand(command: string, handler: CommandHandler<T>) {

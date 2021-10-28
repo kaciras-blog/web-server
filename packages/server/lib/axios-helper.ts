@@ -1,6 +1,7 @@
 /*
  * 自定义Axios，使其更好地支持本博客系统。
  */
+import { env } from "process";
 import http2, {
 	ClientHttp2Session,
 	IncomingHttpHeaders,
@@ -203,7 +204,7 @@ export function configureAxiosHttp2(
 }
 
 /**
- * 配置全局Axios实例的便捷函数。
+ * 配置全局 Axios 实例的便捷函数。
  *
  * 【readFileSync】
  * 因为是全局的配置，基本都是在其它代码之前调用，没必要用异步。
@@ -219,7 +220,7 @@ export function configureGlobalAxios(options: ContentServerOptions) {
 		return configureAxiosHttp2(Axios, https, { ca });
 	} else {
 		if (cert) {
-			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+			env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 		}
 		return configureAxiosHttp2(Axios, https);
 	}
