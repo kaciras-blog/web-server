@@ -9,7 +9,6 @@ import { BaseContext, Middleware, Next } from "koa";
 import fs from "fs-extra";
 import replaceExt from "replace-ext";
 import createError from "http-errors";
-import sendFileRange from "./send-range";
 
 interface Options {
 
@@ -214,8 +213,9 @@ async function serve(root: string, options: Options, ctx: BaseContext, next: Nex
 		return next();
 	}
 
+	ctx.set("Content-Length", stats!.size.toString());
 	ctx.set("Last-Modified", stats!.mtime.toUTCString());
-	sendFileRange(ctx, file, stats!.size);
+	ctx.body = fs.createReadStream(file);
 
 	if (options.customResponse) {
 		options.customResponse(ctx, file, stats!);
