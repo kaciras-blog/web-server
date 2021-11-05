@@ -4,18 +4,40 @@ export interface Params {
 	[key: string]: string;
 }
 
+interface Data {
+	buffer: Buffer;
+	type: string;
+}
+
 export interface SaveRequest<T = Params> {
 	buffer: Buffer;
 	mimetype: string;
-	rawName: string;
 	parameters: T;
 }
 
 export interface LoadRequest<T = Params> {
+
+	/**
+	 * 资源名字，目前的实现需要包含扩展名，虽然返回的可能与扩展名不同。
+	 */
 	name: string;
+
+	/**
+	 * 请求参数，可以自定义。
+	 */
+	parameters: T;
+
+	/**
+	 * 对应请求头中的 Accept-* 部分。
+	 */
 	acceptTypes: string[];
 	acceptEncodings: string[];
-	parameters: T;
+
+	/**
+	 * 仅靠 Accept 可能无法区分变体，比如视频只有容器格式，编码无法从标准请求头获取。
+	 * 这里的解决方案是通过前端检测支持的编码，然后加到请求头中。
+	 */
+	codecs: string[];
 }
 
 /**
@@ -38,5 +60,9 @@ export interface WebFileService {
 
 	save(request: SaveRequest): Promise<SaveResponse>;
 
-	load(request: LoadRequest): Promise<LoadResponse | null>;
+	load(request: LoadRequest): Promise<LoadResponse | undefined>;
 }
+
+type Preprocessor = (request: SaveRequest) => Promise<Data>;
+
+
