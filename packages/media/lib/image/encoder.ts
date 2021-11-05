@@ -41,7 +41,7 @@ export async function encodeWebp(buffer: Buffer) {
 	const candidates: Array<Promise<Buffer>> = [];
 	const input = sharp(buffer);
 
-	candidates.push(input.webp({ quality: 75, smartSubsample: true }).toBuffer());
+	candidates.push(input.webp({ quality: 75, smartSubsample: true, reductionEffort: 5 }).toBuffer());
 
 	if (isPng(buffer)) {
 		candidates.push(input.webp({ lossless: true }).toBuffer());
@@ -56,7 +56,7 @@ export function encodeAVIF(buffer: Buffer) {
 }
 
 /**
- * 相同格式的优化，都是有损压缩。
+ * 对传统格式的优化，都是有损压缩。
  *
  * @param buffer 图片
  * @param type 图片的格式

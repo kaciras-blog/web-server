@@ -5,18 +5,6 @@ export type Data = string | Buffer;
 
 export type FileBody = ReadableStream | Buffer | string;
 
-/**
- * 表示保存文件的结果。
- */
-export interface FileSaveResult {
-
-	/** 用于访问存储文件的文件名 */
-	name: string;
-
-	/** 保存之前文件是否不存在 */
-	createNew: boolean;
-}
-
 export interface FileInfo {
 	size: number;
 	mtime: Date;
@@ -26,17 +14,19 @@ export interface FileInfo {
 export interface FileStore {
 
 	/**
-	 * 保存原始文件，不一定要使用 rawName 作为文件名，任何对文件的访问将以返回值为准。
+	 * 保存资源到源文件存储。
 	 *
 	 * @param data 数据
 	 * @param name 名字
+	 * @return 是否创建了新的文件，如果已存在则为 false
 	 */
-	save(data: Data, name: string): Promise<FileSaveResult>;
+	save(data: Data, name: string): Promise<boolean>;
 
 	/**
 	 * 读取原始文件。
 	 *
 	 * @param name 文件名
+	 * @return 如果不存在则为 null
 	 */
 	load(name: string): Promise<FileInfo | null>;
 
@@ -54,6 +44,7 @@ export interface FileStore {
 	 *
 	 * @param name 文件名
 	 * @param params 参数
+	 * @return 如果不存在则为 null
 	 */
 	getCache(name: string, params: Params): Promise<FileInfo | null>;
 }

@@ -1,14 +1,9 @@
 import zlib, { InputType } from "zlib";
 import { basename } from "path";
-import { performance } from "perf_hooks";
 import { promisify } from "util";
 import { optimize, OptimizeOptions } from "svgo";
-import { getLogger } from "log4js";
-import { LoadRequest, SaveRequest, WebFileService } from "../WebFileService";
-import { FileStore } from "../FileStore";
-import { hashName } from "../common";
-
-const logger = getLogger("Image");
+import { LoadRequest } from "../WebFileService";
+import CachedService, { ContentInfo } from "./CachedService";
 
 const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
 const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
@@ -29,31 +24,9 @@ const svgoConfig: OptimizeOptions = {
 	}],
 };
 
-export default class SVGService implements WebFileService {
+export default class SVGService extends CachedService {
 
-	private readonly store: FileStore;
-
-	constructor(store: FileStore) {
-		this.store = store;
-	}
-
-	async save(request: SaveRequest) {
-		const { buffer, rawName } = request;
-
-		const { name, createNew } = await this.store.save(buffer, "svg", rawName);
-
-		if (createNew) {
-			const start = performance.now();
-			await this.buildCache(name, buffer);
-			const time = performance.now() - start;
-
-			logger.info(`处理图片 ${name} 用时 ${time.toFixed()}ms`);
-		}
-
-		return { url: name };
-	}
-
-	async buildCache(name: string, buffer: Buffer) {
+	async buildCache(name: string, { buffer }: ContentInfo) {
 		const { store } = this;
 		const { data } = optimize(buffer.toString(), svgoConfig);
 
@@ -70,10 +43,10 @@ export default class SVGService implements WebFileService {
 		tasks.push(compress(gzipCompress, "gz"));
 		tasks.push(store.putCache(name, data, {}));
 
-		return Promise.all(tasks);
+		await Promise.all(tasks);
 	}
 
-	async load(request: LoadRequest) {
+	async getCache(request: LoadRequest) {
 		const { name, acceptEncodings } = request;
 		const hash = basename(name);
 
@@ -92,9 +65,6 @@ export default class SVGService implements WebFileService {
 		}
 
 		const file = await this.store.getCache(name, {});
-		if (!file) {
-			return null;
-		}
-		return { file, mimetype: "image/svg+xml" };
+		return file && { file, mimetype: "image/svg+xml" };
 	}
 }

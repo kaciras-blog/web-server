@@ -1,18 +1,12 @@
-import { getLogger } from "log4js";
+import { basename } from "path";
 import sharp, { Sharp } from "sharp";
+import { getLogger } from "log4js";
 import mime from "mime-types";
 import { BadDataError } from "../errors";
-import { LoadRequest, LoadResponse, Params, SaveRequest, WebFileService } from "../WebFileService";
+import { LoadRequest, SaveRequest } from "../WebFileService";
 import { crop } from "./param-processor";
-import { optimize } from "./encoder";
-import { FileStore } from "../FileStore";
-import SVGService from "./SVGService";
-import { basename } from "path";
-
-interface ImageInfo {
-	buffer: Buffer;
-	type: string;
-}
+import { encodeAVIF, encodeWebp, optimize } from "./encoder";
+import CachedService, { ContentInfo } from "./CachedService";
 
 const logger = getLogger("Image");
 
@@ -21,106 +15,45 @@ const logger = getLogger("Image");
  */
 const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
-/**
- * 预处理，包括裁剪和格式检查，在该阶段返回的结果视为原图。
- *
- * @param request 上传请求
- */
-async function preprocess(request: SaveRequest): Promise<ImageInfo> {
-	const { buffer, parameters } = request;
+export default class RasterService extends CachedService {
 
-	let type = mime.extension(request.mimetype);
-	if (!type) {
-		throw new BadDataError(`不支持的MimeType: ${type}`);
-	}
+	/**
+	 * 预处理，包括裁剪和格式检查，在该阶段返回的结果视为原图。
+	 *
+	 * @param request 上传请求
+	 */
+	protected async preprocess(request: SaveRequest) {
+		const { buffer, parameters } = request;
 
-	let image: Sharp | null = null;
-	if (parameters.crop) {
-		image = crop(sharp(buffer), parameters.crop);
-	}
-
-	if (type === "bmp") {
-		type = "png";
-		image = (image || sharp(buffer)).png();
-	}
-
-	if (INPUT_FORMATS.indexOf(type) < 0) {
-		throw new BadDataError(`不支持的图片格式：${type}`);
-	}
-
-	return { type, buffer: image ? await image.toBuffer() : buffer };
-}
-
-export class ImageService implements WebFileService {
-
-	private svgService: SVGService;
-	private rasterService: RasterService;
-
-	constructor(store: FileStore) {
-		this.svgService = new SVGService(store);
-		this.rasterService = new RasterService(store);
-	}
-
-	save(request: SaveRequest) {
-		if (request.mimetype === "image/svg+xml") {
-			return this.saveSvg(request);
-		} else {
-			return this.saveRaster(request);
-		}
-	}
-
-	load(request: LoadRequest) {
-		return Promise.resolve(null);
-	}
-
-	private saveSvg(request: SaveRequest) {
-		return this.svgService.save(request);
-	}
-
-	private saveRaster(request: SaveRequest) {
-		return this.rasterService.save(request);
-	}
-}
-
-export default class RasterService implements WebFileService {
-
-	private readonly store: FileStore;
-
-	constructor(store: FileStore) {
-		this.store = store;
-	}
-
-	async save(request: SaveRequest) {
-		const info = await preprocess(request);
-		const { buffer } = info;
-
-		const { name, createNew } = await this.store.save(buffer, request.rawName);
-
-		if (createNew) {
-			await this.buildCache(name, info, request.parameters);
+		let type = mime.extension(request.mimetype);
+		if (!type) {
+			throw new BadDataError(`不支持的 MimeType: ${type}`);
 		}
 
-		return { url: name };
+		let image: Sharp | null = null;
+		if (parameters.crop) {
+			image = crop(sharp(buffer), parameters.crop);
+		}
+
+		if (type === "bmp") {
+			type = "png";
+			image = (image || sharp(buffer)).png();
+		}
+
+		if (INPUT_FORMATS.indexOf(type) < 0) {
+			throw new BadDataError(`不支持的图片格式：${type}`);
+		}
+
+		return { type, buffer: image ? await image.toBuffer() : buffer };
 	}
 
-	async buildCache(name: string, info: ImageInfo, parameters: Params) {
+	protected async buildCache(name: string, info: ContentInfo) {
 		const tasks: Array<Promise<void>> = [];
 
-		// 	TODO: 还需要在优化器用异常内跳过吗
-		// async function encodeRasterImage(type: string) {
-		// 	try {
-		// 		return await optimize(info.buffer, type);
-		// 	} catch (error) {
-		// 		if (!(error instanceof ImageFilterException)) {
-		// 		throw error;
-		// 		}
-		// 		logger.debug(`${error.message}，name=${name}`);
-		// 	}
-		// }
-
-		const [compressed, webp] = await Promise.all([
+		const [compressed, webp, avif] = await Promise.all([
+			encodeAVIF(info.buffer),
+			encodeWebp(info.buffer),
 			optimize(info.buffer, info.type),
-			optimize(info.buffer, "webp"),
 		]);
 
 		tasks.push(this.store.putCache(compressed, name, { type: info.type }));
@@ -129,13 +62,13 @@ export default class RasterService implements WebFileService {
 		if (webp && webp.length < compressed!.length) {
 			tasks.push(this.store.putCache(compressed, name, { type: "webp" }));
 		} else {
-			logger.trace(`${name} 转WebP格式效果不佳`);
+			logger.trace(`${name} 转 WebP 格式效果不佳`);
 		}
 
 		await Promise.all(tasks);
 	}
 
-	async load(request: LoadRequest): Promise<LoadResponse | null> {
+	protected async getCache(request: LoadRequest) {
 		const { name, acceptTypes, parameters } = request;
 		const hash = basename(name);
 		const mimetype = mime.contentType(name) as string;

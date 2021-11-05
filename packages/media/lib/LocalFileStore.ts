@@ -5,6 +5,19 @@ import { Params } from "./WebFileService";
 import { Data, FileStore } from "./FileStore";
 import { DataDirectory } from "../../server/lib/options";
 
+async function getFileInfo(path: string) {
+	try {
+		const data = fs.createReadStream(path);
+		const { size, mtime } = await fs.stat(path);
+		return { size, mtime, data };
+	} catch (e) {
+		if (e.code !== "ENOENT") {
+			throw e;
+		}
+		return null;
+	}
+}
+
 /**
  * 把文件和缓存都保存在本地的磁盘上。
  */
@@ -32,25 +45,23 @@ export default class LocalFileStore implements FileStore {
 	async save(data: Data, name: string) {
 		const path = join(this.source, name);
 
-		let createNew = true;
 		try {
 			await fs.writeFile(path, data, { flag: "wx" });
+			return true;
 		} catch (e) {
 			if (e.code !== "EEXIST") {
 				throw e;
 			}
-			createNew = false;
+			return false;
 		}
-
-		return { name, createNew };
 	}
 
 	load(name: string) {
-		return this.getFileInfo(join(this.source, name));
+		return getFileInfo(join(this.source, name));
 	}
 
 	getCache(id: string, params: Params) {
-		return this.getFileInfo(this.cachePath(id, params));
+		return getFileInfo(this.cachePath(id, params));
 	}
 
 	async putCache(data: Data, id: string, params: Params) {
@@ -67,7 +78,7 @@ export default class LocalFileStore implements FileStore {
 	 * Object.keys(tags) 对于非 ASCII 字符的键返回的顺序不确定，所以需要排序。
 	 *
 	 * 【文件名长度】
-	 * Windows 和 Linux 大部分文件系统的文件名最长小于 256 个字符，
+	 * Windows 和 Linux 大部分文件系统的文件名最长不过 256 个字符，
 	 * https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
 	 *
 	 * @param id 资源的 ID，一般为 HASH
@@ -80,18 +91,5 @@ export default class LocalFileStore implements FileStore {
 			.join("_");
 		filename ||= "default";
 		return join(this.cache, id, filename);
-	}
-
-	private async getFileInfo(path: string) {
-		try {
-			const data = fs.createReadStream(path);
-			const { size, mtime } = await fs.stat(path);
-			return { size, mtime, data };
-		} catch (e) {
-			if (e.code !== "ENOENT") {
-				throw e;
-			}
-			return null;
-		}
 	}
 }
