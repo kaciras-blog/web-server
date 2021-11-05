@@ -1,4 +1,4 @@
-import path from "path";
+import { join } from "path";
 import webpack, { Configuration, StatsCompilation } from "webpack";
 import MemoryFs from "memory-fs";
 import { merge } from "webpack-merge";
@@ -17,6 +17,13 @@ export function runWebpack(config: Configuration, fs = new MemoryFs()) {
 		output: {
 			path: "/",
 			hashFunction: "xxhash64",
+		},
+		//
+		resolveLoader: {
+			modules: [
+				"node_modules",
+				join(__dirname, "../node_modules"),
+			],
 		},
 	};
 	config = merge(baseConfig, config);
@@ -45,7 +52,7 @@ export function getModuleSource(stats: StatsCompilation, id: string) {
 	if (module) {
 		return module.source!;
 	}
-	throw new Error(`module ${id} not found in complition`);
+	throw new Error(`module ${id} not found in completion`);
 }
 
 /**
@@ -55,5 +62,5 @@ export function getModuleSource(stats: StatsCompilation, id: string) {
  * @return 完整路径
  */
 export function resolveFixture(name: string) {
-	return path.join(__dirname, "fixtures", name);
+	return join(__dirname, "fixtures", name);
 }

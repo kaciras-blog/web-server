@@ -139,5 +139,5 @@ export default function (options: DevelopmentOptions) {
 		plugins.push(new CompressionPlugin(compressSource));
 	}
 
-	return merge(baseConfig(options, "client"), config);
+	return merge(baseConfig(options), config);
 }

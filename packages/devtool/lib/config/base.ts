@@ -28,7 +28,7 @@ function getBaseEnvironment(options: DevelopmentOptions) {
 	return baseEnvironment;
 }
 
-export default function (options: DevelopmentOptions, side: "client" | "server"): Configuration {
+export default function (options: DevelopmentOptions): Configuration {
 	const webpackOpts = options.webpack;
 
 	// 这里的 path 一定要用 posix，以便与URL中的斜杠一致
@@ -36,22 +36,13 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 
 	const loaders: RuleSetRule[] = [
 		{
+			// 使用方须提供 .swcrc 配置文件。
 			test: /\.tsx?$/,
-			use: {
-				loader: "swc-loader",
-				options: {
-					jsc: {
-						parser: {
-							decorators: true,
-							syntax: "typescript",
-						},
-					},
-				},
-			},
+			use: "swc-loader",
 		},
 		{
 			test: /\.vue$/,
-			loader: "vue-loader",
+			use: "vue-loader",
 		},
 
 		// 下面几个以及 CSS 的加载器需要设置 esModule: false
@@ -73,7 +64,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		{
 			test: /\.(png|jpg|gif|webp)(\?.*)?$/,
 			type: "asset/resource",
-			// loader: require.resolve("../webpack/crop-image-loader"),
+			loader: require.resolve("../webpack/crop-image-loader"),
 			generator: {
 				filename: assetsPath("img/[name].[hash][ext]"),
 			},
@@ -103,6 +94,7 @@ export default function (options: DevelopmentOptions, side: "client" | "server")
 		mode: webpackOpts.mode,
 		context: cwd(),
 		output: {
+			// 虽然 nativelib 里有更快的 xxhash128，但考虑到方便还是用 webpack 自己的。
 			hashFunction: "xxhash64",
 			filename: assetsPath("js/[name].js"),
 			path: options.outputDir,
