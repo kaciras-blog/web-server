@@ -17,46 +17,25 @@ import { ContentServerOptions } from "./options";
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
-// 用于防止CSRF攻击的一些字段，方法是读取Cookie里的值并带在请求里。
-//   CSRF_COOKIE_NAME		Cookie名
-//   CSRF_PARAMETER_NAME	将值加入请求参数中的参数名
-//   CSRF_HEADER_NAME		将值加入该请求头
-export const CSRF_COOKIE_NAME = "CSRF-Token";
-export const CSRF_PARAMETER_NAME = "csrf";
-export const CSRF_HEADER_NAME = "X-CSRF-Token";
-
 const logger = log4js.getLogger();
 
 /**
- * 从Koa的请求中复制与身份相关的信息和一些其他必要的头部到Axios的请求中。
- * 该函数只能在服务端使用。
+ * 从 Koa 的请求中复制与身份相关的信息到 Axios 的请求中。
+ * 该函数只在服务端使用。
  *
- * @param ctx Koa上下文
- * @param config 代理到后端的Axios请求配置
+ * @param ctx Koa 上下文
+ * @param config 代理到后端的 Axios 请求配置
  * @return Axios 的请求配置
  */
 export function configureForProxy(ctx: ExtendableContext, config: AxiosRequestConfig = {}) {
 	const srcHeaders = ctx.headers;
-	const distHeaders = config.headers ||= {};
+	const distHeaders = config.headers ??= {};
 
 	// 转发请求记得带上 X-Forwarded-For
 	distHeaders["X-Forwarded-For"] = ctx.ip;
 
-	// UA可以随便改，没啥实际用，还不如穿透了统计下客户端类型
-	if (srcHeaders["user-agent"]) {
-		distHeaders["User-Agent"] = srcHeaders["user-agent"];
-	}
-
 	if (srcHeaders.cookie) {
 		distHeaders.Cookie = srcHeaders.cookie;
-	}
-
-	// HTTP 头是不区分大小写的，但是 Node 的 http 模块里会将其全部转换为小写
-	const csrfToken = ctx.cookies.get(CSRF_COOKIE_NAME);
-	if (csrfToken) {
-		distHeaders[CSRF_HEADER_NAME] = csrfToken;
-		// config.params ||= {};
-		// config.params[CSRF_PARAMETER_NAME] = csrfQuery;
 	}
 
 	return config;

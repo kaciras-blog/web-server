@@ -4,7 +4,7 @@ import Axios, { AxiosRequestConfig } from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { readFixtureText, sleep } from "./test-utils";
-import { CachedFetcher, configureAxiosHttp2, configureForProxy, CSRF_HEADER_NAME } from "../lib/axios-helper";
+import { CachedFetcher, configureAxiosHttp2, configureForProxy } from "../lib/axios-helper";
 
 jest.useFakeTimers();
 
@@ -120,10 +120,11 @@ describe("configureForProxy", () => {
 		const [app, config] = createApp();
 		await supertest(app.callback()).get("/");
 
-		// 检查不要添加多余的头部
-		expect(Object.keys(config.headers)).toHaveLength(1);
+		const headers = config.headers!;
+		expect(headers["X-Forwarded-For"]).toBe("::ffff:127.0.0.1");
 
-		expect(config.headers["X-Forwarded-For"]).toBe("::ffff:127.0.0.1");
+		// 检查不要添加多余的头部
+		expect(Object.keys(headers)).toHaveLength(1);
 	});
 
 	it("should add principal info", async () => {
@@ -131,11 +132,11 @@ describe("configureForProxy", () => {
 
 		await supertest(app.callback())
 			.get("/")
-			.set("Cookie", ["CSRF-Token=hello"]);
+			.set("Cookie", ["session=foobar"]);
 
-		expect(Object.keys(config.headers)).toHaveLength(3);
-		expect(config.headers[CSRF_HEADER_NAME]).toBe("hello");
-		expect(config.headers.Cookie).toBe("CSRF-Token=hello");
+		const headers = config.headers!;
+		expect(Object.keys(headers)).toHaveLength(2);
+		expect(headers.Cookie).toBe("session=foobar");
 	});
 
 	it("should accept X-Forwarded-For", async () => {
@@ -146,7 +147,8 @@ describe("configureForProxy", () => {
 			.get("/")
 			.set("X-Forwarded-For", "222.111.0.0");
 
-		expect(config.headers["X-Forwarded-For"]).toBe("222.111.0.0");
+		const headers = config.headers!;
+		expect(headers["X-Forwarded-For"]).toBe("222.111.0.0");
 	});
 });
 
