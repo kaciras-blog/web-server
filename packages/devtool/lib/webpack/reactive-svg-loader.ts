@@ -38,6 +38,17 @@ export const minifyPreset: Plugin = {
 	},
 };
 
+const developmentPlugins: Plugin[] = [
+	reactivePlugin,
+	{ name: "removeDoctype" },
+	{ name: "removeXMLProcInst" },
+];
+
+const productionPlugins: Plugin[] = [
+	reactivePlugin,
+	minifyPreset, // 它会把 #000000 改为 none 导致 reactivePlugin 失效，要放到最后。
+];
+
 /**
  * SVG 组件的加载器，优化 SVG 并将宽高、颜色等属性设为能够响应的值。
  *
@@ -48,15 +59,6 @@ export const minifyPreset: Plugin = {
  */
 export default function (this: LoaderContext<void>, svg: string) {
 	const { mode, resourcePath } = this;
-
-	const plugins: Plugin[] = [
-		reactivePlugin,
-	];
-
-	// 它会把 #000000 改为 none 导致 reactivePlugin 失效，要放到最后。
-	if (mode === "production") {
-		plugins.push(minifyPreset);
-	}
-
+	const plugins = (mode === "production") ? productionPlugins : developmentPlugins;
 	return optimize(svg, { plugins, path: resourcePath }).data;
 }

@@ -1,8 +1,9 @@
 import { getModuleSource, resolveFixture, runWebpack } from "./test-utils";
 
-it("should change attributes", async () => {
+async function compile(file: string, mode: any) {
 	const stats = await runWebpack({
-		entry: resolveFixture("visible-off.svg"),
+		mode,
+		entry: resolveFixture(file),
 		module: {
 			rules: [{
 				test: /\.(svg)(\?.*)?$/,
@@ -11,5 +12,15 @@ it("should change attributes", async () => {
 			}],
 		},
 	});
-	expect(getModuleSource(stats, "visible-off.svg").toString()).toMatchSnapshot();
+	return getModuleSource(stats, file).toString();
+}
+
+const modes = ["development", "production"];
+
+test.each(modes)("should change attributes in %s", async (mode) => {
+	expect(await compile("visible-off.svg", mode)).toMatchSnapshot();
+});
+
+test.each(modes)("should remove processing instruction in %s", async (mode) => {
+	expect(await compile("instruction.svg", mode)).not.toMatch(/^<\?xml /);
 });
