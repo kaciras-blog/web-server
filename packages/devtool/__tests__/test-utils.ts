@@ -4,9 +4,9 @@ import MemoryFs from "memory-fs";
 import { merge } from "webpack-merge";
 
 /**
- * 运行webpack，返回输出到内存中的结果。
+ * 运行 webpack，返回输出到内存中的结果。
  *
- * @param config webpack的配置
+ * @param config webpack 的配置
  * @param fs 构建的文件将写入此处
  * @return 构建的结果信息。
  */
@@ -18,7 +18,7 @@ export function runWebpack(config: Configuration, fs = new MemoryFs()) {
 			path: "/",
 			hashFunction: "xxhash64",
 		},
-		//
+		// pnpm 把依赖放在每个包的目录下，在根目录运行测试时需要添加一下。
 		resolveLoader: {
 			modules: [
 				"node_modules",

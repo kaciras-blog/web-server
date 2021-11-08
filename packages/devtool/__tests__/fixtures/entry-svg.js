@@ -1,3 +1,3 @@
 import Icon from "./visible-off.svg";
 
-console.log(Icon);
+export default Icon;

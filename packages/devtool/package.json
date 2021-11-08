@@ -67,6 +67,8 @@
 		"@types/webpack-manifest-plugin": "^3.0.5",
 		"@types/webpack-node-externals": "^2.5.3",
 		"@types/workbox-webpack-plugin": "^5.1.8",
-		"less": "^4.1.2"
+		"less": "^4.1.2",
+		"vue": "next",
+		"@vue/server-renderer": "^3.2.21"
 	}
 }
