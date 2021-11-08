@@ -13,6 +13,7 @@ import { merge } from "webpack-merge";
 export function runWebpack(config: Configuration, fs = new MemoryFs()) {
 	const baseConfig: Configuration = {
 		mode: "development",
+		target: "node",
 		devtool: false,
 		output: {
 			path: "/",

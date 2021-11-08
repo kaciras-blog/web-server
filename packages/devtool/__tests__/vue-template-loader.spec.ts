@@ -21,7 +21,6 @@ it("should convert file to component", async () => {
 
 	const config = {
 		entry: resolveFixture("entry-svg.js"),
-		target: "node",
 		output: {
 			libraryTarget: "commonjs2",
 		},

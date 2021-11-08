@@ -4,7 +4,7 @@ import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
 import execa from "execa";
 import isPng from "is-png";
-import { BadDataError, ImageFilterException, ParamsError } from "../errors";
+import { BadDataError, ParamsError, ProcessorError } from "../errors";
 
 const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
@@ -35,7 +35,7 @@ function isGif(buffer: Buffer) {
  */
 export async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
-		throw new ImageFilterException("暂不支持 GIF 转 WebP");
+		throw new ProcessorError("暂不支持 GIF 转 WebP");
 	}
 
 	const candidates: Array<Promise<Buffer>> = [];

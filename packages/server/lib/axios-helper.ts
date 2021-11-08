@@ -1,6 +1,3 @@
-/*
- * 自定义Axios，使其更好地支持本博客系统。
- */
 import { env } from "process";
 import http2, {
 	ClientHttp2Session,

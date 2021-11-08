@@ -59,6 +59,7 @@
 		"@types/case-sensitive-paths-webpack-plugin": "^2.1.6",
 		"@types/compression-webpack-plugin": "^9.0.0",
 		"@types/copy-webpack-plugin": "^8.0.1",
+		"@types/fs-extra": "^9.0.13",
 		"@types/html-webpack-plugin": "^3.2.6",
 		"@types/memory-fs": "^0.3.3",
 		"@types/mini-css-extract-plugin": "^2.4.0",

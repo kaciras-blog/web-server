@@ -10,9 +10,9 @@ const store = {
 	load: jest.fn(),
 };
 
-it("should restrict file type", async () => {
-	const service = new VariantService(store, ["mp4"]);
+const service = new VariantService(store, ["av1", "webm"]);
 
+it("should restrict file type", async () => {
 	const saving = service.save({
 		mimetype: "text/html",
 		parameters: {},
@@ -22,15 +22,27 @@ it("should restrict file type", async () => {
 	await expect(saving).rejects.toBeInstanceOf(BadDataError);
 });
 
+it("should restrict codec", async () => {
+	const saving = service.save({
+		mimetype: "video/mp4",
+		parameters: {
+			codec: "flv",
+		},
+		buffer: Buffer.alloc(0),
+	});
+
+	await expect(saving).rejects.toBeInstanceOf(BadDataError);
+});
+
 it("should save file", async () => {
-	const service = new VariantService(store, ["av1"]);
 	const request = {
 		mimetype: "video/mp4",
 		parameters: {},
 		buffer: Buffer.alloc(0),
 	};
 
-	await service.save(request);
+	const result = await service.save(request);
+	expect(result.url).toBe("maoG0wFHmNhgAcMkRo1J.mp4");
 
 	const { calls } = store.save.mock;
 	expect(calls).toHaveLength(1);
@@ -41,8 +53,6 @@ it("should save file", async () => {
 });
 
 it("should save variant", async () => {
-	const service = new VariantService(store, ["av1"]);
-
 	const saving = await service.save({
 		mimetype: "video/mp4",
 		parameters: {},
@@ -52,18 +62,18 @@ it("should save variant", async () => {
 	const saving2 = await service.save({
 		mimetype: "video/mp4",
 		parameters: {
+			codec: "av1",
 			variant: saving.url,
 		},
 		buffer: randomBytes(8),
 	});
 
-	expect(saving2.url).toBe(saving.url);
+	expect(saving2.url).toBe("maoG0wFHmNhgAcMkRo1J.av1");
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 it("should return null when cannot found file", () => {
-	const service = new VariantService(store, ["av1", "webm"]);
 	store.load.mockResolvedValue(null);
 
 	const promise = service.load({
@@ -78,8 +88,6 @@ it("should return null when cannot found file", () => {
 });
 
 it("should give first matched variant", async () => {
-	const service = new VariantService(store, ["av1", "webm"]);
-
 	const stubFile = { size: 0, mtime: 0, data: "" };
 	store.load.mockResolvedValueOnce(null);	// av1 没有
 	store.load.mockResolvedValueOnce(stubFile);		// webm 有
@@ -101,7 +109,6 @@ it("should give first matched variant", async () => {
 });
 
 it("should fallback when no codec matched", async () => {
-	const service = new VariantService(store, ["av1", "webm"]);
 	const stubFile = { size: 0, mtime: 0, data: "" };
 	store.load.mockResolvedValue(stubFile);
 
