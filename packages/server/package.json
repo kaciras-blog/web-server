@@ -25,7 +25,7 @@
 		"@kaciras-blog/media": "^2.0.0-alpha.0",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^10.1.1",
-		"@vue/server-renderer": "^3.2.22",
+		"@vue/server-renderer": "^3.2.23",
 		"axios": "^0.24.0",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.2",
@@ -45,7 +45,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^7.0.0",
-		"source-map-support": "^0.5.20",
+		"source-map-support": "^0.5.21",
 		"vue": "next"
 	},
 	"devDependencies": {
@@ -58,13 +58,13 @@
 		"@types/koa-conditional-get": "^2.0.0",
 		"@types/koa-static": "^4.0.2",
 		"@types/koa__multer": "^2.0.4",
-		"@types/koa__router": "^8.0.9",
+		"@types/koa__router": "^8.0.11",
 		"@types/minimist": "^1.2.2",
 		"@types/range-parser": "^1.2.4",
 		"@types/replace-ext": "^2.0.0",
 		"@types/supertest": "^2.0.11",
 		"koa-static": "^5.0.0",
-		"memfs": "^3.3.0",
+		"memfs": "^3.4.0",
 		"supertest": "^6.1.6"
 	}
 }
