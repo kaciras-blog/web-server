@@ -32,8 +32,6 @@ importers:
       '@kaciras-blog/server': ^2.0.0-alpha.0
       '@swc/core': ^1.2.120
       '@types/case-sensitive-paths-webpack-plugin': ^2.1.6
-      '@types/compression-webpack-plugin': ^9.1.1
-      '@types/copy-webpack-plugin': ^10.1.0
       '@types/fs-extra': ^9.0.13
       '@types/html-webpack-plugin': ^3.2.6
       '@types/memory-fs': ^0.3.3
@@ -107,8 +105,6 @@ importers:
       workbox-webpack-plugin: 6.4.2_webpack@5.65.0
     devDependencies:
       '@types/case-sensitive-paths-webpack-plugin': 2.1.6
-      '@types/compression-webpack-plugin': 9.1.1_webpack@5.65.0
-      '@types/copy-webpack-plugin': 10.1.0_webpack@5.65.0
       '@types/fs-extra': 9.0.13
       '@types/html-webpack-plugin': 3.2.6
       '@types/memory-fs': 0.3.3
@@ -3076,15 +3072,6 @@ packages:
       '@types/node': 16.11.4
     dev: true
 
-  /@types/compression-webpack-plugin/9.1.1_webpack@5.65.0:
-    resolution: {integrity: sha512-cCZFFPFgZ42nWv+uHNgUenQl4gjo+oIvdPwLkGnsJBD6IpaN8dKxanLksHtc5fvlo74a5/sOuX6H320r/GROUw==}
-    deprecated: This is a stub types definition. compression-webpack-plugin provides its own type definitions, so you do not need this installed.
-    dependencies:
-      compression-webpack-plugin: 9.1.2_webpack@5.65.0
-    transitivePeerDependencies:
-      - webpack
-    dev: true
-
   /@types/connect/3.4.35:
     resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}
     dependencies:
@@ -3106,15 +3093,6 @@ packages:
       '@types/express': 4.17.13
       '@types/keygrip': 1.0.2
       '@types/node': 16.11.11
-    dev: true
-
-  /@types/copy-webpack-plugin/10.1.0_webpack@5.65.0:
-    resolution: {integrity: sha512-Dk0NUW3X6hVQdkH2n9R7NejjPNCocZBiv8XF8Ac5su2d6EKzCcG/yWDwnWGrEsAWvogoADJyUKULwncx0G9Jkg==}
-    deprecated: This is a stub types definition. copy-webpack-plugin provides its own type definitions, so you do not need this installed.
-    dependencies:
-      copy-webpack-plugin: 10.1.0_webpack@5.65.0
-    transitivePeerDependencies:
-      - webpack
     dev: true
 
   /@types/eslint-scope/3.7.1:
@@ -3907,6 +3885,7 @@ packages:
         optional: true
     dependencies:
       ajv: 8.8.2
+    dev: false
 
   /ajv-keywords/3.5.2_ajv@6.12.6:
     resolution: {integrity: sha512-5p6WTN0DdTGVQk6VjcEju19IgaHudalcfabD7yhDGeA6bcQnmL+CpveLJq/3hvfwd1aof6L386Ougkx6RfyMIQ==}
@@ -3922,6 +3901,7 @@ packages:
     dependencies:
       ajv: 8.8.2
       fast-deep-equal: 3.1.3
+    dev: false
 
   /ajv/6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
@@ -3938,6 +3918,7 @@ packages:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
       uri-js: 4.4.1
+    dev: false
 
   /ansi-colors/4.1.1:
     resolution: {integrity: sha512-JoX0apGbHaUJBNl6yF+p6JAFYZ666/hhCGKN5t9QFjbJQKUU/g8MNbFDbvfrgKXvI1QpZplPOnwIo99lX/AAmA==}
@@ -4048,6 +4029,7 @@ packages:
   /array-union/3.0.1:
     resolution: {integrity: sha512-1OvF9IbWwaeiM9VhzYXVQacMibxpXOMYVNIvMtKRyX9SImBXpKcFr8XvFDeEslCyuH/t6KRt7HEO94AlP8Iatw==}
     engines: {node: '>=12'}
+    dev: false
 
   /arrify/1.0.1:
     resolution: {integrity: sha1-iYUI2iIm84DfkEcoRWhJwVAaSw0=}
@@ -4721,6 +4703,7 @@ packages:
       schema-utils: 4.0.0
       serialize-javascript: 6.0.0
       webpack: 5.65.0_@swc+core@1.2.120
+    dev: false
 
   /concat-map/0.0.1:
     resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
@@ -4891,6 +4874,7 @@ packages:
       schema-utils: 4.0.0
       serialize-javascript: 6.0.0
       webpack: 5.65.0_@swc+core@1.2.120
+    dev: false
 
   /core-js-compat/3.19.2:
     resolution: {integrity: sha512-ObBY1W5vx/LFFMaL1P5Udo4Npib6fu+cMokeziWkA8Tns4FcDemKF5j9JvaI5JhdkW8EQJQGJN1EcrzmEwuAqQ==}
@@ -6344,6 +6328,7 @@ packages:
       ignore: 5.1.9
       merge2: 1.4.1
       slash: 4.0.0
+    dev: false
 
   /got/7.1.0:
     resolution: {integrity: sha512-Y5WMo7xKKq1muPsxD+KmrR8DH5auG7fBdDVueZwETwV6VytKyU9OX/ddpq2/1hp1vIPvVb4T81dKQz3BivkNLw==}
@@ -7713,6 +7698,7 @@ packages:
 
   /json-schema-traverse/1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
+    dev: false
 
   /json-schema/0.2.3:
     resolution: {integrity: sha1-tIDIkuWaLwWVTOcnvT8qTogvnhM=}
@@ -9862,6 +9848,7 @@ packages:
   /require-from-string/2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
+    dev: false
 
   /resolve-cwd/3.0.0:
     resolution: {integrity: sha512-OrZaX2Mb+rJCpH/6CpSqt9xFVpN++x01XnN2ie9g6P5/3xelLAkXWVADpdz1IHD/KFfEXyE6V0U01OQ3UO2rEg==}
@@ -10013,6 +10000,7 @@ packages:
       ajv: 8.8.2
       ajv-formats: 2.1.1
       ajv-keywords: 5.1.0_ajv@8.8.2
+    dev: false
 
   /seek-bzip/1.0.6:
     resolution: {integrity: sha512-e1QtP3YL5tWww8uKaOCQ18UxIT2laNBXHjV/S2WYCiK4udiv8lkG89KRIoCjUagnAmCBurjF4zEVX2ByBbnCjQ==}
@@ -10181,6 +10169,7 @@ packages:
   /slash/4.0.0:
     resolution: {integrity: sha512-3dOsAHXXUkQTpOYcoAxLIorMTp4gIQr5IW3iVb7A7lFIp0VHhnynm9izx6TssdrIcVIESAlVjtnO2K8bg+Coew==}
     engines: {node: '>=12'}
+    dev: false
 
   /slide/1.1.6:
     resolution: {integrity: sha1-VusCfWW00tzmyy4tMsTUr8nh1wc=}
