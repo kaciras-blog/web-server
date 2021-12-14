@@ -6,7 +6,7 @@ module.exports = {
 		"ts", "js", "mjs", "json",
 	],
 	transform: {
-		"^.+\\.ts$": "@swc/jest",
+		"^.+\\.ts$": ["@swc/jest"],
 	},
 	clearMocks: true,
 	collectCoverageFrom: [
