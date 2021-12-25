@@ -28,7 +28,7 @@
 		"@types/imagemin-gifsicle": "^7.0.1",
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
-		"@types/sharp": "^0.29.4",
+		"@types/sharp": "^0.29.5",
 		"@types/svgo": "^2.6.0",
 		"file-type": "^16.5.3"
 	}
