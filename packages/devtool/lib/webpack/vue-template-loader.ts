@@ -6,7 +6,7 @@
  * - 本加载器不处理 <script>，因为其无法简单地转为 SFC 中对应的部分，
  *   另外 vue-loader 在 <template> 里遇到 <script> 会报错。
  *
- * 这种情况并不常见，因为以内联为目的的 SVG 通常会避免副作用元素。
+ * 这种情况并不常见，因为以内联为目的的 SVG 通常会避免副作用。
  *
  * @see https://github.com/visualfanatic/vue-svg-loader/blob/dev/index.js
  */
@@ -19,7 +19,7 @@ export default function (html: string) {
 	 * https://github.com/visualfanatic/vue-svg-loader/pull/176
 	 *
 	 * 【其它方案】
-	 * 如果不将 react-svg-loader 分离的话可以通过 SVGO 插件来做。
+	 * 如果不分离 react-svg-loader 的话可以用 SVGO 插件来做。
 	 */
 	let styles = "";
 	let match;
