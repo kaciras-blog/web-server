@@ -73,13 +73,14 @@ export default function (options: DevelopmentOptions): Configuration {
 			test: /\.(svg)(\?.*)?$/,
 			oneOf: [
 				{
-					include: /[?&]url/,
+					// SVG 仍有引用 URL 的情况，默认还是跟光栅图一致，组件用参数标识。
 					type: "asset/resource",
 					generator: {
 						filename: assetsPath("img/[name].[hash][ext]"),
 					},
 				},
 				{
+					include: /[?&]sfc/,
 					use: [
 						"vue-loader",
 						require.resolve("../webpack/vue-template-loader"),
@@ -120,7 +121,6 @@ export default function (options: DevelopmentOptions): Configuration {
 				"node_modules",
 				path.join(__dirname, "../../node_modules"),
 			],
-			symlinks: false,
 		},
 		resolveLoader: {
 			modules: [
