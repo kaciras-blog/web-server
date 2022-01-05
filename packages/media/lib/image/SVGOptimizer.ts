@@ -2,8 +2,10 @@ import zlib, { InputType } from "zlib";
 import { basename } from "path";
 import { promisify } from "util";
 import { optimize, OptimizeOptions } from "svgo";
-import { LoadRequest } from "../WebFileService";
-import CachedService, { ContentInfo } from "./CachedService";
+import { LoadRequest, SaveRequest } from "../WebFileService";
+import { ContentInfo, Optimizer } from "./CachedService";
+import { FileStore } from "../FileStore";
+import { BadDataError } from "../errors";
 
 const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
 const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
@@ -24,7 +26,21 @@ const svgoConfig: OptimizeOptions = {
 	}],
 };
 
-export default class SVGService extends CachedService {
+export default class SVGOptimizer implements Optimizer {
+
+	private readonly store: FileStore;
+
+	constructor(store: FileStore) {
+		this.store = store;
+	}
+
+	check(request: SaveRequest) {
+		const { buffer, mimetype } = request;
+		if (mimetype !== "image/svg+xml") {
+			return Promise.resolve({ buffer, type: "svg" });
+		}
+		throw new BadDataError("不支持的媒体类型：" + mimetype);
+	}
 
 	async buildCache(name: string, { buffer }: ContentInfo) {
 		const { store } = this;

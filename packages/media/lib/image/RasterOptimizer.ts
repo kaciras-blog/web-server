@@ -6,7 +6,8 @@ import { BadDataError } from "../errors";
 import { LoadRequest, SaveRequest } from "../WebFileService";
 import { crop } from "./param-processor";
 import { encodeAVIF, encodeWebp, optimize } from "./encoder";
-import CachedService, { ContentInfo } from "./CachedService";
+import { ContentInfo, Optimizer } from "./CachedService";
+import { FileStore } from "../FileStore";
 
 const logger = getLogger("Image");
 
@@ -15,14 +16,15 @@ const logger = getLogger("Image");
  */
 const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
 
-export default class RasterService extends CachedService {
+export default class RasterOptimizer implements Optimizer {
 
-	/**
-	 * 预处理，包括裁剪和格式检查，在该阶段返回的结果视为原图。
-	 *
-	 * @param request 上传请求
-	 */
-	protected async preprocess(request: SaveRequest) {
+	private readonly store: FileStore;
+
+	constructor(store: FileStore) {
+		this.store = store;
+	}
+
+	async check(request: SaveRequest) {
 		const { buffer, parameters } = request;
 
 		let type = mime.extension(request.mimetype);
@@ -47,7 +49,7 @@ export default class RasterService extends CachedService {
 		return { type, buffer: image ? await image.toBuffer() : buffer };
 	}
 
-	protected async buildCache(name: string, info: ContentInfo) {
+	async buildCache(name: string, info: ContentInfo) {
 		const tasks: Array<Promise<void>> = [];
 
 		const [compressed, webp, avif] = await Promise.all([
@@ -68,28 +70,24 @@ export default class RasterService extends CachedService {
 		await Promise.all(tasks);
 	}
 
-	protected async getCache(request: LoadRequest) {
-		const { name, acceptTypes, parameters } = request;
+	async getCache(request: LoadRequest) {
+		const { name, acceptTypes } = request;
 		const hash = basename(name);
 		const mimetype = mime.contentType(name) as string;
-		let file;
 
-		if (parameters.type === "orig") {
-			file = await this.store.load(name);
-		}
-		if (!file && acceptTypes.includes("image/avif")) {
-			file = await this.store.getCache(hash, { type: "avif" });
-		}
-		if (!file && acceptTypes.includes("image/webp")) {
-			file = await this.store.getCache(hash, { type: "webp" });
-		}
-		if (!file) {
-			file = await this.store.getCache(hash, {});
-		}
+		const ts: any[] = [
+			{ accept: "image/avif", params: { type: "avif" } },
+			{ accept: "image/webp", params: { type: "webp" } },
+		];
 
-		if (file) {
-			return { file, mimetype };
+		const candidates = ts.filter(t => acceptTypes.includes(t.accept));
+		candidates.push({ accept: mimetype, params: {} });
+
+		for (const tsc of candidates) {
+			const file = await this.store.getCache(hash, tsc.params);
+			if (file !== null) {
+				return { file, mimetype: tsc.accept };
+			}
 		}
-		return Promise.resolve(null);
 	}
 }

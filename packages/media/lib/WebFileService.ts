@@ -36,16 +36,12 @@ export interface LoadRequest<T = Params> {
 	/**
 	 * 仅靠 Accept 可能无法区分变体，比如视频只有容器格式，编码无法从标准请求头获取。
 	 * 这里的解决方案是通过前端检测支持的编码，然后加到请求头中。
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Video_codecs
 	 */
 	codecs: string[];
 }
 
-/**
- * 保存请求的响应信息，这里只定义了必须的属性，实现时可以添加其他属性。
- */
-export interface SaveResponse {
-	url: string;
-}
 
 /**
  * 下载响应的信息，用于生成 HTTP 响应。
@@ -58,9 +54,9 @@ export interface LoadResponse {
 
 export interface WebFileService {
 
-	save(request: SaveRequest): Promise<SaveResponse>;
+	save(request: SaveRequest): Promise<string>;
 
-	load(request: LoadRequest): Promise<LoadResponse | undefined>;
+	load(request: LoadRequest): Promise<LoadResponse | null | undefined>;
 }
 
 type Preprocessor = (request: SaveRequest) => Promise<Data>;
