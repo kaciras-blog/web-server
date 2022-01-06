@@ -48,7 +48,11 @@ export default class SVGOptimizer implements Optimizer {
 		const { store } = this;
 		const { data } = optimize(buffer.toString(), svgoConfig);
 
-		const compress = async (algorithm: typeof gzipCompress, encoding: string) => {
+		if (data === undefined) {
+			throw new BadDataError("无法将文件作为 SVG 优化");
+		}
+
+		const compress = async (algorithm: Compress, encoding: string) => {
 			const compressed = await algorithm(data);
 			return store.putCache(name, compressed, { encoding });
 		};
