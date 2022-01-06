@@ -10,6 +10,8 @@ import { BadDataError } from "../errors";
 const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
 const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
 
+type Compress = typeof gzipCompress;
+
 const BROTLI_THRESHOLD = 1024;
 
 // SVGO 的 inlineStyles 可能丢失样式，只能关闭。
@@ -34,12 +36,12 @@ export default class SVGOptimizer implements Optimizer {
 		this.store = store;
 	}
 
-	check(request: SaveRequest) {
+	async check(request: SaveRequest) {
 		const { buffer, mimetype } = request;
 		if (mimetype !== "image/svg+xml") {
-			return Promise.resolve({ buffer, type: "svg" });
+			throw new BadDataError("文件不是 SVG");
 		}
-		throw new BadDataError("不支持的媒体类型：" + mimetype);
+		return { buffer, type: "svg" };
 	}
 
 	async buildCache(name: string, { buffer }: ContentInfo) {
@@ -48,18 +50,16 @@ export default class SVGOptimizer implements Optimizer {
 
 		const compress = async (algorithm: typeof gzipCompress, encoding: string) => {
 			const compressed = await algorithm(data);
-			return store.putCache(compressed, name, { encoding });
+			return store.putCache(name, compressed, { encoding });
 		};
 
-		const tasks = new Array(3);
+		const brotli = data.length > BROTLI_THRESHOLD;
 
-		if (data.length > BROTLI_THRESHOLD) {
-			tasks.push(compress(brotliCompress, "br"));
-		}
-		tasks.push(compress(gzipCompress, "gz"));
-		tasks.push(store.putCache(name, data, {}));
-
-		await Promise.all(tasks);
+		await Promise.all([
+			store.putCache(name, data, {}),
+			compress(gzipCompress, "gz"),
+			brotli && compress(brotliCompress, "br"),
+		]);
 	}
 
 	async getCache(request: LoadRequest) {

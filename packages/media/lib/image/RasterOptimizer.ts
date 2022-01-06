@@ -58,11 +58,11 @@ export default class RasterOptimizer implements Optimizer {
 			optimize(info.buffer, info.type),
 		]);
 
-		tasks.push(this.store.putCache(compressed, name, { type: info.type }));
+		tasks.push(this.store.putCache(name, compressed, { type: info.type }));
 
 		// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
 		if (webp && webp.length < compressed!.length) {
-			tasks.push(this.store.putCache(compressed, name, { type: "webp" }));
+			tasks.push(this.store.putCache(name, compressed, { type: "webp" }));
 		} else {
 			logger.trace(`${name} 转 WebP 格式效果不佳`);
 		}

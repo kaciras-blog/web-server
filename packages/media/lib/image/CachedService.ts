@@ -22,7 +22,7 @@ export interface Optimizer {
 	getCache(request: LoadRequest): Promise<LoadResponse | null | undefined>;
 }
 
-export default abstract class CachedService implements WebFileService {
+export default class CachedService implements WebFileService {
 
 	private readonly store: FileStore;
 	private readonly optimizer: Optimizer;
@@ -56,7 +56,7 @@ export default abstract class CachedService implements WebFileService {
 		const hash = hashName(buffer);
 		const name = hash + "." + type;
 
-		const createNew = await this.store.save(buffer, name);
+		const createNew = await this.store.save(name, buffer);
 		if (createNew) {
 			await this.optimizer.buildCache(hash, info);
 		}

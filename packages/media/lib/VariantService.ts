@@ -75,6 +75,6 @@ export default class VariantService implements WebFileService {
 
 		let name = variant ? stem(variant) : hashName(buffer);
 		name = name + "." + (codec ?? "mp4");
-		return this.store.save(buffer, name).then(() => ({ url: name }));
+		return this.store.save(name, buffer).then(() => name);
 	}
 }

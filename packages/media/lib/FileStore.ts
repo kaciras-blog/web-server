@@ -16,11 +16,11 @@ export interface FileStore {
 	/**
 	 * 保存资源到源文件存储。
 	 *
-	 * @param data 数据
 	 * @param name 名字
+	 * @param data 数据
 	 * @return 是否创建了新的文件，如果已存在则为 false
 	 */
-	save(data: Data, name: string): Promise<boolean>;
+	save(name: string, data: Data): Promise<boolean>;
 
 	/**
 	 * 读取原始文件。
@@ -33,11 +33,11 @@ export interface FileStore {
 	/**
 	 * 保存缓存文件，缓存文件是原文件的优化版本。
 	 *
-	 * @param data 数据
 	 * @param name 文件名
+	 * @param data 数据
 	 * @param params 参数
 	 */
-	putCache(data: Data, name: string, params: Params): Promise<void>;
+	putCache(name: string, data: Data, params: Params): Promise<void>;
 
 	/**
 	 * 读取缓存文件。

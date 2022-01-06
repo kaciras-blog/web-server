@@ -27,7 +27,7 @@ export default class LocalFileStore implements FileStore {
 	private readonly cache: string;
 
 	constructor(dataDir: DataDirectory, name: string) {
-		if(typeof dataDir === "string") {
+		if (typeof dataDir === "string") {
 			this.source = join(dataDir, "data", name);
 			this.cache = join(dataDir, "cache", name);
 		} else {
@@ -42,7 +42,7 @@ export default class LocalFileStore implements FileStore {
 		checkCaseSensitive(this.cache);
 	}
 
-	async save(data: Data, name: string) {
+	async save(name: string, data: Data) {
 		const path = join(this.source, name);
 
 		try {
@@ -64,7 +64,7 @@ export default class LocalFileStore implements FileStore {
 		return getFileInfo(this.cachePath(id, params));
 	}
 
-	async putCache(data: Data, id: string, params: Params) {
+	async putCache(id: string, data: Data, params: Params) {
 		const path = this.cachePath(id, params);
 		await fs.ensureFile(path);
 		return fs.writeFile(path, data);
