@@ -1,6 +1,5 @@
 import { cwd } from "process";
 import path from "path";
-import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import { VueLoaderPlugin } from "vue-loader";
 import { Configuration, DefinePlugin, RuleSetRule } from "webpack";
 import { DevelopmentOptions } from "../options";
@@ -134,7 +133,6 @@ export default function (options: DevelopmentOptions): Configuration {
 		plugins: [
 			new DefinePlugin(getBaseEnvironment(options)),
 			new VueLoaderPlugin(),
-			new CaseSensitivePathsPlugin({ useBeforeEmitHook: true }),
 		],
 		optimization: {
 			emitOnErrors: false,

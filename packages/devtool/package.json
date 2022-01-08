@@ -28,7 +28,6 @@
 		"@swc/core": "^1.2.124",
 		"@vue/compiler-sfc": "^3.2.26",
 		"@vue/server-renderer": "^3.2.26",
-		"case-sensitive-paths-webpack-plugin": "^2.4.0",
 		"colorette": "^2.0.16",
 		"compression-webpack-plugin": "^9.2.0",
 		"copy-webpack-plugin": "^10.2.0",
@@ -56,7 +55,6 @@
 		"workbox-webpack-plugin": "^6.4.2"
 	},
 	"devDependencies": {
-		"@types/case-sensitive-paths-webpack-plugin": "^2.1.6",
 		"@types/fs-extra": "^9.0.13",
 		"@types/html-webpack-plugin": "^3.2.6",
 		"@types/memory-fs": "^0.3.3",
