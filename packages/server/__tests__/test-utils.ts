@@ -1,7 +1,7 @@
-import path from "path";
+import { join } from "path";
 import fs from "fs-extra";
 
-export const FIXTURE_DIR = path.join(__dirname, "fixtures");
+export const FIXTURE_DIR = join(__dirname, "fixtures");
 
 /**
  * 返回fixtures目录下文件的完整路径。
@@ -10,7 +10,7 @@ export const FIXTURE_DIR = path.join(__dirname, "fixtures");
  * @return 完整路径
  */
 export function resolveFixture(name: string) {
-	return path.join(FIXTURE_DIR, name);
+	return join(FIXTURE_DIR, name);
 }
 
 /**

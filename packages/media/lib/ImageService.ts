@@ -1,20 +1,21 @@
 import { extname } from "path";
 import { LoadRequest, SaveRequest, WebFileService } from "./WebFileService";
 import { FileStore } from "./FileStore";
-import SVGService from "./image/SVGService";
-import RasterService from "./image/RasterService";
+import SVGOptimizer from "./image/SVGOptimizer";
+import RasterOptimizer from "./image/RasterOptimizer";
+import CachedService from "./image/CachedService";
 
 /**
- * 就是简单地把请求转发到 RasterService 或 SVGService。
+ * 就是简单地把请求转发到 RasterOptimizer 或 SVGOptimizer。
  */
 export default class ImageService implements WebFileService {
 
-	private readonly svgService: SVGService;
-	private readonly rasterService: RasterService;
+	private readonly svgService: WebFileService;
+	private readonly rasterService: WebFileService;
 
 	constructor(store: FileStore) {
-		this.svgService = new SVGService(store);
-		this.rasterService = new RasterService(store);
+		this.svgService = new CachedService(store, new SVGOptimizer(store));
+		this.rasterService = new CachedService(store, new RasterOptimizer(store));
 	}
 
 	save(request: SaveRequest) {
