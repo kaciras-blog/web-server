@@ -12,16 +12,6 @@ const store = {
 
 const service = new VariantService(store, ["av1", "webm"]);
 
-it("should restrict file type", async () => {
-	const saving = service.save({
-		mimetype: "text/html",
-		parameters: {},
-		buffer: Buffer.alloc(0),
-	});
-
-	await expect(saving).rejects.toBeInstanceOf(BadDataError);
-});
-
 it("should restrict codec", async () => {
 	const saving = service.save({
 		mimetype: "video/mp4",
@@ -42,33 +32,33 @@ it("should save file", async () => {
 	};
 
 	const result = await service.save(request);
-	expect(result.url).toBe("maoG0wFHmNhgAcMkRo1J.mp4");
+	expect(result).toBe("maoG0wFHmNhgAcMkRo1J.mp4");
 
 	const { calls } = store.save.mock;
 	expect(calls).toHaveLength(1);
 
-	const [data, name] = calls[0];
+	const [name, data] = calls[0];
 	expect(data).toBe(request.buffer);
 	expect(name).toBe("maoG0wFHmNhgAcMkRo1J.mp4");
 });
 
 it("should save variant", async () => {
-	const saving = await service.save({
+	const name = await service.save({
 		mimetype: "video/mp4",
 		parameters: {},
 		buffer: Buffer.alloc(0),
 	});
 
-	const saving2 = await service.save({
+	const name2 = await service.save({
 		mimetype: "video/mp4",
 		parameters: {
 			codec: "av1",
-			variant: saving.url,
+			variant: name,
 		},
 		buffer: randomBytes(8),
 	});
 
-	expect(saving2.url).toBe("maoG0wFHmNhgAcMkRo1J.av1");
+	expect(name2).toBe("maoG0wFHmNhgAcMkRo1J.av1.mp4");
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -105,7 +95,7 @@ it("should give first matched variant", async () => {
 
 	const { calls } = store.load.mock;
 	expect(calls).toHaveLength(2);
-	expect(calls[1][0]).toBe("maoG0wFHmNhgAcMkRo1J.webm");
+	expect(calls[1][0]).toBe("maoG0wFHmNhgAcMkRo1J.webm.mp4");
 });
 
 it("should fallback when no codec matched", async () => {
