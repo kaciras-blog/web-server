@@ -12,9 +12,12 @@ import { download, upload } from "./koa/media";
 import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
 import { configureForProxy } from "./axios-helper";
-import { ImageService } from "@kaciras-blog/media/lib/image/RasterService";
 import LocalFileStore from "@kaciras-blog/media/lib/LocalFileStore";
-import VideoService from "@kaciras-blog/media/lib/VideoService";
+import DispatchService from "@kaciras-blog/media/lib/DispatchService";
+import VariantService from "@kaciras-blog/media/lib/VariantService";
+import CachedService from "@kaciras-blog/media/lib/CachedService";
+import RasterOptimizer from "@kaciras-blog/media/lib/image/RasterOptimizer";
+import SVGOptimizer from "@kaciras-blog/media/lib/image/SVGOptimizer";
 
 const logger = getLogger();
 
@@ -124,20 +127,19 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 		const multerInstance = multer({ limits: { fileSize: 50 * 1024 * 1024 } });
 		const uploader = multerInstance.single("file");
 
-		const service = new ImageService(new LocalFileStore(app.dataDir, "image"));
+		const imageStore = new LocalFileStore(app.dataDir, "image");
+		const service = new DispatchService(
+			new CachedService(imageStore, new RasterOptimizer(imageStore)),
+			{ "svg": new CachedService(imageStore, new SVGOptimizer(imageStore)) },
+		);
 		// @ts-ignore
 		router.get("/image/:name", ctx => download(service, ctx));
 		router.post("/image", adminFilter, uploader, (ctx: any) => upload(service, ctx));
 
-		const vs = new VideoService(new LocalFileStore(app.dataDir, "video"));
+		const vs = new VariantService(new LocalFileStore(app.dataDir, "video"), ["av1"]);
 		// @ts-ignore
 		router.get("/video/:name", ctx => download(vs, ctx));
 		router.post("/video", adminFilter, uploader, (ctx: any) => upload(vs, ctx));
-
-		const as = new VideoService(new LocalFileStore(app.dataDir, "audio"));
-		// @ts-ignore
-		router.get("/audio/:name", ctx => download(as, ctx));
-		router.post("/audio", adminFilter, uploader, (ctx: any) => upload(as, ctx));
 
 		api.useResource(router.routes());
 	};
