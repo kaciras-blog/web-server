@@ -1,7 +1,7 @@
 import { join } from "path";
 import fs from "fs-extra";
 import { checkCaseSensitive } from "./fs-utils";
-import { Params } from "./WebFileService";
+import { Params } from "./MediaService";
 import { Data, FileStore } from "./FileStore";
 import { DataDirectory } from "../../server/lib/options";
 

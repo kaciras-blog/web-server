@@ -2,8 +2,8 @@ import zlib, { InputType } from "zlib";
 import { basename } from "path";
 import { promisify } from "util";
 import { optimize, OptimizeOptions } from "svgo";
-import { LoadRequest, SaveRequest } from "../WebFileService";
-import { Optimizer } from "./CachedService";
+import { LoadRequest, SaveRequest } from "../MediaService";
+import { Optimizer } from "../CachedService";
 import { FileStore } from "../FileStore";
 import { BadDataError } from "../errors";
 

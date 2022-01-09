@@ -49,7 +49,7 @@ export interface LoadResponse {
 	encoding?: string;
 }
 
-export interface WebFileService {
+export interface MediaService {
 
 	save(request: SaveRequest): Promise<string>;
 

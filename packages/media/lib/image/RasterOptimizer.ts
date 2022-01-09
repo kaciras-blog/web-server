@@ -2,10 +2,10 @@ import { basename, extname } from "path";
 import sharp, { Sharp } from "sharp";
 import { getLogger } from "log4js";
 import { BadDataError } from "../errors";
-import { LoadRequest, SaveRequest } from "../WebFileService";
+import { LoadRequest, SaveRequest } from "../MediaService";
 import { crop } from "./param-processor";
 import { encodeAVIF, encodeWebp, optimize } from "./encoder";
-import { Optimizer } from "./CachedService";
+import { Optimizer } from "../CachedService";
 import { FileStore } from "../FileStore";
 
 const logger = getLogger("Image");

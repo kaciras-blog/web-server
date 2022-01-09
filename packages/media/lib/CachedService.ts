@@ -1,6 +1,6 @@
-import { hashName } from "../common";
-import { LoadRequest, LoadResponse, SaveRequest, WebFileService } from "../WebFileService";
-import { FileStore } from "../FileStore";
+import { hashName } from "./common";
+import { LoadRequest, LoadResponse, MediaService, SaveRequest } from "./MediaService";
+import { FileStore } from "./FileStore";
 import { extname } from "path";
 
 export interface Optimizer {
@@ -17,7 +17,7 @@ export interface Optimizer {
 	getCache(request: LoadRequest): Promise<LoadResponse | null | undefined>;
 }
 
-export default class CachedService implements WebFileService {
+export default class CachedService implements MediaService {
 
 	private readonly store: FileStore;
 	private readonly optimizer: Optimizer;

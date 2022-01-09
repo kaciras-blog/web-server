@@ -4,7 +4,7 @@ import Koa from "koa";
 import multer from "@koa/multer";
 import { BadDataError, ParamsError } from "@kaciras-blog/media/lib/errors";
 import { download, DownloadContext, upload } from "../lib/koa/media";
-import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
+import { MediaService } from "@kaciras-blog/media/lib/MediaService";
 
 jest.mock("fs");
 
@@ -17,7 +17,7 @@ const file = {
 	mtime: new Date(),
 };
 
-const mockService: jest.MockedObject<WebFileService> = {
+const mockService: jest.MockedObject<MediaService> = {
 	load: jest.fn(),
 	save: jest.fn(),
 };

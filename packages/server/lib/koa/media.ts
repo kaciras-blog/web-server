@@ -3,7 +3,7 @@ import { Context, ExtendableContext } from "koa";
 import { getLogger } from "log4js";
 import mime from "mime-types";
 import { MediaError } from "@kaciras-blog/media/lib/errors";
-import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
+import { MediaService } from "@kaciras-blog/media/lib/MediaService";
 
 const logger = getLogger("media");
 
@@ -42,7 +42,7 @@ function filterFirst(query: ParsedUrlQuery) {
  * @param service 图片服务
  * @param ctx 请求上下文
  */
-export async function download(service: WebFileService, ctx: DownloadContext) {
+export async function download(service: MediaService, ctx: DownloadContext) {
 	const { name } = ctx.params;
 
 	const acceptTypes = acceptList(ctx.get("accept"))
@@ -84,7 +84,7 @@ export async function download(service: WebFileService, ctx: DownloadContext) {
  * @param service 图片服务
  * @param ctx 请求上下文
  */
-export async function upload(service: WebFileService, ctx: Context) {
+export async function upload(service: MediaService, ctx: Context) {
 	const file = ctx.file;
 	if (!file) {
 		return ctx.status = 400;

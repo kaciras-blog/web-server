@@ -1,7 +1,7 @@
 import { basename, extname } from "path";
 import { BadDataError } from "./errors";
 import { hashName } from "./common";
-import { LoadRequest, SaveRequest, WebFileService } from "./WebFileService";
+import { LoadRequest, MediaService, SaveRequest } from "./MediaService";
 import { FileStore } from "./FileStore";
 
 function splitName(name: string) {
@@ -41,7 +41,7 @@ interface SaveParams {
  * 需要注意视频转码是有损的，这意味着难以检测上传的多个版本是否包含相同的内容，
  * 如果上传了不同的视频作为变体，则不同的浏览器可能访问到不同的内容。
  */
-export default class VariantService implements WebFileService {
+export default class VariantService implements MediaService {
 
 	private readonly store: FileStore;
 	private readonly codecList: string[];
