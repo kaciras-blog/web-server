@@ -3,7 +3,6 @@ import { BadDataError } from "../../lib/errors";
 import { readFixture } from "../test-utils";
 
 const small = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>';
-const svgData = readFixture("digraph.svg");
 
 const store = {
 	putCache: jest.fn(),
@@ -12,11 +11,17 @@ const store = {
 	load: jest.fn(),
 };
 
+const request = {
+	buffer: readFixture("digraph.svg"),
+	type: "svg",
+	parameters: {},
+};
+
 const optimizer = new SVGOptimizer(store);
 
 it("should restrict file type", () => {
 	const promise = optimizer.check({
-		mimetype: "text/html",
+		type: "html",
 		parameters: {},
 		buffer: Buffer.alloc(0),
 	});
@@ -26,7 +31,7 @@ it("should restrict file type", () => {
 
 it("should throw on invalid data", () => {
 	const promise = optimizer.buildCache("test", {
-		type: "svg",
+		...request,
 		buffer: Buffer.from("foobar"),
 	});
 	return expect(promise).rejects.toThrow(BadDataError);
@@ -34,7 +39,7 @@ it("should throw on invalid data", () => {
 
 it("should not compress with Brotli on small data", async () => {
 	await optimizer.buildCache("test", {
-		type: "svg",
+		...request,
 		buffer: Buffer.from(small),
 	});
 
@@ -46,10 +51,7 @@ it("should not compress with Brotli on small data", async () => {
 });
 
 it("should optimize the file", async () => {
-	await optimizer.buildCache("test", {
-		type: "svg",
-		buffer: svgData,
-	});
+	await optimizer.buildCache("test", request);
 
 	const [identity, gzip, brotli] = store.putCache.mock.calls;
 	expect(store.putCache.mock.calls).toHaveLength(3);

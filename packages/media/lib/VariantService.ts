@@ -1,17 +1,16 @@
 import { basename, extname } from "path";
-import { BadDataError, ParamsError } from "./errors";
+import { BadDataError } from "./errors";
 import { hashName } from "./common";
 import { LoadRequest, SaveRequest, WebFileService } from "./WebFileService";
 import { FileStore } from "./FileStore";
-import mime from "mime-types";
 
 function splitName(name: string) {
 	const ext = extname(name);
-	return [basename(name, ext), ext];
+	return [basename(name, ext), ext.slice(1)];
 }
 
 function fileOf(base: string, ext: string, codec?: string) {
-	return codec ? `${base}.${codec}${ext}` : base + ext;
+	return codec ? `${base}.${codec}.${ext}` : `${base}.${ext}`;
 }
 
 interface SaveParams {
@@ -45,41 +44,36 @@ interface SaveParams {
 export default class VariantService implements WebFileService {
 
 	private readonly store: FileStore;
-	private readonly typeList: string[];
+	private readonly codecList: string[];
 
 	constructor(store: FileStore, codecs: string[]) {
 		this.store = store;
-		this.typeList = codecs;
+		this.codecList = codecs;
 	}
 
 	async load(request: LoadRequest) {
-		const { store, typeList } = this;
+		const { store, codecList } = this;
 		const { name, codecs } = request;
 
-		const candidates = typeList.filter(c => codecs.includes(c));
+		const candidates = codecList.filter(c => codecs.includes(c));
 		candidates.push("");
 
-		const [base, ext] = splitName(name);
-		const mimetype = mime.lookup(ext);
-
-		if (!mimetype) {
-			throw new ParamsError("文件名错误");
-		}
+		const [base, type] = splitName(name);
 
 		for (const codec of candidates) {
-			const filename = fileOf(base, ext, codec);
+			const filename = fileOf(base, type, codec);
 			const file = await store.load(filename);
 			if (file !== null) {
-				return { file, mimetype };
+				return { file, type };
 			}
 		}
 	}
 
 	async save(request: SaveRequest<SaveParams>) {
-		const { buffer, mimetype, parameters } = request;
+		const { buffer, type, parameters } = request;
 		const { variant, codec } = parameters;
 
-		if (codec && !this.typeList.includes(codec)) {
+		if (codec && !this.codecList.includes(codec)) {
 			throw new BadDataError("不支持的编码：" + codec);
 		}
 
@@ -89,12 +83,7 @@ export default class VariantService implements WebFileService {
 			name = fileOf(base, ext, codec);
 		} else {
 			const base = hashName(buffer);
-			const ext = mime.extension(mimetype);
-
-			if (!ext) {
-				throw new ParamsError("不支持的格式" + mimetype);
-			}
-			name = fileOf(base, "." + ext, codec);
+			name = fileOf(base, type, codec);
 		}
 
 		return this.store.save(name, buffer).then(() => name);

@@ -19,7 +19,7 @@ export default class ImageService implements WebFileService {
 	}
 
 	save(request: SaveRequest) {
-		if (request.mimetype === "image/svg+xml") {
+		if (request.type === "svg") {
 			return this.svgService.save(request);
 		} else {
 			return this.rasterService.save(request);

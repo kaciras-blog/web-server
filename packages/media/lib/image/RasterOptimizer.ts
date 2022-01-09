@@ -1,12 +1,11 @@
-import { basename } from "path";
+import { basename, extname } from "path";
 import sharp, { Sharp } from "sharp";
 import { getLogger } from "log4js";
-import mime from "mime-types";
 import { BadDataError } from "../errors";
 import { LoadRequest, SaveRequest } from "../WebFileService";
 import { crop } from "./param-processor";
 import { encodeAVIF, encodeWebp, optimize } from "./encoder";
-import { ContentInfo, Optimizer } from "./CachedService";
+import { Optimizer } from "./CachedService";
 import { FileStore } from "../FileStore";
 
 const logger = getLogger("Image");
@@ -14,7 +13,12 @@ const logger = getLogger("Image");
 /**
  * 能够处理的图片格式，不支持 WebP 作为输入。
  */
-const INPUT_FORMATS = ["jpg", "png", "gif", "svg"];
+const INPUT_FORMATS = ["jpg", "png", "gif"];
+
+const ts: any[] = [
+	{ accept: "avif", params: { type: "avif" } },
+	{ accept: "webp", params: { type: "webp" } },
+];
 
 export default class RasterOptimizer implements Optimizer {
 
@@ -25,31 +29,26 @@ export default class RasterOptimizer implements Optimizer {
 	}
 
 	async check(request: SaveRequest) {
-		const { buffer, parameters } = request;
-
-		let type = mime.extension(request.mimetype);
-		if (!type) {
-			throw new BadDataError(`不支持的 MimeType: ${type}`);
-		}
+		const { buffer, parameters, type } = request;
 
 		let image: Sharp | null = null;
 		if (parameters.crop) {
 			image = crop(sharp(buffer), parameters.crop);
 		}
 
-		if (type === "bmp") {
-			type = "png";
-			image = (image || sharp(buffer)).png();
+		if (type === "jpeg") {
+			request.type = "jpg";
+		}
+		if (image) {
+			request.buffer = await image.toBuffer();
 		}
 
-		if (INPUT_FORMATS.indexOf(type) < 0) {
+		if (INPUT_FORMATS.indexOf(request.type) < 0) {
 			throw new BadDataError(`不支持的图片格式：${type}`);
 		}
-
-		return { type, buffer: image ? await image.toBuffer() : buffer };
 	}
 
-	async buildCache(name: string, info: ContentInfo) {
+	async buildCache(name: string, info: SaveRequest) {
 		const tasks: Array<Promise<void>> = [];
 
 		const [compressed, webp, avif] = await Promise.all([
@@ -72,22 +71,20 @@ export default class RasterOptimizer implements Optimizer {
 
 	async getCache(request: LoadRequest) {
 		const { name, acceptTypes } = request;
-		const hash = basename(name);
-		const mimetype = mime.contentType(name) as string;
+		const type = extname(name);
+		const hash = basename(name, type);
 
-		const ts: any[] = [
-			{ accept: "image/avif", params: { type: "avif" } },
-			{ accept: "image/webp", params: { type: "webp" } },
-		];
-
-		const candidates = ts.filter(t => acceptTypes.includes(t.accept));
-		candidates.push({ accept: mimetype, params: {} });
-
-		for (const tsc of candidates) {
+		for (const tsc of ts) {
+			if (acceptTypes.includes(tsc.accept)) {
+				continue;
+			}
 			const file = await this.store.getCache(hash, tsc.params);
 			if (file !== null) {
-				return { file, mimetype: tsc.accept };
+				return { file, type: tsc.accept };
 			}
 		}
+
+		const file = await this.store.getCache(hash, {});
+		return file && { file, type };
 	}
 }

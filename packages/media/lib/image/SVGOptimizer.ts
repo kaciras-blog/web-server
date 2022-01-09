@@ -3,7 +3,7 @@ import { basename } from "path";
 import { promisify } from "util";
 import { optimize, OptimizeOptions } from "svgo";
 import { LoadRequest, SaveRequest } from "../WebFileService";
-import { ContentInfo, Optimizer } from "./CachedService";
+import { Optimizer } from "./CachedService";
 import { FileStore } from "../FileStore";
 import { BadDataError } from "../errors";
 
@@ -37,14 +37,12 @@ export default class SVGOptimizer implements Optimizer {
 	}
 
 	async check(request: SaveRequest) {
-		const { buffer, mimetype } = request;
-		if (mimetype !== "image/svg+xml") {
+		if (request.type !== "svg") {
 			throw new BadDataError("文件不是 SVG");
 		}
-		return { buffer, type: "svg" };
 	}
 
-	async buildCache(name: string, { buffer }: ContentInfo) {
+	async buildCache(name: string, { buffer }: SaveRequest) {
 		const { store } = this;
 		const { data } = optimize(buffer.toString(), svgoConfig);
 
@@ -73,18 +71,18 @@ export default class SVGOptimizer implements Optimizer {
 		if (acceptEncodings.includes("br")) {
 			const file = await this.store.getCache(hash, { encoding: "br" });
 			if (file) {
-				return { file, mimetype: "image/svg+xml", encoding: "br" };
+				return { file, type: "svg", encoding: "br" };
 			}
 		}
 
 		if (acceptEncodings.includes("gzip")) {
 			const file = await this.store.getCache(name, { encoding: "gz" });
 			if (file) {
-				return { file, mimetype: "image/svg+xml", encoding: "gzip" };
+				return { file, type: "svg", encoding: "gzip" };
 			}
 		}
 
 		const file = await this.store.getCache(name, {});
-		return file && { file, mimetype: "image/svg+xml" };
+		return file && { file, type: "svg" };
 	}
 }

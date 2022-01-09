@@ -1,12 +1,7 @@
-import mime from "mime-types";
 import { hashName } from "../common";
 import { LoadRequest, LoadResponse, SaveRequest, WebFileService } from "../WebFileService";
 import { FileStore } from "../FileStore";
-
-export interface ContentInfo {
-	type: string;
-	buffer: Buffer;
-}
+import { extname } from "path";
 
 export interface Optimizer {
 
@@ -15,9 +10,9 @@ export interface Optimizer {
 	 *
 	 * @param request 保存请求
 	 */
-	check(request: SaveRequest): Promise<ContentInfo>;
+	check(request: SaveRequest): Promise<void>;
 
-	buildCache(name: string, info: ContentInfo): Promise<void>;
+	buildCache(name: string, info: SaveRequest): Promise<void>;
 
 	getCache(request: LoadRequest): Promise<LoadResponse | null | undefined>;
 }
@@ -43,22 +38,19 @@ export default class CachedService implements WebFileService {
 		if (!file) {
 			return null;
 		}
-		return {
-			file,
-			mimetype: mime.contentType(name) as string,
-		};
+		return { file, type: extname(name) };
 	}
 
 	async save(request: SaveRequest) {
-		const info = await this.optimizer.check(request);
-		const { buffer, type } = info;
+		await this.optimizer.check(request);
+		const { buffer, type } = request;
 
 		const hash = hashName(buffer);
 		const name = hash + "." + type;
 
 		const createNew = await this.store.save(name, buffer);
 		if (createNew) {
-			await this.optimizer.buildCache(hash, info);
+			await this.optimizer.buildCache(hash, request);
 		}
 		return name;
 	}

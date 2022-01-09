@@ -10,11 +10,19 @@ const store = {
 	load: jest.fn(),
 };
 
+const loadRequest = {
+	name: "maoG0wFHmNhgAcMkRo1J.mp4",
+	parameters: {},
+	codecs: [],
+	acceptTypes: [],
+	acceptEncodings: [],
+};
+
 const service = new VariantService(store, ["av1", "webm"]);
 
 it("should restrict codec", async () => {
 	const saving = service.save({
-		mimetype: "video/mp4",
+		type: "mp4",
 		parameters: {
 			codec: "flv",
 		},
@@ -26,7 +34,7 @@ it("should restrict codec", async () => {
 
 it("should save file", async () => {
 	const request = {
-		mimetype: "video/mp4",
+		type: "mp4",
 		parameters: {},
 		buffer: Buffer.alloc(0),
 	};
@@ -44,13 +52,13 @@ it("should save file", async () => {
 
 it("should save variant", async () => {
 	const name = await service.save({
-		mimetype: "video/mp4",
+		type: "mp4",
 		parameters: {},
 		buffer: Buffer.alloc(0),
 	});
 
 	const name2 = await service.save({
-		mimetype: "video/mp4",
+		type: "mp4",
 		parameters: {
 			codec: "av1",
 			variant: name,
@@ -67,10 +75,7 @@ it("should return null when cannot found file", () => {
 	store.load.mockResolvedValue(null);
 
 	const promise = service.load({
-		name: "maoG0wFHmNhgAcMkRo1J.mp4",
-		parameters: {},
-		acceptTypes: ["*/*"],
-		acceptEncodings: [],
+		...loadRequest,
 		codecs: ["av1", "webm"],
 	});
 
@@ -83,15 +88,12 @@ it("should give first matched variant", async () => {
 	store.load.mockResolvedValueOnce(stubFile);		// webm 有
 
 	const result = await service.load({
-		name: "maoG0wFHmNhgAcMkRo1J.mp4",
-		parameters: {},
-		acceptTypes: ["*/*"],
-		acceptEncodings: [],
+		...loadRequest,
 		codecs: ["av1", "webm"],
 	});
 
 	expect(result?.file).toBe(stubFile);
-	expect(result?.mimetype).toBe("video/mp4");
+	expect(result?.type).toBe("mp4");
 
 	const { calls } = store.load.mock;
 	expect(calls).toHaveLength(2);
@@ -102,13 +104,7 @@ it("should fallback when no codec matched", async () => {
 	const stubFile = { size: 0, mtime: 0, data: "" };
 	store.load.mockResolvedValue(stubFile);
 
-	const result = await service.load({
-		name: "maoG0wFHmNhgAcMkRo1J.mp4",
-		parameters: {},
-		acceptTypes: ["*/*"],
-		acceptEncodings: [],
-		codecs: [],
-	});
+	const result = await service.load(loadRequest);
 
 	expect(result?.file).toBe(stubFile);
 

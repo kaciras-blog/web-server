@@ -1,6 +1,7 @@
 import { ParsedUrlQuery } from "querystring";
-import { BaseContext, Context, ExtendableContext } from "koa";
+import { Context, ExtendableContext } from "koa";
 import { getLogger } from "log4js";
+import mime from "mime-types";
 import { MediaError } from "@kaciras-blog/media/lib/errors";
 import { WebFileService } from "@kaciras-blog/media/lib/WebFileService";
 
@@ -14,8 +15,7 @@ export interface DownloadContext extends ExtendableContext {
 	params: { name: string };
 }
 
-function acceptList(ctx: BaseContext, name: string) {
-	let header = ctx.headers[name];
+function acceptList(header: string | string[]) {
 	if (Array.isArray(header)) {
 		header = header[0];
 	}
@@ -25,10 +25,15 @@ function acceptList(ctx: BaseContext, name: string) {
 	return header.split(/,\s*/g);
 }
 
-function getParams(query: ParsedUrlQuery) {
-	const kv = Object.entries(query);
-	const entries = kv.map(([k, v]) => [k, v ? v[0] : ""]);
-	return Object.fromEntries(entries);
+/**
+ * 如果查询参数的值有多个，只保留第一个。
+ */
+function filterFirst(query: ParsedUrlQuery) {
+	const result: Record<string, string> = {};
+	for (const [k, v] of Object.entries(query)) {
+		result[k] = Array.isArray(v) ? v[0] : v!;
+	}
+	return result;
 }
 
 /**
@@ -40,12 +45,16 @@ function getParams(query: ParsedUrlQuery) {
 export async function download(service: WebFileService, ctx: DownloadContext) {
 	const { name } = ctx.params;
 
+	const acceptTypes = acceptList(ctx.get("accept"))
+		.map(mime.extension)
+		.filter(Boolean) as string[];
+
 	const result = await service.load({
 		name: ctx.params.name,
-		acceptTypes: acceptList(ctx,"accept"),
-		acceptEncodings: acceptList(ctx,"accept-encoding"),
-		codecs: (ctx.headers["x-supported-codecs"] as string ?? "").split(","),
-		parameters: getParams(ctx.query),
+		acceptTypes,
+		acceptEncodings: acceptList(ctx.get("accept-encoding")),
+		codecs: ctx.get("x-supported-codecs").split(","),
+		parameters: filterFirst(ctx.query),
 	});
 
 	if (!result) {
@@ -55,7 +64,7 @@ export async function download(service: WebFileService, ctx: DownloadContext) {
 
 	const { mtime, data, size } = result.file;
 
-	ctx.type = result.mimetype;
+	ctx.type = result.type;
 	ctx.body = data;
 
 	if (result.encoding) {
@@ -81,12 +90,20 @@ export async function upload(service: WebFileService, ctx: Context) {
 		return ctx.status = 400;
 	}
 
+	const type = mime.extension(file.mimetype);
+	if (!type) {
+		ctx.body = "不支持的类型：" + file.mimetype;
+		return ctx.status = 400;
+	}
+
 	try {
-		ctx.body = await service.save({
+		const name = await service.save({
 			buffer: file.buffer,
-			mimetype: file.mimetype,
-			parameters: getParams(ctx.query),
+			type,
+			parameters: filterFirst(ctx.query),
 		});
+		ctx.status = 200;
+		ctx.set("Location", `${ctx.path}/${name}`);
 	} catch (err) {
 		if (!(err instanceof MediaError)) {
 			throw err;
