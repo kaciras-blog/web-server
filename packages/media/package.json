@@ -29,7 +29,7 @@
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.29.5",
-		"@types/svgo": "^2.6.0",
+		"@types/svgo": "^2.6.1",
 		"file-type": "^16.5.3"
 	}
 }
