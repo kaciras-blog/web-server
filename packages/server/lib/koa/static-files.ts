@@ -143,7 +143,7 @@ const NOT_FOUND = ["ENOENT", "ENAMETOOLONG", "ENOTDIR"];
  * 因为原作者没有添加Typescript定义所以就抄过来了，删除了多余的检查。
  */
 function resolvePath(root: string, path: string) {
-	path = path.substr(parse(path).root.length);
+	path = path.slice(parse(path).root.length);
 
 	// containing NULL bytes is malicious
 	if (path.indexOf("\0") !== -1) {

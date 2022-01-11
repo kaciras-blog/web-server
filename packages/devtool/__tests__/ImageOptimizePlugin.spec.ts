@@ -17,7 +17,7 @@ async function expectUnoptimized(stats: StatsCompilation, name: string) {
 	const source = await fs.stat(resolveFixture(name));
 	const optimized = stats.assets!.find(a => a.name === name);
 
-	expect(optimized).not.toBeUndefined();
+	expect(optimized).toBeDefined();
 	expect(optimized!.size).toStrictEqual(source.size);
 }
 
@@ -32,7 +32,7 @@ async function expectSmallerSize(stats: StatsCompilation, name: string, srcName 
 	const source = await fs.stat(resolveFixture(srcName));
 	const optimized = stats.assets!.find(a => a.name === name);
 
-	expect(optimized).not.toBeUndefined();
+	expect(optimized).toBeDefined();
 	expect(optimized!.size).toBeLessThan(source.size);
 }
 

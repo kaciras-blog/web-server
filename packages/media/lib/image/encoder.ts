@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import sharp, { WebpOptions } from "sharp";
 import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
@@ -8,6 +8,12 @@ import { BadDataError, ParamsError, ProcessorError } from "../errors";
 
 const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });
+
+const WebPLossy: WebpOptions = {
+	quality: 75,
+	smartSubsample: true,
+	reductionEffort: 5,
+};
 
 /**
  * 判断图片数据是否是 GIF 格式，GIF 图片有 MagicNumber，前三字节为 GIF 这仨字。
@@ -24,7 +30,7 @@ function isGif(buffer: Buffer) {
 }
 
 /**
- * 尝试将图片转换为 WebP 格式，图片可能被有损压缩。
+ * 将图片转换为 WebP 格式，图片可能被有损压缩。
  *
  * 【注意】
  * WebP 并不一定比原图的更好，请在外部判断是否需要 WebP 格式。
@@ -41,18 +47,24 @@ export async function encodeWebp(buffer: Buffer) {
 	const candidates: Array<Promise<Buffer>> = [];
 	const input = sharp(buffer);
 
-	candidates.push(input.webp({ quality: 75, smartSubsample: true, reductionEffort: 5 }).toBuffer());
+	candidates.push(input.webp(WebPLossy).toBuffer());
 
 	if (isPng(buffer)) {
 		candidates.push(input.webp({ lossless: true }).toBuffer());
 	}
 
 	return (await Promise.all(candidates).catch(BadDataError.convert))
-		.reduce((best, candidate) => candidate.length < best.length ? candidate : best);
+		.reduce((best, c) => c.length < best.length ? c : best);
 }
 
+/**
+ * 将图片转换为 AVIF 格式。
+ *
+ * @param buffer 图片数据
+ * @return AVIF 编码的图片
+ */
 export function encodeAVIF(buffer: Buffer) {
-	return sharp(buffer).avif().toBuffer();
+	return sharp(buffer).avif().toBuffer().catch(BadDataError.convert);
 }
 
 /**
@@ -66,19 +78,19 @@ export async function optimize(buffer: Buffer, type: string) {
 	switch (type) {
 		case "gif":
 			if (!isGif(buffer)) {
-				throw new BadDataError("不支持非GIF图转GIF");
+				throw new BadDataError("不支持非 GIF 图转 GIF");
 			}
 			return gifsicle(buffer).catch(BadDataError.convert);
+		case "jpeg":
 		case "jpg":
-			// imagemin-mozjpeg 限制输入必须为JPEG格式所以不能用，而且它还没类型定义。
+			// imagemin-mozjpeg 限制输入必须为 JPEG 格式所以不能用，而且它还没类型定义。
 			return (await execa(mozjpeg, {
 				maxBuffer: Infinity,
 				input: buffer,
 				encoding: null,
 			}).catch(BadDataError.convert)).stdout;
 		case "png":
-			// 1) pngquant 压缩效果挺好，跟 webp 压缩比差不多，那还要 webp 有鸟用？
-			// 2) 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用。
+			// 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用。
 			if (!isPng(buffer)) {
 				throw new BadDataError("请先转成 PNG 再压缩");
 			}

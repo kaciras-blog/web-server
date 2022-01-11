@@ -1,13 +1,8 @@
-import { join } from "path";
 import FileType from "file-type";
-import fs from "fs-extra";
 import sharp from "sharp";
-import { encodeWebp, optimize } from "../../lib/image/encoder";
-import { BadDataError, ParamsError } from "../../lib/errors";
-
-function resolveFixture(name: string) {
-	return join(__dirname, "../fixtures", name);
-}
+import { readFixture } from "../test-utils";
+import { encodeAVIF, encodeWebp, optimize } from "../../lib/image/encoder";
+import { BadDataError, ParamsError, ProcessorError } from "../../lib/errors";
 
 it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
@@ -31,7 +26,7 @@ describe("For non-image data", () => {
 describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
-		const buffer = await fs.readFile(resolveFixture("bad_image." + srcType));
+		const buffer = readFixture("bad_image." + srcType);
 		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
 	}
 
@@ -41,26 +36,36 @@ describe("For bad image", () => {
 });
 
 describe("optimization", () => {
+	const colorText = readFixture("color_text_black_bg.png");
+	const gif = readFixture("animated.gif");
 
 	// 这张图片如果用默认的参数转换为 webp 反而会变大，且失真严重
 	it("should effect on particular image", async () => {
-		const buffer = await fs.readFile(resolveFixture("color_text_black_bg.png"));
-
-		const result = await encodeWebp(buffer);
+		const result = await encodeWebp(colorText);
 
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
-		expect(result.length).toBeLessThan(buffer.length / 2);
+		expect(result.length).toBeLessThan(colorText.length / 2);
 	});
 
-	// GIF 转 WebP 效果不理想
-	it("has bad compression ratio in GIF", async () => {
-		const buffer = await fs.readFile(resolveFixture("animated.gif"));
+	it("should convert image to AVIF", async () => {
+		const result = await encodeAVIF(colorText);
 
-		const result = await sharp(buffer, { pages: -1 })
+		expect((await FileType.fromBuffer(result))?.mime).toBe("image/avif");
+		expect(result.length).toBeLessThan(colorText.length / 2);
+	});
+
+	// GIF 转 WebP 效果不理想（见下面一个用例），故暂不支持。
+	it("should not support GIF to WebP", () => {
+		return expect(encodeWebp(gif)).rejects.toThrow(ProcessorError);
+	});
+
+	// 实测 GIF 转 WebP 的效果。
+	it("has bad compression ratio in GIF", async () => {
+		const result = await sharp(gif, { pages: -1 })
 			.webp({ quality: 40, smartSubsample: true })
 			.toBuffer();
 
 		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
-		expect(result.length).toBeLessThan(buffer.length * 0.7);
+		expect(result.length).toBeLessThan(gif.length * 0.7);
 	});
 });
