@@ -34,14 +34,30 @@ const loadResponse = {
 const service = new CachedService(store, optimizer);
 
 describe("load", () => {
-	it("should return the original image if specified", async () => {
-		await service.load({
+	it("should return the original file if specified", async () => {
+		store.load.mockResolvedValueOnce(loadResponse.file);
+
+		const result = await service.load({
 			...loadRequest,
 			parameters: { type: "origin" },
 		});
 
-		expect(store.load.mock.calls).toHaveLength(1);
+		expect(result!.file).toBe(loadResponse.file);
+		expect(result!.type).toBe("png");
+
 		expect(optimizer.getCache.mock.calls).toHaveLength(0);
+		expect(store.load.mock.calls).toHaveLength(1);
+	});
+
+	it("should return only cached by default", async () => {
+		const result =await service.load({
+			...loadRequest,
+			parameters: {},
+		});
+
+		expect(result).toBeUndefined();
+		expect(optimizer.getCache.mock.calls).toHaveLength(1);
+		expect(store.load.mock.calls).toHaveLength(0);
 	});
 
 	it("should return null if not exists", async () => {
@@ -63,7 +79,6 @@ describe("load", () => {
 });
 
 describe("save", () => {
-
 	it("should skip build cache if already saved", async () => {
 		store.save.mockResolvedValue(false);
 

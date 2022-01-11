@@ -38,7 +38,7 @@ export default class CachedService implements MediaService {
 		if (!file) {
 			return null;
 		}
-		return { file, type: extname(name) };
+		return { file, type: extname(name).slice(1) };
 	}
 
 	async save(request: SaveRequest) {
