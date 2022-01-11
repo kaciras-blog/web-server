@@ -1,11 +1,12 @@
-import sharp, { Metadata, Region, Sharp, Stats } from "sharp";
+import sharp, { Metadata, Sharp, Stats } from "sharp";
 import { BadDataError, ParamsError } from "../errors";
+import { crop } from "./param-processor";
 
 /**
  * 预设集合，所有的裁剪方式都事先在这里配置，然后才能使用。
  */
 export interface Presets {
-	[key: string]: (metadata: Metadata, stats: Stats) => Region;
+	[key: string]: (metadata: Metadata, stats: Stats) => string;
 }
 
 async function getPresetArgs(image: Sharp) {
@@ -33,6 +34,6 @@ export default function createPresetCropFilter(presets: Presets) {
 		const image = sharp(buffer);
 		const args = await getPresetArgs(image);
 
-		return image.extract(presetFn(...args)).toBuffer();
+		return crop(image, presetFn(...args)).toBuffer();
 	};
 }
