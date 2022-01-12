@@ -51,19 +51,28 @@ export default class RasterOptimizer implements Optimizer {
 	async buildCache(name: string, info: SaveRequest) {
 		const tasks: Array<Promise<void>> = [];
 
-		const [compressed, webp, avif] = await Promise.all([
+		const [avif, webp, base] = await Promise.all([
 			encodeAVIF(info.buffer),
 			encodeWebp(info.buffer),
 			optimize(info.buffer, info.type),
 		]);
 
-		tasks.push(this.store.putCache(name, compressed, { type: info.type }));
+		tasks.push(this.store.putCache(name, base, { type: info.type }));
 
-		// 要是 WebP 格式比传统格式优化后更大就不使用 WebP
-		if (webp && webp.length < compressed!.length) {
-			tasks.push(this.store.putCache(name, compressed, { type: "webp" }));
+		let best = base;
+
+		// 筛选最佳格式，如果新格式比旧的还大就抛弃。
+		if (webp.length < best.length) {
+			best = webp;
+			tasks.push(this.store.putCache(name, webp, { type: "webp" }));
 		} else {
 			logger.trace(`${name} 转 WebP 格式效果不佳`);
+		}
+
+		if (avif.length < best.length) {
+			tasks.push(this.store.putCache(name, avif, { type: "avif" }));
+		} else {
+			logger.trace(`${name} 转 AVIF 格式效果不佳`);
 		}
 
 		await Promise.all(tasks);
@@ -75,7 +84,7 @@ export default class RasterOptimizer implements Optimizer {
 		const hash = basename(name, type);
 
 		for (const tsc of ts) {
-			if (acceptTypes.includes(tsc.accept)) {
+			if (!acceptTypes.includes(tsc.accept)) {
 				continue;
 			}
 			const file = await this.store.getCache(hash, tsc.params);
@@ -85,6 +94,6 @@ export default class RasterOptimizer implements Optimizer {
 		}
 
 		const file = await this.store.getCache(hash, {});
-		return file && { file, type };
+		return file && { file, type: type.slice(1) };
 	}
 }

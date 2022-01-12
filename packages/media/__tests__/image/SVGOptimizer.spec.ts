@@ -19,55 +19,114 @@ const request = {
 
 const optimizer = new SVGOptimizer(store);
 
-it("should restrict file type", () => {
-	const promise = optimizer.check({
-		type: "html",
-		parameters: {},
-		buffer: Buffer.alloc(0),
-	});
+describe("check", () => {
+	it("should restrict file type", () => {
+		const promise = optimizer.check({
+			type: "html",
+			parameters: {},
+			buffer: Buffer.alloc(0),
+		});
 
-	return expect(promise).rejects.toThrow(BadDataError);
+		return expect(promise).rejects.toThrow(BadDataError);
+	});
 });
 
-it("should throw on invalid data", () => {
-	const promise = optimizer.buildCache("test", {
-		...request,
-		buffer: Buffer.from("foobar"),
-	});
-	return expect(promise).rejects.toThrow(BadDataError);
-});
+describe("buildCache", () => {
 
-it("should not compress with Brotli on small data", async () => {
-	await optimizer.buildCache("test", {
-		...request,
-		buffer: Buffer.from(small),
+	it("should throw on invalid data", () => {
+		const promise = optimizer.buildCache("test", {
+			...request,
+			buffer: Buffer.from("foobar"),
+		});
+		return expect(promise).rejects.toThrow(BadDataError);
 	});
 
-	expect(store.putCache.mock.calls).toHaveLength(2);
+	it("should not compress with Brotli on small data", async () => {
+		await optimizer.buildCache("test", {
+			...request,
+			buffer: Buffer.from(small),
+		});
 
-	const [identity, gzip] = store.putCache.mock.calls;
-	expect(identity[1].charAt(0)).toBe("<"); // 未压缩
-	expect(gzip[2]).toStrictEqual({ encoding: "gz" });
-});
+		expect(store.putCache.mock.calls).toHaveLength(2);
 
-it("should optimize the file", async () => {
-	await optimizer.buildCache("test", request);
-
-	const [identity, gzip, brotli] = store.putCache.mock.calls;
-	expect(store.putCache.mock.calls).toHaveLength(3);
-	expect(brotli[2]).toStrictEqual({ encoding: "br" });
-});
-
-it("should get falsy value if file not exists", () => {
-	store.getCache.mockResolvedValue(null);
-
-	const promise =  optimizer.getCache({
-		name: "test",
-		parameters: {},
-		codecs: [],
-		acceptTypes: [],
-		acceptEncodings: [],
+		const [identity, gzip] = store.putCache.mock.calls;
+		expect(identity[1].charAt(0)).toBe("<"); // 未压缩
+		expect(gzip[2]).toStrictEqual({ encoding: "gz" });
 	});
 
-	return expect(promise).resolves.toBeFalsy();
+	it("should optimize the file", async () => {
+		await optimizer.buildCache("test", request);
+
+		const { calls } = store.putCache.mock;
+		const [identity, gzip, brotli] = calls;
+		expect(calls).toHaveLength(3);
+
+		expect(identity[2]).toStrictEqual({});
+		expect(gzip[2]).toStrictEqual({ encoding: "gz" });
+		expect(brotli[2]).toStrictEqual({ encoding: "br" });
+
+		expect(brotli[1].length).toBeLessThan(gzip[1].length);
+		expect(gzip[1].length).toBeLessThan(identity[1].length);
+	});
+});
+
+describe("getCache", () => {
+	it("should return falsy value if not cache found", async () => {
+		store.getCache.mockResolvedValue(null);
+
+		const promise = optimizer.getCache({
+			name: "test",
+			parameters: {},
+			codecs: [],
+			acceptTypes: [],
+			acceptEncodings: [],
+		});
+
+		return expect(promise).resolves.toBeFalsy();
+	});
+
+	it("should return compressed is possible", async () => {
+		store.getCache.mockResolvedValueOnce(null);
+		store.getCache.mockResolvedValue({
+			data: "data123",
+			size: 6,
+			mtime: new Date(),
+		});
+
+		const result = await optimizer.getCache({
+			name: "test",
+			parameters: {},
+			codecs: [],
+			acceptTypes: [],
+			acceptEncodings: ["gzip", "deflate", "br"],
+		});
+
+		expect(result!.type).toBe("svg");
+		expect(result!.encoding).toBe("gzip");
+
+		const { calls } = store.getCache.mock;
+		expect(calls).toHaveLength(2);
+		expect(calls[0][1]).toStrictEqual({ encoding: "br" });
+		expect(calls[1][0]).toBe("test");
+		expect(calls[1][1]).toStrictEqual({ encoding: "gz" });
+	});
+
+	it("should not return unsupported encoding", async () => {
+		store.getCache.mockResolvedValue({
+			data: "data123",
+			size: 6,
+			mtime: new Date(),
+		});
+
+		const result = await optimizer.getCache({
+			name: "test",
+			parameters: {},
+			codecs: [],
+			acceptTypes: [],
+			acceptEncodings: [],
+		});
+
+		expect(result!.encoding).toBeUndefined();
+		expect(store.getCache.mock.calls).toHaveLength(1);
+	});
 });
