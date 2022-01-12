@@ -59,6 +59,15 @@ const productionPlugins: Plugin[] = [
  */
 export default function (this: LoaderContext<void>, svg: string) {
 	const { mode, resourcePath } = this;
-	const plugins = (mode === "production") ? productionPlugins : developmentPlugins;
-	return optimize(svg, { plugins, path: resourcePath }).data;
+
+	const plugins = (mode === "production")
+		? productionPlugins
+		: developmentPlugins;
+
+	const result = optimize(svg, { plugins, path: resourcePath });
+
+	if (!result.modernError) {
+		return result.data;
+	}
+	throw new Error("无法解析 SVG 资源:" + result.modernError);
 }
