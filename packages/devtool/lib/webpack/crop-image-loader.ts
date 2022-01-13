@@ -7,14 +7,9 @@ const process = createCropFilter({
 
 	// 首页的大背景，M 代表手机屏幕
 	IndexBannerM({ width, height }) {
-		const targetWidth = 560;
-		const left = (width! - targetWidth) / 2;
-		return {
-			width: targetWidth,
-			height: height!,
-			top: 0,
-			left: Math.round(left),
-		};
+		const tw = 560;
+		const left = Math.round((width! - tw) / 2);
+		return `${tw}-${height}-0-${left}`;
 	},
 });
 
