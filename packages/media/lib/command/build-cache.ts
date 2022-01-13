@@ -1,41 +1,38 @@
-import path from "path";
-import fs from "fs-extra";
-import { PreGenerateImageService } from "../image-service";
-import { LocalFileSlot } from "../image-store";
-import { BlogServerOptions } from "../../../server/lib/options";
-
-// @formatter:off
-class IgnoreOriginSlot extends LocalFileSlot {
-	exists() { return Promise.resolve(false); }
-	save(buffer: Buffer | string) { return Promise.resolve(); }
-}
-// @formatter:on
+import { join, parse } from "path";
+import { readdirSync, readFileSync } from "fs-extra";
+import { ResolvedConfig } from "../../../server/lib/config";
+import LocalFileStore from "../LocalFileStore";
+import SVGOptimizer from "../image/SVGOptimizer";
+import RasterOptimizer from "../image/RasterOptimizer";
 
 /**
  * 从原图构建图片缓存，用于清理过缓存或是迁移了图片之后生成缓存。
  *
  * 如果检测到缓存已存在则不会重新生成，要强制全部重建请删除缓存目录后再运行。
  */
-export async function buildCache(options: BlogServerOptions) {
-	const service = new PreGenerateImageService((key) => new IgnoreOriginSlot(root, key));
+export async function buildCache(options: ResolvedConfig) {
+	const { dataDir } = options.app;
 
-	const originDir = path.join(root, "image");
-	const names = await fs.readdir(originDir);
+	const store = new LocalFileStore(dataDir, "image");
+	const svgOptimizer = new SVGOptimizer(store);
+	const rasterOptimizer = new RasterOptimizer(store);
+
+	const originDir = join(dataDir.data, "image");
+	const names = readdirSync(originDir);
 
 	let count = 0;
 
 	for (const name of names) {
-		const fullPath = path.join(originDir, name);
-		const parsed = path.parse(name);
-		const type = parsed.ext.substring(1);
+		const fullPath = join(originDir, name);
+		const { name: hash, ext } = parse(name);
+		const type = ext.substring(1);
 
-		if (await service.get(parsed.name, type, {})) {
-			continue;
-		}
-
-		await service.save(await fs.readFile(fullPath), type);
+		const optimizer = type === "svg" ? svgOptimizer : rasterOptimizer;
+		const buffer = readFileSync(fullPath);
 		count += 1;
+
+		await optimizer.buildCache(hash, { buffer, type, parameters: {} });
 	}
 
-	console.info(`一共${count}张图片的缓存生成完毕，跳过${names.length - count}张`);
+	console.info(`生成 ${count} 张图片的缓存，跳过 ${names.length - count} 张`);
 }
