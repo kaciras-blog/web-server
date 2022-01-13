@@ -1,9 +1,14 @@
 import { join, parse } from "path";
 import { readdirSync, readFileSync } from "fs-extra";
+import { Presets, SingleBar } from "cli-progress";
 import { ResolvedConfig } from "../../../server/lib/config";
 import LocalFileStore from "../LocalFileStore";
 import SVGOptimizer from "../image/SVGOptimizer";
 import RasterOptimizer from "../image/RasterOptimizer";
+
+const parameters = {};
+
+const theme = Presets.shades_classic;
 
 /**
  * 从原图构建图片缓存，用于清理过缓存或是迁移了图片之后生成缓存。
@@ -20,19 +25,37 @@ export async function buildCache(options: ResolvedConfig) {
 	const originDir = join(dataDir.data, "image");
 	const names = readdirSync(originDir);
 
-	let count = 0;
+	const progress = new SingleBar({}, theme);
+	progress.start(names.length, 0);
 
 	for (const name of names) {
 		const fullPath = join(originDir, name);
 		const { name: hash, ext } = parse(name);
 		const type = ext.substring(1);
 
-		const optimizer = type === "svg" ? svgOptimizer : rasterOptimizer;
-		const buffer = readFileSync(fullPath);
-		count += 1;
+		const optimizer = type === "svg"
+			? svgOptimizer
+			: rasterOptimizer;
 
-		await optimizer.buildCache(hash, { buffer, type, parameters: {} });
+		const request = {
+			type,
+			parameters,
+			buffer: readFileSync(fullPath),
+		};
+
+		/*
+		 * 优化器出异常可能导致生成部分缓存，且外部难以判断是否成功。
+		 * 所以暂不支持跳过已生成的文件，每次都是全量。
+		 */
+		try {
+			await optimizer.buildCache(hash, request);
+			progress.increment();
+		} catch (e) {
+			progress.stop();
+			return console.error(e);
+		}
 	}
 
-	console.info(`生成 ${count} 张图片的缓存，跳过 ${names.length - count} 张`);
+	progress.stop();
+	console.info(`生成了 ${names.length} 张图片的缓存`);
 }
