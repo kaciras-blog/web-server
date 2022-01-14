@@ -6,7 +6,7 @@ import { createSSRProductionPlugin } from "../koa/vue-ssr";
 import staticFiles from "../koa/static-files";
 import startServer from "../create-server";
 import { configureGlobalAxios } from "../axios-helper";
-import { BlogServerOptions, SimpleLogConfig } from "../options";
+import { ResolvedConfig, SimpleLogConfig } from "../config";
 
 /**
  * 运行生产模式需要更详细的日志输出格式。
@@ -60,7 +60,7 @@ function staticFilesCacheControl(ctx: BaseContext) {
 	}
 }
 
-export default async function run(options: BlogServerOptions) {
+export default async function run(options: ResolvedConfig) {
 	configureLog4js(options.app.logging);
 	const logger = log4js.getLogger();
 

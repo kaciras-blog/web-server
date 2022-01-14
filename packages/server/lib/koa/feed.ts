@@ -6,7 +6,7 @@ import TableOfContent from "markdown-it-toc-done-right";
 import { MediaPlugin } from "@kaciras-blog/markdown";
 import { once } from "../functions";
 import { CachedFetcher } from "../axios-helper";
-import { BlogServerOptions } from "../options";
+import { ResolvedConfig } from "../config";
 
 const markdownIt = new MarkdownIt();
 markdownIt.use(TableOfContent);
@@ -16,9 +16,9 @@ interface FeedContext extends ExtendableContext {
 	params: { type: string };
 }
 
-export default function createFeedMiddleware(options: BlogServerOptions) {
-	const { author, title } = options.app;
-	const articleApi = options.contentServer.internalOrigin + "/articles";
+export default function createFeedMiddleware(config: ResolvedConfig) {
+	const { author, title } = config.app;
+	const articleApi = config.contentServer.internalOrigin + "/articles";
 
 	const getLinksFor = (origin: string) => ({
 		rss: `${origin}/feed/rss`,

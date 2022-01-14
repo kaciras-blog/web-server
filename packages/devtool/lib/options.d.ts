@@ -1,7 +1,13 @@
 import { VueLoaderOptions } from "vue-loader";
-import { BlogServerOptions } from "@kaciras-blog/server/lib/options";
+import { BlogServerConfig, ResolvedConfig } from "@kaciras-blog/server/lib/config";
 
-export interface DevelopmentOptions extends BlogServerOptions {
+export interface DevelopmentOptions extends BlogServerConfig {
+	dev: DevServerOptions;
+	webpack: WebpackOptions;
+	thirdParty: ThirdPartyOptions;
+}
+
+export interface ResolvedDevConfig extends ResolvedConfig {
 	dev: DevServerOptions;
 	webpack: WebpackOptions;
 	thirdParty: ThirdPartyOptions;

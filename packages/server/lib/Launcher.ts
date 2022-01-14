@@ -2,8 +2,9 @@ import process from "process";
 import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
+import { buildCache } from "@kaciras-blog/media/lib/command/build-cache";
 import run from "./command/run";
-import { BlogServerOptions } from "./options";
+import { resolveConfig, ResolvedConfig } from "./config";
 import { once } from "./functions";
 
 /**
@@ -15,17 +16,17 @@ type CommandHandler<T> = (options: T) => HandlerRV | Promise<HandlerRV>;
 /**
  * 简单的启动器，提供注册命令然后从命令行里调用的功能，并对启动参数做一些处理。
  */
-export default class Launcher<T extends BlogServerOptions> {
+export default class Launcher {
 
-	private commands = new Map<string, CommandHandler<T>>();
+	private readonly commands = new Map<string, CommandHandler<any>>();
 
 	// 注册几个内置命令
 	constructor() {
 		this.registerCommand("run", run);
-		// this.registerCommand("build-image-cache", buildCache);
+		this.registerCommand("build-cache", buildCache);
 	}
 
-	registerCommand(command: string, handler: CommandHandler<T>) {
+	registerCommand<T extends ResolvedConfig>(command: string, handler: CommandHandler<T>) {
 		this.commands.set(command, handler);
 	}
 
@@ -49,7 +50,7 @@ export default class Launcher<T extends BlogServerOptions> {
 			process.exit(1);
 		}
 
-		const config = require(configFile);
+		const config = resolveConfig(require(configFile));
 
 		log4js.configure({
 			appenders: {

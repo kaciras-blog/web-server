@@ -6,12 +6,12 @@ import ClientConfiguration from "../config/client";
 import ServerConfiguration from "../config/server";
 import VueSSRHotReloader, { ClientSSRHotUpdatePlugin } from "../ssr-hot-reload";
 import { createHotMiddleware } from "../dev-middleware";
-import { DevelopmentOptions } from "../options";
+import { ResolvedDevConfig } from "../options";
 
 /**
  * 启动开发服务器，它提供了热重载功能。
  */
-export default async function (options: DevelopmentOptions) {
+export default async function (options: ResolvedDevConfig) {
 	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
 	const builder = new AppBuilder();

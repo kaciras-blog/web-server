@@ -1,5 +1,7 @@
 // TODO: 注释写在页面项目里，要不要移过来？
-export interface BlogServerOptions {
+import { join } from "path";
+
+export interface BlogServerConfig {
 	outputDir: string;
 	assetsDir: string;
 
@@ -8,7 +10,7 @@ export interface BlogServerOptions {
 	contentServer: ContentServerOptions;
 }
 
-interface SimpleLogConfig {
+export interface SimpleLogConfig {
 
 	level: string;
 
@@ -23,13 +25,11 @@ interface SimpleLogConfig {
 	noConsole?: boolean;
 }
 
-interface SeparatedStoreLocation {
+export interface SeparatedStoreLocation {
 	data: string;
 	logs: string;
 	cache: string;
 }
-
-type DataDirectory = string | SeparatedStoreLocation;
 
 export interface AppOptions {
 	title: string;
@@ -39,7 +39,7 @@ export interface AppOptions {
 	 * 本地数据存储目录，分为缓存、日志、数据三部分，可以分别指定；
 	 * 也能只填一个字符串，此时将在该目录下创建三个子目录。
 	 */
-	dataDir: DataDirectory;
+	dataDir: string | SeparatedStoreLocation;
 
 	serviceWorker?: boolean;
 	requestTimeout: number;
@@ -60,13 +60,11 @@ export interface AddersSelector {
 	https: string;
 }
 
-// ===================================================
-
 export interface ServerOptions {
 	hostname?: string;
 	useForwardedHeaders?: boolean;
 
-	connectors: Array<HttpServerOptions | HttpsServerOptions>
+	connectors: Array<HttpServerOptions | HttpsServerOptions>;
 }
 
 export interface HttpServerOptions {
@@ -85,4 +83,27 @@ export interface SNIProperties {
 	cert: string;
 	key: string;
 	hostname: string;
+}
+
+export interface ResolvedConfig extends BlogServerConfig {
+	app: ResolvedAppOptions;
+}
+
+export interface ResolvedAppOptions extends AppOptions {
+	dataDir: SeparatedStoreLocation;
+}
+
+export function resolveConfig(config: BlogServerConfig) {
+	const { app } = config;
+
+	let dataDir = app.dataDir;
+	if (typeof app.dataDir === "string") {
+		dataDir = {
+			logs: join(app.dataDir, "log"),
+			cache: join(app.dataDir, "cache"),
+			data: join(app.dataDir, "data"),
+		};
+	}
+
+	return { ...config, app: { ...app, dataDir } } as ResolvedConfig;
 }

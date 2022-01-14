@@ -10,7 +10,7 @@ import { ExtendableContext } from "koa";
 import log4js from "log4js";
 import fs from "fs-extra";
 import hash from "hash-sum";
-import { ContentServerOptions } from "./options";
+import { ContentServerOptions } from "./config";
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 

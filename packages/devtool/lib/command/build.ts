@@ -3,7 +3,7 @@ import process from "process";
 import { cyan, red } from "colorette";
 import webpack, { Configuration, Stats } from "webpack";
 import fs from "fs-extra";
-import { DevelopmentOptions } from "../options";
+import { ResolvedDevConfig } from "../options";
 import ClientConfiguration from "../config/client";
 import ServerConfiguration from "../config/server";
 
@@ -31,7 +31,7 @@ async function invokeWebpack(config: Configuration) {
 	}
 }
 
-export default async function (options: DevelopmentOptions) {
+export default async function (options: ResolvedDevConfig) {
 	await fs.remove(options.outputDir);
 
 	let clientConfig = ClientConfiguration(options);

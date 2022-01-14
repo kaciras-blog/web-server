@@ -1,7 +1,7 @@
 import tls from "tls";
 import supertest from "supertest";
 import startServer, { createSNICallback, ServerGroup } from "../lib/create-server";
-import { ServerOptions } from "../lib/options";
+import { ServerOptions } from "../lib/config";
 import { resolveFixture } from "./test-utils";
 
 const HTTPS_URL = "https://localhost:12501";

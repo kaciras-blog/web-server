@@ -7,7 +7,7 @@ import multer from "@koa/multer";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import AppBuilder, { FunctionPlugin } from "./AppBuilder";
-import { BlogServerOptions } from "./options";
+import { ResolvedConfig } from "./config";
 import { download, upload } from "./koa/media";
 import sitemapHandler from "./koa/sitemap";
 import feedHandler from "./koa/feed";
@@ -100,7 +100,7 @@ export function adminOnlyFilter(host: string) {
  * 没有使用，因为所有资源都可以用时间缓存，而且 koa-etag 内部使用 sha1 计算 Etag，
  * 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
  */
-export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugin {
+export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 	const address = options.contentServer.internalOrigin;
 	const { app } = options;
 
@@ -129,8 +129,8 @@ export default function getBlogPlugin(options: BlogServerOptions): FunctionPlugi
 
 		const imageStore = new LocalFileStore(app.dataDir, "image");
 		const service = new DispatchService(
-			new CachedService(imageStore, new RasterOptimizer(imageStore)),
 			{ "svg": new CachedService(imageStore, new SVGOptimizer(imageStore)) },
+			new CachedService(imageStore, new RasterOptimizer(imageStore)),
 		);
 		// @ts-ignore
 		router.get("/image/:name", ctx => download(service, ctx));
