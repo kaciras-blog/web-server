@@ -11,6 +11,10 @@
 	"engines": {
 		"node": ">=17"
 	},
+	"files": [
+		"bin",
+		"lib"
+	],
 	"dependencies": {
 		"@kaciras-blog/nativelib": "^0.3.1",
 		"cli-progress": "^3.10.0",

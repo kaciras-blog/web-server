@@ -9,11 +9,7 @@
 		"directory": "packages/server"
 	},
 	"main": "lib/index.js",
-	"files": [
-		"bin",
-		"lib",
-		"*.d.ts"
-	],
+	"files": ["lib"],
 	"engines": {
 		"node": ">=17"
 	},
