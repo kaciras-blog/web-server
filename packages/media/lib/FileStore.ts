@@ -33,6 +33,9 @@ export interface FileStore {
 	/**
 	 * 保存缓存文件，缓存文件是原文件的优化版本。
 	 *
+	 * 【安全性】
+	 * params 参数可能用作文件名的一部分，要小心注入。
+	 *
 	 * @param name 文件名
 	 * @param data 数据
 	 * @param params 参数

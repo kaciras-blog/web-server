@@ -17,7 +17,7 @@ const config = {
 	},
 };
 
-beforeEach(() => {
+afterEach(() => {
 	fs.rmSync(root, { recursive: true });
 });
 

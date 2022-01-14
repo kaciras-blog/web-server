@@ -34,6 +34,20 @@ const loadResponse = {
 const service = new CachedService(store, optimizer);
 
 describe("load", () => {
+	it("should return null if no original file with type=origin", async () => {
+		store.load.mockResolvedValueOnce(null);
+
+		const result = await service.load({
+			...loadRequest,
+			parameters: { type: "origin" },
+		});
+
+		expect(result).toBeNull();
+
+		expect(optimizer.getCache.mock.calls).toHaveLength(0);
+		expect(store.load.mock.calls).toHaveLength(1);
+	});
+
 	it("should return the original file if specified", async () => {
 		store.load.mockResolvedValueOnce(loadResponse.file);
 
@@ -50,7 +64,7 @@ describe("load", () => {
 	});
 
 	it("should return only cached by default", async () => {
-		const result =await service.load({
+		const result = await service.load({
 			...loadRequest,
 			parameters: {},
 		});
