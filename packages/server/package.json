@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/server",
-	"version": "2.0.0-alpha.0",
+	"version": "2.0.0-alpha.1",
 	"description": "Web page and assets server of Kaciras Blog",
 	"license": "MIT",
 	"repository": {
@@ -21,8 +21,8 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/markdown": "^2.0.0-alpha.0",
-		"@kaciras-blog/media": "^2.0.0-alpha.0",
+		"@kaciras-blog/markdown": "^2.0.0-alpha.1",
+		"@kaciras-blog/media": "^2.0.0-alpha.1",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^10.1.1",
 		"@vue/server-renderer": "^3.2.26",

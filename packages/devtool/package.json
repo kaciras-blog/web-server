@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/devtool",
-	"version": "2.0.0-alpha.0",
+	"version": "2.0.0-alpha.1",
 	"description": "Develop tools for Kaciras Blog",
 	"license": "MIT",
 	"repository": {
@@ -23,8 +23,8 @@
 		"terser": "npm:@swc/core"
 	},
 	"dependencies": {
-		"@kaciras-blog/media": "^2.0.0-alpha.0",
-		"@kaciras-blog/server": "^2.0.0-alpha.0",
+		"@kaciras-blog/media": "^2.0.0-alpha.1",
+		"@kaciras-blog/server": "^2.0.0-alpha.1",
 		"@swc/core": "^1.2.127",
 		"@vue/compiler-sfc": "^3.2.26",
 		"@vue/server-renderer": "^3.2.26",
