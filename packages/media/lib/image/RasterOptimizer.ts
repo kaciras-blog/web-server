@@ -1,7 +1,7 @@
 import { basename, extname } from "path";
 import sharp, { Sharp } from "sharp";
 import { getLogger } from "log4js";
-import { BadDataError } from "../errors";
+import { BadDataError, ProcessorError } from "../errors";
 import { LoadRequest, SaveRequest } from "../MediaService";
 import { crop } from "./param-processor";
 import { encodeAVIF, encodeWebp, optimize } from "./encoder";
@@ -15,10 +15,14 @@ const logger = getLogger("Image");
  */
 const INPUT_FORMATS = ["jpg", "png", "gif"];
 
-const ts: any[] = [
-	{ accept: "avif", params: { type: "avif" } },
-	{ accept: "webp", params: { type: "webp" } },
-];
+/**
+ * 每张图都尝试转换成新格式，新的在前。
+ */
+const formats = ["avif", "webp"];
+
+function unprocessable(e: Error) {
+	if (!(e instanceof ProcessorError)) throw e;
+}
 
 export default class RasterOptimizer implements Optimizer {
 
@@ -48,52 +52,45 @@ export default class RasterOptimizer implements Optimizer {
 		}
 	}
 
-	async buildCache(name: string, info: SaveRequest) {
-		const tasks: Array<Promise<void>> = [];
-
-		const [avif, webp, base] = await Promise.all([
-			encodeAVIF(info.buffer),
-			encodeWebp(info.buffer),
-			optimize(info.buffer, info.type),
+	async buildCache(name: string, { buffer, type }: SaveRequest) {
+		const [base, ...modern] = await Promise.all([
+			optimize(buffer, type),
+			encodeAVIF(buffer).catch(unprocessable),
+			encodeWebp(buffer).catch(unprocessable),
 		]);
 
-		tasks.push(this.store.putCache(name, base, { type: info.type }));
-
-		let best = base;
+		await this.store.putCache(name, base, { type });
 
 		// 筛选最佳格式，如果新格式比旧的还大就抛弃。
-		if (webp.length < best.length) {
-			best = webp;
-			tasks.push(this.store.putCache(name, webp, { type: "webp" }));
-		} else {
-			logger.trace(`${name} 转 WebP 格式效果不佳`);
-		}
+		let best = base.length;
+		for (let i = modern.length - 1; i >= 0; i--) {
+			const output = modern[i];
+			type = formats[i];
 
-		if (avif.length < best.length) {
-			tasks.push(this.store.putCache(name, avif, { type: "avif" }));
-		} else {
-			logger.trace(`${name} 转 AVIF 格式效果不佳`);
+			if (output && output.length < best) {
+				best = output.length;
+				await this.store.putCache(name, output, { type });
+			} else {
+				logger.trace(`${name} 转 ${type} 格式效果不佳`);
+			}
 		}
-
-		await Promise.all(tasks);
 	}
 
-	async getCache(request: LoadRequest) {
-		const { name, acceptTypes } = request;
-		const type = extname(name);
-		const hash = basename(name, type);
+	async getCache({ name, acceptTypes }: LoadRequest) {
+		const ext = extname(name);
+		const hash = basename(name, ext);
 
-		for (const tsc of ts) {
-			if (!acceptTypes.includes(tsc.accept)) {
+		for (const type of formats) {
+			if (!acceptTypes.includes(type)) {
 				continue;
 			}
-			const file = await this.store.getCache(hash, tsc.params);
+			const file = await this.store.getCache(hash, { type });
 			if (file !== null) {
-				return { file, type: tsc.accept };
+				return { file, type };
 			}
 		}
 
 		const file = await this.store.getCache(hash, {});
-		return file && { file, type: type.slice(1) };
+		return file && { file, type: ext.slice(1) };
 	}
 }

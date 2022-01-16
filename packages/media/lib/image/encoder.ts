@@ -64,6 +64,9 @@ export async function encodeWebp(buffer: Buffer) {
  * @return AVIF 编码的图片
  */
 export function encodeAVIF(buffer: Buffer) {
+	if (isGif(buffer)) {
+		throw new ProcessorError("暂不支持 GIF 转 AVIF");
+	}
 	return sharp(buffer).avif().toBuffer().catch(BadDataError.convert);
 }
 

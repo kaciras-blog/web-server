@@ -1,6 +1,6 @@
 import { readFixture } from "../test-utils";
 import RasterOptimizer from "../../lib/image/RasterOptimizer";
-import { BadDataError } from "../../lib/errors";
+import { BadDataError, ProcessorError } from "../../lib/errors";
 import { crop } from "../../lib/image/param-processor";
 import { FileStore } from "../../lib/FileStore";
 import * as encoder from "../../lib/image/encoder";
@@ -72,7 +72,7 @@ describe("check", () => {
 });
 
 describe("buildCache", () => {
-	const { optimize, encodeWebp, encodeAVIF } = encoder as jest.MockedObject<any>;
+	const { optimize, encodeWebp, encodeAVIF } = encoder as jest.MockedObject<typeof encoder>;
 
 	it("should optimize the image", async () => {
 		optimize.mockResolvedValue(Buffer.alloc(3));
@@ -86,6 +86,15 @@ describe("buildCache", () => {
 		expect(calls[0][2]).toStrictEqual({ type: "png" });
 		expect(calls[1][2]).toStrictEqual({ type: "webp" });
 		expect(calls[2][2]).toStrictEqual({ type: "avif" });
+	});
+
+	it("should ignore unprocessable", async () => {
+		optimize.mockResolvedValue(Buffer.alloc(1));
+		encodeWebp.mockRejectedValue(new ProcessorError());
+		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
+
+		await optimizer.buildCache("foobar.png", saveRequest);
+		expect(store.putCache.mock.calls).toHaveLength(1);
 	});
 
 	it("should save new format only if it smaller than old", async () => {
@@ -116,7 +125,7 @@ describe("getCache", () => {
 		expect(calls[0][1]).toStrictEqual({ type: "avif" });
 	});
 
-	it("should not return unsupported format",async  () => {
+	it("should not return unsupported format", async () => {
 		store.getCache.mockResolvedValue({
 			data: "data123",
 			size: 6,
@@ -124,7 +133,7 @@ describe("getCache", () => {
 		});
 
 		await optimizer.getCache({
-			...loadRequest ,
+			...loadRequest,
 			acceptTypes: ["webp"],
 		});
 
