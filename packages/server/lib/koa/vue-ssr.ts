@@ -4,7 +4,7 @@ import { Context } from "koa";
 import log4js from "log4js";
 import path from "path";
 import { App } from "vue";
-import { renderToString } from "@vue/server-renderer";
+import { renderToString, SSRContext } from "@vue/server-renderer";
 import AppBuilder from "../AppBuilder";
 
 const logger = log4js.getLogger("SSR");
@@ -18,7 +18,7 @@ export interface RenderContext {
 	/** 插入到页面头的一些元素 */
 	meta: string;
 
-	/** 如果路由结果为404错误页则为true */
+	/** 如果路由结果为 404 错误页则为 true */
 	notFound?: boolean;
 
 	/**
@@ -48,9 +48,10 @@ const BASE_CONTEXT = {
  *
  * @param template 渲染器
  * @param createApp 渲染器
+ * @param manifest
  * @param ctx Koa上下文
  */
-export async function renderPage(template: string, createApp: SSREntry, ctx: Context) {
+export async function renderPage(template: string, createApp: SSREntry, manifest: any, ctx: Context) {
 	const renderContext: RenderContext = {
 		...BASE_CONTEXT,
 		request: ctx,
@@ -63,9 +64,14 @@ export async function renderPage(template: string, createApp: SSREntry, ctx: Con
 	// 流式渲染不方便在外层捕获异常，先不用
 	try {
 		const app = await createApp(renderContext);
-		const result = await renderToString(app);
 
-		ctx.body = template.replace("<!--vue-ssr-outlet-->", result);
+		const ssrContext: SSRContext = {};
+		const result = await renderToString(app, ssrContext);
+		const preloads = renderPreloadLinks(ssrContext.modules, manifest);
+
+		ctx.body = template
+			.replace("<!--vue-ssr-outlet-->", result)
+			.replace("<!--preload-links-->", preloads);
 
 		if (renderContext.notFound) {
 			ctx.status = 404;
@@ -91,6 +97,51 @@ export async function renderPage(template: string, createApp: SSREntry, ctx: Con
 }
 
 /**
+ * https://github.com/vitejs/vite/blob/main/packages/playground/ssr-vue/src/entry-server.js
+ *
+ * @param modules
+ * @param manifest
+ */
+function renderPreloadLinks(modules: string[], manifest: Record<string, string>) {
+	let links = "";
+	const seen = new Set();
+
+	for (const id of modules) {
+		const file = manifest[id];
+
+		if (!file || seen.has(file)) {
+			continue;
+		}
+		seen.add(file);
+		links += renderPreloadLink(file);
+	}
+
+	return links;
+}
+
+function renderPreloadLink(file: string) {
+	if (file.endsWith(".js")) {
+		// return `<link rel="modulepreload" crossorigin href="${file}">`;
+		return "";
+	} else if (file.endsWith(".css")) {
+		return `<link rel="stylesheet" href="${file}">`;
+	} else if (file.endsWith(".woff")) {
+		return ` <link rel="preload" href="${file}" as="font" type="font/woff" crossorigin>`;
+	} else if (file.endsWith(".woff2")) {
+		return ` <link rel="preload" href="${file}" as="font" type="font/woff2" crossorigin>`;
+	} else if (file.endsWith(".gif")) {
+		return ` <link rel="preload" href="${file}" as="image" type="image/gif">`;
+	} else if (file.endsWith(".jpg") || file.endsWith(".jpeg")) {
+		return ` <link rel="preload" href="${file}" as="image" type="image/jpeg">`;
+	} else if (file.endsWith(".png")) {
+		return ` <link rel="preload" href="${file}" as="image" type="image/png">`;
+	} else {
+		// TODO
+		return "";
+	}
+}
+
+/**
  * 使用指定目录下的 vue-ssr-server-bundle.json，vue-ssr-client-manifest.json 和 index.template.html 来创建渲染器。
  *
  * @param workingDir 指定的目录
@@ -102,8 +153,8 @@ export async function createSSRProductionPlugin(workingDir: string) {
 	}
 
 	const template = await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" });
-	// const manifest = require(resolve("ssr-manifest.json"));
+	const manifest = require(resolve("ssr-manifest.json"));
 	const createApp = require(resolve("entry-server.js"));
 
-	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(template, createApp, ctx));
+	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(template, createApp, manifest, ctx));
 }
