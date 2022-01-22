@@ -1,3 +1,4 @@
+import { URLSearchParams } from "url";
 import { LoaderContext } from "webpack";
 import createCropFilter from "@kaciras-blog/media/lib/image/preset-processor";
 
@@ -9,7 +10,7 @@ const process = createCropFilter({
 	IndexBannerM({ width, height }) {
 		const tw = 560;
 		const left = Math.round((width! - tw) / 2);
-		return `${tw}-${height}-0-${left}`;
+		return `0-${left}-${tw}-${height}`;
 	},
 });
 

@@ -37,11 +37,24 @@ export default function (options: DevelopmentOptions): Configuration {
 		{
 			// 使用方须提供 .swcrc 配置文件。
 			test: /\.tsx?$/,
-			use: "swc-loader",
+			use: require.resolve("swc-loader"),
 		},
 		{
 			test: /\.vue$/,
-			use: "vue-loader",
+			loader: "vue-loader",
+			options: {
+				// 我操好丑啊，为什么不能默认 SSR 忽略指令呢……
+				compilerOptions: {
+					directiveTransforms: {
+						"ime-input": () => ({ props: [] }),
+						"autofocus": () => ({ props: [] }),
+						"selection-model": () => ({ props: [] }),
+						"selection-bind": () => ({ props: [] }),
+						"selection-change": () => ({ props: [] }),
+						"ripple": () => ({ props: [] }),
+					},
+				},
+			},
 		},
 
 		// 下面几个以及 CSS 的加载器需要设置 esModule: false
