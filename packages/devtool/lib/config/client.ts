@@ -17,6 +17,16 @@ export default function (options: DevelopmentOptions) {
 
 	const assetsPath = (path_: string) => path.posix.join(options.assetsDir, path_);
 
+	const htmlMinifyOptions = {
+		removeScriptTypeAttributes: true,
+		collapseWhitespace: true,
+		removeComments: true,
+		removeRedundantAttributes: true,
+		removeStyleLinkTypeAttributes: true,
+		useShortDoctype: true,
+		removeAttributeQuotes: true,
+	};
+
 	const plugins = [
 		new WebpackManifestPlugin({ fileName: "ssr-manifest.json" }),
 
@@ -24,12 +34,27 @@ export default function (options: DevelopmentOptions) {
 			patterns: [{
 				from: "./public",
 				to: ".",
-				globOptions: {
-					dot: true,
-					ignore: ["./**/index.html"],
-				},
+				globOptions: { dot: true },
 			}],
 		}),
+
+		new HtmlPlugin({
+			title: "Kaciras的博客",
+			template: "src/index.html",
+			filename: "app-shell.html",
+			inject: "head",
+			scriptLoading: "defer",
+			minify: htmlMinifyOptions,
+		}),
+
+		// 服务端渲染的入口，要把 chunks 全部去掉以便渲染器注入资源
+		new HtmlPlugin({
+			chunks: [],
+			template: "src/index.template.html",
+			filename: "index.template.html",
+			minify: { ...htmlMinifyOptions, removeComments: false },
+		}),
+
 		/*
 		 * workbox-webpack-plugin 包含两个插件，都可用于构建 ServiceWorker：
 		 * 1）GenerateSW 替你做所有的事情，自动生成代码并缓存资源，但这样一来无法定制。
@@ -49,35 +74,11 @@ export default function (options: DevelopmentOptions) {
 		new DefinePlugin({ "process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin) }),
 	];
 
-	const htmlMinifyOptions = {
-		removeScriptTypeAttributes: true,
-		collapseWhitespace: true,
-		removeComments: true,
-		removeRedundantAttributes: true,
-		removeStyleLinkTypeAttributes: true,
-		useShortDoctype: true,
-		removeAttributeQuotes: true,
-	};
-
-	plugins.push(new HtmlPlugin({
-		title: "Kaciras的博客",
-		template: "public/index.html",
-		filename: "app-shell.html",
-		inject: "head",
-		scriptLoading: "defer",
-		minify: htmlMinifyOptions,
-	}));
-
-	// 服务端渲染的入口，要把 chunks 全部去掉以便渲染器注入资源
-	plugins.push(new HtmlPlugin({
-		chunks: [],
-		template: "public/index.template.html",
-		filename: "index.template.html",
-		minify: { ...htmlMinifyOptions, removeComments: false },
-	}));
-
 	const config: Configuration = {
-		entry: ["./src/entry-client"],
+		entry: [
+			"./src/support-check",
+			"./src/entry-client",
+		],
 		devtool: webpackOpts.client.devtool,
 		plugins,
 		optimization: {
