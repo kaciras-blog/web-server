@@ -1,3 +1,4 @@
+import { expect, it } from "vitest";
 import { readFixture } from "../test-utils";
 import PresetCropFilter from "../../lib/image/preset-processor";
 import { BadDataError, ParamsError } from "../../lib/errors";
@@ -12,7 +13,9 @@ it("should pass metadata to preset function", () => {
 			return "0-0-8-8";
 		}),
 	});
-	return filter(buffer, "test");
+
+	// Vitest 的类型只能返回 Promise<void>
+	return filter(buffer, "test").then();
 });
 
 it("should throws on preset not found", () => {

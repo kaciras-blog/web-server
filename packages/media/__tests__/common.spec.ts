@@ -1,3 +1,4 @@
+import { expect, it } from "vitest";
 import { hashName } from "../lib/common";
 
 it("should generate hash name", () => {

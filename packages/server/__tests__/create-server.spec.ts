@@ -1,4 +1,5 @@
 import tls from "tls";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import supertest from "supertest";
 import startServer, { createSNICallback, ServerGroup } from "../lib/create-server";
 import { ServerOptions } from "../lib/config";
@@ -41,8 +42,8 @@ describe("app.startServer", () => {
 
 	afterAll(() => serverGroup.forceClose());
 
-	it("should redirect to https", () => {
-		return supertest(serverGroup.servers[0])
+	it("should redirect to https", async () => {
+		await supertest(serverGroup.servers[0])
 			.get("/")
 			.expect(301)
 			.expect("location", HTTPS_URL + "/");

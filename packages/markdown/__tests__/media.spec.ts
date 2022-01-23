@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from "vitest";
 import MarkdownIt from "markdown-it/lib";
 import MediaPlugin from "../lib/media";
 import Token from "markdown-it/lib/token";
@@ -13,7 +14,9 @@ describe("tokenizer", () => {
 		return "No render result for tokenizer test";
 	};
 
-	beforeEach(() => token = null);
+	beforeEach(() => {
+		token = null;
+	});
 
 	it("should parse type, label, and href", () => {
 		markdownIt.render("@gif[A gif video](/video/foo.mp4)");
@@ -30,15 +33,18 @@ describe("tokenizer", () => {
 		expect(token!.attrGet("href")).toBe("");
 	});
 
-	test.each([
+	const s = [
 		"@",
 		"@gif(/video/foobar.mp4)",
 		"@gif[A gif video()",
 		"@gif[](/video/foobar",
-	])("should ignore truncated text", text => {
-		markdownIt.render(text);
-		expect(token).toBeNull();
-	});
+	];
+	for (const text of s) {
+		it("should ignore truncated text", () => {
+			markdownIt.render(text);
+			expect(token).toBeNull();
+		});
+	}
 
 	it("should restrict statement is filled with a whole line", () => {
 		expect(markdownIt.render("@gif[]() text after")).toMatchSnapshot();

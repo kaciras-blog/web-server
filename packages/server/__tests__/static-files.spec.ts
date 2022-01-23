@@ -1,33 +1,34 @@
 import { basename } from "path";
 import fs from "fs";
+import { describe, expect, it, vi } from "vitest";
 import supertest from "supertest";
 import Koa, { BaseContext } from "koa";
 import { FIXTURE_DIR } from "./test-utils";
 import serve from "../lib/koa/static-files";
 
-it("should serve from cwd when root = '.'", () => {
+it("should serve from cwd when root = '.'", async () => {
 	const app = new Koa();
 	app.use(serve("."));
 
-	return supertest(app.callback()).get("/package.json").expect(200);
+	await supertest(app.callback()).get("/package.json").expect(200);
 });
 
-it("should pass to next for directory", () => {
+it("should pass to next for directory", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 	app.use(ctx => ctx.body = "hello");
 
-	return supertest(app.callback())
+	await supertest(app.callback())
 		.get("/static")
 		.expect(200, "hello");
 });
 
 describe("when path is not a file", () => {
-	it("should 404", () => {
+	it("should 404", async () => {
 		const app = new Koa();
 		app.use(serve(FIXTURE_DIR));
 
-		return supertest(app.callback()).get("/something").expect(404);
+		await supertest(app.callback()).get("/something").expect(404);
 	});
 
 	it("should not throw 404 error", async () => {
@@ -45,35 +46,35 @@ describe("when path is not a file", () => {
 	});
 });
 
-it("should prevent access for path outside root", () => {
+it("should prevent access for path outside root", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback()).get("/../../package.json").expect(403);
+	await supertest(app.callback()).get("/../../package.json").expect(403);
 });
 
-it("should pass to next when method is not `GET` or `HEAD`", () => {
+it("should pass to next when method is not `GET` or `HEAD`", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback()).post("/hello.txt").expect(404);
+	await supertest(app.callback()).post("/hello.txt").expect(404);
 });
 
-it("should 400 when path is malformed", () => {
+it("should 400 when path is malformed", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback()).get("/%").expect(400);
+	await supertest(app.callback()).get("/%").expect(400);
 });
 
-it("should serve the file", () => {
+it("should serve the file", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 	app.use((ctx, next) => {
 		return next().then(() => ctx.body = "hey");
 	});
 
-	return supertest(app.callback())
+	await supertest(app.callback())
 		.get("/hello.txt")
 		.set("Accept-Encoding", "deflate, identity")
 		.expect(200)
@@ -81,20 +82,20 @@ it("should serve the file", () => {
 		.expect("world");
 });
 
-it("should set the Content-Type", () => {
+it("should set the Content-Type", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback())
+	await supertest(app.callback())
 		.get("/static/hello.json")
 		.expect("Content-Type", /application\/json/);
 });
 
-it("should return .gz version when requested and if possible", () => {
+it("should return .gz version when requested and if possible", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback())
+	await supertest(app.callback())
 		.get("/hello.txt")
 		.set("Accept-Encoding", "gzip, deflate")
 		.expect(200)
@@ -103,11 +104,11 @@ it("should return .gz version when requested and if possible", () => {
 		.expect("Content-Encoding", "gzip");
 });
 
-it("should return .br version when requested and if possible", () => {
+it("should return .br version when requested and if possible", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback())
+	await supertest(app.callback())
 		.get("/hello.txt")
 		.set("Accept-Encoding", "gzip, deflate, br")
 		.expect(200)
@@ -116,11 +117,11 @@ it("should return .br version when requested and if possible", () => {
 		.expect("Content-Encoding", "br");
 });
 
-it("should return avif image if possible", () => {
+it("should return avif image if possible", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback())
+	await supertest(app.callback())
 		.get("/static/image.png")
 		.set("Accept", "image/webp,image/avif,*/*")
 		.expect(200)
@@ -128,11 +129,11 @@ it("should return avif image if possible", () => {
 		.expect("Content-Length", "7114");
 });
 
-it("should return webp image if possible", () => {
+it("should return webp image if possible", async () => {
 	const app = new Koa();
 	app.use(serve(FIXTURE_DIR));
 
-	return supertest(app.callback())
+	await supertest(app.callback())
 		.get("/static/image.png")
 		.set("Accept", "image/webp,*/*")
 		.expect(200)
@@ -143,7 +144,7 @@ it("should return webp image if possible", () => {
 describe("custom headers", () => {
 
 	it("should accept ctx and path", async () => {
-		const customResponse = jest.fn<void, [BaseContext, string, fs.Stats]>();
+		const customResponse = vi.fn<[BaseContext, string, fs.Stats], void>();
 
 		const app = new Koa();
 		app.use(serve(FIXTURE_DIR, { customResponse }));
@@ -159,7 +160,7 @@ describe("custom headers", () => {
 		expect(call[2].size).toBe(9);
 	});
 
-	it("should add custom headers", () => {
+	it("should add custom headers", async () => {
 		const app = new Koa();
 		app.use(serve(FIXTURE_DIR, {
 			customResponse(ctx) {
@@ -167,7 +168,7 @@ describe("custom headers", () => {
 			},
 		}));
 
-		return supertest(app.callback())
+		await supertest(app.callback())
 			.get("/static/hello.json")
 			.expect(200)
 			.expect("Cache-Control", "public,max-age=666,immutable");

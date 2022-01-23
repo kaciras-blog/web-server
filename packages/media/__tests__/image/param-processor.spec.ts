@@ -1,3 +1,4 @@
+import { expect, it } from "vitest";
 import sharp from "sharp";
 import { crop, resize } from "../../lib/image/param-processor";
 import { ParamsError } from "../../lib/errors";

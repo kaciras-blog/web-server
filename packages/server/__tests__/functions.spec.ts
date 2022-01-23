@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import { combineRegexOr, debounceFirst, once } from "../lib/functions";
 
 describe("debounceFirst", () => {
@@ -70,7 +71,7 @@ describe("once", () => {
 	it("should skip subsequent calls", () => {
 		let counter = 0;
 
-		const func = jest.fn(() => counter++);
+		const func = vi.fn(() => counter++);
 		const wrapped = once(func);
 
 		expect(wrapped()).toBe(0);
@@ -87,7 +88,7 @@ describe("once", () => {
 			return 123456;
 		}
 
-		const func = jest.fn(testFn);
+		const func = vi.fn(testFn);
 		const wrapped = once(func);
 
 		expect(() => wrapped(true)).toThrow();

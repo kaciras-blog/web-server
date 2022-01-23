@@ -1,12 +1,12 @@
+import { describe, expect, it, vi } from "vitest";
 import fs from "fs-extra";
 import supertest from "supertest";
 import Koa from "koa";
 import multer from "@koa/multer";
 import { BadDataError, ParamsError } from "@kaciras-blog/media/lib/errors";
 import { download, DownloadContext, upload } from "../lib/koa/media";
-import { MediaService } from "@kaciras-blog/media/lib/MediaService";
 
-jest.mock("fs");
+vi.mock("fs");
 
 const FILE_PATH = "/photo.png";
 const IMAGE_DATA = Buffer.from("R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==", "base64");
@@ -17,9 +17,9 @@ const file = {
 	mtime: new Date(),
 };
 
-const mockService: jest.MockedObject<MediaService> = {
-	load: jest.fn(),
-	save: jest.fn(),
+const mockService = {
+	load: vi.fn(),
+	save: vi.fn(),
 };
 
 describe("download", () => {

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import FileType from "file-type";
 import sharp from "sharp";
 import { readFixture } from "../test-utils";

@@ -1,21 +1,21 @@
+import { describe, expect, it, MockedObject, vi } from "vitest";
 import { readFixture } from "../test-utils";
 import RasterOptimizer from "../../lib/image/RasterOptimizer";
 import { BadDataError, ProcessorError } from "../../lib/errors";
 import { crop } from "../../lib/image/param-processor";
-import { FileStore } from "../../lib/FileStore";
 import * as encoder from "../../lib/image/encoder";
-import { describe, expect, it, MockedObject, vi } from "vitest";
 
 vi.mock("../../lib/image/param-processor", () => ({
 	crop: vi.fn(),
 }));
+
 vi.mock("../../lib/image/encoder", () => ({
+	optimize: vi.fn(),
 	encodeWebp: vi.fn(),
 	encodeAVIF: vi.fn(),
-	optimize: vi.fn(),
 }));
 
-const store: MockedObject<FileStore> = {
+const store = {
 	save: vi.fn(),
 	load: vi.fn(),
 	putCache: vi.fn(),
