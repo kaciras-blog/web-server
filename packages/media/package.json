@@ -11,6 +11,7 @@
 	"engines": {
 		"node": ">=17"
 	},
+	"type": "module",
 	"files": [
 		"bin",
 		"lib"

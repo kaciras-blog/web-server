@@ -4,15 +4,22 @@ import { BadDataError, ProcessorError } from "../../lib/errors";
 import { crop } from "../../lib/image/param-processor";
 import { FileStore } from "../../lib/FileStore";
 import * as encoder from "../../lib/image/encoder";
+import { describe, expect, it, MockedObject, vi } from "vitest";
 
-jest.mock("../../lib/image/param-processor");
-jest.mock("../../lib/image/encoder");
+vi.mock("../../lib/image/param-processor", () => ({
+	crop: vi.fn(),
+}));
+vi.mock("../../lib/image/encoder", () => ({
+	encodeWebp: vi.fn(),
+	encodeAVIF: vi.fn(),
+	optimize: vi.fn(),
+}));
 
-const store: jest.MockedObject<FileStore> = {
-	save: jest.fn(),
-	load: jest.fn(),
-	putCache: jest.fn(),
-	getCache: jest.fn(),
+const store: MockedObject<FileStore> = {
+	save: vi.fn(),
+	load: vi.fn(),
+	putCache: vi.fn(),
+	getCache: vi.fn(),
 };
 
 const saveRequest = {
@@ -32,17 +39,17 @@ const loadRequest = {
 const optimizer = new RasterOptimizer(store);
 
 describe("check", () => {
-	test.each(
-		["jp2", "html", "", "../.."],
-	)("should restrict file type %#", (type) => {
-		const promise = optimizer.check({
-			type,
-			parameters: {},
-			buffer: Buffer.alloc(0),
-		});
+	for (const type of ["jp2", "html", "", "../.."]) {
+		it("should restrict file type %#", () => {
+			const promise = optimizer.check({
+				type,
+				parameters: {},
+				buffer: Buffer.alloc(0),
+			});
 
-		return expect(promise).rejects.toThrow(BadDataError);
-	});
+			return expect(promise).rejects.toThrow(BadDataError);
+		});
+	}
 
 	it("should normalize type", async () => {
 		const request = {
@@ -55,7 +62,7 @@ describe("check", () => {
 
 	it("should crop the image", async () => {
 		const cropped = Buffer.alloc(0);
-		const fn = crop as jest.Mock;
+		const fn = crop as any;
 		fn.mockReturnValue({
 			toBuffer() { return cropped; },
 		});
@@ -72,7 +79,7 @@ describe("check", () => {
 });
 
 describe("buildCache", () => {
-	const { optimize, encodeWebp, encodeAVIF } = encoder as jest.MockedObject<typeof encoder>;
+	const { optimize, encodeWebp, encodeAVIF } = encoder as MockedObject<typeof encoder>;
 
 	it("should optimize the image", async () => {
 		optimize.mockResolvedValue(Buffer.alloc(3));
