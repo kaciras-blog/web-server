@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/media",
-	"version": "2.0.0-alpha.1",
+	"version": "2.0.0-alpha.2",
 	"description": "Media processing library for Kaciras Blog",
 	"license": "MIT",
 	"repository": {
