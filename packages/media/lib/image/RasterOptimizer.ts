@@ -3,10 +3,10 @@ import sharp, { Sharp } from "sharp";
 import { getLogger } from "log4js";
 import { BadDataError, ProcessorError } from "../errors";
 import { LoadRequest, SaveRequest } from "../MediaService";
-import { crop } from "./param-processor";
-import { encodeAVIF, encodeWebp, optimize } from "./encoder";
 import { Optimizer } from "../CachedService";
 import { FileStore } from "../FileStore";
+import { crop } from "./param-processor";
+import { encodeAVIF, encodeWebp, optimizeRaster } from "./encoder";
 
 const logger = getLogger("Image");
 
@@ -54,7 +54,7 @@ export default class RasterOptimizer implements Optimizer {
 
 	async buildCache(name: string, { buffer, type }: SaveRequest) {
 		const [base, ...modern] = await Promise.all([
-			optimize(buffer, type),
+			optimizeRaster(buffer, type),
 			encodeAVIF(buffer).catch(unprocessable),
 			encodeWebp(buffer).catch(unprocessable),
 		]);

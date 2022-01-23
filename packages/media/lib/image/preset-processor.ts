@@ -22,7 +22,7 @@ async function getPresetArgs(image: Sharp) {
  *
  * @param presets 预设集合
  */
-export default function createPresetCropFilter(presets: Presets) {
+export default function createPresetCropper(presets: Presets) {
 
 	// 返回的图片格式跟原图一样
 	return async (buffer: Buffer, name: string) => {

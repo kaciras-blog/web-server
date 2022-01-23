@@ -77,7 +77,7 @@ export function encodeAVIF(buffer: Buffer) {
  * @param type 图片的格式
  * @return 优化后的图片
  */
-export async function optimize(buffer: Buffer, type: string) {
+export async function optimizeRaster(buffer: Buffer, type: string) {
 	switch (type) {
 		case "gif":
 			if (!isGif(buffer)) {

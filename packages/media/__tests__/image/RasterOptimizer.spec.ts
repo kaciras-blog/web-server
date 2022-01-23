@@ -10,9 +10,9 @@ vi.mock("../../lib/image/param-processor", () => ({
 }));
 
 vi.mock("../../lib/image/encoder", () => ({
-	optimize: vi.fn(),
 	encodeWebp: vi.fn(),
 	encodeAVIF: vi.fn(),
+	optimizeRaster: vi.fn(),
 }));
 
 const store = {
@@ -40,7 +40,7 @@ const optimizer = new RasterOptimizer(store);
 
 describe("check", () => {
 	for (const type of ["jp2", "html", "", "../.."]) {
-		it("should restrict file type %#", () => {
+		it(`should restrict file type ${type}`, () => {
 			const promise = optimizer.check({
 				type,
 				parameters: {},
@@ -79,10 +79,10 @@ describe("check", () => {
 });
 
 describe("buildCache", () => {
-	const { optimize, encodeWebp, encodeAVIF } = encoder as MockedObject<typeof encoder>;
+	const { optimizeRaster, encodeWebp, encodeAVIF } = encoder as MockedObject<typeof encoder>;
 
 	it("should optimize the image", async () => {
-		optimize.mockResolvedValue(Buffer.alloc(3));
+		optimizeRaster.mockResolvedValue(Buffer.alloc(3));
 		encodeWebp.mockResolvedValue(Buffer.alloc(2));
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 
@@ -96,7 +96,7 @@ describe("buildCache", () => {
 	});
 
 	it("should ignore unprocessable", async () => {
-		optimize.mockResolvedValue(Buffer.alloc(1));
+		optimizeRaster.mockResolvedValue(Buffer.alloc(1));
 		encodeWebp.mockRejectedValue(new ProcessorError());
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 
@@ -105,7 +105,7 @@ describe("buildCache", () => {
 	});
 
 	it("should save new format only if it smaller than old", async () => {
-		optimize.mockResolvedValue(Buffer.alloc(1));
+		optimizeRaster.mockResolvedValue(Buffer.alloc(1));
 		encodeWebp.mockResolvedValue(Buffer.alloc(1));
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 

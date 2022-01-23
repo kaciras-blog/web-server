@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import FileType from "file-type";
 import sharp from "sharp";
 import { readFixture } from "../test-utils";
-import { encodeAVIF, encodeWebp, optimize } from "../../lib/image/encoder";
+import { encodeAVIF, encodeWebp, optimizeRaster } from "../../lib/image/encoder";
 import { BadDataError, ParamsError, ProcessorError } from "../../lib/errors";
 
 it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
-	return expect(optimize(buffer, "invalid")).rejects.toBeInstanceOf(ParamsError);
+	return expect(optimizeRaster(buffer, "invalid")).rejects.toBeInstanceOf(ParamsError);
 });
 
 // 对于非图片数据的输入，应当抛出 MediaError 异常
@@ -15,7 +15,7 @@ describe("For non-image data", () => {
 	const buffer = Buffer.from("invalid");
 
 	function testFor(type: string) {
-		return expect(optimize(buffer, type)).rejects.toBeInstanceOf(BadDataError);
+		return expect(optimizeRaster(buffer, type)).rejects.toBeInstanceOf(BadDataError);
 	}
 
 	it("should throw jpg", () => testFor("jpg"));
@@ -28,7 +28,7 @@ describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
 		const buffer = readFixture("bad_image." + srcType);
-		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
+		await expect(optimizeRaster(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
 	}
 
 	it("should throws on optimize jpg", () => testFor("jpg", "jpg"));

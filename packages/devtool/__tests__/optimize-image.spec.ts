@@ -1,8 +1,7 @@
 import { expect, it } from "vitest";
 import fs from "fs-extra";
-import { build, InlineConfig } from "vite";
 import { RollupOutput } from "rollup";
-import { resolveFixture, testEntry } from "./test-utils";
+import { resolveFixture, runVite, testEntry } from "./test-utils";
 import optimizeImage from "../lib/plugin/optimize-image";
 
 /**
@@ -42,22 +41,6 @@ async function expectSmaller(bundle: RollupOutput, name: string, srcName = name)
 		return expect.fail(`${name} is not a asset`);
 	}
 	expect(optimized.source.length).toBeLessThan(source.size);
-}
-
-export function runVite(config: InlineConfig, entry?: string) {
-	const base: InlineConfig = {
-		logLevel: "warn",
-		build: {
-			rollupOptions: {
-				input: entry,
-				output: {
-					assetFileNames: "[name].[ext]",
-				},
-			},
-			write: false,
-		},
-	};
-	return build({ ...base, ...config }) as Promise<RollupOutput>;
 }
 
 it("should compress images", async () => {
