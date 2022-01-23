@@ -1,6 +1,6 @@
 # 项目简介
 
-Kaciras个人博客的开发套件，包含了webpack配置，以及提供对热重载支持。
+Kaciras Blog 的开发套件，包含了构建配置，支持服务端渲染和热重载。
 
 # 用法
 
@@ -14,7 +14,7 @@ npm install @kaciras-blog/devtool
 {
   "scripts": {
     "serve": "blog-devtool serve",
-    "build": "blog-devtool build",
+    "build": "blog-devtool build"
   }
 }
 ```
