@@ -1,10 +1,10 @@
-import vm from "vm";
 import { EventEmitter } from "events";
 import log4js from "log4js";
-import MFS from "memory-fs";
+import { join } from "path";
 import { Context } from "koa";
 import webpack, { Compiler, Configuration, Watching } from "webpack";
 import { renderPage } from "@kaciras-blog/server/lib/koa/vue-ssr";
+import { readFileSync } from "fs-extra";
 
 const logger = log4js.getLogger("dev");
 
@@ -24,7 +24,7 @@ export class ClientSSRHotUpdatePlugin extends EventEmitter {
 	manifest: any;
 	template: any;
 
-	constructor(manifestName = "ssr-manifest.json",  templateName = "index.template.html") {
+	constructor(manifestName = "ssr-manifest.json", templateName = "index.template.html") {
 		super();
 		this.manifestName = manifestName;
 		this.templateName = templateName;
@@ -35,8 +35,6 @@ export class ClientSSRHotUpdatePlugin extends EventEmitter {
 			if (compilation.getStats().hasErrors()) {
 				return;
 			}
-			this.manifest = compilation.assets[this.manifestName];
-			this.template = compilation.assets[this.templateName];
 			this.emit("update");
 		});
 	}
@@ -84,7 +82,7 @@ export default class VueSSRHotReloader {
 	 * @return 中间件
 	 */
 	get koaMiddleware() {
-		return (ctx: Context) => renderPage(this.template, this.clientManifest, this.serverBundle, ctx);
+		return (ctx: Context) => renderPage(this.template, this.serverBundle, this.clientManifest, ctx);
 	}
 
 	close(callback = () => {}) {
@@ -114,13 +112,11 @@ export default class VueSSRHotReloader {
 		const hotUpdatePlugin = plugin as ClientSSRHotUpdatePlugin;
 
 		const updateClientResources = () => {
-			const { template, manifest } = hotUpdatePlugin;
+			const p = this.clientConfig.output!.path as string;
 
 			// 新版 html-loader 在监视模式下不输出未变动的文件
-			if (template) {
-				this.template = template.source().toString();
-			}
-			this.clientManifest = JSON.parse(manifest.source());
+			this.template = readFileSync(join(p, "index.template.html"), "utf8");
+			this.clientManifest = require(join(p, "ssr-manifest.json"));
 		};
 
 		hotUpdatePlugin.on("update", updateClientResources);
@@ -135,7 +131,8 @@ export default class VueSSRHotReloader {
 
 	private initServerCompiler() {
 		const compiler = webpack(this.serverConfig);
-		compiler.outputFileSystem = new MFS();
+
+		const fn = join(this.serverConfig.output!.path, "server-bundle.js");
 
 		return new Promise<void>(resolve => {
 			this.watching = compiler.watch({}, (err, stats) => {
@@ -147,8 +144,14 @@ export default class VueSSRHotReloader {
 					logger.error("Server side build failed with errors.");
 					return;
 				}
-				const x = stats!.compilation.assets["entry-server.js"].source();
-				this.serverBundle =vm.runInThisContext(x as string);
+
+				// const code = readFileSync(fn, "utf8");
+				// const ctx = Object.create(global);
+				// ctx.require = require;
+				// ctx.module = { exports: {} };
+				// runInNewContext(code, ctx);
+
+				this.serverBundle = require(fn).default;
 				resolve();
 			});
 		});

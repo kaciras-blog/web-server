@@ -32,6 +32,7 @@ export async function createHotMiddleware(config: Configuration) {
 
 	const compiler = webpack(config);
 	const devMiddleware = newDevMiddleware(compiler, {
+		writeToDisk: true,
 		stats: "minimal",
 		publicPath: config.output.publicPath as string,
 	});
@@ -68,8 +69,8 @@ export async function createHotMiddleware(config: Configuration) {
 	};
 
 	(middleware as ClosableMiddleware).close = () => {
-		devMiddleware.close();
 		hotMiddleware.close();
+		devMiddleware.close(() => {});
 	};
 
 	return middleware as ClosableMiddleware;
