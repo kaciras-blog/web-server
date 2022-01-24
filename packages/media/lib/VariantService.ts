@@ -15,6 +15,11 @@ function fileOf(base: string, ext: string, codec?: string) {
 
 interface SaveParams {
 
+	/**
+	 * 文件的底层编码，比如 av1,vp9。
+	 *
+	 * TODO: 多个流都区分编码咋办，比如视频 av1，音频 opus？
+	 */
 	codec?: string;
 
 	/**

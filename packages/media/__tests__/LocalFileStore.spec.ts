@@ -9,7 +9,7 @@ const root = fs.mkdtempSync(join(tmpdir(), "test-"));
 const config = {
 	data: join(root, "data"),
 	cache: join(root, "cache"),
-	logs: "UNUSED",
+	logs: join(root, "logs"),
 };
 
 let store: LocalFileStore;

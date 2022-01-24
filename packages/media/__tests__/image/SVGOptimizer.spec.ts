@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import SVGOptimizer from "../../lib/image/SVGOptimizer";
-import { BadDataError } from "../../lib/errors";
+import { BadDataError } from "../../lib";
 import { readFixture } from "../test-utils";
 
 const small = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>';

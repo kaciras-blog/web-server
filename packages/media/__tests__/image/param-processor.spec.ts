@@ -1,7 +1,6 @@
 import { expect, it } from "vitest";
 import sharp from "sharp";
-import { crop, resize } from "../../lib/image/param-processor";
-import { ParamsError } from "../../lib/errors";
+import { crop, ParamsError, resize } from "../../lib";
 import { readFixture } from "../test-utils";
 
 const buffer = readFixture("tile_16x16.png");

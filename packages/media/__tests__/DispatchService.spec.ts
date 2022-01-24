@@ -1,7 +1,6 @@
 import { expect, it, vi } from "vitest";
+import { BadDataError, LoadRequest, SaveRequest } from "../lib";
 import DispatchService from "../lib/DispatchService";
-import { LoadRequest, SaveRequest } from "../lib/MediaService";
-import { BadDataError } from "../lib/errors";
 
 const service1 = {
 	load: vi.fn(),
