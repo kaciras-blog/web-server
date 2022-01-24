@@ -1,5 +1,5 @@
 import { Sharp } from "sharp";
-import { ParamsError } from "../errors";
+import { ParamsError } from "../errors.js";
 
 /**
  * 裁剪参数格式 <上>-<左>-<宽>-<高>，均为正整数。

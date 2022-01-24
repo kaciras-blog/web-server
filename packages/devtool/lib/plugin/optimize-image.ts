@@ -1,9 +1,9 @@
-import { minifyPreset } from "../webpack/reactive-svg-loader";
 import { extname, parse } from "path";
-import { encodeWebp, optimize } from "@kaciras-blog/media/lib/image/encoder";
 import * as svgo from "svgo";
 import { OutputAsset, OutputBundle } from "rollup";
 import { Plugin } from "vite";
+import { encodeWebp, optimizeRaster } from "@kaciras-blog/media";
+import { minifyPreset } from "./vue-svg-component.js";
 
 const svgoConfig = {
 	plugins: [minifyPreset],
@@ -24,7 +24,7 @@ const optimizers: Optimizer[] = [
 		async optimize(assets: AssetMap, name: string) {
 			const buffer = assets[name].source as Buffer;
 			const type = extname(name).slice(1);
-			assets[name].source = await optimize(buffer, type);
+			assets[name].source = await optimizeRaster(buffer, type);
 		},
 	},
 	{

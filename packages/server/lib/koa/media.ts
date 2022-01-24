@@ -1,11 +1,10 @@
 import { ParsedUrlQuery } from "querystring";
 import { Context, ExtendableContext } from "koa";
-import { getLogger } from "log4js";
+import log4js from "log4js";
 import mime from "mime-types";
-import { MediaError } from "@kaciras-blog/media/lib/errors";
-import { MediaService } from "@kaciras-blog/media/lib/MediaService";
+import { MediaError, MediaService } from "@kaciras-blog/media";
 
-const logger = getLogger("media");
+const logger = log4js.getLogger("media");
 
 /**
  * 下载图片时的 Koa 上下文，文件名通过 ctx.params.name 来传递。

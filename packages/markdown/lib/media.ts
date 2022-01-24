@@ -31,8 +31,8 @@
  * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
  */
 import MarkdownIt from "markdown-it";
-import { unescapeMd } from "markdown-it/lib/common/utils";
-import StateBlock from "markdown-it/lib/rules_block/state_block";
+import { unescapeMd } from "markdown-it/lib/common/utils.js";
+import StateBlock from "markdown-it/lib/rules_block/state_block.js";
 
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
 	const offset = state.tShift[startLine] + state.bMarks[startLine];

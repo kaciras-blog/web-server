@@ -1,6 +1,6 @@
 import sharp, { Metadata, Sharp, Stats } from "sharp";
-import { BadDataError, ParamsError } from "../errors";
-import { crop } from "./param-processor";
+import { BadDataError, ParamsError } from "../errors.js";
+import { crop } from "./param-processor.js";
 
 /**
  * 预设集合，所有的裁剪方式都事先在这里配置，然后才能使用。

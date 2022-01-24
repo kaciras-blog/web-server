@@ -1,10 +1,8 @@
 import { join, parse } from "path";
-import { readdirSync, readFileSync } from "fs-extra";
+import { readdirSync, readFileSync } from "fs";
 import { Presets, SingleBar } from "cli-progress";
-import { ResolvedConfig } from "../../../server/lib/config";
-import LocalFileStore from "../LocalFileStore";
-import SVGOptimizer from "../image/SVGOptimizer";
-import RasterOptimizer from "../image/RasterOptimizer";
+import { ResolvedConfig } from "../../../server/lib/config.js";
+import { LocalFileStore, RasterOptimizer, SVGOptimizer } from "../index.js";
 
 const parameters = {};
 

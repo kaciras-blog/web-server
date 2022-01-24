@@ -2,9 +2,9 @@ import sharp, { WebpOptions } from "sharp";
 import Pngquant from "imagemin-pngquant";
 import Gifsicle from "imagemin-gifsicle";
 import mozjpeg from "mozjpeg";
-import execa from "execa";
+import { execa } from "execa";
 import isPng from "is-png";
-import { BadDataError, ParamsError, ProcessorError } from "../errors";
+import { BadDataError, ParamsError, ProcessorError } from "../errors.js";
 
 const pngquant = Pngquant({ strip: true });
 const gifsicle = Gifsicle({ optimizationLevel: 3 });

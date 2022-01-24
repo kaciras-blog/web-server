@@ -2,8 +2,7 @@ import { describe, expect, it } from "vitest";
 import FileType from "file-type";
 import sharp from "sharp";
 import { readFixture } from "../test-utils";
-import { encodeAVIF, encodeWebp, optimizeRaster } from "../../lib/image/encoder";
-import { BadDataError, ParamsError, ProcessorError } from "../../lib/errors";
+import { BadDataError, encodeAVIF, encodeWebp, optimizeRaster, ParamsError, ProcessorError } from "../../lib";
 
 it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");

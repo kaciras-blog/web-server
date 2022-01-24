@@ -1,4 +1,4 @@
-import { FileInfo } from "./FileStore";
+import { FileInfo } from "./FileStore.js";
 
 export type Params = Record<string, string>;
 
@@ -49,6 +49,9 @@ export interface LoadResponse {
 	encoding?: string;
 }
 
+/**
+ *
+ */
 export interface MediaService {
 
 	save(request: SaveRequest): Promise<string>;

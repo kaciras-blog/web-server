@@ -1,6 +1,6 @@
 import { extname } from "path";
-import { LoadRequest, MediaService, SaveRequest } from "./MediaService";
-import { BadDataError } from "./errors";
+import { LoadRequest, MediaService, SaveRequest } from "./MediaService.js";
+import { BadDataError } from "./errors.js";
 
 type DispatchMap = Record<string, MediaService>;
 

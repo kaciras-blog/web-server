@@ -1,7 +1,7 @@
-import { hashName } from "./common";
-import { LoadRequest, LoadResponse, MediaService, SaveRequest } from "./MediaService";
-import { FileStore } from "./FileStore";
 import { extname } from "path";
+import { hashName } from "./common.js";
+import { LoadRequest, LoadResponse, MediaService, SaveRequest } from "./MediaService.js";
+import { FileStore } from "./FileStore.js";
 
 export interface Optimizer {
 

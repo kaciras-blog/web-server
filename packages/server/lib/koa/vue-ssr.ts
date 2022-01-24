@@ -5,7 +5,7 @@ import log4js from "log4js";
 import path from "path";
 import { App } from "vue";
 import { renderToString, SSRContext } from "@vue/server-renderer";
-import AppBuilder from "../AppBuilder";
+import AppBuilder from "../AppBuilder.js";
 
 const logger = log4js.getLogger("SSR");
 

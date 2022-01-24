@@ -2,10 +2,10 @@ import process from "process";
 import path from "path";
 import parseArgs from "minimist";
 import log4js from "log4js";
-import { buildCache } from "@kaciras-blog/media/lib/command/build-cache";
-import run from "./command/run";
-import { resolveConfig, ResolvedConfig } from "./config";
-import { once } from "./functions";
+import { buildCache } from "@kaciras-blog/media";
+import run from "./command/run.js";
+import { resolveConfig, ResolvedConfig } from "./config.js";
+import { once } from "./functions.js";
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。

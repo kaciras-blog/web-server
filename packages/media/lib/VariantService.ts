@@ -1,8 +1,8 @@
 import { basename, extname } from "path";
-import { BadDataError } from "./errors";
-import { hashName } from "./common";
-import { LoadRequest, MediaService, SaveRequest } from "./MediaService";
-import { FileStore } from "./FileStore";
+import { BadDataError } from "./errors.js";
+import { hashName } from "./common.js";
+import { LoadRequest, MediaService, SaveRequest } from "./MediaService.js";
+import { FileStore } from "./FileStore.js";
 
 function splitName(name: string) {
 	const ext = extname(name);

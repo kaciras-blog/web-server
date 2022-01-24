@@ -1,14 +1,14 @@
 import { basename, extname } from "path";
 import sharp, { Sharp } from "sharp";
-import { getLogger } from "log4js";
-import { BadDataError, ProcessorError } from "../errors";
-import { LoadRequest, SaveRequest } from "../MediaService";
-import { Optimizer } from "../CachedService";
-import { FileStore } from "../FileStore";
-import { crop } from "./param-processor";
-import { encodeAVIF, encodeWebp, optimizeRaster } from "./encoder";
+import log4js from "log4js";
+import { BadDataError, ProcessorError } from "../errors.js";
+import { LoadRequest, SaveRequest } from "../MediaService.js";
+import { Optimizer } from "../CachedService.js";
+import { FileStore } from "../FileStore.js";
+import { crop } from "./param-processor.js";
+import { encodeAVIF, encodeWebp, optimizeRaster } from "./encoder.js";
 
-const logger = getLogger("Image");
+const logger = log4js.getLogger("Image");
 
 /**
  * 能够处理的图片格式，不支持 WebP 作为输入。
