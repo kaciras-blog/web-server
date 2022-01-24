@@ -20,8 +20,8 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/markdown": "^2.0.0-alpha.1",
-		"@kaciras-blog/media": "^2.0.0-alpha.1",
+		"@kaciras-blog/media": "workspace:^",
+		"@kaciras-blog/markdown": "workspace:^",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^10.1.1",
 		"@vue/server-renderer": "^3.2.29",

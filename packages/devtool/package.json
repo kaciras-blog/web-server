@@ -21,8 +21,8 @@
 		"blog-devtool": "bin/blog-devtool.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/media": "^2.0.0-alpha.1",
-		"@kaciras-blog/server": "^2.0.0-alpha.1",
+		"@kaciras-blog/media": "workspace:^",
+		"@kaciras-blog/server": "workspace:^",
 		"@vitejs/plugin-vue": "^2.1.0",
 		"@vue/compiler-sfc": "^3.2.29",
 		"@vue/server-renderer": "^3.2.29",
@@ -36,6 +36,7 @@
 	},
 	"devDependencies": {
 		"@types/fs-extra": "^9.0.13",
+		"@types/svgo": "^2.6.1",
 		"@vue/server-renderer": "^3.2.21",
 		"less": "^4.1.2",
 		"rollup": "^2.66.0",

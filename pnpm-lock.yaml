@@ -22,9 +22,10 @@ importers:
 
   packages/devtool:
     specifiers:
-      '@kaciras-blog/media': ^2.0.0-alpha.1
-      '@kaciras-blog/server': ^2.0.0-alpha.1
+      '@kaciras-blog/media': workspace:^
+      '@kaciras-blog/server': workspace:^
       '@types/fs-extra': ^9.0.13
+      '@types/svgo': ^2.6.1
       '@vitejs/plugin-vue': ^2.1.0
       '@vue/compiler-sfc': ^3.2.29
       '@vue/server-renderer': ^3.2.29
@@ -39,8 +40,8 @@ importers:
       vite-plugin-compression: ^0.4.0
       vue: next
     dependencies:
-      '@kaciras-blog/media': 2.0.0-alpha.2
-      '@kaciras-blog/server': 2.0.0-alpha.2
+      '@kaciras-blog/media': link:../media
+      '@kaciras-blog/server': link:../server
       '@vitejs/plugin-vue': 2.1.0_vite@2.7.13+vue@3.2.29
       '@vue/compiler-sfc': 3.2.29
       '@vue/server-renderer': 3.2.29_vue@3.2.29
@@ -53,6 +54,7 @@ importers:
       vite-plugin-compression: 0.4.0_vite@2.7.13
     devDependencies:
       '@types/fs-extra': 9.0.13
+      '@types/svgo': 2.6.1
       less: 4.1.2
       rollup: 2.66.0
       vue: 3.2.29
@@ -108,8 +110,8 @@ importers:
 
   packages/server:
     specifiers:
-      '@kaciras-blog/markdown': ^2.0.0-alpha.1
-      '@kaciras-blog/media': ^2.0.0-alpha.1
+      '@kaciras-blog/markdown': workspace:^
+      '@kaciras-blog/media': workspace:^
       '@koa/multer': ^3.0.0
       '@koa/router': ^10.1.1
       '@types/combined-stream': ^1.0.3
@@ -153,7 +155,7 @@ importers:
       vue: next
     dependencies:
       '@kaciras-blog/markdown': link:../markdown
-      '@kaciras-blog/media': 2.0.0-alpha.2
+      '@kaciras-blog/media': link:../media
       '@koa/multer': 3.0.0_multer@1.4.4
       '@koa/router': 10.1.1
       '@vue/server-renderer': 3.2.29_vue@3.2.29
@@ -266,31 +268,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dev: true
 
-  /@kaciras-blog/markdown/2.0.0-alpha.1:
-    resolution: {integrity: sha512-vM1zWWPGvD95XWyd9CKxp2C9rG6WAjCTh21ssrqLj36ghUb5t3tdDO0o2n2HNYbW8nqaV//+c53PxJm+jCguOA==}
-    engines: {node: '>=17'}
-    dev: false
-
-  /@kaciras-blog/media/2.0.0-alpha.2:
-    resolution: {integrity: sha512-lRonlf+vtvSMkrw8MjGcxHLVbQK9anzsj20vJkWVES+gF3NKubr29Z+lG9eUtyj12hUtq4DIhZaB5bLc8kZutA==}
-    engines: {node: '>=17'}
-    dependencies:
-      '@kaciras-blog/nativelib': 0.3.1
-      cli-progress: 3.10.0
-      execa: 5.1.1
-      fs-extra: 10.0.0
-      imagemin-gifsicle: 7.0.0
-      imagemin-pngquant: 9.0.2
-      is-png: 2.0.0
-      log4js: 6.4.1
-      mozjpeg: 7.1.1
-      sharp: 0.29.3
-      svgo: 2.8.0
-    transitivePeerDependencies:
-      - debug
-      - supports-color
-    dev: false
-
   /@kaciras-blog/nativelib/0.3.1:
     resolution: {integrity: sha512-IFQmS5OtUEwSJU1G4OqwuHROwMjr4QQbINJFiSNj8T7lA8vibZFkRwmz3yhZYX4X7AE9hZX5olN3CpiyOQol+A==}
     engines: {node: '>=17'}
@@ -301,42 +278,6 @@ packages:
       tar-fs: 2.1.1
     transitivePeerDependencies:
       - debug
-    dev: false
-
-  /@kaciras-blog/server/2.0.0-alpha.2:
-    resolution: {integrity: sha512-YmZa7L4HPGNuZUaCE17vsmYfCU3bE1/A2SV84+gv6KPXRinm7wogNswqgOsfnhksDsiqbNiVA+qxbEy9CDVG8g==}
-    engines: {node: '>=17'}
-    hasBin: true
-    dependencies:
-      '@kaciras-blog/markdown': 2.0.0-alpha.1
-      '@kaciras-blog/media': 2.0.0-alpha.2
-      '@koa/multer': 3.0.0_multer@1.4.4
-      '@koa/router': 10.1.1
-      '@vue/server-renderer': 3.2.29_vue@3.2.29
-      axios: 0.25.0
-      combined-stream: 1.0.8
-      feed: 4.2.2
-      fs-extra: 10.0.0
-      hash-sum: 2.0.0
-      http-errors: 2.0.0
-      koa: 2.13.4
-      koa-bodyparser: 4.3.0
-      koa-compose: 4.1.0
-      koa-compress: 5.1.0
-      koa-conditional-get: 3.0.0
-      log4js: 6.4.1
-      markdown-it: 12.3.2
-      markdown-it-toc-done-right: 4.2.0
-      minimist: 1.2.5
-      multer: 1.4.4
-      range-parser: 1.2.1
-      replace-ext: 2.0.0
-      sitemap: 7.1.0
-      source-map-support: 0.5.21
-      vue: 3.2.29
-    transitivePeerDependencies:
-      - debug
-      - supports-color
     dev: false
 
   /@kaciras/eslint-config-core/2.3.0_eslint@8.7.0:
@@ -1551,6 +1492,12 @@ packages:
     resolution: {integrity: sha512-uci4Esokrw9qGb9bvhhSVEjd6rkny/dk5PK/Qz4yxKiyppEI+dOPlNrZBahE3i+PoKFYyDxChVXZ/ysS/nrm1Q==}
     dependencies:
       '@types/superagent': 4.1.14
+    dev: true
+
+  /@types/svgo/2.6.1:
+    resolution: {integrity: sha512-4BfUnd19L25BD2iRyZTNuG4pfL9HBs+rvF7zp5maKhbX42uOpc5prGdBXXmCdHlVZfTWq8pNP/vxQt9v8ACxqQ==}
+    dependencies:
+      '@types/node': 17.0.10
     dev: true
 
   /@typescript-eslint/eslint-plugin/5.10.0_706fb07ce74b1db611f19a02ad2ce784:
@@ -4969,6 +4916,7 @@ packages:
   /make-dir/2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
     engines: {node: '>=6'}
+    requiresBuild: true
     dependencies:
       pify: 4.0.1
       semver: 5.7.1
@@ -5020,7 +4968,7 @@ packages:
       minipass-fetch: 1.4.1
       minipass-flush: 1.0.5
       minipass-pipeline: 1.2.4
-      negotiator: 0.6.3
+      negotiator: 0.6.2
       promise-retry: 2.0.1
       socks-proxy-agent: 6.1.1
       ssri: 8.0.1
@@ -5278,16 +5226,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /mozjpeg/7.1.1:
-    resolution: {integrity: sha512-iIDxWvzhWvLC9mcRJ1uSkiKaj4drF58oCqK2bITm5c2Jt6cJ8qQjSSru2PCaysG+hLIinryj8mgz5ZJzOYTv1A==}
-    engines: {node: '>=10'}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      bin-build: 3.0.0
-      bin-wrapper: 4.1.0
-    dev: false
-
   /mozjpeg/8.0.0:
     resolution: {integrity: sha512-Ca2Yhah9hG0Iutgsn8MOrAl37P9ThnKsJatjXoWdUO+8X8GeG/6ahvHZrTyqvbs6leMww1SauWUCao/L9qBuFQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -5362,12 +5300,6 @@ packages:
   /negotiator/0.6.2:
     resolution: {integrity: sha512-hZXc7K2e+PgeI1eDBe/10Ard4ekbfrrqG8Ep+8Jmf4JID2bNg7NvCPOZN+kfF574pFQI7mum2AUqDidoKqcTOw==}
     engines: {node: '>= 0.6'}
-    dev: false
-
-  /negotiator/0.6.3:
-    resolution: {integrity: sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==}
-    engines: {node: '>= 0.6'}
-    dev: true
 
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
@@ -7622,7 +7554,7 @@ packages:
   /wide-align/1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
     dependencies:
-      string-width: 1.0.2
+      string-width: 4.2.3
 
   /word-wrap/1.2.3:
     resolution: {integrity: sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==}
