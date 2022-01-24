@@ -13,7 +13,6 @@
 	},
 	"type": "module",
 	"files": [
-		"bin",
 		"lib"
 	],
 	"main": "lib/index.js",
@@ -21,13 +20,13 @@
 	"dependencies": {
 		"@kaciras-blog/nativelib": "^0.3.1",
 		"cli-progress": "^3.10.0",
-		"execa": "^5.1.1",
+		"execa": "^6.0.0",
 		"fs-extra": "^10.0.0",
 		"imagemin-gifsicle": "^7.0.0",
 		"imagemin-pngquant": "^9.0.2",
-		"is-png": "^2.0.0",
-		"log4js": "^6.4.0",
-		"mozjpeg": "^7.1.1",
+		"is-png": "^3.0.1",
+		"log4js": "^6.4.1",
+		"mozjpeg": "^8.0.0",
 		"sharp": "^0.29.3",
 		"svgo": "^2.8.0"
 	},
@@ -38,7 +37,6 @@
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.29.5",
-		"@types/svgo": "^2.6.1",
-		"file-type": "^16.5.3"
+		"file-type": "^17.1.1"
 	}
 }
