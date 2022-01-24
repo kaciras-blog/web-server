@@ -1,15 +1,12 @@
 import { join } from "path";
-import { InputOptions } from "rollup";
-import { Plugin } from "vite";
+import { RollupOutput } from "rollup";
+import { build, InlineConfig, Plugin } from "vite";
 
-const TE_ID = resolveFixture("_TEST_ENTRY_");
+const TE_ID = resolveFixture("_TEST_ENTRY_.js");
 
 export function testEntry(code: string): Plugin {
 	return {
 		name: "test-entry",
-		options(options: InputOptions) {
-			return { ...options, input: TE_ID };
-		},
 		resolveId(source: string) {
 			return source === TE_ID ? source : null;
 		},
@@ -20,6 +17,25 @@ export function testEntry(code: string): Plugin {
 			return { code, moduleSideEffects: "no-treeshake" };
 		},
 	};
+}
+
+export function runVite(config: InlineConfig, entry = TE_ID) {
+	const base: InlineConfig = {
+		logLevel: "warn",
+		build: {
+			rollupOptions: {
+				input: entry,
+				output: {
+
+					entryFileNames: "[name].js",
+					chunkFileNames: "[name].js",
+					assetFileNames: "[name].[ext]",
+				},
+			},
+			write: false,
+		},
+	};
+	return build({ ...base, ...config }) as Promise<RollupOutput>;
 }
 
 /**
