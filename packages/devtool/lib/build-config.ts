@@ -1,6 +1,7 @@
 import { cwd } from "process";
 import path from "path";
 import { ConfigEnv, defineConfig } from "vite";
+import { visualizer } from "rollup-plugin-visualizer";
 import vue from "@vitejs/plugin-vue";
 import compress from "vite-plugin-compression";
 import { ResolvedDevConfig } from "./options.js";
@@ -41,6 +42,8 @@ function createConfig(options: ResolvedDevConfig, env: ConfigEnv) {
 				// },
 			}),
 			vueSvgComponent(),
+
+			options.build.bundleAnalyzer && visualizer(),
 
 			isProd && compress({
 				filter: /\.(js|css|html|svg)$/,

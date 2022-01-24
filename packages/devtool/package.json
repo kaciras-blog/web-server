@@ -29,6 +29,7 @@
 		"colorette": "^2.0.16",
 		"fs-extra": "^10.0.0",
 		"log4js": "^6.4.1",
+		"rollup-plugin-visualizer": "^5.5.4",
 		"source-map-support": "^0.5.21",
 		"svgo": "^2.8.0",
 		"vite": "^2.7.13",
