@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import FileType from "file-type";
+import { fileTypeFromBuffer } from "file-type";
 import sharp from "sharp";
 import { readFixture } from "../test-utils";
 import { BadDataError, encodeAVIF, encodeWebp, optimizeRaster, ParamsError, ProcessorError } from "../../lib";
@@ -43,14 +43,14 @@ describe("optimization", () => {
 	it("should effect on particular image", async () => {
 		const result = await encodeWebp(colorText);
 
-		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
+		expect((await fileTypeFromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(colorText.length / 2);
 	});
 
 	it("should convert image to AVIF", async () => {
 		const result = await encodeAVIF(colorText);
 
-		expect((await FileType.fromBuffer(result))?.mime).toBe("image/avif");
+		expect((await fileTypeFromBuffer(result))?.mime).toBe("image/avif");
 		expect(result.length).toBeLessThan(colorText.length / 2);
 	});
 
@@ -65,7 +65,7 @@ describe("optimization", () => {
 			.webp({ quality: 40, smartSubsample: true })
 			.toBuffer();
 
-		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
+		expect((await fileTypeFromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(gif.length * 0.7);
 	});
 });
