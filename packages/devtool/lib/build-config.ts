@@ -1,9 +1,7 @@
 import { cwd } from "process";
 import path from "path";
-import { ConfigEnv, defineConfig } from "vite";
-import { visualizer } from "rollup-plugin-visualizer";
+import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import compress from "vite-plugin-compression";
 import { ResolvedDevConfig } from "./options.js";
 import vueSvgComponent from "./plugin/vue-svg-component.js";
 import optimizeImage from "./plugin/optimize-image.js";
@@ -18,45 +16,49 @@ export function resolve(relativePath: string) {
 	return path.join(cwd(), relativePath);
 }
 
-// function defaultDict<T>(value: T, origin: Record<string | symbol, T> = {}) {
-// 	return new Proxy(origin, {
-// 		get: (target, key) => key in target ? target[key] : value,
-// 	});
-// }
+export default function getViteConfig(options: ResolvedDevConfig) {
+	const isProd = options.build.mode === "production";
 
-function createConfig(options: ResolvedDevConfig, env: ConfigEnv) {
-	const isProd = env.mode === "production";
-
-	return {
+	return defineConfig({
 		resolve: {
-			alias: {
-				"@": resolve("src"),
-			},
+			alias: [
+				{
+					find: new RegExp("@/"),
+					replacement: resolve("src") + "/",
+				},
+				{
+					find: new RegExp("@assets/"),
+					replacement: resolve("src/assets") + "/",
+				},
+			],
+			// alias: {
+			// 	"@/": "src/",
+			// 	"@assets/": "src/assets/",
+			// },
+		},
+		define: {
+			"process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin),
+			"process.env.SSR_API_ORIGIN": JSON.stringify(options.contentServer.internalOrigin),
+		},
+		build: {
+			assetsDir: options.assetsDir,
 		},
 		plugins: [
-			vue({
-				// compiler: {
-				// 	compilerOptions: {
-				// 		directiveTransforms: defaultDict({ props: [] }),
-				// 	},
-				// },
-			}),
+			vue(options.build.vueOptions),
+
 			vueSvgComponent(),
 
-			options.build.bundleAnalyzer && visualizer(),
+			// options.build.bundleAnalyzer && visualizer(),
 
-			isProd && compress({
-				filter: /\.(js|css|html|svg)$/,
-			}),
-			isProd && compress({
-				filter: /\.(js|css|html|svg)$/,
-				algorithm: "brotliCompress",
-			}),
-			isProd && optimizeImage(new RegExp("static/")),
+			// isProd && compress({
+			// 	filter: /\.(js|css|html|svg)$/,
+			// }),
+			// isProd && compress({
+			// 	filter: /\.(js|css|html|svg)$/,
+			// 	algorithm: "brotliCompress",
+			// }),
+
+			optimizeImage(new RegExp("static/")),
 		],
-	};
-}
-
-export default function getViteConfig(options: ResolvedDevConfig) {
-	return defineConfig(env => createConfig(options, env));
+	});
 }

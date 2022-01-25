@@ -1,3 +1,4 @@
+import { Options as VueOptions } from "@vitejs/plugin-vue";
 import { BlogServerConfig, ResolvedConfig } from "@kaciras-blog/server/lib/config";
 
 export interface DevelopmentOptions extends BlogServerConfig {
@@ -13,8 +14,9 @@ export interface ResolvedDevConfig extends ResolvedConfig {
 }
 
 export interface BuildOptions {
-	mode: boolean;
+	mode: string;
 	bundleAnalyzer: boolean;
+	vueOptions: VueOptions;
 }
 
 export interface DevServerOptions {
