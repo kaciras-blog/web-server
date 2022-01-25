@@ -15,13 +15,13 @@ interface Optimizer {
 
 	test: RegExp;
 
-	optimize(assets: AssetMap, name: string): Promise<void>;
+	apply(assets: AssetMap, name: string): Promise<void>;
 }
 
 const optimizers: Optimizer[] = [
 	{
 		test: /\.(jpe?g|png|gif)$/,
-		async optimize(assets: AssetMap, name: string) {
+		async apply(assets: AssetMap, name: string) {
 			const buffer = assets[name].source as Buffer;
 			const type = extname(name).slice(1);
 			assets[name].source = await optimizeRaster(buffer, type);
@@ -29,7 +29,7 @@ const optimizers: Optimizer[] = [
 	},
 	{
 		test: /\.(jpe?g|png)$/,
-		async optimize(assets: AssetMap, name: string) {
+		async apply(assets: AssetMap, name: string) {
 			const origin = assets[name];
 			const buffer = origin.source as Buffer;
 
@@ -44,7 +44,7 @@ const optimizers: Optimizer[] = [
 	{
 		// 只用 SVGO 优化，压缩由其他的插件实现
 		test: /\.svg$/,
-		async optimize(assets: AssetMap, name: string) {
+		async apply(assets: AssetMap, name: string) {
 			const text = assets[name].source.toString();
 
 			const result = svgo.optimize(text, svgoConfig);
@@ -55,6 +55,15 @@ const optimizers: Optimizer[] = [
 		},
 	},
 ];
+
+function run(opt: Optimizer, map: AssetMap, name: string) {
+	try {
+		return opt.apply(map, name);
+	} catch (cause) {
+		// @ts-ignore 类型没跟上
+		throw new Error(`Optimize failed for ${name}`, { cause });
+	}
+}
 
 /**
  * 优化图片资源的插件，能够压缩图片资源，同时还会为一些图片额外生成WebP格式的转码，
@@ -68,8 +77,16 @@ const optimizers: Optimizer[] = [
 export default function optimizeImage(include?: RegExp): Plugin {
 	return {
 		name: "kaciras:optimize-image",
+
+		// 仅在客户端的生产环境构建时才启用
+		apply(config, env) {
+			return !config.build?.ssr && env.command === "build";
+		},
+
 		async generateBundle(_: unknown, bundle: OutputBundle) {
 			const tasks: Array<Promise<void>> = [];
+
+			// 部分元素在循环中排除了，这里直接强制转换。
 			const filtered = bundle as AssetMap;
 
 			for (const name of Object.keys(bundle)) {
@@ -81,7 +98,7 @@ export default function optimizeImage(include?: RegExp): Plugin {
 				}
 				optimizers
 					.filter(v => v.test.test(name))
-					.map(v => v.optimize(filtered, name))
+					.map(v => run(v, filtered, name))
 					.forEach(t => tasks.push(t));
 			}
 

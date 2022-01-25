@@ -1,6 +1,7 @@
 import { join } from "path";
 import { RollupOutput } from "rollup";
 import { build, InlineConfig, Plugin } from "vite";
+import { expect } from "vitest";
 
 const TE_ID = resolveFixture("_TEST_ENTRY_.js");
 
@@ -21,7 +22,7 @@ export function testEntry(code: string): Plugin {
 
 export function runVite(config: InlineConfig, entry = TE_ID) {
 	const base: InlineConfig = {
-		logLevel: "warn",
+		logLevel: "error",
 		build: {
 			rollupOptions: {
 				input: entry,
@@ -36,6 +37,19 @@ export function runVite(config: InlineConfig, entry = TE_ID) {
 		},
 	};
 	return build({ ...base, ...config }) as Promise<RollupOutput>;
+}
+
+export function getAsset(bundle: RollupOutput, name: string) {
+	name = name.split("?", 2)[0];
+	const file = bundle.output.find(a => a.fileName === name);
+
+	if (!file) {
+		return expect.fail(`${name} is not in the bundle`);
+	}
+	if (file.type === "asset") {
+		return file.source;
+	}
+	return expect.fail(`${name} is exists but not an asset`);
 }
 
 /**

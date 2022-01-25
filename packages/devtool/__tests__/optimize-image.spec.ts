@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import fs from "fs-extra";
 import { RollupOutput } from "rollup";
-import { resolveFixture, runVite, testEntry } from "./test-utils";
+import { getAsset, resolveFixture, runVite, testEntry } from "./test-utils";
 import optimizeImage from "../lib/plugin/optimize-image";
 
 /**
@@ -12,15 +12,7 @@ import optimizeImage from "../lib/plugin/optimize-image";
  */
 async function expectUnoptimized(bundle: RollupOutput, name: string) {
 	const source = await fs.stat(resolveFixture(name));
-	const optimized = bundle.output.find(a => a.fileName === name);
-
-	if (!optimized) {
-		return expect.fail(`${name} is not in the bundle`);
-	}
-	if (optimized.type !== "asset") {
-		return expect.fail(`${name} is not a asset`);
-	}
-	expect(optimized.source.length).toStrictEqual(source.size);
+	expect(getAsset(bundle, name).length).toStrictEqual(source.size);
 }
 
 /**
@@ -32,15 +24,7 @@ async function expectUnoptimized(bundle: RollupOutput, name: string) {
  */
 async function expectSmaller(bundle: RollupOutput, name: string, srcName = name) {
 	const source = await fs.stat(resolveFixture(srcName));
-	const optimized = bundle.output.find(a => a.fileName === name);
-
-	if (!optimized) {
-		return expect.fail(`${name} is not in the bundle`);
-	}
-	if (optimized.type !== "asset") {
-		return expect.fail(`${name} is not a asset`);
-	}
-	expect(optimized.source.length).toBeLessThan(source.size);
+	expect(getAsset(bundle, name).length).toBeLessThan(source.size);
 }
 
 it("should compress images", async () => {
