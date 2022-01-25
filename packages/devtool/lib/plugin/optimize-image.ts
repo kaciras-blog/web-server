@@ -1,4 +1,4 @@
-import { extname, parse } from "path";
+import { extname } from "path";
 import * as svgo from "svgo";
 import { OutputAsset, OutputBundle, PluginContext } from "rollup";
 import { Plugin } from "vite";
@@ -28,14 +28,13 @@ const optimizers: Optimizer[] = [
 	{
 		test: /\.(jpe?g|png)$/,
 		async apply(asset: OutputAsset) {
-			const buffer = asset.source as Buffer;
+			let { source, fileName } = asset;
+			const ext = extname(fileName);
 
-			const nn = parse(asset.fileName).name + ".webp";
-			this.emitFile({
-				type: "asset",
-				fileName: nn,
-				source: await encodeWebp(buffer),
-			});
+			fileName = fileName.slice(0, -ext.length) + ".webp";
+			source = await encodeWebp(source as Buffer);
+
+			this.emitFile({ type: "asset", fileName, source });
 		},
 	},
 	{
