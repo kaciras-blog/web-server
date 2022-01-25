@@ -38,7 +38,6 @@ importers:
       source-map-support: ^0.5.21
       svgo: ^2.8.0
       vite: ^2.7.13
-      vite-plugin-compression: ^0.4.0
       vue: next
     dependencies:
       '@kaciras-blog/media': link:../media
@@ -53,7 +52,6 @@ importers:
       source-map-support: 0.5.21
       svgo: 2.8.0
       vite: 2.7.13_less@4.1.2
-      vite-plugin-compression: 0.4.0_vite@2.7.13
     devDependencies:
       '@types/fs-extra': 9.0.13
       '@types/svgo': 2.6.1
@@ -2183,6 +2181,7 @@ packages:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
+    dev: true
 
   /chardet/0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
@@ -3973,6 +3972,7 @@ packages:
   /has-flag/4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
+    dev: true
 
   /has-symbol-support-x/1.4.2:
     resolution: {integrity: sha512-3ToOva++HaW+eCpgqZrCfN51IPB+7bJNVT6CUATzueB5Heb8o6Nam0V3HG5dlDvZU1Gn5QLcbahiKw/XVk5JJw==}
@@ -7000,6 +7000,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       has-flag: 4.0.0
+    dev: true
 
   /supports-preserve-symlinks-flag/1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
@@ -7437,19 +7438,6 @@ packages:
       core-util-is: 1.0.2
       extsprintf: 1.3.0
     dev: true
-
-  /vite-plugin-compression/0.4.0_vite@2.7.13:
-    resolution: {integrity: sha512-CGC8DfIey0k4S4o54ylwFIzT1Mjb9s7cMmlXj6DMM1MZZIeWFjPCJc6YZWjnnS28ul3r7R1nmihvYvGg/lOYsQ==}
-    peerDependencies:
-      vite: '>=2.0.0'
-    dependencies:
-      chalk: 4.1.2
-      debug: 4.3.3
-      fs-extra: 10.0.0
-      vite: 2.7.13_less@4.1.2
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /vite/2.7.13:
     resolution: {integrity: sha512-Mq8et7f3aK0SgSxjDNfOAimZGW9XryfHRa/uV0jseQSilg+KhYDSoNb9h1rknOy6SuMkvNDLKCYAYYUMCE+IgQ==}
