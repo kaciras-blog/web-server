@@ -3,15 +3,34 @@ import { brotliCompress, gzip } from "zlib";
 import { OutputBundle } from "rollup";
 import { Plugin } from "vite";
 
+// 经测试，最大压缩率参数（如 BROTLI_MAX_QUALITY）用不用大小都一样。
+
 const zlibMap = {
 	gz: promisify(gzip),
 	br: promisify(brotliCompress),
 };
 
 export interface CompressOptions {
-	includes?: RegExp;
-	minSize?: number;
+
+	/**
+	 * 压缩算法，gz 或 br。若要同时使用请多次添加该插件。
+	 */
 	algorithm: keyof typeof zlibMap;
+
+	/**
+	 * 那些文件需要压缩？默认 /\.(m?js|json|svg|css|html)$/
+	 */
+	includes?: RegExp;
+
+	/**
+	 * 文件小于该字节数时不压缩，默认 1024。
+	 */
+	minSize?: number;
+
+	/**
+	 * 默认仅作用于在客户端构建，该参数为 true 则任何情况都启用。
+	 */
+	force?: boolean;
 }
 
 /**
@@ -30,6 +49,7 @@ export default function compressAssets(options: CompressOptions): Plugin {
 	const {
 		algorithm,
 		minSize = 1024,
+		force = false,
 		includes = /\.(m?js|json|svg|css|html)$/,
 	} = options;
 
@@ -40,7 +60,7 @@ export default function compressAssets(options: CompressOptions): Plugin {
 		enforce: "post",
 
 		apply(config, env) {
-			return !config.build?.ssr && env.command === "build";
+			return force || !config.build?.ssr && env.command === "build";
 		},
 
 		async generateBundle(_: unknown, bundle: OutputBundle) {
