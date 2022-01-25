@@ -1,18 +1,19 @@
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { AddressInfo, Server } from "net";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import Axios, { AxiosRequestConfig } from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { readFixtureText, sleep } from "./test-utils";
 import { CachedFetcher, configureAxiosHttp2, configureForProxy } from "../lib/axios-helper";
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 function helloHandler(req: Http2ServerRequest, res: Http2ServerResponse) {
 	res.writeHead(200, { "Content-Type": "text/plain" }).end("Hello");
 }
 
-// 使用一个仅支持HTTP2的服务器来测试
+// 使用一个仅支持 HTTP2 的服务器来测试
 describe("configureAxiosHttp2", () => {
 	let server: Server;
 	let url: string;
@@ -25,9 +26,9 @@ describe("configureAxiosHttp2", () => {
 		url = "http://localhost:" + (server.address() as AddressInfo).port;
 	});
 
-	afterEach((done) => {
+	afterEach(() => {
 		cleanSessions();
-		server.close(done);
+		return new Promise<any>(resolve => server.close(resolve));
 	});
 
 	it("should fail without adapt", () => {
@@ -60,9 +61,9 @@ describe("configureAxiosHttp2", () => {
 		server.removeAllListeners("request");
 
 		server.on("request", async (request, response) => {
-			jest.runOnlyPendingTimers();
+			vi.runOnlyPendingTimers();
 			await sleep();
-			response.on("close", () => jest.runOnlyPendingTimers());
+			response.on("close", () => vi.runOnlyPendingTimers());
 		});
 
 		const tokenSource = Axios.CancelToken.source();
@@ -70,7 +71,7 @@ describe("configureAxiosHttp2", () => {
 
 		await sleep();
 		tokenSource.cancel("Cancel message");
-		jest.runOnlyPendingTimers();
+		vi.runOnlyPendingTimers();
 
 		await sleep();
 		expect((await res).message).toBe("Cancel message");
@@ -153,7 +154,7 @@ describe("configureForProxy", () => {
 });
 
 describe("CachedFetcher", () => {
-	const mockRequest = jest.fn();
+	const mockRequest = vi.fn();
 
 	const axios = Axios.create();
 	axios.request = mockRequest;
@@ -217,7 +218,7 @@ describe("CachedFetcher", () => {
 		const timeoutFetcher = new CachedFetcher(axios, (res) => res.data, 10 * 1000);
 		await putCache(timeoutFetcher, 100);
 
-		jest.runOnlyPendingTimers();
+		vi.runOnlyPendingTimers();
 		expect(await getCache(timeoutFetcher)).toBeUndefined();
 	});
 });

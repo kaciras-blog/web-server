@@ -1,18 +1,24 @@
+import { describe, expect, it, MockedObject, vi } from "vitest";
 import { readFixture } from "../test-utils";
-import RasterOptimizer from "../../lib/image/RasterOptimizer";
-import { BadDataError, ProcessorError } from "../../lib/errors";
-import { crop } from "../../lib/image/param-processor";
-import { FileStore } from "../../lib/FileStore";
+import { BadDataError, crop, ProcessorError } from "../../lib";
 import * as encoder from "../../lib/image/encoder";
+import RasterOptimizer from "../../lib/image/RasterOptimizer";
 
-jest.mock("../../lib/image/param-processor");
-jest.mock("../../lib/image/encoder");
+vi.mock("../../lib/image/param-processor", () => ({
+	crop: vi.fn(),
+}));
 
-const store: jest.MockedObject<FileStore> = {
-	save: jest.fn(),
-	load: jest.fn(),
-	putCache: jest.fn(),
-	getCache: jest.fn(),
+vi.mock("../../lib/image/encoder", () => ({
+	encodeWebp: vi.fn(),
+	encodeAVIF: vi.fn(),
+	optimizeRaster: vi.fn(),
+}));
+
+const store = {
+	save: vi.fn(),
+	load: vi.fn(),
+	putCache: vi.fn(),
+	getCache: vi.fn(),
 };
 
 const saveRequest = {
@@ -32,17 +38,17 @@ const loadRequest = {
 const optimizer = new RasterOptimizer(store);
 
 describe("check", () => {
-	test.each(
-		["jp2", "html", "", "../.."],
-	)("should restrict file type %#", (type) => {
-		const promise = optimizer.check({
-			type,
-			parameters: {},
-			buffer: Buffer.alloc(0),
-		});
+	for (const type of ["jp2", "html", "", "../.."]) {
+		it(`should restrict file type ${type}`, () => {
+			const promise = optimizer.check({
+				type,
+				parameters: {},
+				buffer: Buffer.alloc(0),
+			});
 
-		return expect(promise).rejects.toThrow(BadDataError);
-	});
+			return expect(promise).rejects.toThrow(BadDataError);
+		});
+	}
 
 	it("should normalize type", async () => {
 		const request = {
@@ -55,7 +61,7 @@ describe("check", () => {
 
 	it("should crop the image", async () => {
 		const cropped = Buffer.alloc(0);
-		const fn = crop as jest.Mock;
+		const fn = crop as any;
 		fn.mockReturnValue({
 			toBuffer() { return cropped; },
 		});
@@ -72,10 +78,10 @@ describe("check", () => {
 });
 
 describe("buildCache", () => {
-	const { optimize, encodeWebp, encodeAVIF } = encoder as jest.MockedObject<typeof encoder>;
+	const { optimizeRaster, encodeWebp, encodeAVIF } = encoder as MockedObject<typeof encoder>;
 
 	it("should optimize the image", async () => {
-		optimize.mockResolvedValue(Buffer.alloc(3));
+		optimizeRaster.mockResolvedValue(Buffer.alloc(3));
 		encodeWebp.mockResolvedValue(Buffer.alloc(2));
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 
@@ -89,7 +95,7 @@ describe("buildCache", () => {
 	});
 
 	it("should ignore unprocessable", async () => {
-		optimize.mockResolvedValue(Buffer.alloc(1));
+		optimizeRaster.mockResolvedValue(Buffer.alloc(1));
 		encodeWebp.mockRejectedValue(new ProcessorError());
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 
@@ -98,7 +104,7 @@ describe("buildCache", () => {
 	});
 
 	it("should save new format only if it smaller than old", async () => {
-		optimize.mockResolvedValue(Buffer.alloc(1));
+		optimizeRaster.mockResolvedValue(Buffer.alloc(1));
 		encodeWebp.mockResolvedValue(Buffer.alloc(1));
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 

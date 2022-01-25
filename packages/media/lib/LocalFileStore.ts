@@ -1,8 +1,8 @@
 import { join } from "path";
 import fs from "fs-extra";
-import { Params } from "./MediaService";
-import { Data, FileStore } from "./FileStore";
-import { SeparatedStoreLocation } from "../../server/lib/config";
+import { Params } from "./MediaService.js";
+import { Data, FileStore } from "./FileStore.js";
+import { SeparatedStoreLocation } from "../../server/lib/config.js";
 
 /*
  * fs.createReadStream 当问及不存在时不抛异常，而是发出事件。

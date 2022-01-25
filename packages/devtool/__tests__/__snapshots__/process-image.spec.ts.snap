@@ -1,0 +1,6 @@
+// Vitest Snapshot v1
+
+exports[`should crop the image 1`] = `
+"var s=\\"/test.png\\";window.s=s;
+"
+`;

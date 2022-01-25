@@ -4,7 +4,7 @@ import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { Server, Socket } from "net";
 import { createSecureContext, SecureContext } from "tls";
 import fs from "fs-extra";
-import { HttpServerOptions, HttpsServerOptions, ServerOptions, SNIProperties } from "./config";
+import { HttpServerOptions, HttpsServerOptions, ServerOptions, SNIProperties } from "./config.js";
 
 // app.callback() 的定义，比较长不方便直接写在参数里
 type RequestMessage = IncomingMessage | Http2ServerRequest;

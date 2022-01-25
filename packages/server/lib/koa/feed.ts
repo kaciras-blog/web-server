@@ -4,9 +4,9 @@ import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
 import TableOfContent from "markdown-it-toc-done-right";
 import { MediaPlugin } from "@kaciras-blog/markdown";
-import { once } from "../functions";
-import { CachedFetcher } from "../axios-helper";
-import { ResolvedConfig } from "../config";
+import { once } from "../functions.js";
+import { CachedFetcher } from "../axios-helper.js";
+import { ResolvedConfig } from "../config.js";
 
 const markdownIt = new MarkdownIt();
 markdownIt.use(TableOfContent);

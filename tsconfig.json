@@ -2,12 +2,12 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"lib": ["ESNext"],
-		"module": "CommonJS",
+		"module": "ESNext",
 		"moduleResolution": "Node",
 		"sourceMap": true,
 		"strict": true,
 		"useUnknownInCatchVariables": false,
-		"esModuleInterop": true
+		"allowSyntheticDefaultImports": true
 	},
 	"include": [
 		"packages/*/lib/**/*.ts",

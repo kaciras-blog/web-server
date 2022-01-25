@@ -1,9 +1,10 @@
+import { expect, it, JestMockCompatFn, vi } from "vitest";
 import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import sitemapMiddleware from "../lib/koa/sitemap";
 
-jest.mock("axios");
+vi.mock("axios");
 
 const DATA = {
 	items: [
@@ -16,17 +17,17 @@ const app = new Koa();
 app.use(sitemapMiddleware("123.45.67.89"));
 const callback = app.callback();
 
-(axios.get as jest.Mock).mockResolvedValue({ status: 200, data: DATA });
+(axios.get as JestMockCompatFn).mockResolvedValue({ status: 200, data: DATA });
 
-it("should response sitemap xml", () => {
-	return supertest(callback)
+it("should response sitemap xml", async () => {
+	await supertest(callback)
 		.get("/sitemap.xml")
 		.expect(200)
 		.expect((res) => expect(res.text).toMatchSnapshot());
 });
 
-it("should output short date for Baidu", () => {
-	return supertest(callback)
+it("should output short date for Baidu", async () => {
+	await supertest(callback)
 		.get("/sitemap.xml")
 		.query({ type: "baidu" })
 		.expect(200)
@@ -48,7 +49,7 @@ it("should recognize Baidu spider by User-Agent", async () => {
 		"Version/5.1 Mobile Safari/10600.6.3 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)");
 });
 
-it("should return 503 on error", () => {
-	(axios.get as jest.Mock).mockRejectedValue(new Error());
-	return supertest(callback).get("/sitemap.xml").expect(503);
+it("should return 503 on error", async () => {
+	(axios.get as JestMockCompatFn).mockRejectedValue(new Error());
+	await supertest(callback).get("/sitemap.xml").expect(503);
 });

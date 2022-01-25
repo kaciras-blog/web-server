@@ -2,10 +2,10 @@ import { URL } from "url";
 import fs from "fs-extra";
 import { Context } from "koa";
 import log4js from "log4js";
-import path from "path";
+import path, { basename } from "path";
 import { App } from "vue";
 import { renderToString, SSRContext } from "@vue/server-renderer";
-import AppBuilder from "../AppBuilder";
+import AppBuilder from "../AppBuilder.js";
 
 const logger = log4js.getLogger("SSR");
 
@@ -70,7 +70,7 @@ export async function renderPage(template: string, createApp: SSREntry, manifest
 		const preloads = renderPreloadLinks(ssrContext.modules, manifest);
 
 		ctx.body = template
-			.replace("<!--vue-ssr-outlet-->", result)
+			.replace("<!--app-html-->", result)
 			.replace("<!--preload-links-->", preloads);
 
 		if (renderContext.notFound) {
@@ -102,27 +102,33 @@ export async function renderPage(template: string, createApp: SSREntry, manifest
  * @param modules
  * @param manifest
  */
-function renderPreloadLinks(modules: string[], manifest: Record<string, string>) {
+function renderPreloadLinks(modules: any, manifest: any) {
 	let links = "";
 	const seen = new Set();
-
-	for (const id of modules) {
-		const file = manifest[id];
-
-		if (!file || seen.has(file)) {
-			continue;
+	modules.forEach((id: string) => {
+		const files = manifest[id];
+		if (files) {
+			files.forEach((file: string) => {
+				if (!seen.has(file)) {
+					seen.add(file);
+					const filename = basename(file);
+					if (manifest[filename]) {
+						for (const depFile of manifest[filename]) {
+							links += renderPreloadLink(depFile);
+							seen.add(depFile);
+						}
+					}
+					links += renderPreloadLink(file);
+				}
+			});
 		}
-		seen.add(file);
-		links += renderPreloadLink(file);
-	}
-
+	});
 	return links;
 }
 
 function renderPreloadLink(file: string) {
 	if (file.endsWith(".js")) {
-		// return `<link rel="modulepreload" crossorigin href="${file}">`;
-		return "";
+		return `<link rel="modulepreload" crossorigin href="${file}">`;
 	} else if (file.endsWith(".css")) {
 		return `<link rel="stylesheet" href="${file}">`;
 	} else if (file.endsWith(".woff")) {

@@ -1,8 +1,11 @@
-import { hashName } from "./common";
-import { LoadRequest, LoadResponse, MediaService, SaveRequest } from "./MediaService";
-import { FileStore } from "./FileStore";
 import { extname } from "path";
+import { hashName } from "./common.js";
+import { LoadRequest, LoadResponse, MediaService, SaveRequest } from "./MediaService.js";
+import { FileStore } from "./FileStore.js";
 
+/**
+ * 资源优化器，
+ */
 export interface Optimizer {
 
 	/**
@@ -17,6 +20,15 @@ export interface Optimizer {
 	getCache(request: LoadRequest): Promise<LoadResponse | null | undefined>;
 }
 
+/**
+ * 使用预生成缓存策略的媒体服务，预生成指的是在上传时就优化资源，并将优化后的结果保存下来，
+ * 在请求时从优化结果中返回最佳的文件。
+ *
+ * <h2>预先生 vs. 实时生成</h2>
+ * 预先生成的优点是缓存一定命中，下载时无需等待。
+ * 而另一种做法是实时生成，twitter 就是这种，其优点是更加灵活、允许缓存过期节省空间。
+ * 考虑到个人博客不会有太多的图，而且廉价 VPS 的性能也差，所以暂时选择了预先生成。
+ */
 export default class CachedService implements MediaService {
 
 	private readonly store: FileStore;
@@ -27,6 +39,9 @@ export default class CachedService implements MediaService {
 		this.optimizer = optimizer;
 	}
 
+	/**
+	 * 加载资源，默认只返回优化后的版本，可以通过 { type: "origin“ } 参数获取原始文件。
+	 */
 	async load(request: LoadRequest) {
 		const { name, parameters } = request;
 

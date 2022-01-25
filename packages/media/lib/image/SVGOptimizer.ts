@@ -2,10 +2,10 @@ import zlib, { InputType } from "zlib";
 import { basename } from "path";
 import { promisify } from "util";
 import { optimize, OptimizeOptions } from "svgo";
-import { LoadRequest, SaveRequest } from "../MediaService";
-import { Optimizer } from "../CachedService";
-import { FileStore } from "../FileStore";
-import { BadDataError } from "../errors";
+import { LoadRequest, SaveRequest } from "../MediaService.js";
+import { Optimizer } from "../CachedService.js";
+import { FileStore } from "../FileStore.js";
+import { BadDataError } from "../errors.js";
 
 const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
 const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);

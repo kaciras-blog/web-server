@@ -1,6 +1,4 @@
 /**
- * TODO：Error cause https://v8.dev/features/error-cause
- *
  * 表示用户输入的数据或参数错误。
  * 它们无法由程序处理，需要返回错误信息。
  */
@@ -14,10 +12,11 @@ export class BadDataError extends MediaError {
 	/**
 	 * 对异常进行转换，捕获原始异常然后抛出 BadDataError。
 	 *
-	 * @param error 原始异常
+	 * @param cause 原始异常
 	 */
-	static convert(error: Error): never {
-		throw new BadDataError(error.message);
+	static convert(cause: Error): never {
+		// @ts-ignore 类型没跟上
+		throw new BadDataError("无效的数据", { cause });
 	}
 }
 
@@ -31,7 +30,7 @@ export class ParamsError extends MediaError {}
  */
 export class ProcessorError extends Error {}
 
-// 设置 name 属性，因为似乎大多地方比起 instanceof 更喜欢用 name 判断异常类型。
+// 设置 name 属性，似乎大多地方比起 instanceof 更喜欢用 name 判断类型。
 MediaError.prototype.name = "MediaError";
 BadDataError.prototype.name = "BadDataError";
 ParamsError.prototype.name = "ParamsError";

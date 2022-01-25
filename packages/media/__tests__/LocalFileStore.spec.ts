@@ -1,6 +1,7 @@
 import { join } from "path";
 import { tmpdir } from "os";
 import fs from "fs-extra";
+import { afterEach, beforeEach, expect, it } from "vitest";
 import LocalFileStore from "../lib/LocalFileStore";
 
 const root = fs.mkdtempSync(join(tmpdir(), "test-"));
@@ -8,7 +9,7 @@ const root = fs.mkdtempSync(join(tmpdir(), "test-"));
 const config = {
 	data: join(root, "data"),
 	cache: join(root, "cache"),
-	logs: "UNUSED",
+	logs: join(root, "logs"),
 };
 
 let store: LocalFileStore;

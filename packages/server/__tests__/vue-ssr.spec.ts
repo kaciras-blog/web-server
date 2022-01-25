@@ -1,8 +1,9 @@
+import { expect, it, vi } from "vitest";
 import supertest from "supertest";
 import Koa from "koa";
 import { RenderContext, renderPage } from "../lib/koa/vue-ssr";
 
-const renderFn = jest.fn<Promise<string>, [RenderContext]>(() => Promise.resolve("test content"));
+const renderFn = vi.fn<[RenderContext], Promise<string>>(() => Promise.resolve("test content"));
 
 const koa = new Koa();
 koa.use((ctx) => renderPage({ renderToString: renderFn } as any, ctx));
@@ -18,17 +19,17 @@ it("should render page", async () => {
 	expect(context.url.toString()).toBe(request.url);
 });
 
-it("should respond with status 404 for nonexistent resource", () => {
+it("should respond with status 404 for nonexistent resource", async () => {
 	renderFn.mockImplementationOnce(async (ctx) => {
 		ctx.notFound = true;
 		return "not found";
 	});
-	return supertest(callback).get("/test").expect(404);
+	await supertest(callback).get("/test").expect(404);
 });
 
-it("should perform custom redirect", () => {
+it("should perform custom redirect", async () => {
 	renderFn.mockRejectedValueOnce(Object.assign(new Error(), { code: 302, location: "/redirected" }));
-	return supertest(callback).get("/test?a=b")
+	await supertest(callback).get("/test?a=b")
 		.expect(302)
 		.expect("Location", "/redirected");
 });

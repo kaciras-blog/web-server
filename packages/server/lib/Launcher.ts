@@ -1,11 +1,14 @@
 import process from "process";
 import path from "path";
+import { createRequire } from "module";
 import parseArgs from "minimist";
 import log4js from "log4js";
-import { buildCache } from "@kaciras-blog/media/lib/command/build-cache";
-import run from "./command/run";
-import { resolveConfig, ResolvedConfig } from "./config";
-import { once } from "./functions";
+import { buildCache } from "@kaciras-blog/media";
+import run from "./command/run.js";
+import { resolveConfig, ResolvedConfig } from "./config.js";
+import { once } from "./functions.js";
+
+const require = createRequire(import.meta.url);
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
@@ -42,7 +45,7 @@ export default class Launcher {
 			configFile = path.join(configFile, args.profile);
 		}
 
-		// 使用 require.resolve 而不是直接 require，以便把配置文件内部的异常区分开
+		// 先 resolve 一下，以便把配置文件内部的异常区分开
 		try {
 			require.resolve(configFile);
 		} catch (e) {

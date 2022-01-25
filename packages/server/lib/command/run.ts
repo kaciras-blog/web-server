@@ -1,12 +1,12 @@
 import { BaseContext } from "koa";
 import log4js from "log4js";
-import AppBuilder from "../AppBuilder";
-import getBlogPlugin from "../blog";
-import { createSSRProductionPlugin } from "../koa/vue-ssr";
-import staticFiles from "../koa/static-files";
-import startServer from "../create-server";
-import { configureGlobalAxios } from "../axios-helper";
-import { ResolvedConfig, SimpleLogConfig } from "../config";
+import AppBuilder from "../AppBuilder.js";
+import getBlogPlugin from "../blog.js";
+import { createSSRProductionPlugin } from "../koa/vue-ssr.js";
+import staticFiles from "../koa/static-files.js";
+import startServer from "../create-server.js";
+import { configureGlobalAxios } from "../axios-helper.js";
+import { ResolvedConfig, SimpleLogConfig } from "../config.js";
 
 /**
  * 运行生产模式需要更详细的日志输出格式。

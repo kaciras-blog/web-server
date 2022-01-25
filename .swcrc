@@ -1,9 +1,0 @@
-{
-	"sourceMaps": "inline",
-	"jsc": {
-		"parser": {
-			"syntax": "typescript"
-		},
-		"target": "es2021"
-	}
-}

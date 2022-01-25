@@ -1,38 +1,22 @@
-import { VueLoaderOptions } from "vue-loader";
+import { Options as VueOptions } from "@vitejs/plugin-vue";
 import { BlogServerConfig, ResolvedConfig } from "@kaciras-blog/server/lib/config";
 
 export interface DevelopmentOptions extends BlogServerConfig {
 	dev: DevServerOptions;
-	webpack: WebpackOptions;
+	build: BuildOptions;
 	thirdParty: ThirdPartyOptions;
 }
 
 export interface ResolvedDevConfig extends ResolvedConfig {
 	dev: DevServerOptions;
-	webpack: WebpackOptions;
+	build: BuildOptions;
 	thirdParty: ThirdPartyOptions;
 }
 
-export interface WebpackOptions {
-	mode: "development" | "production" | "none";
-	publicPath: string;
-	parallel: boolean;
-
-	bundleAnalyzerReport: any;
-
-	speedMeasure?: boolean;
-
-	client: {
-		devtool: string | false;
-		cssSourceMap: boolean;
-	};
-
-	server: {
-		devtool: string | false;
-		cssSourceMap: boolean;
-	};
-
-	vueLoader?: VueLoaderOptions;
+export interface BuildOptions {
+	mode: string;
+	bundleAnalyzer: boolean;
+	vueOptions: VueOptions;
 }
 
 export interface DevServerOptions {

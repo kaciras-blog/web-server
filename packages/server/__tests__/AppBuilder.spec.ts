@@ -1,3 +1,4 @@
+import { expect, it, vi } from "vitest";
 import { Context, Next } from "koa";
 import supertest from "supertest";
 import AppBuilder from "../lib/AppBuilder";
@@ -30,7 +31,7 @@ it("should add middleware in order", async () => {
 
 it("should avoid multiple fallback", () => {
 	const builder = new AppBuilder();
-	builder.useFallBack(jest.fn());
+	builder.useFallBack(vi.fn());
 
-	expect(() => builder.useFallBack(jest.fn())).toThrow();
+	expect(() => builder.useFallBack(vi.fn())).toThrow();
 });

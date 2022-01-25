@@ -1,58 +1,54 @@
 import { join } from "path";
-import webpack, { Configuration, StatsCompilation } from "webpack";
-import MemoryFs from "memory-fs";
-import { merge } from "webpack-merge";
+import { RollupOutput } from "rollup";
+import { build, InlineConfig, Plugin } from "vite";
+import { expect } from "vitest";
 
-/**
- * 运行 webpack，返回输出到内存中的结果。
- *
- * @param config webpack 的配置
- * @param fs 构建的文件将写入此处
- * @return 构建的结果信息。
- */
-export function runWebpack(config: Configuration, fs = new MemoryFs()) {
-	const baseConfig: Configuration = {
-		mode: "development",
-		devtool: false,
-		output: {
-			path: "/",
-			hashFunction: "xxhash64",
+const TE_ID = resolveFixture("_TEST_ENTRY_.js");
+
+export function testEntry(code: string): Plugin {
+	return {
+		name: "test-entry",
+		resolveId(source: string) {
+			return source === TE_ID ? source : null;
 		},
-		// pnpm 把依赖放在每个包的目录下，在根目录运行测试时需要添加一下。
-		resolveLoader: {
-			modules: [
-				"node_modules",
-				join(__dirname, "../node_modules"),
-			],
+		load(id: string) {
+			if (id !== TE_ID) {
+				return null;
+			}
+			return { code, moduleSideEffects: "no-treeshake" };
 		},
 	};
-	config = merge(baseConfig, config);
-
-	return new Promise<StatsCompilation>((resolve, reject) => {
-		const compiler = webpack(config);
-		compiler.outputFileSystem = fs;
-
-		compiler.run((err, stats) => {
-			if (err || !stats) {
-				return reject(err);
-			}
-			if (stats.hasErrors()) {
-				const msg = stats.toString({
-					children: true,
-				});
-				return reject(new Error(msg));
-			}
-			return resolve(stats.toJson({ source: true }));
-		});
-	});
 }
 
-export function getModuleSource(stats: StatsCompilation, id: string) {
-	const module = stats.modules!.find(m => m.name!.endsWith(id));
-	if (module) {
-		return module.source!;
+export function runVite(config: InlineConfig, entry = TE_ID) {
+	const base: InlineConfig = {
+		logLevel: "error",
+		build: {
+			rollupOptions: {
+				input: entry,
+				output: {
+					entryFileNames: "[name].js",
+					chunkFileNames: "[name].js",
+					assetFileNames: "[name].[ext]",
+				},
+			},
+			write: false,
+		},
+	};
+	return build({ ...base, ...config }) as Promise<RollupOutput>;
+}
+
+export function getAsset(bundle: RollupOutput, name: string) {
+	name = name.split("?", 2)[0];
+	const file = bundle.output.find(a => a.fileName === name);
+
+	if (!file) {
+		return expect.fail(`${name} is not in the bundle`);
 	}
-	throw new Error(`module ${id} not found in completion`);
+	if (file.type === "asset") {
+		return file.source;
+	}
+	return expect.fail(`${name} is exists but not an asset`);
 }
 
 /**

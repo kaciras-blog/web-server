@@ -1,7 +1,8 @@
 import { tmpdir } from "os";
 import { join } from "path";
+import { afterEach, expect, it } from "vitest";
 import fs from "fs-extra";
-import { buildCache } from "../../lib/command/build-cache";
+import buildCache from "../../lib/command/build-cache";
 import { readFixture } from "../test-utils";
 
 const root = fs.mkdtempSync(join(tmpdir(), "test-"));

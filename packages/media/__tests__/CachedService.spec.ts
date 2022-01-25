@@ -1,17 +1,17 @@
-import CachedService, { Optimizer } from "../lib/CachedService";
-import MockedObject = jest.MockedObject;
+import { describe, expect, it, vi } from "vitest";
+import CachedService from "../lib/CachedService";
 
-const optimizer: MockedObject<Optimizer> = {
-	check: jest.fn(),
-	buildCache: jest.fn(),
-	getCache: jest.fn(),
+const optimizer = {
+	check: vi.fn(),
+	buildCache: vi.fn(),
+	getCache: vi.fn(),
 };
 
 const store = {
-	save: jest.fn(),
-	load: jest.fn(),
-	putCache: jest.fn(),
-	getCache: jest.fn(),
+	save: vi.fn(),
+	load: vi.fn(),
+	putCache: vi.fn(),
+	getCache: vi.fn(),
 };
 
 const loadRequest = {

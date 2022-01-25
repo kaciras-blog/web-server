@@ -1,8 +1,8 @@
 import { basename, extname } from "path";
-import { BadDataError } from "./errors";
-import { hashName } from "./common";
-import { LoadRequest, MediaService, SaveRequest } from "./MediaService";
-import { FileStore } from "./FileStore";
+import { BadDataError } from "./errors.js";
+import { hashName } from "./common.js";
+import { LoadRequest, MediaService, SaveRequest } from "./MediaService.js";
+import { FileStore } from "./FileStore.js";
 
 function splitName(name: string) {
 	const ext = extname(name);
@@ -15,6 +15,11 @@ function fileOf(base: string, ext: string, codec?: string) {
 
 interface SaveParams {
 
+	/**
+	 * 文件的底层编码，比如 av1,vp9。
+	 *
+	 * TODO: 多个流都区分编码咋办，比如视频 av1，音频 opus？
+	 */
 	codec?: string;
 
 	/**

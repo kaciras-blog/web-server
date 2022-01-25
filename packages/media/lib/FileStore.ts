@@ -1,4 +1,4 @@
-import { Params } from "./MediaService";
+import { Params } from "./MediaService.js";
 import ReadableStream = NodeJS.ReadableStream;
 
 export type Data = string | Buffer;

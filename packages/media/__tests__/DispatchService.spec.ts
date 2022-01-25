@@ -1,15 +1,15 @@
+import { expect, it, vi } from "vitest";
+import { BadDataError, LoadRequest, SaveRequest } from "../lib";
 import DispatchService from "../lib/DispatchService";
-import { LoadRequest, MediaService, SaveRequest } from "../lib/MediaService";
-import { BadDataError } from "../lib/errors";
 
-const service1: jest.MockedObject<MediaService> = {
-	load: jest.fn(),
-	save: jest.fn(),
+const service1 = {
+	load: vi.fn(),
+	save: vi.fn(),
 };
 
-const fallback: jest.MockedObject<MediaService> = {
-	load: jest.fn(),
-	save: jest.fn(),
+const fallback = {
+	load: vi.fn(),
+	save: vi.fn(),
 };
 
 const dispatcher = new DispatchService({ svg: service1 }, fallback);

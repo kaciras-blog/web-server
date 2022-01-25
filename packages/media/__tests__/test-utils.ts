@@ -1,7 +1,8 @@
 import { readFileSync } from "fs";
-import { join } from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
-export const FIXTURE_DIR = join(__dirname, "fixtures");
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * 返回 fixtures 目录下文件的完整路径。
@@ -10,7 +11,7 @@ export const FIXTURE_DIR = join(__dirname, "fixtures");
  * @return 完整路径
  */
 export function resolveFixture(name: string) {
-	return join(FIXTURE_DIR, name);
+	return join(__dirname, "fixtures", name);
 }
 
 /**

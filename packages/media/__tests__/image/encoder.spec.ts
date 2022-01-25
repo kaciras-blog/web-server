@@ -1,12 +1,12 @@
-import FileType from "file-type";
+import { describe, expect, it } from "vitest";
+import { fileTypeFromBuffer } from "file-type";
 import sharp from "sharp";
 import { readFixture } from "../test-utils";
-import { encodeAVIF, encodeWebp, optimize } from "../../lib/image/encoder";
-import { BadDataError, ParamsError, ProcessorError } from "../../lib/errors";
+import { BadDataError, encodeAVIF, encodeWebp, optimizeRaster, ParamsError, ProcessorError } from "../../lib";
 
 it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");
-	return expect(optimize(buffer, "invalid")).rejects.toBeInstanceOf(ParamsError);
+	return expect(optimizeRaster(buffer, "invalid")).rejects.toBeInstanceOf(ParamsError);
 });
 
 // 对于非图片数据的输入，应当抛出 MediaError 异常
@@ -14,7 +14,7 @@ describe("For non-image data", () => {
 	const buffer = Buffer.from("invalid");
 
 	function testFor(type: string) {
-		return expect(optimize(buffer, type)).rejects.toBeInstanceOf(BadDataError);
+		return expect(optimizeRaster(buffer, type)).rejects.toBeInstanceOf(BadDataError);
 	}
 
 	it("should throw jpg", () => testFor("jpg"));
@@ -27,7 +27,7 @@ describe("For bad image", () => {
 
 	async function testFor(srcType: string, targetType: string) {
 		const buffer = readFixture("bad_image." + srcType);
-		await expect(optimize(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
+		await expect(optimizeRaster(buffer, targetType)).rejects.toBeInstanceOf(BadDataError);
 	}
 
 	it("should throws on optimize jpg", () => testFor("jpg", "jpg"));
@@ -43,14 +43,14 @@ describe("optimization", () => {
 	it("should effect on particular image", async () => {
 		const result = await encodeWebp(colorText);
 
-		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
+		expect((await fileTypeFromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(colorText.length / 2);
 	});
 
 	it("should convert image to AVIF", async () => {
 		const result = await encodeAVIF(colorText);
 
-		expect((await FileType.fromBuffer(result))?.mime).toBe("image/avif");
+		expect((await fileTypeFromBuffer(result))?.mime).toBe("image/avif");
 		expect(result.length).toBeLessThan(colorText.length / 2);
 	});
 
@@ -65,7 +65,7 @@ describe("optimization", () => {
 			.webp({ quality: 40, smartSubsample: true })
 			.toBuffer();
 
-		expect((await FileType.fromBuffer(result))?.mime).toBe("image/webp");
+		expect((await fileTypeFromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(gif.length * 0.7);
 	});
 });

@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/server",
-	"version": "2.0.0-alpha.2",
+	"version": "2.0.0-alpha.1",
 	"description": "Web page and assets server of Kaciras Blog",
 	"license": "MIT",
 	"repository": {
@@ -8,6 +8,7 @@
 		"url": "https://github.com/kaciras-blog/web-server",
 		"directory": "packages/server"
 	},
+	"type": "module",
 	"main": "lib/index.js",
 	"files": [
 		"lib"
@@ -19,11 +20,11 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/markdown": "^2.0.0-alpha.1",
-		"@kaciras-blog/media": "^2.0.0-alpha.2",
+		"@kaciras-blog/media": "workspace:^",
+		"@kaciras-blog/markdown": "workspace:^",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^10.1.1",
-		"@vue/server-renderer": "^3.2.28",
+		"@vue/server-renderer": "^3.2.29",
 		"axios": "^0.25.0",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.2",
@@ -35,7 +36,7 @@
 		"koa-compose": "^4.1.0",
 		"koa-compress": "^5.1.0",
 		"koa-conditional-get": "^3.0.0",
-		"log4js": "^6.4.0",
+		"log4js": "^6.4.1",
 		"markdown-it": "^12.3.2",
 		"markdown-it-toc-done-right": "^4.2.0",
 		"minimist": "^1.2.5",

@@ -1,10 +1,10 @@
+import { describe, it, JestMockCompatFn, vi } from "vitest";
 import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
 import { adminOnlyFilter, intercept } from "../lib/blog";
-import Mock = jest.Mock;
 
-jest.mock("axios");
+vi.mock("axios");
 
 describe("intercept middleware", () => {
 	const app = new Koa();
@@ -26,8 +26,8 @@ describe("intercept middleware", () => {
 			.expect(404);
 	});
 
-	it("should check only path", () => {
-		return supertest(callback)
+	it("should check only path", async () => {
+		await supertest(callback)
 			.get("/foo.js.map?query=0#hash")
 			.expect(404);
 	});
@@ -38,13 +38,13 @@ describe("adminOnlyFilter", () => {
 	app.use(adminOnlyFilter("/test/user"));
 	app.use(ctx => ctx.body = "hello world");
 
-	it("should 403 for guests", () => {
-		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 0 } });
-		return supertest(app.callback()).get("/").expect(403);
+	it("should 403 for guests", async () => {
+		(axios.get as JestMockCompatFn).mockResolvedValue({ status: 200, data: { id: 0 } });
+		await supertest(app.callback()).get("/").expect(403);
 	});
 
-	it("should continue for admin", () => {
-		(axios.get as Mock).mockResolvedValue({ status: 200, data: { id: 2 } });
-		return supertest(app.callback()).get("/").expect(200, "hello world");
+	it("should continue for admin", async () => {
+		(axios.get as JestMockCompatFn).mockResolvedValue({ status: 200, data: { id: 2 } });
+		await supertest(app.callback()).get("/").expect(200, "hello world");
 	});
 });

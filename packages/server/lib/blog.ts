@@ -1,25 +1,27 @@
 import Axios from "axios";
-import { getLogger } from "log4js";
+import log4js from "log4js";
 import { BaseContext, ExtendableContext, Next } from "koa";
 import conditional from "koa-conditional-get";
 import compress from "koa-compress";
 import multer from "@koa/multer";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
-import AppBuilder, { FunctionPlugin } from "./AppBuilder";
-import { ResolvedConfig } from "./config";
-import { download, upload } from "./koa/media";
-import sitemapHandler from "./koa/sitemap";
-import feedHandler from "./koa/feed";
-import { configureForProxy } from "./axios-helper";
-import LocalFileStore from "@kaciras-blog/media/lib/LocalFileStore";
-import DispatchService from "@kaciras-blog/media/lib/DispatchService";
-import VariantService from "@kaciras-blog/media/lib/VariantService";
-import CachedService from "@kaciras-blog/media/lib/CachedService";
-import RasterOptimizer from "@kaciras-blog/media/lib/image/RasterOptimizer";
-import SVGOptimizer from "@kaciras-blog/media/lib/image/SVGOptimizer";
+import {
+	CachedService,
+	DispatchService,
+	LocalFileStore,
+	RasterOptimizer,
+	SVGOptimizer,
+	VariantService,
+} from "@kaciras-blog/media";
+import AppBuilder, { FunctionPlugin } from "./AppBuilder.js";
+import { ResolvedConfig } from "./config.js";
+import { download, upload } from "./koa/media.js";
+import sitemapHandler from "./koa/sitemap.js";
+import feedHandler from "./koa/feed.js";
+import { configureForProxy } from "./axios-helper.js";
 
-const logger = getLogger();
+const logger = log4js.getLogger();
 
 const CSP_REPORT_URI = "/csp-report";
 

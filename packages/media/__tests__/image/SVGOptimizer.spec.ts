@@ -1,14 +1,15 @@
+import { describe, expect, it, vi } from "vitest";
 import SVGOptimizer from "../../lib/image/SVGOptimizer";
-import { BadDataError } from "../../lib/errors";
+import { BadDataError } from "../../lib";
 import { readFixture } from "../test-utils";
 
 const small = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>';
 
 const store = {
-	putCache: jest.fn(),
-	getCache: jest.fn(),
-	save: jest.fn(),
-	load: jest.fn(),
+	putCache: vi.fn(),
+	getCache: vi.fn(),
+	save: vi.fn(),
+	load: vi.fn(),
 };
 
 const request = {

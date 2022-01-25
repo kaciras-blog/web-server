@@ -1,13 +1,13 @@
 import { randomBytes } from "crypto";
+import { expect, it, vi } from "vitest";
 import VariantService from "../lib/VariantService";
-import { BadDataError } from "../lib/errors";
-import { Data } from "../lib/FileStore";
+import { BadDataError, Data } from "../lib";
 
 const store = {
-	putCache: jest.fn(),
-	getCache: jest.fn(),
-	save: jest.fn<any, [Data, string]>(() => Promise.resolve(true)),
-	load: jest.fn(),
+	putCache: vi.fn(),
+	getCache: vi.fn(),
+	save: vi.fn<[Data, string], any>(() => Promise.resolve(true)),
+	load: vi.fn(),
 };
 
 const loadRequest = {

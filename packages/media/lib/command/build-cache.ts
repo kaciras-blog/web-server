@@ -1,10 +1,8 @@
 import { join, parse } from "path";
-import { readdirSync, readFileSync } from "fs-extra";
+import { readdirSync, readFileSync } from "fs";
 import { Presets, SingleBar } from "cli-progress";
-import { ResolvedConfig } from "../../../server/lib/config";
-import LocalFileStore from "../LocalFileStore";
-import SVGOptimizer from "../image/SVGOptimizer";
-import RasterOptimizer from "../image/RasterOptimizer";
+import { ResolvedConfig } from "../../../server/lib/config.js";
+import { LocalFileStore, RasterOptimizer, SVGOptimizer } from "../index.js";
 
 const parameters = {};
 
@@ -15,7 +13,7 @@ const theme = Presets.shades_classic;
  *
  * 如果检测到缓存已存在则不会重新生成，要强制全部重建请删除缓存目录后再运行。
  */
-export async function buildCache(options: ResolvedConfig) {
+export default async function buildCache(options: ResolvedConfig) {
 	const { dataDir } = options.app;
 
 	const store = new LocalFileStore(dataDir, "image");

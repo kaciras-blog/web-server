@@ -1,3 +1,4 @@
+import { expect, it } from "vitest";
 import fs from "fs-extra";
 import Koa from "koa";
 import supertest from "supertest";
@@ -16,15 +17,15 @@ app.use(ctx => {
 // 【坑】如果被测代码的 Content-Length 计算错误的话会抛出奇怪的错误：
 // Parse Error: Expected HTTP/
 
-it("should send file without Range", () => {
-	return supertest(app.callback())
+it("should send file without Range", async () => {
+	await supertest(app.callback())
 		.get("/")
 		.expect("Content-Length", "475")
 		.expect(200, fs.readFileSync(FILE, { encoding: "utf8" }));
 });
 
-it("should send file part", () => {
-	return supertest(app.callback())
+it("should send file part", async () => {
+	await supertest(app.callback())
 		.get("/")
 		.set("Range", "bytes=1-3")
 		.expect("Accept-Ranges", "bytes")
@@ -33,8 +34,8 @@ it("should send file part", () => {
 		.expect(206, "f m");
 });
 
-it("should send file part with range N-", () => {
-	return supertest(app.callback())
+it("should send file part with range N-", async () => {
+	await supertest(app.callback())
 		.get("/")
 		.set("Range", "bytes=470-")
 		.expect("Accept-Ranges", "bytes")
@@ -43,8 +44,8 @@ it("should send file part with range N-", () => {
 		.expect(206, "ead).");
 });
 
-it("should send file part with range -N", () => {
-	return supertest(app.callback())
+it("should send file part with range -N", async () => {
+	await supertest(app.callback())
 		.get("/")
 		.set("Range", "bytes=-2")
 		.expect("Accept-Ranges", "bytes")
@@ -87,8 +88,8 @@ it("should sends multi-chunk response on multi-range (specific ranges)", async (
 });
 
 // https://github.com/koajs/koa-range/issues/15
-it("should return 206 with range larger than total length", () => {
-	return supertest(app.callback())
+it("should return 206 with range larger than total length", async () => {
+	await supertest(app.callback())
 		.get("/")
 		.set("Range", "bytes=470-999")
 		.expect("Content-Range", "bytes 470-474/475")
@@ -96,14 +97,14 @@ it("should return 206 with range larger than total length", () => {
 		.expect(206, "ead).");
 });
 
-it("should return 416 with range out of bound", () => {
-	return supertest(app.callback())
+it("should return 416 with range out of bound", async () => {
+	await supertest(app.callback())
 		.get("/")
 		.set("Range", "bytes=800-900")
 		.expect("Content-Range", "bytes */475")
 		.expect(416);
 });
 
-it("should return 400 with invalid Range header", () => {
-	return supertest(app.callback()).get("/").set("Range", "invalid").expect(400);
+it("should return 400 with invalid Range header", async () => {
+	await supertest(app.callback()).get("/").set("Range", "invalid").expect(400);
 });

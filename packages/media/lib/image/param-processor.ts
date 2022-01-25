@@ -1,8 +1,8 @@
 import { Sharp } from "sharp";
-import { ParamsError } from "../errors";
+import { ParamsError } from "../errors.js";
 
 /**
- * 裁剪参数格式 <上>-<左>-<宽>-<高>，均为正整数。
+ * 根据指定的参数裁剪图片，参数格式 <上>-<左>-<宽>-<高>，单位像素。
  *
  * @param image 图片
  * @param argument 参数
@@ -23,7 +23,10 @@ export function crop(image: Sharp, argument: string) {
 }
 
 /**
- * 缩放参数格式：<宽>x<高>，其中<宽>和<高>为正整数，如果省略表示该方向上不改变。
+ * 根据参数缩放图片，参数格式：<宽>x<高>，单位像素，表示把指定的方向缩放到该大小。
+ * 宽和高都可以省略，表示该方向上不改变。
+ *
+ * 比如 "x50" 表示宽不变，高度缩放到 50 像素。
  *
  * @param image 图片
  * @param argument 参数
