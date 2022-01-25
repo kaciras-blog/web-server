@@ -27,7 +27,6 @@ export function runVite(config: InlineConfig, entry = TE_ID) {
 			rollupOptions: {
 				input: entry,
 				output: {
-
 					entryFileNames: "[name].js",
 					chunkFileNames: "[name].js",
 					assetFileNames: "[name].[ext]",

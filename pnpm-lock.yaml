@@ -33,6 +33,7 @@ importers:
       fs-extra: ^10.0.0
       less: ^4.1.2
       log4js: ^6.4.1
+      magic-string: ^0.25.7
       rollup: ^2.66.0
       rollup-plugin-visualizer: ^5.5.4
       source-map-support: ^0.5.21
@@ -48,6 +49,7 @@ importers:
       colorette: 2.0.16
       fs-extra: 10.0.0
       log4js: 6.4.1
+      magic-string: 0.25.7
       rollup-plugin-visualizer: 5.5.4_rollup@2.66.0
       source-map-support: 0.5.21
       svgo: 2.8.0
