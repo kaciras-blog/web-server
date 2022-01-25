@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import vue from "@vitejs/plugin-vue";
 import { ResolvedDevConfig } from "./options.js";
-import compress from "./plugin/compress-assets.js";
+import compressAssets from "./plugin/compress-assets.js";
 import vueSvgComponent from "./plugin/vue-svg-component.js";
 import optimizeImage from "./plugin/optimize-image.js";
 
@@ -48,8 +48,8 @@ export default function getViteConfig(options: ResolvedDevConfig) {
 
 			options.build.bundleAnalyzer && visualizer(),
 
-			compress({ algorithm: "gz" }),
-			compress({ algorithm: "br" }),
+			compressAssets({ algorithm: "gz" }),
+			compressAssets({ algorithm: "br" }),
 
 			optimizeImage(new RegExp("static/")),
 		],

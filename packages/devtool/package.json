@@ -13,6 +13,7 @@
 		"node": ">=17"
 	},
 	"main": "lib/index.js",
+	"types": "lib/index.ts",
 	"files": [
 		"bin",
 		"lib"

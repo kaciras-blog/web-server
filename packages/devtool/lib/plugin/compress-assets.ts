@@ -19,13 +19,14 @@ export interface CompressOptions {
  *
  * <h2>为什么造轮子</h2>
  * vite-plugin-compression 导出有问题，一个月没修。
- * rollup-plugin-gzip API 反人类，压缩算法要传函数……
+ * rollup-plugin-gzip API 反人类，压缩算法竟然要传函数……
  *
- * 而且这种功能相当简单，实现起来不超过 100 行的，还是自己随手写一个吧。
+ * 而且这功能相当简单，代码不超过 100 行的，还是自己随手写一个吧。
+ * 另外本插件使用 emitFile() 而不是直接写文件，扩展性更好。
  *
  * @param options 压缩选项
  */
-export default function compressPlugin(options: CompressOptions): Plugin {
+export default function compressAssets(options: CompressOptions): Plugin {
 	const {
 		algorithm,
 		minSize = 1024,
@@ -35,7 +36,7 @@ export default function compressPlugin(options: CompressOptions): Plugin {
 	const compress = zlibMap[algorithm];
 
 	return {
-		name: "kaciras:compress",
+		name: "kaciras:compress-assets",
 		enforce: "post",
 
 		apply(config, env) {
