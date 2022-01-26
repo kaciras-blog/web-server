@@ -1,10 +1,9 @@
+import path, { basename } from "path";
 import { URL } from "url";
-import fs from "fs-extra";
+import { readFileSync } from "fs";
 import { Context } from "koa";
 import log4js from "log4js";
-import path, { basename } from "path";
-import { App } from "vue";
-import { renderToString, SSRContext } from "@vue/server-renderer";
+import { SSRContext } from "@vue/server-renderer";
 import AppBuilder from "../AppBuilder.js";
 
 const logger = log4js.getLogger("SSR");
@@ -33,7 +32,7 @@ export interface RenderContext {
 	request: Context;
 }
 
-type SSREntry = (context: RenderContext) => App;
+type SSREntry = (context: RenderContext) => Promise<[string, SSRContext]>;
 
 const BASE_CONTEXT = {
 	title: "Kaciras的博客",
@@ -63,10 +62,7 @@ export async function renderPage(template: string, createApp: SSREntry, manifest
 
 	// 流式渲染不方便在外层捕获异常，先不用
 	try {
-		const app = await createApp(renderContext);
-
-		const ssrContext: SSRContext = {};
-		const result = await renderToString(app, ssrContext);
+		const [result, ssrContext] = await createApp(renderContext);
 		const preloads = renderPreloadLinks(ssrContext.modules, manifest);
 
 		ctx.body = template
@@ -148,9 +144,9 @@ function renderPreloadLink(file: string) {
 }
 
 /**
- * 使用指定目录下的 vue-ssr-server-bundle.json，vue-ssr-client-manifest.json 和 index.template.html 来创建渲染器。
+ * 使用指定目录下的构建结果来创建服务端渲染器。
  *
- * @param workingDir 指定的目录
+ * @param workingDir 构建的输出目录
  */
 export async function createSSRProductionPlugin(workingDir: string) {
 
@@ -158,9 +154,17 @@ export async function createSSRProductionPlugin(workingDir: string) {
 		return path.resolve(workingDir, file);
 	}
 
-	const template = await fs.readFile(resolve("index.template.html"), { encoding: "utf-8" });
-	const manifest = require(resolve("ssr-manifest.json"));
-	const createApp = require(resolve("entry-server.js"));
+	function read(file: string) {
+		return readFileSync(resolve(file), "utf8");
+	}
 
-	return (api: AppBuilder) => api.useFallBack((ctx) => renderPage(template, createApp, manifest, ctx));
+	const template = read("client/index.html");
+	const manifest = JSON.parse(read("server/ssr-manifest.json"));
+
+	const url = "file://" + resolve("server/entry-server.js");
+	const createApp = (await import(url)).default.default;
+
+	return (api: AppBuilder) => api.useFallBack((ctx) => {
+		renderPage(template, createApp, manifest, ctx);
+	});
 }
