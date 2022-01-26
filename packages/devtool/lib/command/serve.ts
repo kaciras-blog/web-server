@@ -1,7 +1,6 @@
 import { readFileSync } from "fs";
 import { Middleware } from "koa";
 import { createServer, ViteDevServer } from "vite";
-import startServer from "@kaciras-blog/server/lib/create-server.js";
 import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper.js";
 import AppBuilder from "@kaciras-blog/server/lib/AppBuilder.js";
 import { renderPage } from "@kaciras-blog/server/lib/koa/vue-ssr.js";
@@ -10,18 +9,12 @@ import getViteConfig from "../build-config.js";
 import { ResolvedDevConfig } from "../options.js";
 
 function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
-	let template = readFileSync("index.html", "utf-8");
-
-	const manifest = options.build.mode === "production"
-		? // @ts-ignore
-		require("./dist/client/ssr-manifest.json")
-		: {};
-
 	return async (ctx) => {
+		let template = readFileSync("index.html", "utf8");
 		template = await vite.transformIndexHtml(ctx.href, template);
 		const ssrEntry = await vite.ssrLoadModule("/src/entry-server.ts");
 
-		await renderPage(template, ssrEntry.default, manifest, ctx);
+		await renderPage(template, ssrEntry.default, {}, ctx);
 	};
 }
 
@@ -37,21 +30,23 @@ export default async function (options: ResolvedDevConfig) {
 		server: { middlewareMode: "ssr" },
 	});
 
-	builder.useBeforeFilter((ctx, next) => {
-		vite.middlewares.handle(ctx.req, ctx.res, next);
-	});
 	builder.addPlugin(getBlogPlugin(options));
 	builder.useFallBack(devSSR(options, vite));
 
+	/*
+	 * Vite 使用的 connect 中间件是回调式 API，它会同步返回导致请求提前结束，
+	 * 无法作为 Koa 的中间件，只能反过来把 Koa 放在它里面。
+	 */
 	const app = builder.build();
 	app.proxy = !!options.server.useForwardedHeaders;
+	vite.middlewares.use(app.callback());
 
-	const serverGroup = await startServer(app.callback(), options.server);
+	const serverGroup = vite.middlewares.listen(80);
 	console.info("\n- Local URL: https://localhost/\n");
 
 	return () => {
 		vite.close();
-		serverGroup.forceClose();
+		serverGroup.close();
 		closeHttp2Sessions();
 	};
 }

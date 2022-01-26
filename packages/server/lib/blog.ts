@@ -2,7 +2,6 @@ import Axios from "axios";
 import log4js from "log4js";
 import { BaseContext, ExtendableContext, Next } from "koa";
 import conditional from "koa-conditional-get";
-import compress from "koa-compress";
 import multer from "@koa/multer";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
@@ -106,15 +105,12 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 	const address = options.contentServer.internalOrigin;
 	const { app } = options;
 
-	return (api: AppBuilder) => {
-		api.useBeforeAll(conditional());
-		api.useBeforeAll(bodyParser());
-		api.useBeforeAll(securityFilter);
+	return (builder: AppBuilder) => {
+		builder.useBeforeAll(conditional());
+		builder.useBeforeAll(bodyParser());
+		builder.useBeforeAll(securityFilter);
 
-		api.useFilter(intercept(/^\/index\.template|vue-ssr/));
-
-		// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
-		api.useFilter(compress({ br: false, threshold: 1024 }));
+		builder.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		const adminFilter = adminOnlyFilter(address);
 		const router = new Router();
@@ -143,6 +139,6 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		router.get("/video/:name", ctx => download(vs, ctx));
 		router.post("/video", adminFilter, uploader, (ctx: any) => upload(vs, ctx));
 
-		api.useResource(router.routes());
+		builder.useResource(router.routes());
 	};
 }

@@ -7,6 +7,7 @@ import staticFiles from "../koa/static-files.js";
 import startServer from "../create-server.js";
 import { configureGlobalAxios } from "../axios-helper.js";
 import { ResolvedConfig, SimpleLogConfig } from "../config.js";
+import compress from "koa-compress";
 
 /**
  * 运行生产模式需要更详细的日志输出格式。
@@ -67,6 +68,10 @@ export default async function run(options: ResolvedConfig) {
 	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
 
 	const builder = new AppBuilder();
+
+	// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
+	builder.useFilter(compress({ br: false, threshold: 1024 }));
+
 	builder.addPlugin(getBlogPlugin(options));
 	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
 
