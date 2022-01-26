@@ -1,13 +1,17 @@
 import { join } from "path";
-import { RollupOutput } from "rollup";
+import { InputOptions, RollupOutput } from "rollup";
 import { build, InlineConfig, Plugin } from "vite";
 import { expect } from "vitest";
+import deepmerge from "deepmerge";
 
 const TE_ID = resolveFixture("_TEST_ENTRY_.js");
 
 export function testEntry(code: string): Plugin {
 	return {
 		name: "test-entry",
+		options(options: InputOptions) {
+			return { ...options, input: TE_ID };
+		},
 		resolveId(source: string) {
 			return source === TE_ID ? source : null;
 		},
@@ -20,24 +24,60 @@ export function testEntry(code: string): Plugin {
 	};
 }
 
-export function runVite(config: InlineConfig, entry = TE_ID) {
-	const base: InlineConfig = {
-		logLevel: "error",
-		build: {
-			rollupOptions: {
-				input: entry,
-				output: {
-					entryFileNames: "[name].js",
-					chunkFileNames: "[name].js",
-					assetFileNames: "[name].[ext]",
-				},
-			},
-			write: false,
+export function avoidEmptyChunkTS(): Plugin {
+	let id: string;
+
+	return {
+		name: "test:avoid-empty-chunk-warning",
+		enforce: "pre",
+		buildStart(options) {
+			id = (options.input as string[])[0];
+		},
+		resolveId(source: string) {
+			if (source !== id) {
+				return null;
+			}
+			return { id, moduleSideEffects: "no-treeshake" };
 		},
 	};
-	return build({ ...base, ...config }) as Promise<RollupOutput>;
 }
 
+const baseConfig: InlineConfig = {
+	logLevel: "silent",
+	build: {
+		write: false,
+		rollupOptions: {
+			output: {
+				entryFileNames: "[name].js",
+				chunkFileNames: "[name].js",
+				assetFileNames: "[name].[ext]",
+			},
+		},
+	},
+};
+
+function autoResolve(object: any, key: string) {
+	if (object && typeof object[key] === "string") {
+		object[key] = resolveFixture(object[key]);
+	}
+}
+
+export function runVite(config: InlineConfig) {
+	config = deepmerge(baseConfig, config);
+
+	autoResolve(config.build?.rollupOptions, "input");
+	autoResolve(config.build, "ssr");
+
+	return build(config) as Promise<RollupOutput>;
+}
+
+/**
+ * 从构建的结果中读取 Asset 的内容，如果没找到或不是 Asset 则失败。
+ *
+ * @param bundle 构建结果
+ * @param name Asset 的文件名
+ * @return Asset 的内容
+ */
 export function getAsset(bundle: RollupOutput, name: string) {
 	name = name.split("?", 2)[0];
 	const file = bundle.output.find(a => a.fileName === name);
@@ -52,7 +92,7 @@ export function getAsset(bundle: RollupOutput, name: string) {
 }
 
 /**
- * 返回fixtures目录下文件的完整路径。
+ * 返回 fixtures 目录下文件的完整路径。
  *
  * @param name 文件名
  * @return 完整路径

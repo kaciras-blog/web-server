@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import fs from "fs-extra";
 import { RollupOutput } from "rollup";
-import { getAsset, resolveFixture, runVite, testEntry } from "./test-utils";
+import { avoidEmptyChunkTS, getAsset, resolveFixture, runVite } from "./test-utils";
 import optimizeImage from "../lib/plugin/optimize-image";
 
 /**
@@ -27,13 +27,20 @@ async function expectSmaller(bundle: RollupOutput, name: string, srcName = name)
 	expect(getAsset(bundle, name).length).toBeLessThan(source.size);
 }
 
-it("should compress images", async () => {
-	const bundle = await runVite({
+function optimize(input: string, include?: RegExp) {
+	return runVite({
+		build: {
+			rollupOptions: { input },
+		},
 		plugins: [
-			optimizeImage(),
-			testEntry('import img from "./test.png"'),
+			avoidEmptyChunkTS(),
+			optimizeImage(include),
 		],
 	});
+}
+
+it("should compress images", async () => {
+	const bundle = await optimize("test.png");
 
 	// 1 个图片输出，1 个额外的 WebP，1 个入口文件。
 	expect(bundle.output).toHaveLength(3);
@@ -42,12 +49,7 @@ it("should compress images", async () => {
 });
 
 it("should optimize SVG", async () => {
-	const bundle = await runVite({
-		plugins: [
-			optimizeImage(),
-			testEntry('import img from "./visible-off.svg"'),
-		],
-	});
+	const bundle = await optimize("visible-off.svg");
 
 	// 1 个图片输出，1 个入口文件。
 	expect(bundle.output).toHaveLength(2);
@@ -55,11 +57,7 @@ it("should optimize SVG", async () => {
 });
 
 it("should include files matches the regexp", async () => {
-	const bundle = await runVite({
-		plugins: [
-			optimizeImage(/\.gif$/),
-		],
-	}, resolveFixture("entry-images.js"));
+	const bundle = await optimize("entry-images.js", /\.gif$/);
 
 	await expectSmaller(bundle, "tantrum.gif");
 	await expectUnoptimized(bundle, "visible-off.svg");

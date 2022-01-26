@@ -2,7 +2,7 @@ import { basename } from "path";
 import { expect, it } from "vitest";
 import { Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
-import { getAsset, resolveFixture, runVite } from "./test-utils";
+import { getAsset, runVite } from "./test-utils";
 import vueSvgComponent from "../lib/plugin/vue-svg-component";
 import vm from "vm";
 import { createApp } from "vue";
@@ -25,17 +25,18 @@ const extractCodePlugin: Plugin = {
 	},
 };
 
-async function convert(fixture: string, mode?: string) {
-	const bundle = await runVite(
-		{
-			mode,
-			plugins: [
-				vueSvgComponent(),
-				extractCodePlugin,
-			],
+async function convert(input: string, mode?: string) {
+	const bundle = await runVite({
+		mode,
+		build: {
+			rollupOptions: { input },
 		},
-		resolveFixture(fixture));
-	return getAsset(bundle, fixture);
+		plugins: [
+			vueSvgComponent(),
+			extractCodePlugin,
+		],
+	});
+	return getAsset(bundle, input);
 }
 
 function loadBundle<T = any>(code: string) {
@@ -67,8 +68,7 @@ it("should work with @vitejs/plugin-vue", async () => {
 	const bundle = await runVite(
 		{
 			build: {
-				ssr: resolveFixture("inline-styles.svg?sfc"),
-				write: false,
+				ssr: "inline-styles.svg?sfc",
 			},
 			plugins: [
 				vue(),
