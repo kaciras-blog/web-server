@@ -1,5 +1,5 @@
 import zlib, { InputType } from "zlib";
-import { basename } from "path";
+import { basename, extname } from "path";
 import { promisify } from "util";
 import { optimize, OptimizeOptions } from "svgo";
 import { LoadRequest, SaveRequest } from "../MediaService.js";
@@ -67,7 +67,8 @@ export default class SVGOptimizer implements Optimizer {
 
 	async getCache(request: LoadRequest) {
 		const { name, acceptEncodings } = request;
-		const hash = basename(name);
+		const ext = extname(name);
+		const hash = basename(name, ext);
 
 		if (acceptEncodings.includes("br")) {
 			const file = await this.store.getCache(hash, { encoding: "br" });
@@ -77,7 +78,7 @@ export default class SVGOptimizer implements Optimizer {
 		}
 
 		if (acceptEncodings.includes("gzip")) {
-			const file = await this.store.getCache(name, { encoding: "gz" });
+			const file = await this.store.getCache(hash, { encoding: "gz" });
 			if (file) {
 				return { file, type: "svg", encoding: "gzip" };
 			}
