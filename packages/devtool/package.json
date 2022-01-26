@@ -40,6 +40,7 @@
 		"@types/fs-extra": "^9.0.13",
 		"@types/svgo": "^2.6.1",
 		"@vue/server-renderer": "^3.2.21",
+		"deepmerge": "^4.2.2",
 		"less": "^4.1.2",
 		"rollup": "^2.66.0",
 		"vue": "next"
