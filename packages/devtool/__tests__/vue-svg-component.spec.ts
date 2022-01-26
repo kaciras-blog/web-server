@@ -9,16 +9,19 @@ import { createApp } from "vue";
 import { renderToString } from "@vue/server-renderer";
 import { createRequire } from "module";
 
+/**
+ * 把转成 SFC 的 SVG 提取出来作为一个 Asset。
+ */
 const extractCodePlugin: Plugin = {
 	name: "test:extract-code",
 	transform(code: string, id: string) {
-		if (!id.endsWith(".svg+sfc.vue")) {
+		if (!id.endsWith(".svg.vue")) {
 			return;
 		}
 		this.emitFile({
 			type: "asset",
 			name: id,
-			fileName: basename(id, "+sfc.vue"),
+			fileName: basename(id, ".vue"),
 			source: code,
 		});
 		return "window.avoidWarn = 1";
@@ -64,6 +67,7 @@ it("should extract styles", async () => {
 	expect(source.toString()).toMatchSnapshot();
 });
 
+// 这个测试生成的 scopeId 可能会变化，注意重新生成快照。
 it("should work with @vitejs/plugin-vue", async () => {
 	const bundle = await runVite(
 		{

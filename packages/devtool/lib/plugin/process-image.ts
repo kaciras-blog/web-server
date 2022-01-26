@@ -5,6 +5,8 @@ import MagicString from "magic-string";
 import { Plugin, ResolvedConfig } from "vite";
 import { createPresetCropper } from "@kaciras-blog/media";
 
+const imageRE = /\.(jpe?g|png|webp)$/;
+
 const cropPresets = createPresetCropper({
 
 	// 首页的大背景，M 代表手机屏幕
@@ -14,7 +16,6 @@ const cropPresets = createPresetCropper({
 		return `0-${left}-${tw}-${height}`;
 	},
 });
-
 
 /**
  * 裁剪和缩放图片的加载器，通过 url 中的参数来裁剪和缩放图片。
@@ -36,7 +37,7 @@ export default function processImage(): Plugin {
 			const params = new URLSearchParams(query);
 			const preset = params.get("size");
 
-			if (!preset) {
+			if (!imageRE.test(file) || !preset) {
 				return null;
 			}
 			const buffer = await cropPresets(readFileSync(file), preset);

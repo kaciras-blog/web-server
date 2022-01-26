@@ -1,3 +1,5 @@
+export * from "./options.d";
+
 export { default as getViteConfig } from "./build-config.js";
 
 export { default as serve } from "./command/serve.js";

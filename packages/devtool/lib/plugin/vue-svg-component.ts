@@ -81,6 +81,10 @@ const productionPlugins: Plugin[] = [
 /**
  * 将 SVG 转换为 Vue 的 SFC，需要配合 @vitejs/plugin-vue 使用。
  *
+ * <h2>SVG 组件的 import</h2>
+ * vite-svg-loader 和 @vuetter/vite-plugin-vue-svg 均采用额外参数来与默认的加载方式区分。
+ * 这样的好处是保持与其它资源一致，而且 TS 类型也好匹配。
+ *
  * <h2>关于全局副作用元素</h2>
  * - 内联样式会提取到 SFC 的 <style scoped> 中，避免污染全局。
  * - 本加载器不处理 <script>，因为其无法简单地转为 SFC 中对应的部分，
@@ -100,7 +104,7 @@ export default function vueSvgComponent(): VitePlugin {
 		},
 
 		/**
-		 * 把需要内联的 SVG 的文件名解析成了 .svg+sfc.vue 文件，
+		 * 把需要内联的 SVG 的文件名解析成了 .svg.vue 文件，
 		 * 这样无需修改 vue 插件的 includes。
 		 */
 		async resolveId(id: string, importer: string) {
@@ -110,13 +114,13 @@ export default function vueSvgComponent(): VitePlugin {
 			id = id.slice(0, -4);
 			const r = await this.resolve(id, importer, { skipSelf: true });
 			if (r) {
-				return r.id + "+sfc.vue";
+				return r.id + ".vue";
 			}
 			throw new Error("Cannot resolve file: " + id);
 		},
 
 		load(id: string) {
-			if (!id.endsWith(".svg+sfc.vue")) {
+			if (!id.endsWith(".svg.vue")) {
 				return null;
 			}
 			const styles: string[] = [];
@@ -126,7 +130,7 @@ export default function vueSvgComponent(): VitePlugin {
 				collectStyles(styles),
 			];
 
-			const svg = readFileSync(id.slice(0, -8), "utf8");
+			const svg = readFileSync(id.slice(0, -4), "utf8");
 			const result = optimize(svg, { plugins });
 
 			if (result.modernError) {
