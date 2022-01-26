@@ -68,4 +68,9 @@ describe("optimization", () => {
 		expect((await fileTypeFromBuffer(result))?.mime).toBe("image/webp");
 		expect(result.length).toBeLessThan(gif.length * 0.7);
 	});
+
+	// GIF 转 AVIF 效果也理想。
+	it("should not support GIF to WebP", () => {
+		return expect(encodeAVIF(gif)).rejects.toThrow(ProcessorError);
+	});
 });
