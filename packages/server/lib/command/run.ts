@@ -1,3 +1,4 @@
+import { join } from "path";
 import { BaseContext } from "koa";
 import log4js from "log4js";
 import AppBuilder from "../AppBuilder.js";
@@ -62,10 +63,12 @@ function staticFilesCacheControl(ctx: BaseContext) {
 }
 
 export default async function run(options: ResolvedConfig) {
+	const { contentServer, outputDir } = options;
+
 	configureLog4js(options.app.logging);
 	const logger = log4js.getLogger();
 
-	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
+	const closeHttp2Sessions = configureGlobalAxios(contentServer);
 
 	const builder = new AppBuilder();
 
@@ -73,9 +76,9 @@ export default async function run(options: ResolvedConfig) {
 	builder.useFilter(compress({ br: false, threshold: 1024 }));
 
 	builder.addPlugin(getBlogPlugin(options));
-	builder.addPlugin(await createSSRProductionPlugin(options.outputDir));
+	builder.addPlugin(await createSSRProductionPlugin(outputDir));
 
-	builder.useResource(staticFiles(options.outputDir, {
+	builder.useResource(staticFiles(join(outputDir, "client"), {
 		customResponse: staticFilesCacheControl,
 	}));
 
