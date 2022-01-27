@@ -1,4 +1,4 @@
-import { expect, it, JestMockCompatFn, vi } from "vitest";
+import { expect, it, SpyInstanceFn, vi } from "vitest";
 import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
@@ -17,7 +17,7 @@ const app = new Koa();
 app.use(sitemapMiddleware("123.45.67.89"));
 const callback = app.callback();
 
-(axios.get as JestMockCompatFn).mockResolvedValue({ status: 200, data: DATA });
+(axios.get as SpyInstanceFn).mockResolvedValue({ status: 200, data: DATA });
 
 it("should response sitemap xml", async () => {
 	await supertest(callback)
@@ -50,6 +50,6 @@ it("should recognize Baidu spider by User-Agent", async () => {
 });
 
 it("should return 503 on error", async () => {
-	(axios.get as JestMockCompatFn).mockRejectedValue(new Error());
+	(axios.get as SpyInstanceFn).mockRejectedValue(new Error());
 	await supertest(callback).get("/sitemap.xml").expect(503);
 });
