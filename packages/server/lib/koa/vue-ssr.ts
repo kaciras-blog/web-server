@@ -65,7 +65,10 @@ export async function renderPage(template: string, createApp: SSREntry, manifest
 		const [result, ssrContext] = await createApp(renderContext);
 		const preloads = renderPreloadLinks(ssrContext.modules, manifest);
 
+		const m = `<script>window.__INITIAL_STATE__ = ${JSON.stringify(ssrContext.state)}</script>`;
+
 		ctx.body = template
+			.replace("<!--ssr-state-->", m)
 			.replace("<!--app-html-->", result)
 			.replace("<!--preload-links-->", preloads);
 
@@ -165,6 +168,6 @@ export async function createSSRProductionPlugin(workingDir: string) {
 	const createApp = (await import(url)).default.default;
 
 	return (api: AppBuilder) => api.useFallBack((ctx) => {
-		renderPage(template, createApp, manifest, ctx);
+		return renderPage(template, createApp, manifest, ctx);
 	});
 }
