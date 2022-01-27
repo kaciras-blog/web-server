@@ -16,7 +16,8 @@
 	"types": "lib/index.ts",
 	"files": [
 		"bin",
-		"lib"
+		"lib",
+		"client.d.ts"
 	],
 	"bin": {
 		"blog-devtool": "bin/blog-devtool.js"
