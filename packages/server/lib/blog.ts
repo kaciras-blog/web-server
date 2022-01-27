@@ -66,22 +66,6 @@ export function toggleSW(enable?: boolean) {
 }
 
 /**
- * 拦截某些资源，ctx.path 匹配到任一模式串的请求将被拦截，并返回404。
- *
- * @param pattern 模式串，可以用 combineRegexOr 来组合多个串
- * @return Koa 的中间件函数
- */
-export function intercept(pattern: RegExp) {
-	return (ctx: BaseContext, next: Next) => {
-		if (!pattern.test(ctx.path)) {
-			return next();
-		}
-		ctx.status = 404;
-		logger.debug(`客户端请求了被拦截的文件：${ctx.url}`);
-	};
-}
-
-/**
  * 限制后面的中间件只能由管理员访问。
  *
  * @param host 内容服务器地址
@@ -109,8 +93,6 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		builder.useBeforeAll(conditional());
 		builder.useBeforeAll(bodyParser());
 		builder.useBeforeAll(securityFilter);
-
-		builder.useFilter(intercept(/^\/index\.template|vue-ssr/));
 
 		const adminFilter = adminOnlyFilter(address);
 		const router = new Router();
