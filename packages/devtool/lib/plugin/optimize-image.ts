@@ -53,8 +53,8 @@ const optimizers: Optimizer[] = [
 ];
 
 /**
- * 优化图片资源的插件，能够压缩图片资源，同时还会为一些图片额外生成WebP格式的转码，
- * WebP图片的文件名与原始的资源仅扩展名不同。
+ * 优化图片资源的插件，能够压缩图片资源，同时还会为一些图片额外生成 WebP 格式的转码，
+ * WebP 图片的文件名与原始的资源仅扩展名不同。
  *
  * 【使用注意】
  * 1）为了保证质量，图片始终要从原图转换，所以请勿在加载器里优化图片。
@@ -65,7 +65,10 @@ export default function optimizeImage(include?: RegExp): Plugin {
 	return {
 		name: "kaciras:optimize-image",
 
-		// 仅在客户端的生产环境构建时才启用
+		// 本插件所修改的图片，以及生成的额外文件应该不会被其他插件再用了。
+		enforce: "post",
+
+		// 仅在客户端的生产环境构建时才启用。
 		apply(config, env) {
 			return !config.build?.ssr && env.command === "build";
 		},
