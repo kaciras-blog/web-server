@@ -40,18 +40,3 @@ export function debounceFirst<T, R>(func: (...args: any[]) => Promise<R>) {
 		return task = func.apply(this, args).finally(() => task = null);
 	};
 }
-
-/**
- * 把多个正则表达式组以“或”关系合为一个。
- *
- * 组合后的表达式里字串顺序与数组一致，用捕获时需要注意顺序，或是用命名捕获组。
- *
- * 【造轮子】
- * 虽然有几个库也干这事，不过这函数太简单自己写也不费事。
- *
- * @param patterns 表达式数组
- * @return 组合后的正则表达式，匹配原数组中的任意一个
- */
-export function combineRegexOr(patterns: RegExp[]) {
-	return new RegExp(patterns.map((p) => `(?:${p.source})`).join("|"));
-}

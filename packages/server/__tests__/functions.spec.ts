@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { combineRegexOr, debounceFirst, once } from "../lib/functions";
+import { debounceFirst, once } from "../lib/functions";
 
 describe("debounceFirst", () => {
 
@@ -96,35 +96,5 @@ describe("once", () => {
 		expect(wrapped(false)).toBe(123456);
 
 		expect(func.mock.calls).toHaveLength(3);
-	});
-});
-
-describe("combineRegexOr", () => {
-
-	it("should support empty array", () => {
-		const regex = combineRegexOr([]);
-		expect(regex.test("foobar")).toBe(true);
-		expect(regex.test("")).toBe(true);
-	});
-
-	it("should support single element", () => {
-		const regex = combineRegexOr([/foobar/]);
-		expect(regex.test("_foobar_")).toBe(true);
-		expect(regex.test("_foobaz_")).toBe(false);
-	});
-
-	it("should combine patterns", () => {
-		const regex = combineRegexOr([/^a/, /b$/]);
-		expect(regex.test("a_")).toBe(true);
-		expect(regex.test("_b")).toBe(true);
-	});
-
-	it("should support capture group", () => {
-		const regex = combineRegexOr([/(a+)/, /(b+)/]);
-		const exec = regex.exec("bbb,aa")!;
-
-		expect(exec[0]).toBe("bbb");
-		expect(exec[1]).toBeUndefined();
-		expect(exec[2]).toBe("bbb");
 	});
 });
