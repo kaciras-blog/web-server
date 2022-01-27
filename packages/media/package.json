@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/media",
-	"version": "2.0.0-alpha.3",
+	"version": "2.0.0-beta.0",
 	"description": "Media processor for Kaciras Blog",
 	"license": "MIT",
 	"repository": {
