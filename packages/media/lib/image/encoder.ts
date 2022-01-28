@@ -44,7 +44,7 @@ export async function encodeWebp(buffer: Buffer) {
 	if (isGif(buffer)) {
 		throw new ProcessorError("暂不支持 GIF 转 WebP");
 	}
-	const input = sharp(buffer);
+	const input = sharp(buffer, { failOnError: false });
 
 	const task = Promise.all([
 		input.webp({ lossless: true }).toBuffer(),
@@ -67,7 +67,8 @@ export async function encodeAVIF(buffer: Buffer) {
 	if (isGif(buffer)) {
 		throw new ProcessorError("暂不支持 GIF 转 AVIF");
 	}
-	return sharp(buffer).avif().toBuffer().catch(BadDataError.convert);
+	const input = sharp(buffer, { failOnError: false });
+	return input.avif().toBuffer().catch(BadDataError.convert);
 }
 
 /**

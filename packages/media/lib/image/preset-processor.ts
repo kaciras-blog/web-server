@@ -31,7 +31,11 @@ export default function createPresetCropper(presets: Presets) {
 			throw new ParamsError(`不存在的预设名：${name}`);
 		}
 
-		const image = sharp(buffer);
+		/*
+		 * 某些图片可能不规范，这里设置 failOnError: false 容忍这种情况。
+		 * https://github.com/lovell/sharp/issues/3050
+		 */
+		const image = sharp(buffer, { failOnError: false });
 		const args = await getPresetArgs(image);
 
 		return crop(image, presetFn(...args)).toBuffer();
