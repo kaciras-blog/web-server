@@ -3,7 +3,7 @@ import { Middleware } from "koa";
 import { createServer, ViteDevServer } from "vite";
 import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper.js";
 import AppBuilder from "@kaciras-blog/server/lib/AppBuilder.js";
-import { renderPage } from "@kaciras-blog/server/lib/koa/vue-ssr.js";
+import { renderSSR } from "@kaciras-blog/server/lib/koa/vue-ssr.js";
 import getBlogPlugin from "@kaciras-blog/server/lib/blog.js";
 import getViteConfig from "../build-config.js";
 import { ResolvedDevConfig } from "../options.js";
@@ -14,7 +14,14 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
 		template = await vite.transformIndexHtml(ctx.href, template);
 		const ssrEntry = await vite.ssrLoadModule("/src/entry-server.ts");
 
-		await renderPage(template, ssrEntry.default, {}, ctx);
+		try {
+			await renderSSR(template, ssrEntry.default, {}, ctx);
+		} catch (e) {
+			vite.ssrFixStacktrace(e);
+			ctx.status = 500;
+			ctx.body = e.stack;
+			console.log(e.stack);
+		}
 	};
 }
 
@@ -22,7 +29,7 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
  * 启动开发服务器，它提供了热重载功能。
  */
 export default async function (options: ResolvedDevConfig) {
-	const closeHttp2Sessions = configureGlobalAxios(options.contentServer);
+	const closeHttp2Sessions = configureGlobalAxios(options.backend);
 	const builder = new AppBuilder();
 
 	const vite = await createServer({
