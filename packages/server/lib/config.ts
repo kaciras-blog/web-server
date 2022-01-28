@@ -7,7 +7,7 @@ export interface BlogServerConfig {
 
 	server: ServerOptions;
 	app: AppOptions;
-	contentServer: ContentServerOptions;
+	backend: BackendOptions;
 }
 
 export interface SimpleLogConfig {
@@ -47,12 +47,10 @@ export interface AppOptions {
 	logging: SimpleLogConfig;
 }
 
-export interface ContentServerOptions {
-	internalOrigin: string;
-
-	cert: string | true;
-
-	publicOrigin: string | AddersSelector;
+export interface BackendOptions {
+	internal: string;
+	cert?: string | true;
+	public: string | AddersSelector;
 }
 
 export interface AddersSelector {

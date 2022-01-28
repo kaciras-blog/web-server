@@ -1,14 +1,14 @@
 import { join } from "path";
 import { BaseContext } from "koa";
+import compress from "koa-compress";
 import log4js from "log4js";
 import AppBuilder from "../AppBuilder.js";
 import getBlogPlugin from "../blog.js";
-import { createSSRProductionPlugin } from "../koa/vue-ssr.js";
+import { productionSSRPlugin } from "../koa/vue-ssr.js";
 import staticFiles from "../koa/static-files.js";
 import startServer from "../create-server.js";
 import { configureGlobalAxios } from "../axios-helper.js";
 import { ResolvedConfig, SimpleLogConfig } from "../config.js";
-import compress from "koa-compress";
 
 /**
  * 运行生产模式需要更详细的日志输出格式。
@@ -63,12 +63,12 @@ function staticFilesCacheControl(ctx: BaseContext) {
 }
 
 export default async function run(options: ResolvedConfig) {
-	const { contentServer, outputDir } = options;
+	const { backend, outputDir } = options;
 
 	configureLog4js(options.app.logging);
 	const logger = log4js.getLogger();
 
-	const closeHttp2Sessions = configureGlobalAxios(contentServer);
+	const closeHttp2Sessions = configureGlobalAxios(backend);
 
 	const builder = new AppBuilder();
 
@@ -76,7 +76,7 @@ export default async function run(options: ResolvedConfig) {
 	builder.useFilter(compress({ br: false, threshold: 1024 }));
 
 	builder.addPlugin(getBlogPlugin(options));
-	builder.addPlugin(await createSSRProductionPlugin(outputDir));
+	builder.addPlugin(await productionSSRPlugin(outputDir));
 
 	builder.useResource(staticFiles(join(outputDir, "client"), {
 		customResponse: staticFilesCacheControl,

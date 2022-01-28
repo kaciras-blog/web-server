@@ -10,7 +10,7 @@ import { ExtendableContext } from "koa";
 import log4js from "log4js";
 import fs from "fs-extra";
 import hash from "hash-sum";
-import { ContentServerOptions } from "./config.js";
+import { BackendOptions } from "./config.js";
 
 type ResHeaders = IncomingHttpHeaders & IncomingHttpStatusHeader;
 
@@ -187,9 +187,9 @@ export function configureAxiosHttp2(
  *
  * @param options 选项
  */
-export function configureGlobalAxios(options: ContentServerOptions) {
-	const { internalOrigin, cert } = options;
-	const https = internalOrigin.startsWith("https");
+export function configureGlobalAxios(options: BackendOptions) {
+	const { internal, cert } = options;
+	const https = internal.startsWith("https");
 
 	if (typeof cert === "string") {
 		const ca = fs.readFileSync(cert);

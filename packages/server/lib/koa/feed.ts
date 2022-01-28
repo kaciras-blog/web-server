@@ -18,7 +18,7 @@ interface FeedContext extends ExtendableContext {
 
 export default function createFeedMiddleware(config: ResolvedConfig) {
 	const { author, title } = config.app;
-	const articleApi = config.contentServer.internalOrigin + "/articles";
+	const articleApi = config.backend.internal + "/articles";
 
 	const getLinksFor = (origin: string) => ({
 		rss: `${origin}/feed/rss`,

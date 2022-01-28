@@ -20,8 +20,8 @@ export default function getViteConfig(options: ResolvedDevConfig) {
 			}],
 		},
 		define: {
-			"process.env.API_ORIGIN": JSON.stringify(options.contentServer.publicOrigin),
-			"process.env.SSR_API_ORIGIN": JSON.stringify(options.contentServer.internalOrigin),
+			"process.env.API_ORIGIN": JSON.stringify(options.backend.public),
+			"process.env.SSR_API_ORIGIN": JSON.stringify(options.backend.internal),
 		},
 		build: {
 			assetsDir: options.assetsDir,

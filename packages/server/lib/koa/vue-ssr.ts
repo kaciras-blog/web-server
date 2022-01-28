@@ -151,7 +151,7 @@ function renderPreloadLink(file: string) {
  *
  * @param workingDir 构建的输出目录
  */
-export async function createSSRProductionPlugin(workingDir: string) {
+export async function productionSSRPlugin(workingDir: string) {
 
 	function resolve(file: string) {
 		return path.resolve(workingDir, file);

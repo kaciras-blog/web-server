@@ -86,7 +86,7 @@ export function adminOnlyFilter(host: string) {
  * 对于图片这样较大的资源会占用 CPU，而我的VPS处理器又很垃圾。
  */
 export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
-	const address = options.contentServer.internalOrigin;
+	const address = options.backend.internal;
 	const { app } = options;
 
 	return (builder: AppBuilder) => {
