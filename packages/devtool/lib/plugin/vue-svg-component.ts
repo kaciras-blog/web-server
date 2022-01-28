@@ -106,9 +106,12 @@ export default function vueSvgComponent(): VitePlugin {
 		/**
 		 * 把需要内联的 SVG 的文件名解析成了 .svg.vue 文件，
 		 * 这样无需修改 vue 插件的 includes。
+		 *
+		 * Vite 的 importAnalysis 插件在启用热重载时会将 ID 去掉 root 后再解析一次，
+		 * 所以此处要接受 .svg?sfc 和 .svg.vue 两者。
 		 */
 		async resolveId(id: string, importer: string) {
-			if (!id.endsWith(".svg?sfc")) {
+			if (!/\.svg(?:\?sfc|\.vue)$/.test(id)) {
 				return null;
 			}
 			id = id.slice(0, -4);
