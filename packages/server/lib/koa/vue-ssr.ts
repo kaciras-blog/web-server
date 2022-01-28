@@ -8,17 +8,25 @@ import AppBuilder from "../AppBuilder.js";
 
 const logger = log4js.getLogger("SSR");
 
-/** 传递给服务端入口的上下文信息，其属性可以在渲染中被修改 */
-export interface RenderContext {
+export interface BlogSSRContext extends SSRContext {
 
-	/** 页面的标题 */
-	title: string;
+	/** 页面的标题，如果有则替换 HTML 中的 */
+	title?: string;
 
 	/** 插入到页面头的一些元素 */
-	meta: string;
+	meta?: string;
 
 	/** 如果路由结果为 404 错误页则为 true */
-	notFound?: boolean;
+	status?: number;
+
+	/** SSR 中加载的数据 */
+	state: any;
+
+	/** 该页面引用的所有模块，用于生成预载标签 */
+	modules: any;
+}
+
+export interface RequestContext {
 
 	/**
 	 * 页面的完整URL，可以从中获取 origin、query 等信息，而 VueRouter 只有 path。
@@ -32,48 +40,41 @@ export interface RenderContext {
 	request: Context;
 }
 
-type SSREntry = (context: RenderContext) => Promise<[string, SSRContext]>;
+type SSREntry = (context: RequestContext) => Promise<[string, BlogSSRContext]>;
 
-const BASE_CONTEXT = {
-	title: "Kaciras的博客",
-	meta: "",
-};
+const titleRE = new RegExp("<title>[^<]*</title>");
 
 /**
- * 处理页面请求，使用指定的渲染器渲染页面，渲染结果直接写入到Koa上下文。
+ * 在服务端渲染页面，如果出现了异常，则返回错误页面并设置对应的状态码。
  *
- * 如果请求的路径不存在，则发送404错误页。
- * 页面脚本里出现的异常不会抛出，而是记录到日志，然后发送错误页面。
+ * <h2>代码结构</h2>
+ * 新版将渲染 App 的部分放入构建内，此处只处理 HTML 部分，
+ * 这样整个 Vue 生态都在一起运行，耦合度更低，也避免了导入不一致的问题。
  *
- * @param template 渲染器
- * @param createApp 渲染器
- * @param manifest
- * @param ctx Koa上下文
+ * @param template HTML 模板
+ * @param entry 服务端入口
+ * @param manifest 资源清单
+ * @param ctx HTTP 请求上下文
  */
-export async function renderPage(template: string, createApp: SSREntry, manifest: any, ctx: Context) {
-	const renderContext: RenderContext = {
-		...BASE_CONTEXT,
+export async function renderSSR(template: string, entry: SSREntry, manifest: any, ctx: Context) {
+	const renderContext: RequestContext = {
 		request: ctx,
 		url: new URL(ctx.href),
 	};
 
-	// 显式设置，虽然 Koa 内部也会用 '<' 开头来判断是否是HTML
-	ctx.type = "html";
-
-	// 流式渲染不方便在外层捕获异常，先不用
 	try {
-		const [result, ssrContext] = await createApp(renderContext);
+		const [result, ssrContext] = await entry(renderContext);
 		const preloads = renderPreloadLinks(ssrContext.modules, manifest);
 
 		const m = `<script>window.__INITIAL_STATE__ = ${JSON.stringify(ssrContext.state)}</script>`;
 
 		ctx.body = template
-			.replace("<!--ssr-state-->", m)
+			.replace("<!--ssr-metadata-->", m)
 			.replace("<!--app-html-->", result)
 			.replace("<!--preload-links-->", preloads);
 
-		if (renderContext.notFound) {
-			ctx.status = 404;
+		if (ssrContext.title) {
+			template.replace(titleRE, `<title>${ssrContext.title}</title>`);
 		}
 	} catch (e) {
 		switch (e.code) {
@@ -141,7 +142,6 @@ function renderPreloadLink(file: string) {
 	} else if (file.endsWith(".png")) {
 		return ` <link rel="preload" href="${file}" as="image" type="image/png">`;
 	} else {
-		// TODO
 		return "";
 	}
 }
@@ -168,6 +168,6 @@ export async function productionSSRPlugin(workingDir: string) {
 	const createApp = (await import(url)).default.default;
 
 	return (api: AppBuilder) => api.useFallBack((ctx) => {
-		return renderPage(template, createApp, manifest, ctx);
+		return renderSSR(template, createApp, manifest, ctx);
 	});
 }
