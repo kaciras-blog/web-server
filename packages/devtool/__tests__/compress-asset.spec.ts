@@ -95,3 +95,20 @@ it("should only run at client build", async () => {
 
 	expect(bundle.output).toHaveLength(1);
 });
+
+it("should discard files with bad compress ratio",async () => {
+	const bundle = await runVite({
+		assetsInclude: "**/*.data",
+		build: {
+			assetsInlineLimit: 0,
+			rollupOptions: {
+				input: "random.data",
+			},
+		},
+		plugins: [
+			avoidEmptyChunkTS(),
+			compressAssets({ algorithm: "gz" }),
+		],
+	});
+	expect(bundle.output).toHaveLength(2);
+});

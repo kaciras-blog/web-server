@@ -28,6 +28,12 @@ export interface CompressOptions {
 	minSize?: number;
 
 	/**
+	 * 丢弃压缩比（压缩后 / 原大小）大于该值的结果，默认 1.0。
+	 * 这个选项用于防止生成压缩效果太差的文件。
+	 */
+	maxRatio?: number;
+
+	/**
 	 * 默认仅作用于在客户端构建，该参数为 true 则任何情况都启用。
 	 */
 	force?: boolean;
@@ -49,6 +55,7 @@ export default function compressAssets(options: CompressOptions): Plugin {
 	const {
 		algorithm,
 		minSize = 1024,
+		maxRatio = 1.0,
 		force = false,
 		includes = /\.(m?js|json|svg|css|html)$/,
 	} = options;
@@ -68,13 +75,17 @@ export default function compressAssets(options: CompressOptions): Plugin {
 				if (!includes.test(k)) {
 					continue;
 				}
-				let source = v.type === "chunk" ? v.code : v.source;
+				const raw = v.type === "chunk" ? v.code : v.source;
 
-				if (source.length < minSize) {
+				if (raw.length < minSize) {
 					continue;
 				}
 				const fileName = `${v.fileName}.${algorithm}`;
-				source = await compress(source);
+				const source = await compress(raw);
+
+				if (source.length / raw.length > maxRatio) {
+					continue;
+				}
 				this.emitFile({ type: "asset", source, fileName });
 			}
 		},
