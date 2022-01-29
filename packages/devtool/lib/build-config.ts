@@ -10,7 +10,16 @@ import vueSvgComponent from "./plugin/vue-svg-component.js";
 import optimizeImage from "./plugin/optimize-image.js";
 
 export default function getViteConfig(options: ResolvedDevConfig) {
-	const { bundleAnalyzer, serviceWorker, vueOptions } = options.build;
+	const { backend, build } = options;
+	const { env = {}, bundleAnalyzer, serviceWorker, vueOptions } = build;
+
+	env.API_PUBLIC = backend.public;
+	env.API_INTERNAL = backend.internal;
+
+	const define: Record<string, any> = {};
+	for (const [k, v] of Object.entries(env)) {
+		define["import.meta.env." + k] = JSON.stringify(v);
+	}
 
 	return defineConfig({
 		resolve: {
@@ -19,10 +28,7 @@ export default function getViteConfig(options: ResolvedDevConfig) {
 				replacement: join(cwd(), "src") + "/",
 			}],
 		},
-		define: {
-			"process.env.API_ORIGIN": JSON.stringify(options.backend.public),
-			"process.env.SSR_API_ORIGIN": JSON.stringify(options.backend.internal),
-		},
+		define,
 		build: {
 			assetsDir: options.assetsDir,
 		},
