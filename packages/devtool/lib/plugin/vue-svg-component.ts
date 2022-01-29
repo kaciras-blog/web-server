@@ -127,26 +127,32 @@ export default function vueSvgComponent(): VitePlugin {
 			if (!id.endsWith(".svg.vue")) {
 				return null;
 			}
-			const styles: string[] = [];
+			return readFileSync(id.slice(0, -4), "utf8");
+		},
 
+		transform(code, id) {
+			if (!id.endsWith(".svg.vue")) {
+				return null;
+			}
+			this.addWatchFile(id.slice(0, -4));
+
+			const styles: string[] = [];
 			const plugins = [
 				...(minify ? productionPlugins : developmentPlugins),
 				collectStyles(styles),
 			];
 
-			const svg = readFileSync(id.slice(0, -4), "utf8");
-			const result = optimize(svg, { plugins });
-
+			const result = optimize(code, { plugins });
 			if (result.modernError) {
 				throw result.modernError;
 			}
 
-			const code = `<template>${result.data}</template>`;
+			code = `<template>${result.data}</template>`;
 			if (styles.length === 0) {
 				return code;
 			} else {
-				const cssContent = styles.join("");
-				return `${code}<style scoped>${cssContent}</style>`;
+				const css = styles.join("");
+				return `${code}<style scoped>${css}</style>`;
 			}
 		},
 	};
