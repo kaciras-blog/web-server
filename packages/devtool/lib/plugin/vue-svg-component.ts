@@ -100,6 +100,7 @@ export default function vueSvgComponent(): VitePlugin {
 		enforce: "pre",
 
 		configResolved(config) {
+			config.optimizeDeps.exclude?.push("**/*.svg.vue");
 			minify = config.mode === "production";
 		},
 
