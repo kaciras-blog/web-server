@@ -23,7 +23,7 @@ export interface CompressOptions {
 	includes?: RegExp;
 
 	/**
-	 * 文件小于该字节数时不压缩，默认 1024。
+	 * 文件小于该字节数时不压缩，默认 2048。
 	 */
 	minSize?: number;
 
@@ -54,7 +54,7 @@ export interface CompressOptions {
 export default function compressAssets(options: CompressOptions): Plugin {
 	const {
 		algorithm,
-		minSize = 1024,
+		minSize = 2048,
 		maxRatio = 1.0,
 		force = false,
 		includes = /\.(m?js|json|svg|css|html)$/,
