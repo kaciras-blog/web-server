@@ -106,11 +106,14 @@ export default function vueSvgComponent(): VitePlugin {
 		},
 
 		/**
-		 * 把需要内联的 SVG 的文件名解析成了 .svg.vue?sfc 文件，
+		 * 解析原始的 SVG 文件路径，同时附加 .vue?sfc 后缀。
+		 *
+		 * <h3>后缀的用途</h2>
 		 * .vue 扩展名让 vue 插件无需修改 includes 就能处理它；
 		 * 最后的 ?sfc 可以避免被 vite:scan-deps 预处理。
 		 *
-		 * Vite 的 importAnalysis 插件在启用热重载时会将 ID 去掉 root 后再解析一次，
+		 * <h2>接受的 ID</h2>
+		 * Vite 的 importAnalysis 插件在热重载时会将 ID 去掉 root 后再解析一次，
 		 * 所以此处要接受 .svg?sfc 和 .svg.vue?sfc 两者。
 		 */
 		async resolveId(id: string, importer: string) {
@@ -134,7 +137,8 @@ export default function vueSvgComponent(): VitePlugin {
 		},
 
 		/**
-		 * 如果不用 transform，对文件的监视就不生效，不知道怎么回事……
+		 * 其实在 load 阶段就可以处理 SVG 到 Vue SFC 的转换，
+		 * 但 addWatchFile 不在 transform 里调用监视就不生效，不知道怎么回事……
 		 */
 		transform(code, id) {
 			if (!id.endsWith(".svg.vue?sfc")) {

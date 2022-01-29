@@ -79,7 +79,7 @@ function listenAsync(server: Server, port: number, hostname?: string) {
 export class ServerGroup {
 
 	/** 服务器列表，索引与 ServerOptions.connectors 参数是对应的 */
-	readonly servers: Server[]
+	readonly servers: Server[];
 
 	/** 所有服务器中保持的客户端连接 */
 	readonly connections: Set<Socket>;

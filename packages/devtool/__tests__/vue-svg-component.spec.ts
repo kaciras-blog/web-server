@@ -15,13 +15,13 @@ import { createRequire } from "module";
 const extractCodePlugin: Plugin = {
 	name: "test:extract-code",
 	transform(code: string, id: string) {
-		if (!id.endsWith(".svg.vue")) {
+		if (!id.endsWith(".svg.vue?sfc")) {
 			return;
 		}
 		this.emitFile({
 			type: "asset",
 			name: id,
-			fileName: basename(id, ".vue"),
+			fileName: basename(id, ".vue?sfc"),
 			source: code,
 		});
 		return "window.avoidWarn = 1";

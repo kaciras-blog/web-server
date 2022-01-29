@@ -35,7 +35,7 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 			link: origin + "/",
 			language: "zh-CN",
 			favicon: `${origin}/favicon.ico`,
-			copyright: `All rights reserved 2020-2021, ${author}`,
+			copyright: `All rights reserved 2020-2022, ${author}`,
 			feedLinks: getLinksFor(origin),
 		});
 
@@ -91,7 +91,7 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 				break;
 			default:
 				ctx.status = 404;
-				ctx.body = { message: "请求的 Feed 类型不支持", links: getLinksFor(ctx.origin) };
+				ctx.body = { message: "不支持的 Feed 类型", links: getLinksFor(ctx.origin) };
 		}
 	};
 }
