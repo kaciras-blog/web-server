@@ -38,7 +38,7 @@ const reactiveSvgoPlugin: Plugin = {
  *
  * @param styles 样式元素的内容将添加到这里
  */
-function collectStyles(styles: string[]): any {
+function extractStyles(styles: string[]): any {
 
 	function enter(node: any, parent: any) {
 		if (node.name !== "style") {
@@ -97,49 +97,55 @@ export default function vueSvgComponent(): VitePlugin {
 
 	return {
 		name: "kaciras:vue-svg-component",
+
+		// 本插件必须在 vite:asset 以及其它处理 .vue 文件的插件之前执行。
 		enforce: "pre",
 
 		configResolved(config) {
-			config.optimizeDeps.exclude?.push("**/*.svg.vue");
 			minify = config.mode === "production";
 		},
 
 		/**
-		 * 把需要内联的 SVG 的文件名解析成了 .svg.vue 文件，
-		 * 这样无需修改 vue 插件的 includes。
+		 * 把需要内联的 SVG 的文件名解析成了 .svg.vue?sfc 文件，
+		 * .vue 扩展名让 vue 插件无需修改 includes 就能处理它；
+		 * 最后的 ?sfc 可以避免被 vite:scan-deps 预处理。
 		 *
 		 * Vite 的 importAnalysis 插件在启用热重载时会将 ID 去掉 root 后再解析一次，
-		 * 所以此处要接受 .svg?sfc 和 .svg.vue 两者。
+		 * 所以此处要接受 .svg?sfc 和 .svg.vue?sfc 两者。
 		 */
 		async resolveId(id: string, importer: string) {
-			if (!/\.svg(?:\?sfc|\.vue)$/.test(id)) {
+			const match = /\.svg(?:\.vue)?\?sfc$/.exec(id);
+			if (!match) {
 				return null;
 			}
-			id = id.slice(0, -4);
+			id = id.slice(0, match.index + 4);
 			const r = await this.resolve(id, importer, { skipSelf: true });
 			if (r) {
-				return r.id + ".vue";
+				return r.id + ".vue?sfc";
 			}
 			throw new Error("Cannot resolve file: " + id);
 		},
 
 		load(id: string) {
-			if (!id.endsWith(".svg.vue")) {
+			if (!id.endsWith(".svg.vue?sfc")) {
 				return null;
 			}
-			return readFileSync(id.slice(0, -4), "utf8");
+			return readFileSync(id.slice(0, -8), "utf8");
 		},
 
+		/**
+		 * 如果不用 transform，对文件的监视就不生效，不知道怎么回事……
+		 */
 		transform(code, id) {
-			if (!id.endsWith(".svg.vue")) {
+			if (!id.endsWith(".svg.vue?sfc")) {
 				return null;
 			}
-			this.addWatchFile(id.slice(0, -4));
+			this.addWatchFile(id.slice(0, -8));
 
 			const styles: string[] = [];
 			const plugins = [
 				...(minify ? productionPlugins : developmentPlugins),
-				collectStyles(styles),
+				extractStyles(styles),
 			];
 
 			const result = optimize(code, { plugins });
