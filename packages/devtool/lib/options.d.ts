@@ -14,6 +14,7 @@ export interface BuildOptions {
 	mode: string;
 	env?: Record<string, any>;
 	bundleAnalyzer?: boolean;
+	debug?: boolean;
 	serviceWorker?: ServiceWorkerOptions;
 	vueOptions: VueOptions;
 }

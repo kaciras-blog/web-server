@@ -2,6 +2,7 @@ import { cwd } from "process";
 import { join } from "path";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
+import Inspect from "vite-plugin-inspect";
 import vue from "@vitejs/plugin-vue";
 import { ResolvedDevConfig } from "./options.js";
 import compressAssets from "./plugin/compress-assets.js";
@@ -11,7 +12,7 @@ import optimizeImage from "./plugin/optimize-image.js";
 
 export default function getViteConfig(options: ResolvedDevConfig) {
 	const { backend, build } = options;
-	const { env = {}, bundleAnalyzer, serviceWorker, vueOptions } = build;
+	const { env = {}, debug, bundleAnalyzer, serviceWorker, vueOptions } = build;
 
 	env.API_PUBLIC = backend.public;
 	env.API_INTERNAL = backend.internal;
@@ -33,6 +34,8 @@ export default function getViteConfig(options: ResolvedDevConfig) {
 			assetsDir: options.assetsDir,
 		},
 		plugins: [
+			Inspect({ enabled: debug }),
+
 			vueSvgComponent(),
 			vue(vueOptions),
 
