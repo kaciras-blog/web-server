@@ -1,5 +1,4 @@
-import path, { basename } from "path";
-import { URL } from "url";
+import { basename, resolve } from "path";
 import { readFileSync } from "fs";
 import { Context } from "koa";
 import log4js from "log4js";
@@ -10,7 +9,7 @@ const logger = log4js.getLogger("SSR");
 
 export interface BlogSSRContext extends SSRContext {
 
-	/** 页面的标题，如果有则替换 HTML 中的 */
+	/** 标题元素，如果有则替换 HTML 中的 */
 	title?: string;
 
 	/** 插入到页面头的一些元素 */
@@ -19,11 +18,8 @@ export interface BlogSSRContext extends SSRContext {
 	/** 如果路由结果为 404 错误页则为 true */
 	status?: number;
 
-	/** SSR 中加载的数据 */
-	state: any;
-
 	/** 该页面引用的所有模块，用于生成预载标签 */
-	modules: any;
+	modules: Set<string>;
 }
 
 export interface RequestContext {
@@ -34,7 +30,7 @@ export interface RequestContext {
 	 * 因为 NodeJS 的 URL 类并不在全局域，所以在这里传递以免在前端代码里 require("url")。
 	 * URL 的成员类似 Location，要获取字符串形式的可以用 URL.toString()。
 	 */
-	url: URL;
+	url: string;
 
 	/** 原始请求，仅用于传递用户身份信息。 */
 	request: Context;
@@ -58,23 +54,21 @@ const titleRE = new RegExp("<title>[^<]*</title>");
  */
 export async function renderSSR(template: string, entry: SSREntry, manifest: any, ctx: Context) {
 	const renderContext: RequestContext = {
+		url: ctx.url,
 		request: ctx,
-		url: new URL(ctx.href),
 	};
 
 	try {
 		const [result, ssrContext] = await entry(renderContext);
 		const preloads = renderPreloadLinks(ssrContext.modules, manifest);
 
-		const m = `<script>window.__INITIAL_STATE__ = ${JSON.stringify(ssrContext.state)}</script>`;
-
 		ctx.body = template
-			.replace("<!--ssr-metadata-->", m)
+			.replace("<!--ssr-metadata-->", ssrContext.meta ?? "")
 			.replace("<!--app-html-->", result)
 			.replace("<!--preload-links-->", preloads);
 
 		if (ssrContext.title) {
-			template.replace(titleRE, `<title>${ssrContext.title}</title>`);
+			template.replace(titleRE, ssrContext.title);
 		}
 	} catch (e) {
 		switch (e.code) {
@@ -86,11 +80,10 @@ export async function renderSSR(template: string, entry: SSREntry, manifest: any
 		}
 
 		ctx.status = 503;
-		// ctx.body = await render.renderToString({
-		// 	...BASE_CONTEXT,
-		// 	request: ctx,
-		// 	url: new URL("/error/500", ctx.href),
-		// });
+		ctx.body = await entry({
+			request: ctx,
+			url: "/error/500",
+		});
 
 		logger.error("服务端渲染出错", e);
 	}
@@ -149,22 +142,22 @@ function renderPreloadLink(file: string) {
 /**
  * 使用指定目录下的构建结果来创建服务端渲染器。
  *
- * @param workingDir 构建的输出目录
+ * @param distDir 构建的输出目录
  */
-export async function productionSSRPlugin(workingDir: string) {
+export async function productionSSRPlugin(distDir: string) {
 
-	function resolve(file: string) {
-		return path.resolve(workingDir, file);
+	function getPath(file: string) {
+		return resolve(distDir, file);
 	}
 
 	function read(file: string) {
-		return readFileSync(resolve(file), "utf8");
+		return readFileSync(getPath(file), "utf8");
 	}
 
 	const template = read("client/index.html");
 	const manifest = JSON.parse(read("server/ssr-manifest.json"));
 
-	const url = "file://" + resolve("server/entry-server.js");
+	const url = "file://" + getPath("server/entry-server.js");
 	const createApp = (await import(url)).default.default;
 
 	return (api: AppBuilder) => api.useFallBack((ctx) => {
