@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import fs from "fs-extra";
+import { statSync } from "fs";
 import { RollupOutput } from "rollup";
 import { avoidEmptyChunkTS, getAsset, resolveFixture, runVite } from "./test-utils";
 import optimizeImage from "../lib/plugin/optimize-image";
@@ -11,7 +11,7 @@ import optimizeImage from "../lib/plugin/optimize-image";
  * @param name 文件名
  */
 async function expectUnoptimized(bundle: RollupOutput, name: string) {
-	const source = await fs.stat(resolveFixture(name));
+	const source = statSync(resolveFixture(name));
 	expect(getAsset(bundle, name).length).toStrictEqual(source.size);
 }
 
@@ -23,7 +23,7 @@ async function expectUnoptimized(bundle: RollupOutput, name: string) {
  * @param srcName 原始文件名，没有则与输出名相同
  */
 async function expectSmaller(bundle: RollupOutput, name: string, srcName = name) {
-	const source = await fs.stat(resolveFixture(srcName));
+	const source = statSync(resolveFixture(srcName));
 	expect(getAsset(bundle, name).length).toBeLessThan(source.size);
 }
 
