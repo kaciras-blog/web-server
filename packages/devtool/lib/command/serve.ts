@@ -15,7 +15,7 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
 		const ssrEntry = await vite.ssrLoadModule("/src/entry-server.ts");
 
 		try {
-			await renderSSR(template, ssrEntry.default, {}, ctx);
+			await renderSSR(ctx, template, ssrEntry.default, {});
 		} catch (e) {
 			vite.ssrFixStacktrace(e);
 			ctx.status = 500;
