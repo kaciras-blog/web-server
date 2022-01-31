@@ -7,6 +7,9 @@ import { optimize, Plugin } from "svgo";
  * 1）宽高设为 1em 以便外层用 font-size 控制。
  * 2）将 fill 和 stroke 改为 currentColor 以便上层控制。
  *
+ * 该插件比 CSS （如 svg { fill: currentColor; ... }）更精确，
+ * 因为有些图标用 fill，有些用的是 stroke。
+ *
  * 代码从另一个项目复制的：
  * https://github.com/Kaciras/browser-theme/blob/master/rollup/svg.js
  */
@@ -67,8 +70,10 @@ export const minifyPreset: Plugin = {
 	},
 };
 
+// 需要保证单根，否则无法设置属性。
 const developmentPlugins: Plugin[] = [
 	reactiveColorPlugin,
+	{ name: "removeComments" },
 	{ name: "removeDoctype" },
 	{ name: "removeXMLProcInst" },
 ];
