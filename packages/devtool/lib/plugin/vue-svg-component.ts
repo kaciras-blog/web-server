@@ -5,12 +5,12 @@ import { optimize, Plugin } from "svgo";
 /**
  * 调整 SVG 的属性，使其能够用容器元素的 CSS 控制：
  * 1）宽高设为 1em 以便外层用 font-size 控制。
- * 2）将 fill 和 stroke 改为 currentColor 以便用 color 控制。
+ * 2）将 fill 和 stroke 改为 currentColor 以便上层控制。
  *
  * 代码从另一个项目复制的：
  * https://github.com/Kaciras/browser-theme/blob/master/rollup/svg.js
  */
-const reactiveSvgoPlugin: Plugin = {
+const reactiveColorPlugin: Plugin = {
 	name: "reactiveSVGAttribute",
 	type: "perItem",
 	fn(ast) {
@@ -22,7 +22,7 @@ const reactiveSvgoPlugin: Plugin = {
 			if (stroke && stroke !== "none") {
 				attributes.stroke = "currentColor";
 			}
-			if (fill && fill !== "none") {
+			if (fill !== "none") {
 				attributes.fill = "currentColor";
 			}
 			attributes.width = attributes.height = "1em";
@@ -68,14 +68,14 @@ export const minifyPreset: Plugin = {
 };
 
 const developmentPlugins: Plugin[] = [
-	reactiveSvgoPlugin,
+	reactiveColorPlugin,
 	{ name: "removeDoctype" },
 	{ name: "removeXMLProcInst" },
 ];
 
 const productionPlugins: Plugin[] = [
-	reactiveSvgoPlugin,
-	minifyPreset, // 它会把 #000000 改为 none 导致 reactiveSvgoPlugin 失效，要放到最后。
+	reactiveColorPlugin,
+	minifyPreset, // 它会把 #000000 改为 none 导致 reactiveColorPlugin 失效，要放到最后。
 ];
 
 /**
