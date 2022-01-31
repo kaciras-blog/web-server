@@ -11,46 +11,50 @@ const logger = log4js.getLogger("SSR");
  */
 type SSRManifest = Record<string, string[]>;
 
-export interface BlogSSRResult  {
+export interface RenderContext {
 
-	/** 渲染出来的 HTML 结果 */
-	html: string;
-
-	/** 状态码，如果没有则为 200 */
+	/**
+	 * 状态码，可以在渲染函数中设置，没有则为 200。
+	 */
 	status?: number;
-}
-
-export interface RequestContext {
 
 	/**
-	 * 请求页面的完整路径，包含 query 部分。
+	 * 如果有则表示要渲染错误页。
 	 */
-	path: string;
-
-	/**
-	 * HTML 模板，由客户端构建生成。
-	 */
-	template: string;
-
-	/**
-	 * 资源清单，包含了每个模块的依赖模块列表。
-	 */
-	manifest: SSRManifest;
+	readonly error?: Error;
 
 	/**
 	 * 原始请求，仅用于传递用户身份信息，请勿修改。
 	 */
-	request: Context;
+	readonly request: Context;
+
+	/**
+	 * 请求页面的完整路径，包含 query 部分。
+	 */
+	readonly path: string;
+
+	/**
+	 * HTML 模板，由客户端构建生成。
+	 */
+	readonly template: string;
+
+	/**
+	 * 资源清单，包含了每个模块的依赖模块列表。
+	 */
+	readonly manifest: SSRManifest;
 }
 
-export type SSREntry = (context: RequestContext) => Promise<BlogSSRResult>;
+/**
+ * 服务端渲染函数，返回渲染出来的 HTML 结果。
+ */
+export type SSREntry = (ctx: RenderContext) => Promise<string>;
 
 /**
  * 在服务端渲染页面，如果出现了异常，则返回错误页面并设置对应的状态码。
  *
  * <h2>代码结构</h2>
- * 新版将渲染 App 的部分放入构建内，此处只处理 HTML 部分，
- * 这样整个 Vue 生态都在一起运行，耦合度更低，也避免了导入不一致的问题。
+ * 新版将渲染过程全放入服务端入口，此处仅负责与 Koa 连接。
+ * 这样整个页面相关的逻辑都在一起运行，耦合度更低，也避免了导入不一致的问题。
  *
  * @param ctx HTTP 请求上下文
  * @param template HTML 模板
@@ -63,7 +67,7 @@ export async function renderSSR(
 	entry: SSREntry,
 	manifest: SSRManifest,
 ) {
-	const renderCtx: RequestContext = {
+	const renderCtx: RenderContext = {
 		template,
 		manifest,
 		path: ctx.url,
@@ -71,9 +75,8 @@ export async function renderSSR(
 	};
 
 	try {
-		const result = await entry(renderCtx);
-		ctx.body = result.html;
-		ctx.status = result.status ?? 200;
+		ctx.body = await entry(renderCtx);
+		ctx.status = renderCtx.status ?? 200;
 	} catch (e) {
 		switch (e.code) {
 			case 301:
@@ -83,12 +86,11 @@ export async function renderSSR(
 				return;
 		}
 
-		const result = await entry({
-			...renderCtx,
-			path: "/error/500",
-		});
 		ctx.status = 503;
-		ctx.body = result.html;
+		ctx.body = await entry({
+			error: e,
+			...renderCtx,
+		});
 
 		logger.error("服务端渲染出错", e);
 	}
