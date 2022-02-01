@@ -1,19 +1,21 @@
-import { Plugin, ResolvedConfig } from "vite";
-import { OutputBundle, OutputOptions, rollup } from "rollup";
-import { join } from "path";
 import { readFileSync } from "fs";
+import { join } from "path";
+import { OutputBundle, OutputOptions, rollup } from "rollup";
+import { Plugin, ResolvedConfig } from "vite";
 
 const manifestRE = /self\.__WB_MANIFEST/;
 
 const includedPlugins = [
+	"commonjs",
 	"alias",
 	"vite:resolve",
 	"vite:esbuild",
+	"vite:json",
 	"replace",
 	"vite:define",
 	"rollup-plugin-dynamic-import-variables",
-	"vite:esbuild-transpile",
 	"vite:terser",
+	"vite:esbuild-transpile",
 ];
 
 type FilterFn = (name: string) => boolean;
@@ -90,8 +92,9 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 
 		generateBundle(_: unknown, bundle: OutputBundle) {
 			const files = Object.keys(bundle).filter(isInclude);
-			const minify = viteConfig.mode === "production";
-			const manifest = JSON.stringify(files, null, minify ? 0 : "\t");
+
+			// 一律格式化，反正生产模式还会压缩的。
+			const manifest = JSON.stringify(files, null, "\t");
 			return buildServiceWorker(manifest);
 		},
 	};
