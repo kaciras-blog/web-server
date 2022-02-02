@@ -1,3 +1,4 @@
+import { createRequire } from "module";
 import { basename } from "path";
 import { expect, it } from "vitest";
 import { Plugin } from "vite";
@@ -7,7 +8,6 @@ import vueSvgComponent from "../lib/plugin/vue-svg-component";
 import vm from "vm";
 import { createApp } from "vue";
 import { renderToString } from "@vue/server-renderer";
-import { createRequire } from "module";
 
 /**
  * 把转成 SFC 的 SVG 提取出来作为一个 Asset。
@@ -56,6 +56,10 @@ it("should throw on non-SVG data", async () => {
 
 it("should change attributes in %s", async () => {
 	expect(await convert("visible-off.svg?sfc")).toMatchSnapshot();
+});
+
+it("should change stroke", async () => {
+	expect(await convert("stroke.svg?sfc")).toMatchSnapshot();
 });
 
 it("should remove processing instruction in %s", async () => {
