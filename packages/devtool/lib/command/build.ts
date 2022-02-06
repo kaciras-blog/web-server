@@ -15,6 +15,9 @@ export default async function (options: ResolvedDevConfig) {
 	conf2.build.ssr = "src/entry-server.ts";
 	conf2.build.ssrManifest = true;
 	conf2.build.outDir = "dist/server";
+	conf1.build.rollupOptions = {
+		output: { format: "esm" },
+	};
 	await build(conf2);
 	console.log(cyan("Server build complete."));
 }

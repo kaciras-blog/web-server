@@ -33,27 +33,27 @@ export default class Launcher {
 		this.commands.set(command, handler);
 	}
 
-	run(argv: string[]) {
+	async run(argv: string[]) {
 		// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
 		process.env.NODE_PATH = path.resolve("node_modules");
 		require("module").Module._initPaths();
 
 		const args = parseArgs(argv);
 		let configFile = path.join(process.cwd(), "config");
-
 		if (args.profile) {
 			configFile = path.join(configFile, args.profile);
 		}
 
 		// 先 resolve 一下，以便把配置文件内部的异常区分开
 		try {
-			require.resolve(configFile);
+			configFile = require.resolve(configFile);
 		} catch (e) {
 			console.error("Can not find config file: " + configFile);
 			process.exit(1);
 		}
 
-		const config = resolveConfig(require(configFile));
+		configFile = "file://" + configFile;
+		const config = resolveConfig((await import(configFile)).default);
 
 		log4js.configure({
 			appenders: {

@@ -114,7 +114,7 @@ export async function productionSSRPlugin(distDir: string) {
 	const template = read("client/index.html");
 	const manifest = JSON.parse(read("server/ssr-manifest.json"));
 	const url = "file://" + getPath("server/entry-server.js");
-	const render = (await import(url)).default.default;
+	const render = (await import(url)).default;
 
 	return (api: AppBuilder) => api.useFallBack((ctx) => {
 		return renderSSR(ctx, template, render, manifest);
