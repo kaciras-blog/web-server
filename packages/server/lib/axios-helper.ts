@@ -122,10 +122,10 @@ export class CachedFetcher<T, R> {
 /**
  * 修改指定 Axios 实例的 transport 配置，让其使用 http2 模块发送请求。
  *
- * @param axios 要配置的Axios实例
- * @param https 是否使用TLS链接，因为Axios的蛋疼设计，request 的选项里没有协议，必须提前指定
+ * @param axios 要配置的 Axios 实例
+ * @param https 是否使用 TLS 链接，因为 Axios 的蛋疼设计，request 的选项里没有协议，必须提前指定
  * @param connectOptions 传递到 http2.connect 的选项
- * @return 关闭全部Http2会话连接的函数
+ * @return 关闭全部 Http2 会话连接的函数
  */
 export function configureAxiosHttp2(
 	axios: AxiosInstance,

@@ -34,7 +34,7 @@ const CSP_REPORT_URI = "/csp-report";
  * 其他的限制太死了，暂时没开启
  *
  * 【HSTS】
- * HSTS纯粹是跟底层TLS相关的头，不应该在这里配置，而且在localhost下会弹出一大堆警告。
+ * HSTS 纯粹是跟底层 TLS 相关的头，不应该在这里配置，而且在 localhost 下会弹一堆警告。
  *
  * TODO: 目前的配置比较简单就直接写死了，复杂了再考虑 koa-helmet
  */
@@ -45,12 +45,12 @@ async function securityFilter(ctx: BaseContext, next: Next) {
 }
 
 function cspReporter(ctx: ExtendableContext) {
+	ctx.status = 204;
 	if (ctx.request.body) {
 		logger.warn("CSP Violation: ", ctx.request.body);
 	} else {
 		logger.warn("CSP Violation: No data received!");
 	}
-	ctx.status = 204;
 }
 
 /**

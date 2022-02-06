@@ -82,21 +82,21 @@ describe("certificate verification", () => {
 	let url: string;
 	let server: Server;
 
-	beforeAll((done) => {
+	beforeAll(() => new Promise(resolve => {
 		server = http2.createSecureServer({
 			cert: readFixtureText("localhost.pem"),
 			key: readFixtureText("localhost.pvk"),
 		});
 		server.listen(0, () => {
-			done();
+			resolve();
 			url = "http://localhost:" + (server.address() as AddressInfo).port;
 		});
 		server.on("request", helloHandler);
-	});
+	}));
 
-	afterAll(done => {
-		server.close(done);
-	});
+	afterAll(() => new Promise<any>(resolve => {
+		server.close(resolve);
+	}));
 
 	it("should success with trust", async () => {
 		const axios = Axios.create();

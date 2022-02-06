@@ -68,7 +68,7 @@ class TypeUpgrade implements FileSelector {
 	}
 
 	select(ctx: BaseContext, path: string) {
-		const support = (ctx.accepts() as string[]).includes(this.name);
+		const support = ctx.accepts().includes(this.name);
 		return support && replaceExt(path, this.extension);
 	}
 
@@ -217,11 +217,9 @@ async function serve(root: string, options: Options, ctx: BaseContext, next: Nex
 	ctx.set("Last-Modified", stats!.mtime.toUTCString());
 	ctx.body = fs.createReadStream(file);
 
-	if (options.customResponse) {
-		options.customResponse(ctx, file, stats!);
-	}
+	options.customResponse?.(ctx, file, stats!);
 }
 
-export default function createMiddleware(root: string, options: Options = {}): Middleware {
+export default function (root: string, options: Options = {}): Middleware {
 	return (ctx, next) => serve(root, options, ctx, next);
 }

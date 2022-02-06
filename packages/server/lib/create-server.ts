@@ -3,7 +3,7 @@ import https from "https";
 import http2, { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { Server, Socket } from "net";
 import { createSecureContext, SecureContext } from "tls";
-import fs from "fs-extra";
+import { readFileSync } from "fs";
 import { HttpServerOptions, HttpsServerOptions, ServerOptions, SNIProperties } from "./config.js";
 
 // app.callback() 的定义，比较长不方便直接写在参数里
@@ -19,8 +19,8 @@ export function createSNICallback(properties: SNIProperties[]) {
 	// 据测试 SecureContext 可以重用
 	for (const p of properties) {
 		map[p.hostname] = createSecureContext({
-			key: fs.readFileSync(p.key),
-			cert: fs.readFileSync(p.cert),
+			key: readFileSync(p.key),
+			cert: readFileSync(p.cert),
 		});
 	}
 	return (servername: string, callback: SNIResolve) => callback(null, map[servername]);
@@ -30,8 +30,8 @@ function createConnector(connector: HttpServerOptions | HttpsServerOptions) {
 	if ("certFile" in connector) {
 		const { certFile, keyFile, sni } = connector;
 		const config = {
-			cert: fs.readFileSync(certFile),
-			key: fs.readFileSync(keyFile),
+			cert: readFileSync(certFile),
+			key: readFileSync(keyFile),
 			SNICallback: sni && createSNICallback(sni),
 			allowHTTP1: true,
 		};
@@ -70,7 +70,7 @@ function redirectHandler(origin: string): OnRequestHandler {
  * @param hostname 绑定的主机名
  */
 function listenAsync(server: Server, port: number, hostname?: string) {
-	return new Promise<void>((resolve) => server.listen(port, hostname, resolve));
+	return new Promise<void>(resolve => server.listen(port, hostname, resolve));
 }
 
 /**
@@ -94,7 +94,7 @@ export class ServerGroup {
 	 * 要强制断开现有连接可以用 forceClose()
 	 */
 	close() {
-		this.servers.forEach((s) => s.close());
+		this.servers.forEach(s => s.close());
 	}
 
 	/**
@@ -102,7 +102,7 @@ export class ServerGroup {
 	 */
 	forceClose() {
 		this.close();
-		this.connections.forEach((s) => s.destroy());
+		this.connections.forEach(s => s.destroy());
 	}
 }
 

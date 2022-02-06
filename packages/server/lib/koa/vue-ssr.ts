@@ -50,7 +50,7 @@ export interface RenderContext {
 export type SSREntry = (ctx: RenderContext) => Promise<string>;
 
 /**
- * 在服务端渲染页面，如果出现了异常，则返回错误页面并设置对应的状态码。
+ * 在服务端渲染页面，如果出现了异常，则渲染错误页面并设置对应的状态码。
  *
  * <h2>代码结构</h2>
  * 新版将渲染过程全放入服务端入口，此处仅负责与 Koa 连接。
