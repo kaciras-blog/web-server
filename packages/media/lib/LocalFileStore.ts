@@ -1,7 +1,8 @@
+import { URLSearchParams } from "url";
 import { join } from "path";
 import fs from "fs-extra";
 import { Params } from "./MediaService.js";
-import { Data, FileStore } from "./FileStore.js";
+import { CacheItem, Data, FileStore } from "./FileStore.js";
 import { SeparatedStoreLocation } from "../../server/lib/config.js";
 
 /*
@@ -19,6 +20,22 @@ async function getFileInfo(path: string) {
 		// 试试写在一行，好像可读性还可以……
 		if (e.code === "ENOENT") return null; else throw e;
 	}
+}
+
+function serialize(params: Params) {
+	const filename = Object.keys(params)
+		.sort()
+		.map(k => `${k}=${params[k]}`)
+		.join("&");
+	return filename || "default";
+}
+
+function deserialize(filename: string) {
+	if (filename === "default") {
+		return {};
+	}
+	const params = new URLSearchParams(filename);
+	return Object.fromEntries(params);
 }
 
 /**
@@ -56,10 +73,22 @@ export default class LocalFileStore implements FileStore {
 		return getFileInfo(this.cachePath(id, params));
 	}
 
-	async putCache(id: string, data: Data, params: Params) {
-		const path = this.cachePath(id, params);
-		await fs.ensureFile(path);
-		return fs.writeFile(path, data);
+	async putCaches(id: string, items: CacheItem[]) {
+		const folder = join(this.cache, id);
+		await fs.mkdir(folder, { recursive: true });
+
+		for (const { data, params } of items) {
+			await fs.writeFile(this.cachePath(id, params), data);
+		}
+	}
+
+	async listCache(id: string) {
+		try {
+			const names = await fs.readdir(join(this.cache, id));
+			return names.map(deserialize);
+		} catch (e) {
+			if (e.code === "ENOENT") return null; else throw e;
+		}
 	}
 
 	/**
@@ -77,11 +106,6 @@ export default class LocalFileStore implements FileStore {
 	 * @param params 参数
 	 */
 	private cachePath(id: string, params: Params) {
-		let filename = Object.keys(params)
-			.sort()
-			.map(k => `${k}=${params[k]}`)
-			.join("_");
-		filename ||= "default";
-		return join(this.cache, id, filename);
+		return join(this.cache, id, serialize(params));
 	}
 }

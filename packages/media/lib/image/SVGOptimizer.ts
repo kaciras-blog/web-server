@@ -1,10 +1,8 @@
 import zlib, { InputType } from "zlib";
-import { basename, extname } from "path";
 import { promisify } from "util";
 import { optimize, OptimizeOptions } from "svgo";
 import { LoadRequest, SaveRequest } from "../MediaService.js";
-import { Optimizer } from "../CachedService.js";
-import { FileStore } from "../FileStore.js";
+import { MediaAttrs, Optimizer } from "../CachedService.js";
 import { BadDataError } from "../errors.js";
 
 const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
@@ -30,12 +28,6 @@ const svgoConfig: OptimizeOptions = {
 
 export default class SVGOptimizer implements Optimizer {
 
-	private readonly store: FileStore;
-
-	constructor(store: FileStore) {
-		this.store = store;
-	}
-
 	async check(request: SaveRequest) {
 		if (request.type !== "svg") {
 			throw new BadDataError("文件不是 SVG");
@@ -43,48 +35,37 @@ export default class SVGOptimizer implements Optimizer {
 	}
 
 	async buildCache(name: string, { buffer }: SaveRequest) {
-		const { store } = this;
 		const optimized = optimize(buffer.toString(), svgoConfig);
 
 		if (optimized.modernError) {
 			throw new BadDataError("无法将文件作为 SVG 优化");
 		}
 
+		const promises = [];
+
 		const { data } = optimized;
-		const brotli = data.length > BROTLI_THRESHOLD;
 
 		const compress = async (algorithm: Compress, encoding: string) => {
 			const compressed = await algorithm(data);
-			return store.putCache(name, compressed, { encoding });
+			return { data: compressed, attrs: { encoding } };
 		};
 
-		await Promise.all([
-			store.putCache(name, data, {}),
-			compress(gzipCompress, "gz"),
-			brotli && compress(brotliCompress, "br"),
-		]);
+		promises.push({ data, attrs: {} });
+		promises.push(compress(gzipCompress, "gzip"));
+
+		if (data.length > BROTLI_THRESHOLD) {
+			promises.push(compress(brotliCompress, "br"));
+		}
+
+		return Promise.all(promises);
 	}
 
-	async getCache(request: LoadRequest) {
-		const { name, acceptEncodings } = request;
-		const ext = extname(name);
-		const hash = basename(name, ext);
+	select(items: MediaAttrs[], request: LoadRequest) {
+		const { acceptEncodings } = request;
 
-		if (acceptEncodings.includes("br")) {
-			const file = await this.store.getCache(hash, { encoding: "br" });
-			if (file) {
-				return { file, type: "svg", encoding: "br" };
-			}
-		}
-
-		if (acceptEncodings.includes("gzip")) {
-			const file = await this.store.getCache(hash, { encoding: "gz" });
-			if (file) {
-				return { file, type: "svg", encoding: "gzip" };
-			}
-		}
-
-		const file = await this.store.getCache(name, {});
-		return file && { file, type: "svg" };
+		return ["br", "gzip", undefined]
+			.filter(e => acceptEncodings.includes(e as any))
+			.map(e => items.find(i => i.encoding === e))
+			.find(item => item !== undefined);
 	}
 }

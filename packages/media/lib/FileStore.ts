@@ -5,6 +5,11 @@ export type Data = string | Buffer;
 
 export type FileBody = ReadableStream | Buffer | string;
 
+export interface CacheItem {
+	data: Data;
+	params: Params;
+}
+
 export interface FileInfo {
 	size: number;
 	mtime: Date;
@@ -36,18 +41,19 @@ export interface FileStore {
 	 * 【安全性】
 	 * params 参数可能用作文件名的一部分，要小心注入。
 	 *
-	 * @param name 文件名
-	 * @param data 数据
-	 * @param params 参数
+	 * @param id 缓存区的名字
+	 * @param items 缓存条目列表
 	 */
-	putCache(name: string, data: Data, params: Params): Promise<void>;
+	putCaches(id: string, items: CacheItem[]): Promise<void>;
 
 	/**
 	 * 读取缓存文件。
 	 *
-	 * @param name 文件名
+	 * @param id 缓存区的名字
 	 * @param params 参数
 	 * @return 如果不存在则为 null
 	 */
-	getCache(name: string, params: Params): Promise<FileInfo | null>;
+	getCache(id: string, params: Params): Promise<FileInfo | null>;
+
+	listCache(id: string): Promise<Params[] | null>;
 }
