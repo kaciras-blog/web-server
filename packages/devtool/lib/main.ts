@@ -1,4 +1,4 @@
-import Launcher from "@kaciras-blog/server/lib/Launcher.js";
+import { Launcher } from "@kaciras-blog/server";
 import build from "./command/build.js";
 import serve from "./command/serve.js";
 

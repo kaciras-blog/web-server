@@ -1,10 +1,7 @@
 import { readFileSync } from "fs";
 import { Middleware } from "koa";
 import { createServer, ViteDevServer } from "vite";
-import { configureGlobalAxios } from "@kaciras-blog/server/lib/axios-helper.js";
-import AppBuilder from "@kaciras-blog/server/lib/AppBuilder.js";
-import { renderSSR } from "@kaciras-blog/server/lib/koa/vue-ssr.js";
-import getBlogPlugin from "@kaciras-blog/server/lib/blog.js";
+import { AppBuilder, configureGlobalAxios, getBlogPlugin, renderSSR } from "@kaciras-blog/server";
 import getViteConfig from "../build-config.js";
 import { ResolvedDevConfig } from "../options.js";
 

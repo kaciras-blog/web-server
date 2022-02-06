@@ -1,5 +1,5 @@
 import { Options as VueOptions } from "@vitejs/plugin-vue";
-import { BlogServerConfig, ResolvedConfig } from "@kaciras-blog/server/lib/config";
+import { BlogServerConfig, ResolvedConfig } from "@kaciras-blog/server";
 import { ServiceWorkerOptions } from "./plugin/service-worker";
 
 export interface DevelopmentOptions extends BlogServerConfig {
