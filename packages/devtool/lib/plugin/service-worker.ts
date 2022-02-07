@@ -27,7 +27,8 @@ export interface ServiceWorkerOptions {
 }
 
 /**
- *
+ * 构建 ServiceWorker 的插件，能够生成额外的 SW 入口文件。
+ * 支持开发模式，但由于 worker 不是简单的 import，所以无法热重载。
  *
  * <h2>为什么造轮子</h2>
  * 以下项目均使用 workbox-build：
@@ -37,7 +38,7 @@ export interface ServiceWorkerOptions {
  * 装个 workbox-build 一下子就整上十万甚至九万个依赖，看着就烦。
  * workbox 源码我都看几遍了，自己实现一个也不难。
  *
- * @param options
+ * @param options 插件选项
  */
 export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 	const { src, dist = "/sw.js", includes = () => true } = options;
@@ -58,7 +59,12 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 					swId = (await this.resolve(src))!.id;
 				}
 				if (id !== swId) {
-					return null;
+					/*
+					 * Vite 内部也是直接把查询参数去掉。
+					 * https://github.com/vitejs/vite/blob/5306234aad7e7432fb55c6033a63c6cf74493c3f/packages/vite/src/node/server/transformRequest.ts#L87
+					 */
+					const file = id.split("?", 2)[0];
+					return readFileSync(file, "utf8");
 				}
 				const code = readFileSync(id, "utf8");
 				return code.replace(manifestRE, manifest);
@@ -67,7 +73,7 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 
 		const plugins = viteConfig.plugins
 			.filter(p => includedPlugins.includes(p.name));
-		plugins.unshift(injectManifestPlugin);
+		plugins.push(injectManifestPlugin);
 
 		return { input: src, plugins };
 	}
@@ -127,7 +133,7 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 			});
 		},
 
-		closeWatcher() {
+		buildEnd() {
 			watcher?.close();
 		},
 
