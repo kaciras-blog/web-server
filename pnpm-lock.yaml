@@ -36,7 +36,7 @@ importers:
       svgo: ^2.8.0
       vite: ^2.7.13
       vite-plugin-inspect: ^0.3.13
-      vue: next
+      vue: ^3.2.29
     dependencies:
       '@kaciras-blog/media': link:../media
       '@kaciras-blog/server': link:../server
@@ -150,7 +150,7 @@ importers:
       sitemap: ^7.1.1
       source-map-support: ^0.5.21
       supertest: ^6.2.2
-      vue: next
+      vue: ^3.2.29
     dependencies:
       '@kaciras-blog/markdown': link:../markdown
       '@kaciras-blog/media': link:../media

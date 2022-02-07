@@ -46,7 +46,7 @@
 		"replace-ext": "^2.0.0",
 		"sitemap": "^7.1.1",
 		"source-map-support": "^0.5.21",
-		"vue": "next"
+		"vue": "^3.2.29"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.3",

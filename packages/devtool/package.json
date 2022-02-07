@@ -42,6 +42,6 @@
 		"@vue/server-renderer": "^3.2.21",
 		"deepmerge": "^4.2.2",
 		"rollup": "^2.67.0",
-		"vue": "next"
+		"vue": "^3.2.29"
 	}
 }
