@@ -33,6 +33,9 @@ export default function getViteConfig(options: ResolvedDevConfig) {
 		build: {
 			assetsDir: options.assetsDir,
 
+			// 图片体积大很正常，所以放宽点。
+			chunkSizeWarningLimit: 2048,
+
 			// 本项目已经全线转 ESM，不再兼容 CJS。
 			rollupOptions: {
 				output: { format: "esm" },
