@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { join } from "path";
-import { OutputBundle, OutputOptions, rollup } from "rollup";
+import { OutputBundle, OutputOptions, rollup, RollupWatcher, RollupWatchOptions, watch } from "rollup";
 import { Plugin, ResolvedConfig } from "vite";
 
 const manifestRE = /self\.__WB_MANIFEST/;
@@ -40,7 +40,7 @@ export interface ServiceWorkerOptions {
  * @param options
  */
 export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
-	const { src, dist = "sw.js", includes = () => true } = options;
+	const { src, dist = "/sw.js", includes = () => true } = options;
 
 	const isInclude = typeof includes === "function"
 		? includes
@@ -48,8 +48,7 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 
 	let viteConfig: ResolvedConfig;
 
-	async function buildServiceWorker(manifest: string) {
-		const { outDir, sourcemap } = viteConfig.build;
+	function swBuildConfig(manifest: string) {
 		let swId: string;
 
 		const injectManifestPlugin: Plugin = {
@@ -70,7 +69,14 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 			.filter(p => includedPlugins.includes(p.name));
 		plugins.unshift(injectManifestPlugin);
 
-		const bundle = await rollup({ input: src, plugins });
+		return { input: src, plugins };
+	}
+
+	async function buildServiceWorker(manifest: string) {
+		const { outDir, sourcemap } = viteConfig.build;
+
+		const config = swBuildConfig(manifest);
+		const bundle = await rollup(config);
 
 		const output: OutputOptions = {
 			file: join(outDir, dist),
@@ -82,12 +88,47 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 		await bundle.write(output).finally(() => bundle.close());
 	}
 
+	let watcher: RollupWatcher;
+
 	return {
 		name: "kaciras:service-worker",
 		apply: config => !config.build?.ssr,
 
 		configResolved(config) {
 			viteConfig = config;
+		},
+
+		configureServer(server) {
+			const config = swBuildConfig("[]") as RollupWatchOptions;
+			config.watch = { skipWrite: true };
+			watcher = watch(config);
+
+			let code: string;
+
+			watcher.on("event", async event => {
+				if (event.code === "ERROR") {
+					console.error(event.error);
+				}
+				if (event.code === "BUNDLE_END") {
+					const s = await event.result.generate({
+						format: "es",
+						exports: "none",
+						inlineDynamicImports: true,
+					});
+					code = s.output[0].code;
+				}
+			});
+
+			server.middlewares.use((req, res, next) => {
+				if (req.url !== dist) {
+					return next();
+				}
+				res.writeHead(200).end(code);
+			});
+		},
+
+		closeWatcher() {
+			watcher?.close();
 		},
 
 		generateBundle(_: unknown, bundle: OutputBundle) {
