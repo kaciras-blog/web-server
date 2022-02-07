@@ -26,12 +26,12 @@
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras-blog/server": "workspace:^",
 		"@vitejs/plugin-vue": "^2.1.0",
-		"@vue/compiler-sfc": "^3.2.29",
-		"@vue/server-renderer": "^3.2.29",
+		"@vue/compiler-sfc": "^3.2.30",
+		"@vue/server-renderer": "^3.2.30",
 		"colorette": "^2.0.16",
 		"log4js": "^6.4.1",
 		"magic-string": "^0.25.7",
-		"rollup": "^2.67.0",
+		"rollup": "^2.67.1",
 		"rollup-plugin-visualizer": "^5.5.4",
 		"source-map-support": "^0.5.21",
 		"svgo": "^2.8.0",
@@ -42,6 +42,6 @@
 		"@types/svgo": "^2.6.1",
 		"@vue/server-renderer": "^3.2.29",
 		"deepmerge": "^4.2.2",
-		"vue": "^3.2.29"
+		"vue": "^3.2.30"
 	}
 }

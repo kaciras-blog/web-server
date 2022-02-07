@@ -10,7 +10,7 @@
 		"compile": "tsc",
 		"lint": "eslint --fix --ext .ts packages",
 		"test": "vitest run",
-		"release": "tsc && lerna publish"
+		"release": "tsc && pnpm publish --no-git-checks"
 	},
 	"devDependencies": {
 		"@kaciras/eslint-config-core": "^2.3.0",
