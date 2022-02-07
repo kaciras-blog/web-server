@@ -46,6 +46,7 @@ importers:
       colorette: 2.0.16
       log4js: 6.4.1
       magic-string: 0.25.7
+      rollup: 2.67.0
       rollup-plugin-visualizer: 5.5.4_rollup@2.67.0
       source-map-support: 0.5.21
       svgo: 2.8.0
@@ -54,7 +55,6 @@ importers:
     devDependencies:
       '@types/svgo': 2.6.1
       deepmerge: 4.2.2
-      rollup: 2.67.0
       vue: 3.2.29
 
   packages/markdown:

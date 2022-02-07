@@ -2,7 +2,7 @@ import { cwd } from "process";
 import { join } from "path";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
-import Inspect from "vite-plugin-inspect";
+import inspect from "vite-plugin-inspect";
 import vue from "@vitejs/plugin-vue";
 import { ResolvedDevConfig } from "./options.js";
 import compressAssets from "./plugin/compress-assets.js";
@@ -32,9 +32,14 @@ export default function getViteConfig(options: ResolvedDevConfig) {
 		define,
 		build: {
 			assetsDir: options.assetsDir,
+
+			// 本项目已经全线转 ESM，不再兼容 CJS。
+			rollupOptions: {
+				output: { format: "esm" },
+			},
 		},
 		plugins: [
-			Inspect({ enabled: debug }),
+			inspect({ enabled: debug }),
 
 			vueSvgComponent(),
 			vue(vueOptions),
