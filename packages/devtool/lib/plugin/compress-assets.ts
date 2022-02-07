@@ -1,6 +1,7 @@
+import { writeFileSync } from "fs";
+import { join } from "path";
 import { promisify } from "util";
 import { brotliCompress, gzip } from "zlib";
-import { OutputBundle } from "rollup";
 import { Plugin } from "vite";
 
 // 经测试，最大压缩率参数（如 BROTLI_MAX_QUALITY）用不用大小都一样。
@@ -70,7 +71,14 @@ export default function compressAssets(options: CompressOptions): Plugin {
 			return force || !config.build?.ssr && env.command === "build";
 		},
 
-		async generateBundle(_: unknown, bundle: OutputBundle) {
+		/**
+		 * vite:build-import-analysis 用了 generateBundle 钩子处理代码，
+		 * 而且它还在 enforce: "post" 之后，导致本插件只能使用更后面的钩子，
+		 * 在 writeBundle 里没法 emitFile，所以只能写文件了。
+		 */
+		async writeBundle(options, bundle) {
+			const dir = options.dir!;
+
 			for (const [k, v] of Object.entries(bundle)) {
 				if (!includes.test(k)) {
 					continue;
@@ -86,7 +94,7 @@ export default function compressAssets(options: CompressOptions): Plugin {
 				if (source.length / raw.length > maxRatio) {
 					continue;
 				}
-				this.emitFile({ type: "asset", source, fileName });
+				writeFileSync(join(dir, fileName), source);
 			}
 		},
 	};
