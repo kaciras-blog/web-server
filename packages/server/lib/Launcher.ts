@@ -8,6 +8,11 @@ import run from "./command/run.js";
 import { resolveConfig, ResolvedConfig } from "./config.js";
 import { once } from "./functions.js";
 
+/*
+ * 在第二版中不再捕获 uncaughtException 和 unhandledRejection, let it crash.
+ * 请求中的错误由框架（Koa）捕获，如果进程中止考虑在外层比如 systemd 中重启。
+ */
+
 const require = createRequire(import.meta.url);
 
 async function loadConfig(args: ParsedArgs) {
@@ -72,10 +77,6 @@ export default class Launcher {
 		});
 
 		const logger = log4js.getLogger("init");
-
-		// TODO: 听说 Node 以后会移除 unhandledRejection
-		process.on("uncaughtException", (err) => logger.error(err.message, err.stack));
-		process.on("unhandledRejection", (reason, promise) => logger.error("Unhandled", reason, promise));
 
 		const command = args._[0];
 		const handler = this.commands.get(command);
