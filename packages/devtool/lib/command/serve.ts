@@ -22,14 +22,14 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
 }
 
 /**
- * 启动开发服务器，它提供了热重载功能。
+ * 启动开发服务器，它提供了热重载和服务端渲染功能。
  */
 export default async function (options: ResolvedDevConfig) {
 	const closeHttp2Sessions = configureGlobalAxios(options.backend);
 	const builder = new AppBuilder();
 
 	const vite = await createServer({
-		...getViteConfig(options),
+		...getViteConfig(options, false),
 		server: { middlewareMode: "ssr" },
 	});
 
