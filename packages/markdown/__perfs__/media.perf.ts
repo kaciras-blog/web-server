@@ -1,6 +1,6 @@
 import { performance } from "perf_hooks";
 import MarkdownIt from "markdown-it";
-import MediaPlugin from "../lib/media";
+import MediaPlugin from "../lib/media.js";
 
 /*
  * JS写的解析器（356.02ms）比正则（56.43ms）慢了7倍。

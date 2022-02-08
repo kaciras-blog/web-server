@@ -1,7 +1,7 @@
 import process from "process";
 import path from "path";
 import { createRequire } from "module";
-import parseArgs from "minimist";
+import parseArgs, { ParsedArgs } from "minimist";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/media";
 import run from "./command/run.js";
@@ -9,6 +9,24 @@ import { resolveConfig, ResolvedConfig } from "./config.js";
 import { once } from "./functions.js";
 
 const require = createRequire(import.meta.url);
+
+async function loadConfig(args: ParsedArgs) {
+	let configFile = path.join(process.cwd(), "config");
+	if (args.profile) {
+		configFile = path.join(configFile, args.profile);
+	}
+
+	// 先 resolve 一下，以便把配置文件内部的异常区分开
+	try {
+		configFile = require.resolve(configFile);
+	} catch (e) {
+		console.error("Can not find config file: " + configFile);
+		process.exit(1);
+	}
+
+	configFile = "file://" + configFile;
+	return resolveConfig((await import(configFile)).default);
+}
 
 /**
  * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
@@ -39,21 +57,7 @@ export default class Launcher {
 		require("module").Module._initPaths();
 
 		const args = parseArgs(argv);
-		let configFile = path.join(process.cwd(), "config");
-		if (args.profile) {
-			configFile = path.join(configFile, args.profile);
-		}
-
-		// 先 resolve 一下，以便把配置文件内部的异常区分开
-		try {
-			configFile = require.resolve(configFile);
-		} catch (e) {
-			console.error("Can not find config file: " + configFile);
-			process.exit(1);
-		}
-
-		configFile = "file://" + configFile;
-		const config = resolveConfig((await import(configFile)).default);
+		const config = await loadConfig(args);
 
 		log4js.configure({
 			appenders: {

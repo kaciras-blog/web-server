@@ -1,4 +1,3 @@
-// TODO: 注释写在页面项目里，要不要移过来？
 import { join } from "path";
 
 export interface BlogServerConfig {

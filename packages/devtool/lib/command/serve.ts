@@ -16,8 +16,7 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
 		} catch (e) {
 			vite.ssrFixStacktrace(e);
 			ctx.status = 500;
-			ctx.body = e.stack;
-			console.log(e.stack);
+			console.log(ctx.body = e.stack);
 		}
 	};
 }
@@ -46,7 +45,7 @@ export default async function (options: ResolvedDevConfig) {
 	vite.middlewares.use(app.callback());
 
 	const serverGroup = vite.middlewares.listen(80);
-	console.info("\n- Local URL: https://localhost/\n");
+	console.info("\n- Local URL: http://localhost/\n");
 
 	return () => {
 		vite.close();

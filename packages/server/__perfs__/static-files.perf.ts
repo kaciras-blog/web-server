@@ -2,7 +2,7 @@ import { performance } from "perf_hooks";
 import Koa, { Context } from "koa";
 import serve from "koa-static";
 import supertest from "supertest";
-import staticFiles from "../lib/koa/static-files";
+import staticFiles from "../lib/koa/static-files.js";
 
 /*
  * 测试结果显示两者差距不大，并且都很快，不太可能成为性能瓶颈。

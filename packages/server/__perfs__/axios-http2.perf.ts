@@ -3,7 +3,7 @@ import assert from "assert";
 import { AddressInfo } from "net";
 import http2 from "http2";
 import Axios from "axios";
-import { configureAxiosHttp2 } from "../lib/axios-helper";
+import { configureAxiosHttp2 } from "../lib/axios-helper.js";
 
 /*
  * 测试 axios-http2 的性能（1000次请求）：

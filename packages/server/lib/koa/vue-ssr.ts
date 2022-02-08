@@ -30,6 +30,7 @@ export interface RenderContext {
 
 	/**
 	 * 请求页面的完整路径，包含 query 部分。
+	 * 例如 "/about/me?start=20&count=20#friends"
 	 */
 	readonly path: string;
 
@@ -40,6 +41,7 @@ export interface RenderContext {
 
 	/**
 	 * 资源清单，包含了每个模块的依赖模块列表。
+	 * 由 Vite的 Vue 插件在 SSR 时生成。
 	 */
 	readonly manifest: SSRManifest;
 }

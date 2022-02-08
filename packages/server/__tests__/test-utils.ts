@@ -26,8 +26,6 @@ export function readFixtureText(name: string) {
 /**
  * 返回一个Promise，在指定的时间后完成，可用于模拟耗时的操作，或搭配FakeTimers实现异步等待。
  *
- * TODO: Node16 有 timers/promises 模块内置了返回 Promise 的 setTimeout。
- *
  * @param time 时间，毫秒
  * @return 在指定的时间后完成的 Promise
  */
