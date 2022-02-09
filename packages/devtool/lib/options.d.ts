@@ -12,6 +12,7 @@ export interface ResolvedDevConfig extends ResolvedConfig {
 
 export interface BuildOptions {
 	mode: string;
+	target?: string | string[];
 	env?: Record<string, any>;
 	bundleAnalyzer?: boolean;
 	debug?: boolean;

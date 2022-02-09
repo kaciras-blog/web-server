@@ -37,6 +37,7 @@ export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean
 		define,
 		build: {
 			assetsDir: options.assetsDir,
+			target: build.target,
 
 			ssr: isSSR && "src/entry-server.ts",
 			ssrManifest: isSSR,
