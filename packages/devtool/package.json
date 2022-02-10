@@ -25,7 +25,7 @@
 	"dependencies": {
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras-blog/server": "workspace:^",
-		"@vitejs/plugin-vue": "^2.1.0",
+		"@vitejs/plugin-vue": "^2.2.0",
 		"@vue/compiler-sfc": "^3.2.30",
 		"@vue/server-renderer": "^3.2.30",
 		"colorette": "^2.0.16",
@@ -35,7 +35,7 @@
 		"rollup-plugin-visualizer": "^5.5.4",
 		"source-map-support": "^0.5.21",
 		"svgo": "^2.8.0",
-		"vite": "^2.7.13",
+		"vite": "^2.8.0",
 		"vite-plugin-inspect": "^0.3.13"
 	},
 	"devDependencies": {
