@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { install } from "source-map-support";
 import { argv } from "node:process";
+import { install } from "source-map-support";
 import { Launcher } from "../lib/index.js";
 
 install();
-new Launcher().run(argv.slice(2));
+
+await new Launcher().run(argv.slice(2));

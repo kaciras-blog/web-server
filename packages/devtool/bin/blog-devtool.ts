@@ -4,4 +4,5 @@ import { install } from "source-map-support";
 import launcher from "../lib/main.js";
 
 install();
-launcher.run(argv.slice(2));
+
+await launcher.run(argv.slice(2));
