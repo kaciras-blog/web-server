@@ -3,7 +3,7 @@ import { InputOptions, RollupOutput } from "rollup";
 import { build, InlineConfig, Plugin } from "vite";
 import { afterEach, beforeEach, expect } from "vitest";
 import deepmerge from "deepmerge";
-import fs from "fs";
+import { mkdirSync, mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 
 const TE_ID = resolveFixture("_TEST_ENTRY_.js");
@@ -104,8 +104,8 @@ export function resolveFixture(name: string) {
 }
 
 export function useTempDirectory() {
-	const root = fs.mkdtempSync(join(tmpdir(), "vitest-"));
-	beforeEach(() => fs.mkdirSync(root, { recursive: true }));
-	afterEach(() => fs.rmSync(root, { recursive: true }));
+	const root = mkdtempSync(join(tmpdir(), "vitest-"));
+	beforeEach(() => void mkdirSync(root, { recursive: true }));
+	afterEach(() => rmSync(root, { recursive: true }));
 	return root;
 }

@@ -7,8 +7,8 @@ import { ResolvedDevConfig } from "../options";
 
 export default async function (options: ResolvedDevConfig) {
 	await build(getViteConfig(options, false));
-	console.log(cyan("Client Build complete."));
+	console.log(cyan("Client Build completed.\n"));
 
 	await build(getViteConfig(options, true));
-	console.log(cyan("Server build complete."));
+	console.log(cyan("Server build completed.\n"));
 }

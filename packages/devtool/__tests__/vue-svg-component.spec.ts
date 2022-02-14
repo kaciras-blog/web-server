@@ -1,11 +1,11 @@
 import { createRequire } from "module";
 import { basename } from "path";
+import { runInNewContext } from "vm";
 import { expect, it } from "vitest";
 import { Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { getAsset, runVite } from "./test-utils";
 import vueSvgComponent from "../lib/plugin/vue-svg-component";
-import vm from "vm";
 import { createApp } from "vue";
 import { renderToString } from "@vue/server-renderer";
 
@@ -45,7 +45,7 @@ async function convert(input: string, mode?: string) {
 function loadBundle<T = any>(code: string) {
 	const require = createRequire(import.meta.url);
 	const context = { exports: {}, require };
-	vm.runInNewContext(code, context, { filename: "test.cjs" });
+	runInNewContext(code, context, { filename: "test.cjs" });
 	return context.exports as T;
 }
 

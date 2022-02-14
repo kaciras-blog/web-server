@@ -73,8 +73,9 @@ export default function compressAssets(options: CompressOptions): Plugin {
 
 		/**
 		 * vite:build-import-analysis 用了 generateBundle 钩子处理代码，
-		 * 而且它还在 enforce: "post" 之后，导致本插件只能使用更后面的钩子，
-		 * 在 writeBundle 里没法 emitFile，所以只能写文件了。
+		 * 而且它还在 enforce: "post" 之后，导致本插件只能使用更后面的钩子。
+		 *
+		 * 因为在 writeBundle 里没法 emitFile，所以只能写文件了。
 		 */
 		async writeBundle(options, bundle) {
 			const dir = options.dir!;
@@ -89,12 +90,12 @@ export default function compressAssets(options: CompressOptions): Plugin {
 					continue;
 				}
 				const fileName = `${v.fileName}.${algorithm}`;
-				const source = await compress(raw);
+				const output = await compress(raw);
 
-				if (source.length / raw.length > maxRatio) {
+				if (output.length / raw.length > maxRatio) {
 					continue;
 				}
-				writeFileSync(join(dir, fileName), source);
+				writeFileSync(join(dir, fileName), output);
 			}
 		},
 	};
