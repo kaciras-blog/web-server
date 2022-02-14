@@ -1,14 +1,23 @@
-import { readFileSync } from "fs";
+import { readdirSync, readFileSync, statSync } from "fs";
 import { expect, it } from "vitest";
-import { avoidEmptyChunkTS, getAsset, resolveFixture, runVite } from "./test-utils";
+import { avoidEmptyChunkTS, resolveFixture, runVite, useTempDirectory } from "./test-utils";
 import { compressAssets } from "../lib";
+import { join } from "path";
 
 const bigSvg = readFileSync(resolveFixture("big.svg"));
 const scriptJs = readFileSync(resolveFixture("script.js"));
 
+const outDir = useTempDirectory();
+
+function getSize(name: string) {
+	return statSync(join(outDir, name)).size;
+}
+
 it("should skip small files", async () => {
-	const bundle = await runVite({
+	await runVite({
 		build: {
+			write: true,
+			outDir,
 			rollupOptions: {
 				input: "instruction.svg",
 			},
@@ -19,12 +28,14 @@ it("should skip small files", async () => {
 		],
 	});
 
-	expect(bundle.output).toHaveLength(2);
+	expect(readdirSync(outDir)).toHaveLength(2);
 });
 
 it("should not skip incompressible files", async () => {
-	const bundle = await runVite({
+	await runVite({
 		build: {
+			write: true,
+			outDir,
 			rollupOptions: {
 				input: "test.png",
 			},
@@ -35,12 +46,14 @@ it("should not skip incompressible files", async () => {
 		],
 	});
 
-	expect(bundle.output).toHaveLength(2);
+	expect(readdirSync(outDir)).toHaveLength(2);
 });
 
 it("should compress assets", async () => {
-	const bundle = await runVite({
+	await runVite({
 		build: {
+			write: true,
+			outDir,
 			rollupOptions: {
 				input: "big.svg",
 			},
@@ -52,18 +65,20 @@ it("should compress assets", async () => {
 		],
 	});
 
-	expect(bundle.output).toHaveLength(4);
+	expect(readdirSync(outDir)).toHaveLength(4);
 
-	const gzipped = getAsset(bundle, "big.svg.gz");
-	expect(gzipped.length).toBeLessThan(bigSvg.length);
+	const gzipSize = getSize("big.svg.gz");
+	expect(gzipSize).toBeLessThan(bigSvg.length);
 
-	const brotli = getAsset(bundle, "big.svg.br");
-	expect(brotli.length).toBeLessThan(gzipped.length);
+	const brotliSize = getSize("big.svg.br");
+	expect(brotliSize).toBeLessThan(gzipSize);
 });
 
 it("should compress chunks", async () => {
-	const bundle = await runVite({
+	await runVite({
 		build: {
+			write: true,
+			outDir,
 			rollupOptions: {
 				input: "script.js",
 			},
@@ -73,15 +88,17 @@ it("should compress chunks", async () => {
 		],
 	});
 
-	expect(bundle.output).toHaveLength(2);
+	expect(readdirSync(outDir)).toHaveLength(2);
 
-	const gzipped = getAsset(bundle, "script.js.gz");
-	expect(gzipped.length).toBeLessThan(scriptJs.length);
+	const gzipSize = getSize("script.js.gz");
+	expect(gzipSize).toBeLessThan(scriptJs.length);
 });
 
 it("should only run at client build", async () => {
-	const bundle = await runVite({
+	await runVite({
 		build: {
+			write: true,
+			outDir,
 			rollupOptions: {
 				input: "script.js",
 			},
@@ -93,13 +110,15 @@ it("should only run at client build", async () => {
 		],
 	});
 
-	expect(bundle.output).toHaveLength(1);
+	expect(readdirSync(outDir)).toHaveLength(1);
 });
 
-it("should discard files with bad compress ratio",async () => {
-	const bundle = await runVite({
+it("should discard files with bad compress ratio", async () => {
+	await runVite({
 		assetsInclude: "**/*.data",
 		build: {
+			write: true,
+			outDir,
 			assetsInlineLimit: 0,
 			rollupOptions: {
 				input: "random.data",
@@ -110,5 +129,6 @@ it("should discard files with bad compress ratio",async () => {
 			compressAssets({ algorithm: "gz" }),
 		],
 	});
-	expect(bundle.output).toHaveLength(2);
+
+	expect(readdirSync(outDir)).toHaveLength(2);
 });

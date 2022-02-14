@@ -1,8 +1,10 @@
 import { join } from "path";
 import { InputOptions, RollupOutput } from "rollup";
 import { build, InlineConfig, Plugin } from "vite";
-import { expect } from "vitest";
+import { afterEach, beforeEach, expect } from "vitest";
 import deepmerge from "deepmerge";
+import fs from "fs";
+import { tmpdir } from "os";
 
 const TE_ID = resolveFixture("_TEST_ENTRY_.js");
 
@@ -99,4 +101,11 @@ export function getAsset(bundle: RollupOutput, name: string) {
  */
 export function resolveFixture(name: string) {
 	return join(__dirname, "fixtures", name);
+}
+
+export function useTempDirectory() {
+	const root = fs.mkdtempSync(join(tmpdir(), "vitest-"));
+	beforeEach(() => fs.mkdirSync(root, { recursive: true }));
+	afterEach(() => fs.rmSync(root, { recursive: true }));
+	return root;
 }
