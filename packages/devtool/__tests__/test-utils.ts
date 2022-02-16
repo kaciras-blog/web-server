@@ -73,6 +73,10 @@ export function runVite(config: InlineConfig) {
 	return build(config) as Promise<RollupOutput>;
 }
 
+export function viteWrite(outDir: string, config: InlineConfig) {
+	return runVite(deepmerge(config, { build: { outDir, write: true } }));
+}
+
 /**
  * 从构建的结果中读取 Asset 的内容，如果没找到或不是 Asset 则失败。
  *

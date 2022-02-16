@@ -1,8 +1,8 @@
+import { join } from "path";
 import { readdirSync, readFileSync, statSync } from "fs";
 import { expect, it } from "vitest";
-import { avoidEmptyChunkTS, resolveFixture, runVite, useTempDirectory } from "./test-utils";
+import { avoidEmptyChunkTS, resolveFixture, runVite, useTempDirectory, viteWrite } from "./test-utils";
 import { compressAssets } from "../lib";
-import { join } from "path";
 
 const bigSvg = readFileSync(resolveFixture("big.svg"));
 const scriptJs = readFileSync(resolveFixture("script.js"));
@@ -32,10 +32,8 @@ it("should skip small files", async () => {
 });
 
 it("should not skip incompressible files", async () => {
-	await runVite({
+	await viteWrite(outDir, {
 		build: {
-			write: true,
-			outDir,
 			rollupOptions: {
 				input: "test.png",
 			},
@@ -50,10 +48,8 @@ it("should not skip incompressible files", async () => {
 });
 
 it("should compress assets", async () => {
-	await runVite({
+	await viteWrite(outDir, {
 		build: {
-			write: true,
-			outDir,
 			rollupOptions: {
 				input: "big.svg",
 			},
@@ -75,10 +71,8 @@ it("should compress assets", async () => {
 });
 
 it("should compress chunks", async () => {
-	await runVite({
+	await viteWrite(outDir, {
 		build: {
-			write: true,
-			outDir,
 			rollupOptions: {
 				input: "script.js",
 			},
@@ -95,10 +89,8 @@ it("should compress chunks", async () => {
 });
 
 it("should only run at client build", async () => {
-	await runVite({
+	await viteWrite(outDir, {
 		build: {
-			write: true,
-			outDir,
 			rollupOptions: {
 				input: "script.js",
 			},
@@ -114,11 +106,9 @@ it("should only run at client build", async () => {
 });
 
 it("should discard files with bad compress ratio", async () => {
-	await runVite({
+	await viteWrite(outDir, {
 		assetsInclude: "**/*.data",
 		build: {
-			write: true,
-			outDir,
 			assetsInlineLimit: 0,
 			rollupOptions: {
 				input: "random.data",
