@@ -1,7 +1,23 @@
-import { extname } from "path";
+import { basename, extname } from "path";
 import { hashName } from "./common.js";
-import { LoadRequest, LoadResponse, MediaService, SaveRequest } from "./MediaService.js";
-import { FileStore } from "./FileStore.js";
+import { LoadRequest, MediaService, SaveRequest } from "./MediaService.js";
+import { Data, FileStore } from "./FileStore.js";
+
+export interface MediaAttrs extends Record<string, any> {
+
+	/** 资源的类型，例如 svg、mp4 */
+	type: string;
+
+	/**
+	 * 外层包装的编码，通常是 gzip 或 br。
+	 */
+	encoding?: string;
+}
+
+export interface MediaItem {
+	data: Data;
+	attrs: MediaAttrs;
+}
 
 /**
  * 资源优化器，
@@ -15,9 +31,9 @@ export interface Optimizer {
 	 */
 	check(request: SaveRequest): Promise<void>;
 
-	buildCache(name: string, info: SaveRequest): Promise<void>;
+	select(items: MediaAttrs[], request: LoadRequest): MediaAttrs | void;
 
-	getCache(request: LoadRequest): Promise<LoadResponse | null | undefined>;
+	buildCache(id: string, info: SaveRequest): Promise<MediaItem[]>;
 }
 
 /**
@@ -43,29 +59,47 @@ export default class CachedService implements MediaService {
 	 * 加载资源，默认只返回优化后的版本，可以通过 { type: "origin“ } 参数获取原始文件。
 	 */
 	async load(request: LoadRequest) {
+		const { store, optimizer } = this;
 		const { name, parameters } = request;
+		const ext = extname(name);
 
-		if (parameters.type !== "origin") {
-			return this.optimizer.getCache(request);
+		// 如果指定了这个参数就直接返回原始文件。
+		if (parameters.type === "origin") {
+			const file = await this.store.load(name);
+			if (!file) {
+				return null;
+			}
+			return { file, type: ext.slice(1) };
 		}
 
-		const file = await this.store.load(name);
-		if (!file) {
-			return null;
+		const hash = basename(name, ext);
+		const items = await store.listCache(hash);
+
+		if (items === null) {
+			return null; // 没有该文件的缓存。
 		}
-		return { file, type: extname(name).slice(1) };
+
+		const attrs = await optimizer.select(items, request);
+		if (!attrs) {
+			return null; // 缓存中没有适合客户端的。
+		}
+		const file = (await store.getCache(hash, attrs))!;
+		return { ...attrs, file };
 	}
 
 	async save(request: SaveRequest) {
-		await this.optimizer.check(request);
+		const { store, optimizer } = this;
+
+		await optimizer.check(request);
 		const { buffer, type } = request;
 
 		const hash = hashName(buffer);
 		const name = hash + "." + type;
 
-		const createNew = await this.store.save(name, buffer);
+		const createNew = await store.save(name, buffer);
 		if (createNew) {
-			await this.optimizer.buildCache(hash, request);
+			const items = await optimizer.buildCache(hash, request);
+			await store.putCaches(hash, items);
 		}
 		return name;
 	}

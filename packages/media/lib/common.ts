@@ -4,6 +4,9 @@ import { xxHash3_128 } from "@kaciras-blog/nativelib";
  * 对数据执行 Hash 运算，返回 20 个字符的 url-safe base64 字符串。
  * 该函数很快无需异步。
  *
+ * 之所以选择 20 个字符，是因为它有 120 bit 信息量，同时能被 6(base64) 和 8(byte) 整除，
+ * 同时也是最接近原始输出 128 的长度。
+ *
  * 【Hash-Flooding Attack】
  * 非加密 Hash 有恶意碰撞的风险，在允许公开上传时需要注意。
  *
