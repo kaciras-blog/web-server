@@ -3,9 +3,14 @@ import { hashName } from "./common.js";
 import { LoadRequest, MediaService, SaveRequest } from "./MediaService.js";
 import { Data, FileStore } from "./FileStore.js";
 
+/**
+ *
+ */
 export interface MediaAttrs extends Record<string, any> {
 
-	/** 资源的类型，例如 svg、mp4 */
+	/**
+	 * 资源的类型，例如 svg、mp4。
+	 */
 	type: string;
 
 	/**
@@ -16,7 +21,7 @@ export interface MediaAttrs extends Record<string, any> {
 
 export interface MediaItem {
 	data: Data;
-	attrs: MediaAttrs;
+	params: MediaAttrs;
 }
 
 /**
@@ -31,8 +36,24 @@ export interface Optimizer {
 	 */
 	check(request: SaveRequest): Promise<void>;
 
+	/**
+	 * 从多个缓存中选出最适合作为响应的，如果一个都没有则返回 falsy 值。
+	 *
+	 * @param items 缓存参数列表
+	 * @param request 请求
+	 */
 	select(items: MediaAttrs[], request: LoadRequest): MediaAttrs | void;
 
+	/**
+	 * 为指定的资源生成缓存（优化版本）。
+	 *
+	 * 当前只能一次生成资源的全部缓存，不能单独生成特定的变体，
+	 * 因为资源能生成哪些优化版本这一信息需要保存，每次都尝试能否生成的话性能太差，
+	 * 目前未实现这种元数据的存储功能。
+	 *
+	 * @param id 资源的 ID
+	 * @param info 必要的数据
+	 */
 	buildCache(id: string, info: SaveRequest): Promise<MediaItem[]>;
 }
 
@@ -79,7 +100,7 @@ export default class CachedService implements MediaService {
 			return null; // 没有该文件的缓存。
 		}
 
-		const attrs = await optimizer.select(items, request);
+		const attrs = await optimizer.select(items as MediaAttrs[], request);
 		if (!attrs) {
 			return null; // 缓存中没有适合客户端的。
 		}

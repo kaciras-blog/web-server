@@ -20,6 +20,7 @@ const svgoConfig: OptimizeOptions = {
 		name: "preset-default",
 		params: {
 			overrides: {
+				removeViewBox: false,
 				inlineStyles: false,
 			},
 		},
@@ -42,15 +43,14 @@ export default class SVGOptimizer implements Optimizer {
 		}
 
 		const promises = [];
-
 		const { data } = optimized;
 
 		const compress = async (algorithm: Compress, encoding: string) => {
 			const compressed = await algorithm(data);
-			return { data: compressed, attrs: { encoding } };
+			return { data: compressed, params: { encoding, type: "svg" } };
 		};
 
-		promises.push({ data, attrs: {} });
+		promises.push({ data, params: { type: "svg" } });
 		promises.push(compress(gzipCompress, "gzip"));
 
 		if (data.length > BROTLI_THRESHOLD) {
