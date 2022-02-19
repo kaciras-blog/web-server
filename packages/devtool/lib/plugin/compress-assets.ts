@@ -65,7 +65,6 @@ export default function compressAssets(options: CompressOptions): Plugin {
 
 	return {
 		name: "kaciras:compress-assets",
-		enforce: "post",
 
 		apply(config, env) {
 			return force || !config.build?.ssr && env.command === "build";
@@ -89,12 +88,12 @@ export default function compressAssets(options: CompressOptions): Plugin {
 				if (raw.length < minSize) {
 					continue;
 				}
-				const fileName = `${v.fileName}.${algorithm}`;
 				const output = await compress(raw);
 
 				if (output.length / raw.length > maxRatio) {
 					continue;
 				}
+				const fileName = `${v.fileName}.${algorithm}`;
 				writeFileSync(join(dir, fileName), output);
 			}
 		},
