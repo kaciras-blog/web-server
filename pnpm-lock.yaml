@@ -36,6 +36,7 @@ importers:
       svgo: ^2.8.0
       vite: ^2.8.2
       vite-plugin-inspect: ^0.3.14
+      vite-plugin-svg-sfc: ^0.1.0
       vue: ^3.2.31
     dependencies:
       '@kaciras-blog/media': link:../media
@@ -52,6 +53,7 @@ importers:
       svgo: 2.8.0
       vite: 2.8.2
       vite-plugin-inspect: 0.3.14_vite@2.8.2
+      vite-plugin-svg-sfc: 0.1.0
     devDependencies:
       '@types/svgo': 2.6.2
       deepmerge: 4.2.2
@@ -4277,6 +4279,12 @@ packages:
       vite: 2.8.2
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /vite-plugin-svg-sfc/0.1.0:
+    resolution: {integrity: sha512-EVWewmdyeFkvl2HvnquUTuU5R5djPwL3uzJA5VTLggtY7puzFRfR39MT0HvJEfZQjSm9Ycp9oP+Tnx6TjB3r/A==}
+    dependencies:
+      svgo: 2.8.0
     dev: false
 
   /vite/2.8.2:

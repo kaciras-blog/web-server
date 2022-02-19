@@ -4,16 +4,16 @@ import { UserConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import inspect from "vite-plugin-inspect";
 import vue from "@vitejs/plugin-vue";
+import vueSvgSfc from "vite-plugin-svg-sfc";
 import { ResolvedDevConfig } from "./options.js";
 import compressAssets from "./plugin/compress-assets.js";
 import SWPlugin from "./plugin/service-worker.js";
-import vueSvgComponent from "./plugin/vue-svg-component.js";
 import optimizeImage from "./plugin/optimize-image.js";
 
 /**
  * 创建 Vite 的配置。由于架构不同，仅需一个函数，比以前三个 getWebpackConfig 简单多了。
  *
- * 因为 ConfigEnv 没有 SSR 信息，所以没返回 UserConfigFn 而是传一个参数来区分。
+ * 因为 ConfigEnv 没有 SSR 信息，所以没用 UserConfigFn 而是传一个参数来区分。
  */
 export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean) {
 	const { backend, build } = options;
@@ -56,13 +56,12 @@ export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean
 		},
 		plugins: [
 			inspect({ enabled: debug }),
+			bundleAnalyzer && visualizer(),
 
-			vueSvgComponent(),
+			vueSvgSfc(),
 			vue(vueOptions),
 
 			serviceWorker && SWPlugin(serviceWorker),
-
-			bundleAnalyzer && visualizer(),
 
 			optimizeImage(new RegExp("static/")),
 			compressAssets({ algorithm: "gz" }),
