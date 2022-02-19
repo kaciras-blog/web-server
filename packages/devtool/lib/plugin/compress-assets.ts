@@ -75,6 +75,9 @@ export default function compressAssets(options: CompressOptions): Plugin {
 		 * 而且它还在 enforce: "post" 之后，导致本插件只能使用更后面的钩子。
 		 *
 		 * 因为在 writeBundle 里没法 emitFile，所以只能写文件了。
+		 *
+		 * <h2>代码重复？</h2>
+		 * 这里的逻辑跟 media 模块里压 SVG 的相同，但代码很少也必要复用。
 		 */
 		async writeBundle(options, bundle) {
 			const dir = options.dir!;
