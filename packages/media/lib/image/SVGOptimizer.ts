@@ -5,14 +5,14 @@ import { LoadRequest, SaveRequest } from "../MediaService.js";
 import { MediaAttrs, Optimizer } from "../CachedService.js";
 import { BadDataError } from "../errors.js";
 
-const gzipCompress = promisify<InputType, Buffer>(zlib.gzip);
-const brotliCompress = promisify<InputType, Buffer>(zlib.brotliCompress);
+const algorithms = {
+	gzip: promisify<InputType, Buffer>(zlib.gzip),
+	br: promisify<InputType, Buffer>(zlib.brotliCompress),
+};
 
-type Compress = typeof gzipCompress;
+const THRESHOLD = 2048;
 
-const BROTLI_THRESHOLD = 1024;
-
-// SVGO 的 inlineStyles 可能丢失样式，只能关闭。
+// SVGO 的 inlineStyles 不能处理无法内联的特性，比如媒体查询，
 // Rollup 官网的 Hook 图可以触发该 BUG。
 // 相关的 Issue：https://github.com/svg/svgo/issues/1359
 const svgoConfig: OptimizeOptions = {
@@ -36,26 +36,25 @@ export default class SVGOptimizer implements Optimizer {
 	}
 
 	async buildCache(name: string, { buffer }: SaveRequest) {
-		const optimized = optimize(buffer.toString(), svgoConfig);
-
-		if (optimized.modernError) {
+		const result = optimize(buffer.toString(), svgoConfig);
+		if (result.modernError) {
 			throw new BadDataError("无法将文件作为 SVG 优化");
 		}
 
 		const promises = [];
-		const { data } = optimized;
+		const { data } = result;
 
-		const compress = async (algorithm: Compress, encoding: string) => {
-			const compressed = await algorithm(data);
+		const compress = async (encoding: "gzip" | "br") => {
+			const compressed = await algorithms[encoding](data);
 			return { data: compressed, params: { encoding, type: "svg" } };
 		};
 
-		promises.push({ data, params: { type: "svg" } });
-		promises.push(compress(gzipCompress, "gzip"));
-
-		if (data.length > BROTLI_THRESHOLD) {
-			promises.push(compress(brotliCompress, "br"));
+		if (data.length > THRESHOLD) {
+			promises.push(compress("br"));
+			promises.push(compress("gzip"));
 		}
+
+		promises.push({ data, params: { type: "svg" } });
 
 		return Promise.all(promises);
 	}

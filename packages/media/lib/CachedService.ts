@@ -30,7 +30,8 @@ export interface MediaItem {
 export interface Optimizer {
 
 	/**
-	 * 预检，判断保存请求是否能够被此优化器处理，也可以在这里调整请求的内容。
+	 * 预检，判断保存请求是否能够被此优化器处理，也可以在这里调预处理求的内容。
+	 * 因为缓存可能不在上传时生成，所以预检得单独拿出来。
 	 *
 	 * @param request 保存请求
 	 */

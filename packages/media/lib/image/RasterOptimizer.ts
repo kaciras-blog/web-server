@@ -1,10 +1,9 @@
-import { basename, extname } from "path";
+import { extname } from "path";
 import sharp, { Sharp } from "sharp";
 import log4js from "log4js";
 import { BadDataError, ProcessorError } from "../errors.js";
 import { LoadRequest, SaveRequest } from "../MediaService.js";
-import { Optimizer } from "../CachedService.js";
-import { FileStore } from "../FileStore.js";
+import { MediaAttrs, Optimizer } from "../CachedService.js";
 import { crop } from "./param-processor.js";
 import { encodeAVIF, encodeWebp, optimizeRaster } from "./encoder.js";
 
@@ -25,12 +24,6 @@ function unprocessable(e: Error) {
 }
 
 export default class RasterOptimizer implements Optimizer {
-
-	private readonly store: FileStore;
-
-	constructor(store: FileStore) {
-		this.store = store;
-	}
 
 	async check(request: SaveRequest) {
 		const { buffer, parameters, type } = request;
@@ -59,7 +52,9 @@ export default class RasterOptimizer implements Optimizer {
 			encodeWebp(buffer).catch(unprocessable),
 		]);
 
-		await this.store.putCache(name, base, { type });
+		const cacheItems = [
+			{ data: base, params: { type } },
+		];
 
 		// 筛选最佳格式，如果新格式比旧的还大就抛弃。
 		let best = base.length;
@@ -69,28 +64,21 @@ export default class RasterOptimizer implements Optimizer {
 
 			if (output && output.length < best) {
 				best = output.length;
-				await this.store.putCache(name, output, { type });
+				cacheItems.push({ data: output, params: { type } });
 			} else {
 				logger.trace(`${name} 转 ${type} 格式效果不佳`);
 			}
 		}
+
+		return cacheItems;
 	}
 
-	async getCache({ name, acceptTypes }: LoadRequest) {
+	select(items: MediaAttrs[], { name, acceptTypes }: LoadRequest) {
 		const ext = extname(name);
-		const hash = basename(name, ext);
 
-		for (const type of formats) {
-			if (!acceptTypes.includes(type)) {
-				continue;
-			}
-			const file = await this.store.getCache(hash, { type });
-			if (file !== null) {
-				return { file, type };
-			}
-		}
-
-		const file = await this.store.getCache(hash, {});
-		return file && { file, type: ext.slice(1) };
+		return [...formats, ext]
+			.filter(t => acceptTypes.includes(t))
+			.map(t => items.find(i => i.type === t))
+			.find(item => item !== undefined);
 	}
 }
