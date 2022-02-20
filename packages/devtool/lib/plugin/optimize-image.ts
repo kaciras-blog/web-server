@@ -1,56 +1,70 @@
 import { extname } from "path";
-import * as svgo from "svgo";
 import { OutputAsset, OutputBundle, PluginContext } from "rollup";
 import { Plugin } from "vite";
-import { encodeWebp, optimizeRaster } from "@kaciras-blog/media";
-import { minifyPreset } from "./vue-svg-component.js";
+import { MediaAttrs, Optimizer, RasterOptimizer, SVGOptimizer } from "@kaciras-blog/media";
 
-const svgoConfig = {
-	plugins: [minifyPreset],
-};
+const sss = new SVGOptimizer();
+const rs = new RasterOptimizer();
 
-interface Optimizer {
+function cacheName(raw: string, attrs: MediaAttrs) {
+	const { type, encoding } = attrs;
+	const ext = extname(raw);
 
-	test: RegExp;
+	let suffix = ext;
+	if (type) {
+		suffix = "." + type;
+	}
 
-	apply(this: PluginContext, asset: OutputAsset): Promise<void>;
+	if (encoding === "gzip") {
+		suffix += ".gz";
+	} else if (encoding) {
+		suffix += "." + encoding;
+	}
+
+	return raw.slice(0, -ext.length) + suffix;
 }
 
-const optimizers: Optimizer[] = [
-	{
-		test: /\.(jpe?g|png|gif)$/,
-		async apply(asset: OutputAsset) {
-			const type = extname(asset.fileName).slice(1);
-			const buffer = asset.source as Buffer;
-			asset.source = await optimizeRaster(buffer, type);
-		},
-	},
-	{
-		test: /\.(jpe?g|png)$/,
-		async apply(asset: OutputAsset) {
-			let { source, fileName } = asset;
-			const ext = extname(fileName);
+async function optimize(this: PluginContext, asset: OutputAsset) {
+	const name = asset.fileName;
+	const type = extname(name).slice(1);
 
-			fileName = fileName.slice(0, -ext.length) + ".webp";
-			source = await encodeWebp(source as Buffer);
+	let optimizer: Optimizer;
 
-			this.emitFile({ type: "asset", fileName, source });
-		},
-	},
-	{
-		// 只用 SVGO 优化，压缩由其他的插件实现
-		test: /\.svg$/,
-		async apply(asset: OutputAsset) {
-			const text = asset.source.toString();
+	switch (type) {
+		case "svg":
+			optimizer = sss;
+			break;
+		case "jpg":
+		case "png":
+		case "gif":
+			optimizer = rs;
+			break;
+		default:
+			return;
+	}
 
-			const result = svgo.optimize(text, svgoConfig);
-			if (result.error !== undefined) {
-				throw result.modernError;
-			}
-			asset.source = result.data;
-		},
-	},
-];
+	let buffer = asset.source;
+	if (typeof buffer === "string") {
+		buffer = Buffer.from(buffer);
+	}
+
+	const items = await optimizer.buildCache(name, {
+		buffer,
+		type,
+		parameters: {},
+	});
+
+	for (const cache of items) {
+		const { data, params } = cache;
+		const fileName = cacheName(name, params);
+
+		if (fileName === name) {
+			asset.source = data;
+		} else {
+			this.emitFile({ type: "asset", source: data, fileName });
+		}
+	}
+}
 
 /**
  * 优化图片资源的插件，能够压缩图片资源，同时还会为一些图片额外生成 WebP 格式的转码，
@@ -74,8 +88,6 @@ export default function optimizeImage(include?: RegExp): Plugin {
 		},
 
 		async generateBundle(_: unknown, bundle: OutputBundle) {
-			const tasks: Array<Promise<void>> = [];
-
 			for (const name of Object.keys(bundle)) {
 				const asset = bundle[name];
 				if (asset.type !== "asset") {
@@ -84,13 +96,8 @@ export default function optimizeImage(include?: RegExp): Plugin {
 				if (include && !include.test(name)) {
 					continue;
 				}
-				optimizers
-					.filter(v => v.test.test(name))
-					.map(v => v.apply.call(this, asset))
-					.forEach(t => tasks.push(t));
+				await optimize.call(this, asset);
 			}
-
-			return Promise.all(tasks).then<void>();
 		},
 	};
 }
