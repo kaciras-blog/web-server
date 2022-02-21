@@ -1,12 +1,13 @@
 import { basename, extname } from "path";
 import { hashName } from "./common.js";
-import { LoadRequest, MediaService, SaveRequest } from "./MediaService.js";
+import { LoadRequest, MediaService, Params, SaveRequest } from "./MediaService.js";
 import { Data, FileStore } from "./FileStore.js";
 
 /**
- *
+ * 优化器生成的缓存的属性，将用作缓存的键，以及响应中。
+ * type 和 encoding 是必要的，它们需要放在请求头中。
  */
-export interface MediaAttrs extends Record<string, any> {
+export interface MediaAttrs extends Params {
 
 	/**
 	 * 资源的类型，例如 svg、mp4。
@@ -52,10 +53,9 @@ export interface Optimizer {
 	 * 因为资源能生成哪些优化版本这一信息需要保存，每次都尝试能否生成的话性能太差，
 	 * 目前未实现这种元数据的存储功能。
 	 *
-	 * @param id 资源的 ID
 	 * @param info 必要的数据
 	 */
-	buildCache(id: string, info: SaveRequest): Promise<MediaItem[]>;
+	buildCache(info: SaveRequest): Promise<MediaItem[]>;
 }
 
 /**
@@ -65,7 +65,7 @@ export interface Optimizer {
  * <h2>预先生 vs. 实时生成</h2>
  * 预先生成的优点是缓存一定命中，下载时无需等待。
  * 而另一种做法是实时生成，twitter 就是这种，其优点是更加灵活、允许缓存过期节省空间。
- * 考虑到个人博客不会有太多的图，而且廉价 VPS 的性能也差，所以暂时选择了预先生成。
+ * 考虑到个人博客不会有太多的图，而且廉价 VPS 的性能也差，所以选择了预先生成。
  */
 export default class CachedService implements MediaService {
 
@@ -120,7 +120,7 @@ export default class CachedService implements MediaService {
 
 		const createNew = await store.save(name, buffer);
 		if (createNew) {
-			const items = await optimizer.buildCache(hash, request);
+			const items = await optimizer.buildCache(request);
 			await store.putCaches(hash, items);
 		}
 		return name;

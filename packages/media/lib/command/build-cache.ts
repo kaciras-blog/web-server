@@ -17,8 +17,8 @@ export default async function buildCache(options: ResolvedConfig) {
 	const { dataDir } = options.app;
 
 	const store = new LocalFileStore(dataDir, "image");
-	const svgOptimizer = new SVGOptimizer(store);
-	const rasterOptimizer = new RasterOptimizer(store);
+	const svgOptimizer = new SVGOptimizer();
+	const rasterOptimizer = new RasterOptimizer();
 
 	const originDir = join(dataDir.data, "image");
 	const names = readdirSync(originDir);
@@ -46,14 +46,15 @@ export default async function buildCache(options: ResolvedConfig) {
 		 * 所以暂不支持跳过已生成的文件，每次都是全量。
 		 */
 		try {
-			await optimizer.buildCache(hash, request);
+			const items = await optimizer.buildCache(request);
+			await store.putCaches(hash, items);
 			progress.increment();
 		} catch (e) {
 			progress.stop();
-			return console.error(e);
+			return console.error(`${hash} 的缓存生成失败`, e);
 		}
 	}
 
 	progress.stop();
-	console.info(`生成了 ${names.length} 张图片的缓存`);
+	console.info(`缓存构建成功，处理了 ${names.length} 张图片`);
 }

@@ -16,7 +16,7 @@ import { FileInfo } from "./FileStore.js";
  * https://evilmartians.com/chronicles/better-web-video-with-av1-codec
  */
 
-export type Params = Record<string, string>;
+export type Params = Record<string, string | undefined>;
 
 /**
  * <h2>从内容检测类型？</h2>

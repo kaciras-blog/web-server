@@ -109,8 +109,8 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 
 		const imageStore = new LocalFileStore(app.dataDir, "image");
 		const service = new DispatchService(
-			{ "svg": new CachedService(imageStore, new SVGOptimizer(imageStore)) },
-			new CachedService(imageStore, new RasterOptimizer(imageStore)),
+			{ "svg": new CachedService(imageStore, new SVGOptimizer()) },
+			new CachedService(imageStore, new RasterOptimizer()),
 		);
 		// @ts-ignore
 		router.get("/image/:name", ctx => download(service, ctx));

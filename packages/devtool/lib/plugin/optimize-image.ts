@@ -1,12 +1,12 @@
 import { extname } from "path";
-import { OutputAsset, OutputBundle, PluginContext } from "rollup";
+import { OutputAsset, PluginContext } from "rollup";
 import { Plugin } from "vite";
 import { MediaAttrs, Optimizer, RasterOptimizer, SVGOptimizer } from "@kaciras-blog/media";
 
 const sss = new SVGOptimizer();
 const rs = new RasterOptimizer();
 
-function cacheName(raw: string, attrs: MediaAttrs) {
+function interpolateName(raw: string, attrs: MediaAttrs) {
 	const { type, encoding } = attrs;
 	const ext = extname(raw);
 
@@ -43,12 +43,12 @@ async function optimize(this: PluginContext, asset: OutputAsset) {
 			return;
 	}
 
-	let buffer = asset.source;
+	let buffer = asset.source as string | Buffer;
 	if (typeof buffer === "string") {
 		buffer = Buffer.from(buffer);
 	}
 
-	const items = await optimizer.buildCache(name, {
+	const items = await optimizer.buildCache({
 		buffer,
 		type,
 		parameters: {},
@@ -56,7 +56,7 @@ async function optimize(this: PluginContext, asset: OutputAsset) {
 
 	for (const cache of items) {
 		const { data, params } = cache;
-		const fileName = cacheName(name, params);
+		const fileName = interpolateName(name, params);
 
 		if (fileName === name) {
 			asset.source = data;
@@ -87,7 +87,7 @@ export default function optimizeImage(include?: RegExp): Plugin {
 			return !config.build?.ssr && env.command === "build";
 		},
 
-		async generateBundle(_: unknown, bundle: OutputBundle) {
+		async generateBundle(_, bundle) {
 			for (const name of Object.keys(bundle)) {
 				const asset = bundle[name];
 				if (asset.type !== "asset") {

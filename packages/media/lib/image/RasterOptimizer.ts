@@ -1,13 +1,10 @@
 import { extname } from "path";
 import sharp, { Sharp } from "sharp";
-import log4js from "log4js";
 import { BadDataError, ProcessorError } from "../errors.js";
 import { LoadRequest, SaveRequest } from "../MediaService.js";
 import { MediaAttrs, Optimizer } from "../CachedService.js";
 import { crop } from "./param-processor.js";
 import { encodeAVIF, encodeWebp, optimizeRaster } from "./encoder.js";
-
-const logger = log4js.getLogger("Image");
 
 /**
  * 能够处理的图片格式，不支持 WebP 作为输入。
@@ -45,7 +42,7 @@ export default class RasterOptimizer implements Optimizer {
 		}
 	}
 
-	async buildCache(name: string, { buffer, type }: SaveRequest) {
+	async buildCache({ buffer, type }: SaveRequest) {
 		const [base, ...modern] = await Promise.all([
 			optimizeRaster(buffer, type),
 			encodeAVIF(buffer).catch(unprocessable),
@@ -65,8 +62,6 @@ export default class RasterOptimizer implements Optimizer {
 			if (output && output.length < best) {
 				best = output.length;
 				cacheItems.push({ data: output, params: { type } });
-			} else {
-				logger.trace(`${name} 转 ${type} 格式效果不佳`);
 			}
 		}
 

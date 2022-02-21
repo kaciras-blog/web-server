@@ -35,7 +35,7 @@ export default class SVGOptimizer implements Optimizer {
 		}
 	}
 
-	async buildCache(name: string, { buffer }: SaveRequest) {
+	async buildCache({ buffer }: SaveRequest) {
 		const result = optimize(buffer.toString(), svgoConfig);
 		if (result.modernError) {
 			throw new BadDataError("无法将文件作为 SVG 优化");
