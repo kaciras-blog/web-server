@@ -41,12 +41,12 @@ export interface AppOptions {
 	dataDir: string | SeparatedStoreLocation;
 
 	serviceWorker?: boolean;
-	requestTimeout: number;
 
 	logging: SimpleLogConfig;
 }
 
 export interface BackendOptions {
+	timeout: number; // TODO: 还未实现
 	internal: string;
 	cert?: string | true;
 	public: string | AddersSelector;

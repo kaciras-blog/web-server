@@ -30,6 +30,7 @@ async function optimize(this: PluginContext, asset: OutputAsset) {
 
 	let optimizer: Optimizer;
 
+	// TODO: 跟 media 服务复用代码
 	switch (type) {
 		case "svg":
 			optimizer = sss;

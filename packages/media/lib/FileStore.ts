@@ -55,5 +55,11 @@ export interface FileStore {
 	 */
 	getCache(id: string, params: Params): Promise<FileInfo | null>;
 
+	/**
+	 * 获取指定缓存区内的所有缓存的参数。
+	 *
+	 * @param id 缓存区的名字
+	 * @return 缓存区内所有缓存的参数，如果缓存区不存在则为 null。
+	 */
 	listCache(id: string): Promise<Params[] | null>;
 }

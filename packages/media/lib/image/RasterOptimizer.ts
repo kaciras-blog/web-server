@@ -16,6 +16,9 @@ const INPUT_FORMATS = ["jpg", "png", "gif"];
  */
 const FORMATS = ["avif", "webp"];
 
+/**
+ * 如果抛出的是 ProcessorError，则返回 undefined。
+ */
 function unprocessable(e: Error) {
 	if (!(e instanceof ProcessorError)) throw e;
 }
@@ -43,18 +46,16 @@ export default class RasterOptimizer implements Optimizer {
 	}
 
 	async buildCache({ buffer, type }: SaveRequest) {
-		const [base, ...modern] = await Promise.all([
+		const [data, ...modern] = await Promise.all([
 			optimizeRaster(buffer, type),
 			encodeAVIF(buffer).catch(unprocessable),
 			encodeWebp(buffer).catch(unprocessable),
 		]);
 
-		const cacheItems = [
-			{ data: base, params: { type } },
-		];
+		const cacheItems = [{ data, params: { type } }];
 
 		// 筛选最佳格式，如果新格式比旧的还大就抛弃。
-		let best = base.length;
+		let best = data.length;
 		for (let i = modern.length - 1; i >= 0; i--) {
 			const output = modern[i];
 			type = FORMATS[i];
