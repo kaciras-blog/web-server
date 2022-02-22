@@ -1,7 +1,7 @@
 import { join } from "path";
 import { tmpdir } from "os";
 import fs from "fs-extra";
-import { afterEach, beforeEach, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import LocalFileStore from "../lib/LocalFileStore";
 
 const root = fs.mkdtempSync(join(tmpdir(), "test-"));
@@ -28,6 +28,29 @@ it("should get null if cache not exists", () => {
 	return expect(store.getCache("foobar", {})).resolves.toBeNull();
 });
 
+describe("listCache", () => {
+	it("should return null if cache zone is not exists", async () => {
+		expect(await store.listCache("NOT_EXISTS")).toBeNull();
+	});
+
+	it("should return [] if cache zone is empty", async () => {
+		fs.mkdirSync(join(config.cache, "image", "foobar"));
+		expect(await store.listCache("foobar")).toHaveLength(0);
+	});
+
+	it("should return all of cache item params", async () => {
+		const zone = join(config.cache, "image", "foobar");
+		fs.mkdirSync(zone);
+		fs.createFileSync(join(zone, "type=1&codec=av1"));
+		fs.createFileSync(join(zone, "type=2&encoding=br"));
+
+		const [a, b] = (await store.listCache("foobar"))!;
+
+		expect(a).toStrictEqual({ type: "1", codec: "av1" });
+		expect(b).toStrictEqual({ type: "2", encoding: "br" });
+	});
+});
+
 it("should load the file", async () => {
 	const path = join(config.data, "image", "foobar.txt");
 	fs.writeFileSync(path, "alice");
@@ -51,7 +74,7 @@ it("should save new file if not exists", async () => {
 	expect(fs.readFileSync(path, "utf8")).toBe("bob");
 });
 
-it("should skip existing file on save",async () => {
+it("should skip existing file on save", async () => {
 	const path = join(config.data, "image", "foobar.txt");
 	fs.writeFileSync(path, "alice");
 

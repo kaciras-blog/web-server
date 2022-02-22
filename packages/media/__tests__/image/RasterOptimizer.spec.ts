@@ -14,13 +14,6 @@ vi.mock("../../lib/image/encoder", () => ({
 	optimizeRaster: vi.fn(),
 }));
 
-const store = {
-	save: vi.fn(),
-	load: vi.fn(),
-	putCache: vi.fn(),
-	getCache: vi.fn(),
-};
-
 const saveRequest = {
 	buffer: readFixture("tile_16x16.png"),
 	type: "png",
@@ -35,7 +28,7 @@ const loadRequest = {
 	acceptEncodings: [],
 };
 
-const optimizer = new RasterOptimizer(store);
+const optimizer = new RasterOptimizer();
 
 describe("check", () => {
 	for (const type of ["jp2", "html", "", "../.."]) {
@@ -85,13 +78,12 @@ describe("buildCache", () => {
 		encodeWebp.mockResolvedValue(Buffer.alloc(2));
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 
-		await optimizer.buildCache("foobar.png", saveRequest);
+		const items = await optimizer.buildCache(saveRequest);
 
-		const { calls } = store.putCache.mock;
-		expect(calls).toHaveLength(3);
-		expect(calls[0][2]).toStrictEqual({ type: "png" });
-		expect(calls[1][2]).toStrictEqual({ type: "webp" });
-		expect(calls[2][2]).toStrictEqual({ type: "avif" });
+		expect(items).toHaveLength(3);
+		expect(items[0].params).toStrictEqual({ type: "png" });
+		expect(items[1].params).toStrictEqual({ type: "webp" });
+		expect(items[2].params).toStrictEqual({ type: "avif" });
 	});
 
 	it("should ignore unprocessable", async () => {
@@ -99,8 +91,8 @@ describe("buildCache", () => {
 		encodeWebp.mockRejectedValue(new ProcessorError());
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 
-		await optimizer.buildCache("foobar.png", saveRequest);
-		expect(store.putCache.mock.calls).toHaveLength(1);
+		const items = await optimizer.buildCache(saveRequest);
+		expect(items).toHaveLength(1);
 	});
 
 	it("should save new format only if it smaller than old", async () => {
@@ -108,64 +100,55 @@ describe("buildCache", () => {
 		encodeWebp.mockResolvedValue(Buffer.alloc(1));
 		encodeAVIF.mockResolvedValue(Buffer.alloc(1));
 
-		await optimizer.buildCache("foobar.png", saveRequest);
+		const items = await optimizer.buildCache(saveRequest);
 
-		const { calls } = store.putCache.mock;
-		expect(calls).toHaveLength(1);
-		expect(calls[0][2]).toStrictEqual({ type: "png" });
+		expect(items).toHaveLength(1);
+		expect(items[0].params).toStrictEqual({ type: "png" });
 	});
 });
 
 describe("getCache", () => {
-	it("should return new format if possible", async () => {
-		store.getCache.mockResolvedValue({
-			data: "data123",
-			size: 6,
-			mtime: new Date(),
-		});
-		await optimizer.getCache(loadRequest);
-
-		const { calls } = store.getCache.mock;
-		expect(calls).toHaveLength(1);
-		expect(calls[0][0]).toBe("maoG0wFHmNhgAcMkRo1J");
-		expect(calls[0][1]).toStrictEqual({ type: "avif" });
+	it("should return falsy value if not cache found", () => {
+		const item = optimizer.select([], loadRequest);
+		return expect(item).toBeFalsy();
 	});
 
-	it("should not return unsupported format", async () => {
-		store.getCache.mockResolvedValue({
-			data: "data123",
-			size: 6,
-			mtime: new Date(),
-		});
+	it("should return new format if possible", () => {
+		const items = [
+			{ type: "webp" },
+			{ type: "png" },
+			{ type: "avif" },
+		];
+		const item = optimizer.select(items, loadRequest);
 
-		await optimizer.getCache({
+		expect(item).toStrictEqual({ type: "avif" });
+	});
+
+	it("should not return unsupported format", () => {
+		const items = [
+			{ type: "webp" },
+			{ type: "png" },
+			{ type: "avif" },
+		];
+
+		const item = optimizer.select(items, {
 			...loadRequest,
 			acceptTypes: ["webp"],
 		});
 
-		const { calls } = store.getCache.mock;
-		expect(calls[0][1]).toStrictEqual({ type: "webp" });
+		expect(item).toStrictEqual({ type: "webp" });
 	});
 
 	it("should fallback to original format", async () => {
-		store.getCache.mockResolvedValueOnce(null);
-		store.getCache.mockResolvedValueOnce(null);
-		store.getCache.mockResolvedValue({
-			data: "data123",
-			size: 6,
-			mtime: new Date(),
-		});
+		const items = [{ type: "png" }];
+		const item = optimizer.select(items, loadRequest);
 
-		const result = await optimizer.getCache(loadRequest);
-
-		const { calls } = store.getCache.mock;
-		expect(result!.type).toBe("png");
-		expect(calls).toHaveLength(3);
-		expect(calls[2][1]).toStrictEqual({});
+		expect(item).toStrictEqual({ type: "png" });
 	});
 
-	it("should return falsy value if not cache found", () => {
-		store.getCache.mockResolvedValue(null);
-		return expect(optimizer.getCache(loadRequest)).resolves.toBeFalsy();
+	it("should not select unrelated type", () => {
+		const items = [{ type: "foobar" }];
+		const item = optimizer.select(items, loadRequest);
+		return expect(item).toBeFalsy();
 	});
 });
