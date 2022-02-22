@@ -4,8 +4,9 @@ import VariantService from "../lib/VariantService";
 import { BadDataError, Data } from "../lib";
 
 const store = {
-	putCache: vi.fn(),
+	putCaches: vi.fn(),
 	getCache: vi.fn(),
+	listCache: vi.fn(),
 	save: vi.fn<[Data, string], any>(() => Promise.resolve(true)),
 	load: vi.fn(),
 };

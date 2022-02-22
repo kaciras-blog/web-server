@@ -4,14 +4,15 @@ import CachedService from "../lib/CachedService";
 const optimizer = {
 	check: vi.fn(),
 	buildCache: vi.fn(),
-	getCache: vi.fn(),
+	select: vi.fn(),
 };
 
 const store = {
 	save: vi.fn(),
 	load: vi.fn(),
-	putCache: vi.fn(),
+	putCaches: vi.fn(),
 	getCache: vi.fn(),
+	listCache: vi.fn(),
 };
 
 const loadRequest = {
@@ -44,7 +45,7 @@ describe("load", () => {
 
 		expect(result).toBeNull();
 
-		expect(optimizer.getCache.mock.calls).toHaveLength(0);
+		expect(optimizer.select.mock.calls).toHaveLength(0);
 		expect(store.load.mock.calls).toHaveLength(1);
 	});
 
@@ -59,7 +60,7 @@ describe("load", () => {
 		expect(result!.file).toBe(loadResponse.file);
 		expect(result!.type).toBe("png");
 
-		expect(optimizer.getCache.mock.calls).toHaveLength(0);
+		expect(optimizer.select.mock.calls).toHaveLength(0);
 		expect(store.load.mock.calls).toHaveLength(1);
 	});
 
@@ -69,26 +70,38 @@ describe("load", () => {
 			parameters: {},
 		});
 
-		expect(result).toBeUndefined();
-		expect(optimizer.getCache.mock.calls).toHaveLength(1);
+		expect(result).toBeNull();
+		expect(optimizer.select.mock.calls).toHaveLength(1);
 		expect(store.load.mock.calls).toHaveLength(0);
 	});
 
-	it("should return null if not exists", async () => {
-		const result = await service.load(loadRequest);
+	it("should get cache list to select", async () => {
+		const attrsList = [
+			{ type: "webp" },
+			{ type: "png" },
+			{ type: "avif" },
+		];
+		store.listCache.mockResolvedValue(attrsList);
+		optimizer.select.mockReturnValue({ type: "webp" });
 
-		expect(result).toBeUndefined();
-		expect(store.load.mock.calls).toHaveLength(0);
-		expect(optimizer.getCache.mock.calls).toHaveLength(1);
+		await service.load(loadRequest);
+
+		const [items, req] = optimizer.select.mock.calls[0];
+		expect(items).toBe(attrsList);
+		expect(req).toBe(loadRequest);
 	});
 
 	it("should get file from cache", async () => {
-		optimizer.getCache.mockResolvedValue(loadResponse);
+		store.getCache.mockResolvedValue(loadResponse.file);
+		optimizer.select.mockReturnValue({ type: "webp" });
 
 		const result = await service.load(loadRequest);
 
-		expect(result).toBe(loadResponse);
-		expect(store.load.mock.calls).toHaveLength(0);
+		expect(result).toStrictEqual(loadResponse);
+
+		const [hash, attrs] = store.getCache.mock.calls[0];
+		expect(hash).toBe("maoG0wFHmNhgAcMkRo1J");
+		expect(attrs).toStrictEqual({ type: "webp" });
 	});
 });
 
@@ -108,6 +121,11 @@ describe("save", () => {
 	});
 
 	it("should build cache for new file", async () => {
+		const cacheItems = [
+			{ data: "123", params: { type: "png" } },
+			{ data: "456", params: { type: "avif" } },
+		];
+		optimizer.buildCache.mockResolvedValue(cacheItems);
 		store.save.mockResolvedValue(true);
 
 		const result = await service.save({
@@ -118,5 +136,6 @@ describe("save", () => {
 
 		expect(result).toBe("maoG0wFHmNhgAcMkRo1J.png");
 		expect(optimizer.buildCache.mock.calls).toHaveLength(1);
+		expect(store.putCaches.mock.calls).toHaveLength(1);
 	});
 });
