@@ -14,7 +14,7 @@ const INPUT_FORMATS = ["jpg", "png", "gif"];
 /**
  * 每张图都尝试转换成新格式，新的在前。
  */
-const formats = ["avif", "webp"];
+const FORMATS = ["avif", "webp"];
 
 function unprocessable(e: Error) {
 	if (!(e instanceof ProcessorError)) throw e;
@@ -57,7 +57,7 @@ export default class RasterOptimizer implements Optimizer {
 		let best = base.length;
 		for (let i = modern.length - 1; i >= 0; i--) {
 			const output = modern[i];
-			type = formats[i];
+			type = FORMATS[i];
 
 			if (output && output.length < best) {
 				best = output.length;
@@ -68,11 +68,14 @@ export default class RasterOptimizer implements Optimizer {
 		return cacheItems;
 	}
 
-	select(items: MediaAttrs[], { name, acceptTypes }: LoadRequest) {
-		const ext = extname(name);
+	select(items: MediaAttrs[], request: LoadRequest) {
+		const { name, acceptTypes } = request;
+		const rawType = extname(name).slice(1);
 
-		return [...formats, ext]
-			.filter(t => acceptTypes.includes(t))
+		const upgrades = FORMATS
+			.filter(t => acceptTypes.includes(t));
+
+		return [...upgrades, rawType]
 			.map(t => items.find(i => i.type === t))
 			.find(item => item !== undefined);
 	}

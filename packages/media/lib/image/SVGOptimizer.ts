@@ -12,6 +12,8 @@ const algorithms = {
 
 const THRESHOLD = 2048;
 
+const ENCODINGS = ["br", "gzip"];
+
 // SVGO 的 inlineStyles 不能处理无法内联的特性，比如媒体查询，
 // Rollup 官网的 Hook 图可以触发该 BUG。
 // 相关的 Issue：https://github.com/svg/svgo/issues/1359
@@ -62,8 +64,10 @@ export default class SVGOptimizer implements Optimizer {
 	select(items: MediaAttrs[], request: LoadRequest) {
 		const { acceptEncodings } = request;
 
-		return ["br", "gzip", undefined]
-			.filter(e => acceptEncodings.includes(e as any))
+		const encodings = ENCODINGS
+			.filter(e => acceptEncodings.includes(e as any));
+
+		return [...encodings, undefined]
 			.map(e => items.find(i => i.encoding === e))
 			.find(item => item !== undefined);
 	}
