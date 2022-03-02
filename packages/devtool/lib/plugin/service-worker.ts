@@ -1,9 +1,25 @@
-import { readFileSync } from "fs";
 import { join } from "path";
-import { OutputBundle, OutputOptions, rollup, RollupWatcher, RollupWatchOptions, watch } from "rollup";
+import { OutputOptions, rollup } from "rollup";
 import { Plugin, ResolvedConfig } from "vite";
 
 const manifestRE = /self\.__WB_MANIFEST/;
+
+function replaceCode(src: string, manifest: string): Plugin {
+	let swId: string;
+
+	return {
+		name: "kaciras:sw-inject-manifest",
+		async transform(code, id) {
+			if (swId === undefined) {
+				swId = (await this.resolve(src))!.id;
+			}
+			if (id !== swId) {
+				return null;
+			}
+			return code.replace(manifestRE, manifest);
+		},
+	};
+}
 
 const includedPlugins = [
 	"commonjs",
@@ -50,35 +66,14 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 	let viteConfig: ResolvedConfig;
 
 	function swBuildConfig(manifest: string) {
-		let swId: string;
-
-		const injectManifestPlugin: Plugin = {
-			name: "kaciras:sw-inject-manifest",
-			async load(id) {
-				if (swId === undefined) {
-					swId = (await this.resolve(src))!.id;
-				}
-				if (id !== swId) {
-					/*
-					 * Vite 内部也是直接把查询参数去掉。
-					 * https://github.com/vitejs/vite/blob/5306234aad7e7432fb55c6033a63c6cf74493c3f/packages/vite/src/node/server/transformRequest.ts#L87
-					 */
-					const file = id.split("?", 2)[0];
-					return readFileSync(file, "utf8");
-				}
-				const code = readFileSync(id, "utf8");
-				return code.replace(manifestRE, manifest);
-			},
-		};
-
 		const plugins = viteConfig.plugins
 			.filter(p => includedPlugins.includes(p.name));
-		plugins.push(injectManifestPlugin);
+		plugins.push(replaceCode(src, manifest));
 
 		return { input: src, plugins };
 	}
 
-	async function buildServiceWorker(manifest: string) {
+	async function buildSW(manifest: string) {
 		const { outDir, sourcemap } = viteConfig.build;
 
 		const config = swBuildConfig(manifest);
@@ -91,10 +86,11 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 			sourcemap,
 			inlineDynamicImports: true,
 		};
-		await bundle.write(output).finally(() => bundle.close());
-	}
 
-	let watcher: RollupWatcher;
+		return bundle.write(output)
+			.then(w => w.output[0])
+			.finally(() => bundle.close());
+	}
 
 	return {
 		name: "kaciras:service-worker",
@@ -104,45 +100,19 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 			viteConfig = config;
 		},
 
-		configureServer(server) {
-			const config = swBuildConfig("[]") as RollupWatchOptions;
-			config.watch = { skipWrite: true };
-			watcher = watch(config);
-
-			let code: string;
-
-			watcher.on("event", async event => {
-				if (event.code === "ERROR") {
-					console.error(event.error);
-				}
-				if (event.code === "BUNDLE_END") {
-					const s = await event.result.generate({
-						format: "es",
-						exports: "none",
-						inlineDynamicImports: true,
-					});
-					code = s.output[0].code;
-				}
-			});
-
-			server.middlewares.use((req, res, next) => {
-				if (req.url !== dist) {
-					return next();
-				}
-				res.writeHead(200).end(code);
-			});
+		async load(id) {
+			if (!id.endsWith(src)) {
+				return null;
+			}
+			const { fileName } = await buildSW("[]");
+			return `export default "${fileName}"`;
 		},
 
-		buildEnd() {
-			watcher?.close();
-		},
-
-		generateBundle(_: unknown, bundle: OutputBundle) {
+		async generateBundle(_, bundle) {
 			const files = Object.keys(bundle).filter(isInclude);
 
 			// 一律格式化，反正生产模式还会压缩的。
-			const manifest = JSON.stringify(files, null, "\t");
-			return buildServiceWorker(manifest);
+			await buildSW(JSON.stringify(files, null, "\t"));
 		},
 	};
 }
