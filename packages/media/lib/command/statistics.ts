@@ -14,7 +14,7 @@ const base: LoadRequest = {
 	name: "__TO_BE_REPLACED__",
 	parameters: {},
 	codecs: [],
-	acceptTypes: ["webp", "avif", "svg"],
+	acceptTypes: ["webp", "avif"],
 	acceptEncodings: ["gzip", "br"],
 };
 
@@ -30,6 +30,11 @@ async function statistics(service: MediaService, items: MediaItem[], init: LoadR
 	return total;
 }
 
+/**
+ * 统计媒体资源信息，包括大小、类型、压缩率等等。
+ *
+ * @param dataDir 数据目录
+ */
 export default async function s(dataDir: any) {
 	const imageStore = new LocalFileStore(dataDir, "image");
 	const service = new DispatchService(

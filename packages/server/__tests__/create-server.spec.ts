@@ -54,7 +54,7 @@ describe("SNI callback", () => {
 	let server: tls.Server;
 
 	// 创建一个TLS服务器，没有默认证书而是使用SNI回调
-	beforeAll((done) => {
+	beforeAll(() => new Promise(resolve => {
 		const sniCallback = createSNICallback([{
 			hostname: "localhost",
 			cert: resolveFixture("localhost.pem"),
@@ -71,13 +71,11 @@ describe("SNI callback", () => {
 			socket.write("HELLO");
 			socket.end();
 		});
-		server.listen(41000, done);
-	});
+		server.listen(41000, resolve);
+	}));
 
 	// 记得关闭服务器，不然测试进程无法退出
-	afterAll(done=> {
-		server.close(done);
-	});
+	afterAll(() => new Promise<any>(resolve => server.close(resolve)));
 
 	/**
 	 * 连接服务器并验证证书和响应是否正确。

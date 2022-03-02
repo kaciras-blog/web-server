@@ -3,7 +3,7 @@ import { join } from "path";
 import fs from "fs-extra";
 import { Params } from "./MediaService.js";
 import { CacheItem, Data, FileStore } from "./FileStore.js";
-import { SeparatedStoreLocation } from "../../server/lib/config.js";
+import { DataStoreLocation } from "../../server/lib/config.js";
 
 /*
  * fs.createReadStream 当问及不存在时不抛异常，而是发出事件。
@@ -46,7 +46,7 @@ export default class LocalFileStore implements FileStore {
 	private readonly source: string;
 	private readonly cache: string;
 
-	constructor(dataDir: SeparatedStoreLocation, name: string) {
+	constructor(dataDir: DataStoreLocation, name: string) {
 		this.source = join(dataDir.data, name);
 		this.cache = join(dataDir.cache, name);
 

@@ -24,7 +24,7 @@ export interface SimpleLogConfig {
 	noConsole?: boolean;
 }
 
-export interface SeparatedStoreLocation {
+export interface DataStoreLocation {
 	data: string;
 	logs: string;
 	cache: string;
@@ -38,7 +38,7 @@ export interface AppOptions {
 	 * 本地数据存储目录，分为缓存、日志、数据三部分，可以分别指定；
 	 * 也能只填一个字符串，此时将在该目录下创建三个子目录。
 	 */
-	dataDir: string | SeparatedStoreLocation;
+	dataDir: string | DataStoreLocation;
 
 	serviceWorker?: boolean;
 
@@ -87,7 +87,7 @@ export interface ResolvedConfig extends BlogServerConfig {
 }
 
 export interface ResolvedAppOptions extends AppOptions {
-	dataDir: SeparatedStoreLocation;
+	dataDir: DataStoreLocation;
 }
 
 export function resolveConfig(config: BlogServerConfig) {

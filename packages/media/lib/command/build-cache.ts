@@ -13,7 +13,7 @@ const theme = Presets.shades_classic;
  *
  * 如果检测到缓存已存在则不会重新生成，要强制全部重建请删除缓存目录后再运行。
  */
-export default async function buildCache(options: ResolvedConfig) {
+export default async function (options: ResolvedConfig) {
 	const { dataDir } = options.app;
 
 	const store = new LocalFileStore(dataDir, "image");
