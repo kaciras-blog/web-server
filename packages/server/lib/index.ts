@@ -1,6 +1,7 @@
 export * from "./axios-helper.js";
 export * from "./config.js";
 export * from "./functions.js";
+export * from "./Launcher.js";
 
 export * from "./koa/vue-ssr.js";
 

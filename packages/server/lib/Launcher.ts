@@ -1,7 +1,7 @@
 import process from "process";
 import path from "path";
 import { createRequire } from "module";
-import parseArgs, { ParsedArgs } from "minimist";
+import parseArgs from "minimist";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/media";
 import run from "./command/run.js";
@@ -15,10 +15,10 @@ import { once } from "./functions.js";
 
 const require = createRequire(import.meta.url);
 
-async function loadConfig(args: ParsedArgs) {
+export async function loadConfig(profile: string) {
 	let configFile = path.join(process.cwd(), "config");
-	if (args.profile) {
-		configFile = path.join(configFile, args.profile);
+	if (profile) {
+		configFile = path.join(configFile, profile);
 	}
 
 	// 先 resolve 一下，以便把配置文件内部的异常区分开
@@ -62,7 +62,7 @@ export default class Launcher {
 		require("module").Module._initPaths();
 
 		const args = parseArgs(argv);
-		const config = await loadConfig(args);
+		const config = await loadConfig(args.profile);
 
 		log4js.configure({
 			appenders: {
