@@ -37,7 +37,7 @@
 		"koa-compose": "^4.1.0",
 		"koa-compress": "^5.1.0",
 		"koa-conditional-get": "^3.0.0",
-		"log4js": "^6.4.1",
+		"log4js": "^6.4.2",
 		"markdown-it": "^12.3.2",
 		"markdown-it-toc-done-right": "^4.2.0",
 		"minimist": "^1.2.5",

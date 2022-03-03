@@ -6,6 +6,7 @@ import { Plugin, ResolvedConfig } from "vite";
 import { createPresetCropper } from "@kaciras-blog/media";
 
 const imageRE = /\.(jpe?g|png|webp)$/;
+const assetUrlRE = /__IMAGE_ASSET_([a-z\d]{8})__(?:_(.*?)__)?/g;
 
 const cropPresets = createPresetCropper({
 
@@ -53,27 +54,22 @@ export default function processImage(): Plugin {
 		},
 
 		renderChunk(code) {
-			let match: RegExpExecArray | null;
-			let s: MagicString | undefined;
-			const assetUrlRE = /__IMAGE_ASSET_([a-z\d]{8})__(?:_(.*?)__)?/g;
+			const s = new MagicString(code);
 
-			while ((match = assetUrlRE.exec(code))) {
-				s = s || (s = new MagicString(code));
-				const [full, hash, postfix = ""] = match;
-
+			s.replace(assetUrlRE, (_, hash, postfix) => {
 				const name = this.getFileName(hash);
-				const path = viteConfig.base + name + postfix;
-				s.overwrite(match.index, match.index + full.length, path);
-			}
+				return viteConfig.base + name + postfix;
+			});
 
-			if (s) {
-				return {
-					code: s.toString(),
-					map: viteConfig.build.sourcemap ? s.generateMap({ hires: true }) : null,
-				};
-			} else {
+			if (!s.hasChanged()) {
 				return null;
 			}
+
+			const { sourcemap } = viteConfig.build;
+			return {
+				code: s.toString(),
+				map: sourcemap ? s.generateMap({ hires: true }) : null,
+			};
 		},
 	};
 }
