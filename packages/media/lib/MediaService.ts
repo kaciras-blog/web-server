@@ -16,6 +16,11 @@ import { FileInfo } from "./FileStore.js";
  * https://evilmartians.com/chronicles/better-web-video-with-av1-codec
  */
 
+/**
+ * 附加的参数，为字符串键值对，通常是 URL 的 query 部分。
+ *
+ * 无需支持其它值类型，因为每个参数的类型都是固定的，需要时反序列化即可。
+ */
 export type Params = Record<string, string | undefined>;
 
 /**

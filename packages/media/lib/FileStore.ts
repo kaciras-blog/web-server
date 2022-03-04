@@ -3,6 +3,11 @@ import ReadableStream = NodeJS.ReadableStream;
 
 export type Data = string | Buffer;
 
+/**
+ * 资源的数据，比较灵活可以用多种类型。
+ *
+ * 可以通过 `bodyToBuffer()` 转换成 Buffer。
+ */
 export type FileBody = ReadableStream | Buffer | string;
 
 export interface CacheItem {
