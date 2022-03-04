@@ -1,3 +1,4 @@
+import { join } from "path";
 import Axios from "axios";
 import log4js from "log4js";
 import { BaseContext, ExtendableContext, Next } from "koa";
@@ -107,7 +108,10 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		const multerInstance = multer({ limits: { fileSize: 50 * 1024 * 1024 } });
 		const uploader = multerInstance.single("file");
 
-		const imageStore = new LocalFileStore(app.dataDir, "image");
+		const imageStore = new LocalFileStore(
+			join(app.dataDir.data, "image"),
+			join(app.dataDir.cache, "image"),
+		);
 		const service = new DispatchService(
 			{ "svg": new CachedService(imageStore, new SVGOptimizer()) },
 			new CachedService(imageStore, new RasterOptimizer()),
@@ -116,7 +120,11 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		router.get("/image/:name", ctx => download(service, ctx));
 		router.post("/image", adminFilter, uploader, (ctx: any) => upload(service, ctx));
 
-		const vs = new VariantService(new LocalFileStore(app.dataDir, "video"), ["av1"]);
+		const videoStore = new LocalFileStore(
+			join(app.dataDir.data, "video"),
+			join(app.dataDir.cache, "video"),
+		);
+		const vs = new VariantService(videoStore, ["av1"]);
 		// @ts-ignore
 		router.get("/video/:name", ctx => download(vs, ctx));
 		router.post("/video", adminFilter, uploader, (ctx: any) => upload(vs, ctx));

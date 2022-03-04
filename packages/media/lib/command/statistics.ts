@@ -33,10 +33,11 @@ async function statistics(service: MediaService, items: MediaItem[], init: LoadR
 /**
  * 统计媒体资源信息，包括大小、类型、压缩率等等。
  *
- * @param dataDir 数据目录
+ * @param source 数据目录
+ * @param cache 数据目录
  */
-export default async function s(dataDir: any) {
-	const imageStore = new LocalFileStore(dataDir, "image");
+export default async function s(source: string, cache: string) {
+	const imageStore = new LocalFileStore(source, cache);
 	const service = new DispatchService(
 		{ "svg": new CachedService(imageStore, new SVGOptimizer()) },
 		new CachedService(imageStore, new RasterOptimizer()),
@@ -55,8 +56,4 @@ export default async function s(dataDir: any) {
 	console.log((d / uncompressed * 100).toFixed(3) + "%");
 }
 
-await s({
-	data: "D:\\blog_data/data",
-	logs: "D:\\blog_data/logs",
-	cache: "D:\\blog_data/cache",
-});
+await s("D:\\blog_data/data/image", "D:\\blog_data/cache/image");

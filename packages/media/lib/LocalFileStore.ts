@@ -3,7 +3,6 @@ import { join } from "path";
 import fs from "fs-extra";
 import { Params } from "./MediaService.js";
 import { CacheItem, Data, FileStore } from "./FileStore.js";
-import { DataStoreLocation } from "../../server/lib/config.js";
 
 /*
  * fs.createReadStream 当问及不存在时不抛异常，而是发出事件。
@@ -46,12 +45,18 @@ export default class LocalFileStore implements FileStore {
 	private readonly source: string;
 	private readonly cache: string;
 
-	constructor(dataDir: DataStoreLocation, name: string) {
-		this.source = join(dataDir.data, name);
-		this.cache = join(dataDir.cache, name);
+	/**
+	 * 创建实例，指定目录，如果不存在则会创建。
+	 *
+	 * @param source 原文件目录
+	 * @param cache 缓存目录
+	 */
+	constructor(source: string, cache: string) {
+		this.source = source;
+		this.cache = cache;
 
-		fs.ensureDirSync(this.source);
-		fs.ensureDirSync(this.cache);
+		fs.ensureDirSync(source);
+		fs.ensureDirSync(cache);
 	}
 
 	async save(name: string, data: Data) {
