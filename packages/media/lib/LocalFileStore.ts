@@ -74,6 +74,10 @@ export default class LocalFileStore implements FileStore {
 		return getFileInfo(join(this.source, name));
 	}
 
+	list() {
+		return fs.readdir(this.source);
+	}
+
 	getCache(id: string, params: Params) {
 		return getFileInfo(this.cachePath(id, params));
 	}

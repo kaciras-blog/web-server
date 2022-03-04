@@ -36,6 +36,11 @@ export interface FileStore {
 	load(name: string): Promise<FileInfo | null>;
 
 	/**
+	 * 列出所有源文件的名字。
+	 */
+	list(): Promise<string[]>;
+
+	/**
 	 * 保存缓存文件，缓存文件是原文件的优化版本。
 	 *
 	 * 【安全性】
