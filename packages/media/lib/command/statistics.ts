@@ -1,13 +1,13 @@
-import { readdirSync, statSync } from "fs";
-import { join, parse } from "path";
+import { mean, median, sum } from "simple-statistics";
 import { CachedService, DispatchService, LocalFileStore, RasterOptimizer, SVGOptimizer } from "../index.js";
-import { LoadRequest, MediaService } from "../MediaService.js";
+import { LoadRequest } from "../MediaService.js";
+import { hrsize } from "../common.js";
 
 interface MediaItem {
 	id: string;
 	type: string;
 	size: number;
-	file: string;
+	name: string;
 }
 
 const base: LoadRequest = {
@@ -18,17 +18,6 @@ const base: LoadRequest = {
 	acceptEncodings: ["gzip", "br"],
 };
 
-async function statistics(service: MediaService, items: MediaItem[], init: LoadRequest) {
-	let total = 0;
-	for (const item of items) {
-		const res = await service.load({ ...init, name: item.file });
-		if (!res) {
-			throw new Error("代码有问题");
-		}
-		total += res.file.size;
-	}
-	return total;
-}
 
 /**
  * 统计媒体资源信息，包括大小、类型、压缩率等等。
@@ -37,23 +26,49 @@ async function statistics(service: MediaService, items: MediaItem[], init: LoadR
  * @param cache 数据目录
  */
 export default async function s(source: string, cache: string) {
-	const imageStore = new LocalFileStore(source, cache);
+	const store = new LocalFileStore(source, cache);
 	const service = new DispatchService(
-		{ "svg": new CachedService(imageStore, new SVGOptimizer()) },
-		new CachedService(imageStore, new RasterOptimizer()),
+		{ "svg": new CachedService(store, new SVGOptimizer()) },
+		new CachedService(store, new RasterOptimizer()),
 	);
 
 	const sources: MediaItem[] = [];
-	const r = join(dataDir.data, "image");
-	for (const file of readdirSync(r)) {
-		const p = parse(file);
-		const { size } = statSync(join(r, file));
-		sources.push({ size, file, id: p.name, type: p.ext });
+	const files = await store.list();
+	for (const name of files) {
+		const [id, type] = name.split(".", 2);
+		const { size } = (await store.load(name))!;
+		sources.push({ size, name, id, type });
 	}
 
-	const uncompressed = sources.reduce((s, i) => s + i.size, 0);
-	const d = await statistics(service, sources, base);
-	console.log((d / uncompressed * 100).toFixed(3) + "%");
+	const t: any[] = [];
+
+	// const items = sources.filter(i => i.type === type);
+
+	async function statistics(name: string, items: MediaItem[], init: LoadRequest) {
+
+		const tasks = items.map(i => service.load({
+			...init,
+			name: i.name,
+		}));
+		const sizes = (await Promise.all(tasks)).map(r => r!.file.size);
+
+		const uncompressed = items.reduce((s, i) => s + i.size, 0);
+
+		t.push({
+			name,
+			median: hrsize(median(sizes)),
+			mean: hrsize(mean(sizes)),
+			"ratio %": (sum(sizes) / uncompressed * 100).toFixed(2),
+		});
+	}
+
+	await statistics("All features", sources, base);
+	await statistics("Not support AVIF", sources, {
+		...base,
+		acceptTypes: ["webp"],
+	});
+
+	console.table(t);
 }
 
 await s("D:\\blog_data/data/image", "D:\\blog_data/cache/image");
