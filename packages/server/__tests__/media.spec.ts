@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import fs from "fs-extra";
 import supertest from "supertest";
 import Koa from "koa";
 import multer from "@koa/multer";
@@ -33,7 +32,6 @@ describe("download", () => {
 
 	it("should response image", async () => {
 		mockService.load.mockResolvedValue({ file, type: "png" });
-		fs.writeFileSync(FILE_PATH, IMAGE_DATA);
 
 		await supertest(callback)
 			.get(FILE_PATH)
