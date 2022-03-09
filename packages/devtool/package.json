@@ -29,12 +29,12 @@
 		"colorette": "^2.0.16",
 		"log4js": "^6.4.2",
 		"magic-string": "^0.26.1",
-		"rollup": "^2.69.0",
+		"rollup": "^2.70.0",
 		"rollup-plugin-visualizer": "^5.6.0",
 		"source-map-support": "^0.5.21",
 		"vite": "^2.8.6",
 		"vite-plugin-inspect": "^0.4.3",
-		"vite-plugin-svg-sfc": "^0.2.0",
+		"vite-plugin-svg-sfc": "^0.3.0",
 		"vue": "^3.2.31"
 	},
 	"devDependencies": {
