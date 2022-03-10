@@ -34,20 +34,21 @@ class ServiceChecker {
 		this.service = service;
 	}
 
-	async statSize(items: MediaItem[], init: LoadRequest) {
+	async statSize(name: string, items: MediaItem[], init?: Partial<LoadRequest>) {
 		const tasks = items.map(i => this.service.load({
+			...base,
 			...init,
 			name: i.name,
 		}));
 		const uncompressed = items.reduce((s, i) => s + i.size, 0);
 		const sizes = (await Promise.all(tasks)).map(r => r!.file.size);
 
-		return {
+		rows.push({
 			name,
 			median: hrsize(median(sizes)),
 			mean: hrsize(mean(sizes)),
 			"ratio %": (sum(sizes) / uncompressed * 100).toFixed(2),
-		};
+		});
 	}
 }
 
@@ -67,20 +68,11 @@ async function getSources(store: FileStore) {
 	return { sources, typeMap };
 }
 
-async function getCaches(store: FileStore, sources: MediaItem[]) {
-	const caches = [];
-	for (const { id } of sources) {
-		const params = await store.listCache(id);
-		for (const d of params) {
-			const c = await store.getCache(id, d);
-			caches.push({});
-		}
-	}
-}
+const rows: unknown[] = [];
 
-async function printTable(title: string, rows: any) {
+function flushTable(title: string) {
 	console.log(title);
-	console.table(await rows);
+	console.table(rows.splice(0, rows.length));
 }
 
 /**
@@ -93,37 +85,40 @@ export default async function s(source: string, cache: string) {
 	const store = new LocalFileStore(source, cache);
 	const { sources, typeMap } = await getSources(store);
 
-	const s = Object.entries(typeMap).map(([type, list]) => {
+	for (const [type, list] of Object.entries(typeMap)) {
 		const sizes = list.map(i => i.size);
-		return {
-			type: type,
+		rows.push({
+			type,
 			count: list.length,
 			totalSize: sum(sizes),
 			mean: hrsize(mean(sizes)),
 			median: hrsize(median(sizes)),
-		};
-	});
-	await printTable("资源大小统计（按类型分组）：", s);
+		});
+	}
+	flushTable("所有源文件大小统计（按类型分组）：");
 
 
-	await printTable("缓存大小统计：", s);
-
-
-	const service = new DispatchService(
+	const c = new ServiceChecker(new DispatchService(
 		{ "svg": new CachedService(store, new SVGOptimizer()) },
 		new CachedService(store, new RasterOptimizer()),
-	);
-	const c = new ServiceChecker(service);
-	c.statSize(typeMap["svg"], base);
+	));
 
-	//
-	// await statistics("All features", sources, base);
-	// await statistics("Not support AVIF", sources, {
-	// 	...base,
-	// 	acceptTypes: ["webp"],
-	// });
-	//
-	// console.table(t);
+	await c.statSize("全部", sources);
+	await c.statSize("全部（不支持 AVIF）", sources, {
+		acceptTypes: ["webp"],
+	});
+	await c.statSize("SVG", typeMap["svg"], base);
+	await c.statSize("SVG（不支持 br）", typeMap["svg"], {
+		acceptEncodings: ["gzip"],
+	});
+	await c.statSize("光栅图", typeMap["svg"], base);
+	await c.statSize("光栅图（不支持 AVIF）", typeMap["svg"], {
+		acceptTypes: ["webp"],
+	});
+	await c.statSize("光栅图（不支持 WebP）", typeMap["svg"], {
+		acceptTypes: [],
+	});
+	flushTable("模拟请求，测试对不同浏览器优化的效果 - 图片：");
 }
 
 await s("D:\\blog_data/data/image", "D:\\blog_data/cache/image");
