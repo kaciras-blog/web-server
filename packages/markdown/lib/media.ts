@@ -191,7 +191,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
  * @param markdownIt markdownIt实例
  * @param map 渲染函数选项，用于自定义
  */
-export default function install(markdownIt: MarkdownIt, map: RendererMap = DefaultRenderMap) {
+export default function (markdownIt: MarkdownIt, map: RendererMap = DefaultRenderMap) {
 
 	markdownIt.renderer.rules.media = (tokens, idx) => {
 		const token = tokens[idx];
