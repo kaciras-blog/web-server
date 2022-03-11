@@ -2,15 +2,14 @@ import Axios, { AxiosResponse } from "axios";
 import { Feed } from "feed";
 import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
-import TableOfContent from "markdown-it-toc-done-right";
-import { MediaPlugin } from "@kaciras-blog/markdown";
+import { Media, TOC } from "@kaciras-blog/markdown";
 import { once } from "../functions.js";
 import { CachedFetcher } from "../axios-helper.js";
 import { ResolvedConfig } from "../config.js";
 
 const markdownIt = new MarkdownIt();
-markdownIt.use(TableOfContent);
-markdownIt.use(MediaPlugin);
+markdownIt.use(TOC);
+markdownIt.use(Media);
 
 interface FeedContext extends ExtendableContext {
 	params: { type: string };

@@ -144,7 +144,6 @@ importers:
       koa-static: ^5.0.0
       log4js: ^6.4.2
       markdown-it: ^12.3.2
-      markdown-it-toc-done-right: ^4.2.0
       memfs: ^3.4.1
       minimist: ^1.2.5
       multer: ^1.4.4
@@ -173,7 +172,6 @@ importers:
       koa-conditional-get: 3.0.0
       log4js: 6.4.2
       markdown-it: 12.3.2
-      markdown-it-toc-done-right: 4.2.0
       minimist: 1.2.5
       multer: 1.4.4
       range-parser: 1.2.1
