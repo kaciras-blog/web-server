@@ -45,10 +45,9 @@ export async function encodeWebp(buffer: Buffer) {
 		throw new ProcessorError("暂不支持 GIF 转 WebP");
 	}
 	const input = sharp(buffer, { failOnError: false });
-
 	const task = Promise.all([
-		input.webp({ lossless: true }).toBuffer(),
 		input.webp(WebPLossy).toBuffer(),
+		input.webp({ lossless: true }).toBuffer(),
 	]);
 
 	const [lossy, lossless] = await task.catch(BadDataError.convert);
