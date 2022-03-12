@@ -26,6 +26,13 @@ const base: LoadRequest = {
 	acceptEncodings: ["gzip", "br"],
 };
 
+const rows: unknown[] = [];
+
+function flushTable(title: string) {
+	console.log(title);
+	console.table(rows.splice(0, rows.length));
+}
+
 class ServiceChecker {
 
 	private readonly service: MediaService;
@@ -45,6 +52,7 @@ class ServiceChecker {
 
 		rows.push({
 			name,
+			count: items.length,
 			median: hrsize(median(sizes)),
 			mean: hrsize(mean(sizes)),
 			"ratio %": (sum(sizes) / uncompressed * 100).toFixed(2),
@@ -66,13 +74,6 @@ async function getSources(store: FileStore) {
 	}
 
 	return { sources, typeMap };
-}
-
-const rows: unknown[] = [];
-
-function flushTable(title: string) {
-	console.log(title);
-	console.table(rows.splice(0, rows.length));
 }
 
 /**
@@ -97,6 +98,7 @@ export default async function s(source: string, cache: string) {
 	}
 	flushTable("所有源文件大小统计（按类型分组）：");
 
+	// 优化器和缓存的测试处于更低层，不该放在此处。
 
 	const c = new ServiceChecker(new DispatchService(
 		{ "svg": new CachedService(store, new SVGOptimizer()) },
@@ -111,11 +113,13 @@ export default async function s(source: string, cache: string) {
 	await c.statSize("SVG（不支持 br）", typeMap["svg"], {
 		acceptEncodings: ["gzip"],
 	});
-	await c.statSize("光栅图", typeMap["svg"], base);
-	await c.statSize("光栅图（不支持 AVIF）", typeMap["svg"], {
+
+	const raster = [typeMap["jpg"], typeMap["png"], typeMap["gif"]].flat();
+	await c.statSize("光栅图", raster, base);
+	await c.statSize("光栅图（不支持 AVIF）", raster, {
 		acceptTypes: ["webp"],
 	});
-	await c.statSize("光栅图（不支持 WebP）", typeMap["svg"], {
+	await c.statSize("光栅图（不支持 WebP）", raster, {
 		acceptTypes: [],
 	});
 	flushTable("模拟请求，测试对不同浏览器优化的效果 - 图片：");

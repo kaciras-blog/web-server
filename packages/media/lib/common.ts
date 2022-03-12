@@ -17,10 +17,10 @@ import { FileBody } from "./FileStore";
  *
  *   log(2, pow(38, N)) / log(2, pow(64, N))
  * = log(38) / log(64)
- * = 0.0.87465458557393091563225323715114
+ * ≈ 0.875
  *
- * 可以得出，此时 base64 有效位数降低为原来的 0.87 倍。
- * 20 位 base64 拥有 120 bit 信息，在不敏感的系统上降低为 104.95 bit，碰撞几率仍然很低。
+ * 可以得出，此时 base64 有效位数降低为原来的 0.875 倍。
+ * 在不敏感的系统上信息量由 120 bit 降低为 104.95 bit，碰撞几率仍然很低。
  *
  * 通过生日问题可以计算，104 bit 的 Hash 需要一千四百亿输入才能达到一亿分之一的碰撞率。
  * https://en.wikipedia.org/wiki/Birthday_attack
@@ -37,6 +37,8 @@ export function hashName(buffer: Buffer) {
 
 /**
  * 将 FileBody 的多种数据类型类型统一转换为 Buffer。
+ *
+ * 字符串使用 UTF-8 解码。
  */
 export async function bodyToBuffer(body: FileBody) {
 	if (typeof body === "string") {

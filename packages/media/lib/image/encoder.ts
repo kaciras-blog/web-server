@@ -23,7 +23,7 @@ const WebPLossy: WebpOptions = {
  * 反观 is-png 倒是直接读取 magic number，所以 PNG 使用用 is-png 包而 GIF 自己实现。
  *
  * @param buffer 图片数据
- * @return 如果是GIF格式返回true，否则false
+ * @return 如果是 GIF 格式返回 true，否则 false
  */
 function isGif(buffer: Buffer) {
 	return buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;

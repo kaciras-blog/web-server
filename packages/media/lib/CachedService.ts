@@ -26,7 +26,7 @@ export interface MediaItem {
 }
 
 /**
- * 资源优化器，
+ * 资源优化器，用于对某个资源生成一系列优化版本，并在需要时从中选出最合适的。
  */
 export interface Optimizer {
 
