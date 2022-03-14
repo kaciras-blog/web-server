@@ -1,6 +1,7 @@
 import { join } from "path";
 import { OutputOptions, rollup } from "rollup";
 import { Plugin, ResolvedConfig } from "vite";
+import MagicString from "magic-string";
 
 const manifestRE = /self\.__WB_MANIFEST/;
 
@@ -16,7 +17,11 @@ function replaceCode(src: string, manifest: string): Plugin {
 			if (id !== swId) {
 				return null;
 			}
-			return code.replace(manifestRE, manifest);
+			const s = new MagicString(code);
+			s.replace(manifestRE, manifest);
+
+			// 此处用高精度 SourceMap 生成结果更好，但性能会差。
+			return { code: s.toString(), map: s.generateMap() };
 		},
 	};
 }
