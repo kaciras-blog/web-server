@@ -1,0 +1,6 @@
+// Vitest Snapshot v1
+
+exports[`should add anchor to titles 1`] = `
+"<h1 id=\\"foobar\\" tabindex=\\"-1\\">foobar <a class=\\"anchor-link\\" href=\\"#foobar\\" aria-hidden=\\"true\\">#</a></h1>
+"
+`;

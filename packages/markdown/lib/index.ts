@@ -21,3 +21,17 @@ export function Anchor(markdownIt: MarkdownIt) {
 		slugify: title => title.trim().toLowerCase().replace(/\s+/g, "-"),
 	});
 }
+
+/**
+ * 给行内代码加个 inline-code 类以便跟代码块区别开
+ */
+export function Classify(markdownIt: MarkdownIt) {
+	const { rules } = markdownIt.renderer;
+	const raw = rules.code_inline!;
+
+	rules.code_inline = (tokens, idx, options, env, self) => {
+		const token = tokens[idx];
+		token.attrPush(["class", "inline-code"]);
+		return raw(tokens, idx, options, env, self);
+	};
+}
