@@ -11,7 +11,8 @@ export interface ResolvedDevConfig extends ResolvedConfig {
 }
 
 export interface BuildOptions {
-	mode: string;
+	mode?: string;
+	sourcemap?: boolean | "inline" | "hidden";
 	target?: string | string[];
 	env?: Record<string, any>;
 	bundleAnalyzer?: boolean;

@@ -17,12 +17,15 @@ import optimizeImage from "./plugin/optimize-image.js";
  */
 export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean) {
 	const { backend, build } = options;
-	const { env = {}, debug, bundleAnalyzer, serviceWorker, vueOptions } = build;
+	const {
+		mode, env = {}, debug, sourcemap,
+		bundleAnalyzer, serviceWorker, vueOptions,
+	} = build;
 
 	env.API_PUBLIC = backend.public;
 	env.API_INTERNAL = backend.internal;
 
-	const define: Record<string, any> = {};
+	const define: Record<string, unknown> = {};
 	for (const [k, v] of Object.entries(env)) {
 		define["import.meta.env." + k] = JSON.stringify(v);
 	}
@@ -35,6 +38,7 @@ export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean
 			}],
 		},
 		define,
+		mode,
 		build: {
 			assetsDir: options.assetsDir,
 			target: build.target,
@@ -42,6 +46,8 @@ export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean
 			ssr: isSSR && "src/entry-server.ts",
 			ssrManifest: isSSR,
 			outDir: isSSR ? "dist/server" : "dist/client",
+
+			sourcemap,
 
 			// 图片体积大很正常，所以放宽点。
 			chunkSizeWarningLimit: 2048,
@@ -55,8 +61,8 @@ export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean
 			},
 		},
 		plugins: [
-			inspect({ enabled: debug }),
 			bundleAnalyzer && visualizer(),
+			debug && inspect(),
 
 			vueSvgSfc(),
 			vue(vueOptions),
