@@ -78,7 +78,12 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 			.finally(() => bundle.close());
 	}
 
-	// 暂不支持开发模式，因为 Vite 基于 ESM 而 ServiceWorker 的支持还不行。
+	/*
+	 * 暂不支持开发模式，因为 Vite 基于 ESM 而 ServiceWorker 的支持还不行。
+	 *
+	 * <h2>插件顺序</h2>
+	 * 因为资源升级采用了后端选择，无需把优化版本加入列表，所以不用放在最后。
+	 */
 	return {
 		name: "kaciras:service-worker",
 		apply: config => !config.build?.ssr,

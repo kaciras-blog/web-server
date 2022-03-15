@@ -1,10 +1,5 @@
 // Vitest Snapshot v1
 
-exports[`should emit sw chunk 1`] = `
-"const o=[\\"visible-off.svg\\",\\"tantrum.gif\\",\\"test.png\\",\\"entry-images.js\\"];for(const s of o)console.log(s);
-"
-`;
-
 exports[`should emit the service worker chunk 1`] = `
 "const o=[\\"visible-off.svg\\",\\"test.png\\",\\"tantrum.gif\\",\\"entry-images.js\\"];for(const s of o)console.log(s);
 "
