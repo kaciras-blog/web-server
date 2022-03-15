@@ -4,3 +4,8 @@ exports[`should add anchor to titles 1`] = `
 "<h1 id=\\"foobar\\" tabindex=\\"-1\\">foobar <a class=\\"anchor-link\\" href=\\"#foobar\\" aria-hidden=\\"true\\">#</a></h1>
 "
 `;
+
+exports[`should add class to inlined code block 1`] = `
+"<p><code class=\\"inline-code\\">foobar</code></p>
+"
+`;

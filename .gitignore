@@ -2,7 +2,7 @@
 node_modules
 /dist
 /coverage
-/debug.js
+/debug.[jt]s
 *.log
 
 # local env files
@@ -17,9 +17,8 @@ node_modules
 *.njsproj
 *.sln
 
-# Build files
+# Generated files
 *.js.map
-packages/*/lib/**/*.js
-**/__tests__/**/*.js
+packages/**/*.js
 !**/__tests__/fixtures/*.js
-**/__perfs__/*.js
+!**/__mocks__/fixtures/*.js

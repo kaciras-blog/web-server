@@ -9,7 +9,7 @@ import { resolveConfig, ResolvedConfig } from "./config.js";
 import { once } from "./functions.js";
 
 /*
- * 在第二版中不再捕获 uncaughtException 和 unhandledRejection, let it crash.
+ * 第二版中不再捕获 uncaughtException 和 unhandledRejection, let it crash.
  * 请求中的错误由框架（Koa）捕获，如果进程中止考虑在外层比如 systemd 中重启。
  */
 

@@ -6,8 +6,7 @@ it("should add class to inlined code block", () => {
 	const markdownIt = new MarkdownIt();
 	markdownIt.use(Classify);
 
-	const html = markdownIt.render("`foobar`");
-	expect(html).toBe('<p><code class="inline-code">foobar</code></p>\n');
+	expect(markdownIt.render("`foobar`")).toMatchSnapshot();
 });
 
 it("should add anchor to titles", () => {

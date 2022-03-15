@@ -22,13 +22,13 @@
  * 【为什么不用 GitLab Flavored Markdown】
  * 复用图片的语法，依靠扩展名来区分媒体类型有两个缺陷：
  * - 无法解决用视频来模拟GIF图片的需求
- * - URL必须要有扩展名，但并不是所有系统都是这样（比如Twitter）
+ * - URL 必须要有扩展名，但并不是所有系统都是这样（比如 Twitter）
  *
  * https://gitlab.com/help/user/markdown#videos
  *
  * 【为何不直接写HTML】
- * Markdown本身是跟渲染结果无关的，不应该和HTML绑死，而且写HTML不利于修改。
- * 而且直接写HTML安全性太差，要转义也很麻烦，难以开放给用户。
+ * Markdown 本身是跟渲染结果无关的，不应该和 HTML 绑死，而且写HTML不利于修改。
+ * 而且直接写 HTML 安全性太差，要转义也很麻烦，难以开放给用户。
  */
 import MarkdownIt from "markdown-it";
 import { unescapeMd } from "markdown-it/lib/common/utils.js";
