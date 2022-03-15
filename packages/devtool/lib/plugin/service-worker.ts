@@ -1,30 +1,7 @@
 import { join } from "path";
 import { OutputOptions, rollup } from "rollup";
 import { Plugin, ResolvedConfig } from "vite";
-import MagicString from "magic-string";
-
-const manifestRE = /self\.__WB_MANIFEST/;
-
-function replaceCode(src: string, manifest: string): Plugin {
-	let swId: string;
-
-	return {
-		name: "kaciras:sw-inject-manifest",
-		async transform(code, id) {
-			if (swId === undefined) {
-				swId = (await this.resolve(src))!.id;
-			}
-			if (id !== swId) {
-				return null;
-			}
-			const s = new MagicString(code);
-			s.replace(manifestRE, manifest);
-
-			// 此处用高精度 SourceMap 生成结果更好，但性能会差。
-			return { code: s.toString(), map: s.generateMap() };
-		},
-	};
-}
+import replace from "@rollup/plugin-replace";
 
 const includedPlugins = [
 	"commonjs",
@@ -73,7 +50,11 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 	function swBuildConfig(manifest: string) {
 		const plugins = viteConfig.plugins
 			.filter(p => includedPlugins.includes(p.name));
-		plugins.push(replaceCode(src, manifest));
+
+		plugins.push(replace({
+			preventAssignment: true,
+			"self.__WB_MANIFEST": manifest,
+		}));
 
 		return { input: src, plugins };
 	}
@@ -97,20 +78,13 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 			.finally(() => bundle.close());
 	}
 
+	// 暂不支持开发模式，因为 Vite 基于 ESM 而 ServiceWorker 的支持还不行。
 	return {
 		name: "kaciras:service-worker",
 		apply: config => !config.build?.ssr,
 
 		configResolved(config) {
 			viteConfig = config;
-		},
-
-		async load(id) {
-			if (!id.endsWith(src)) {
-				return null;
-			}
-			const { fileName } = await buildSW("[]");
-			return `export default "${fileName}"`;
 		},
 
 		async generateBundle(_, bundle) {

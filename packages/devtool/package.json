@@ -25,6 +25,7 @@
 	"dependencies": {
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras-blog/server": "workspace:^",
+		"@rollup/plugin-replace": "^4.0.0",
 		"@vitejs/plugin-vue": "^2.2.4",
 		"colorette": "^2.0.16",
 		"log4js": "^6.4.2",
