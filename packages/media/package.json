@@ -25,9 +25,9 @@
 		"imagemin-gifsicle": "^7.0.0",
 		"imagemin-pngquant": "^9.0.2",
 		"is-png": "^3.0.1",
-		"log4js": "^6.4.2",
+		"log4js": "^6.4.3",
 		"mozjpeg": "^8.0.0",
-		"sharp": "^0.30.2",
+		"sharp": "^0.30.3",
 		"simple-statistics": "^7.7.5",
 		"svgo": "^2.8.0"
 	},
@@ -37,7 +37,7 @@
 		"@types/imagemin-gifsicle": "^7.0.1",
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
-		"@types/sharp": "^0.29.5",
+		"@types/sharp": "^0.30.0",
 		"@types/svgo": "^2.6.2",
 		"file-type": "^17.1.1"
 	}
