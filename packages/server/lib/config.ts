@@ -3,6 +3,7 @@ import { join } from "path";
 export interface BlogServerConfig {
 	outputDir: string;
 	assetsDir: string;
+	ssr?: string;
 
 	server: ServerOptions;
 	app: AppOptions;

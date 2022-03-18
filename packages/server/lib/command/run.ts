@@ -5,7 +5,7 @@ import log4js from "log4js";
 import AppBuilder from "../AppBuilder.js";
 import getBlogPlugin from "../blog.js";
 import { productionSSRPlugin } from "../koa/vue-ssr.js";
-import staticFiles from "../koa/static-files.js";
+import staticFiles, { send } from "../koa/static-files.js";
 import startServer from "../create-server.js";
 import { configureGlobalAxios } from "../axios-helper.js";
 import { ResolvedConfig, SimpleLogConfig } from "../config.js";
@@ -63,22 +63,28 @@ function staticFilesCacheControl(ctx: BaseContext) {
 }
 
 export default async function run(options: ResolvedConfig) {
-	const { backend, outputDir } = options;
+	const { backend, outputDir, ssr } = options;
+	let staticDir = outputDir;
 
 	configureLog4js(options.app.logging);
 	const logger = log4js.getLogger();
-
 	const closeHttp2Sessions = configureGlobalAxios(backend);
 
 	const builder = new AppBuilder();
 
 	// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
 	builder.useFilter(compress({ br: false, threshold: 1024 }));
-
 	builder.addPlugin(getBlogPlugin(options));
-	builder.addPlugin(await productionSSRPlugin(outputDir));
 
-	builder.useResource(staticFiles(join(outputDir, "client"), {
+	if (ssr) {
+		staticDir = join(outputDir, "client");
+		builder.addPlugin(await productionSSRPlugin(outputDir, ssr));
+	} else {
+		const index = join(outputDir, "index.html");
+		builder.useFallBack(ctx => send(ctx, index));
+	}
+
+	builder.useResource(staticFiles(staticDir, {
 		customResponse: staticFilesCacheControl,
 	}));
 

@@ -34,7 +34,15 @@ export default async function (options: ResolvedDevConfig) {
 	});
 
 	builder.addPlugin(getBlogPlugin(options));
-	builder.useFallBack(devSSR(options, vite));
+
+	if (options.ssr) {
+		builder.useFallBack(devSSR(options, vite));
+	} else {
+		builder.useFallBack(async ctx => {
+			const template = readFileSync("index.html", "utf8");
+			ctx.body = await vite.transformIndexHtml(ctx.href, template);
+		});
+	}
 
 	/*
 	 * Vite 使用的 connect 中间件是回调式 API，它会同步返回导致请求提前结束，

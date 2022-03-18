@@ -1,4 +1,4 @@
-import { resolve } from "path";
+import { basename, extname, resolve } from "path";
 import { readFileSync } from "fs";
 import { Context } from "koa";
 import log4js from "log4js";
@@ -101,12 +101,12 @@ export async function renderSSR(
 /**
  * 使用指定目录下的构建结果来创建服务端渲染器。
  *
- * @param distDir 构建的输出目录
+ * @param outputDir 构建的输出目录
+ * @param ssr
  */
-export async function productionSSRPlugin(distDir: string) {
-
+export async function productionSSRPlugin(outputDir: string, ssr: string) {
 	function getPath(file: string) {
-		return resolve(distDir, file);
+		return resolve(outputDir, file);
 	}
 
 	function read(file: string) {
@@ -115,7 +115,9 @@ export async function productionSSRPlugin(distDir: string) {
 
 	const template = read("client/index.html");
 	const manifest = JSON.parse(read("server/ssr-manifest.json"));
-	const url = "file://" + getPath("server/entry-server.js");
+
+	const entry = basename(ssr, extname(ssr)) + ".js";
+	const url = "file://" + getPath("server/" + entry);
 	const render = (await import(url)).default;
 
 	return (api: AppBuilder) => api.useFallBack((ctx) => {

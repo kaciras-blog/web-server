@@ -9,6 +9,8 @@ export default async function (options: ResolvedDevConfig) {
 	await build(getViteConfig(options, false));
 	console.log(cyan("Client Build completed.\n"));
 
-	await build(getViteConfig(options, true));
-	console.log(cyan("Server build completed.\n"));
+	if (options.ssr) {
+		await build(getViteConfig(options, true));
+		console.log(cyan("Server build completed.\n"));
+	}
 }

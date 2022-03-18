@@ -16,11 +16,16 @@ import optimizeImage from "./plugin/optimize-image.js";
  * 因为 ConfigEnv 没有 SSR 信息，所以没用 UserConfigFn 而是传一个参数来区分。
  */
 export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean) {
-	const { backend, build } = options;
+	const { backend, build, ssr } = options;
 	const {
 		mode, env = {}, debug, sourcemap,
 		bundleAnalyzer, serviceWorker, vueOptions,
 	} = build;
+
+	let { outputDir } = options;
+	if (ssr) {
+		outputDir = join(outputDir, isSSR ? "server" : "client");
+	}
 
 	env.API_PUBLIC = backend.public;
 	env.API_INTERNAL = backend.internal;
@@ -43,9 +48,9 @@ export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean
 			assetsDir: options.assetsDir,
 			target: build.target,
 
-			ssr: isSSR && "src/entry-server.ts",
+			ssr: isSSR && ssr,
 			ssrManifest: isSSR,
-			outDir: isSSR ? "dist/server" : "dist/client",
+			outDir: outputDir,
 
 			sourcemap,
 
