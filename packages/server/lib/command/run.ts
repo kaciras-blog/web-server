@@ -62,8 +62,8 @@ function staticFilesCacheControl(ctx: BaseContext) {
 	}
 }
 
-export default async function run(options: ResolvedConfig) {
-	const { backend, outputDir, ssr } = options;
+export default async function run(options: ResolvedConfig, signal: AbortSignal) {
+	const { backend, outputDir, ssr, server } = options;
 	let staticDir = outputDir;
 
 	configureLog4js(options.app.logging);
@@ -95,11 +95,9 @@ export default async function run(options: ResolvedConfig) {
 		logger.error("Error occurred on process " + ctx.path, err);
 	});
 
-	const serverGroup = await startServer(app.callback(), options.server);
+	const connector = await startServer(app.callback(), server);
 	logger.info("Startup completed.");
 
-	return () => {
-		serverGroup.forceClose();
-		closeHttp2Sessions();
-	};
+	signal.addEventListener("abort", closeHttp2Sessions);
+	signal.addEventListener("abort", () => connector.forceClose());
 }

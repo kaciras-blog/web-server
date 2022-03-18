@@ -24,7 +24,7 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
 /**
  * 启动开发服务器，它提供了热重载和服务端渲染功能。
  */
-export default async function (options: ResolvedDevConfig) {
+export default async function (options: ResolvedDevConfig, signal: AbortSignal) {
 	const closeHttp2Sessions = configureGlobalAxios(options.backend);
 	const builder = new AppBuilder();
 
@@ -52,12 +52,10 @@ export default async function (options: ResolvedDevConfig) {
 	app.proxy = !!options.server.useForwardedHeaders;
 	vite.middlewares.use(app.callback());
 
-	const serverGroup = vite.middlewares.listen(80);
+	const connector = vite.middlewares.listen(80);
 	console.info("\n- Local URL: http://localhost/\n");
 
-	return () => {
-		vite.close();
-		serverGroup.close();
-		closeHttp2Sessions();
-	};
+	signal.addEventListener("abort", closeHttp2Sessions);
+	signal.addEventListener("abort", () => vite.close());
+	signal.addEventListener("abort", () => connector.close());
 }

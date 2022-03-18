@@ -7,6 +7,7 @@ import { buildCache } from "@kaciras-blog/media";
 import run from "./command/run.js";
 import { resolveConfig, ResolvedConfig } from "./config.js";
 import { once } from "./functions.js";
+import { Awaitable } from "vitest";
 
 /*
  * 第二版中不再捕获 uncaughtException 和 unhandledRejection, let it crash.
@@ -34,10 +35,12 @@ export async function loadConfig(profile: string) {
 }
 
 /**
- * 如果返回函数（或函数数组），那么这些函数将在程序退出时调用。
+ * 命令处理函数，用来定义一个启动命令。
+ *
+ * @param options 应用的配置
+ * @param signal 在关闭时取消的信号。
  */
-type HandlerRV = void | (() => void);
-type CommandHandler<T> = (options: T) => HandlerRV | Promise<HandlerRV>;
+type CommandHandler<T> = (options: T, signal: AbortSignal) => Awaitable<void>;
 
 /**
  * 简单的启动器，提供注册命令然后从命令行里调用的功能，并对启动参数做一些处理。
@@ -88,15 +91,14 @@ export default class Launcher {
 
 		process.title = `Kaciras Blog - ${command}`;
 
-		Promise.resolve(handler(config)).then(shutdownHook => {
-			const shutdownHandler = once(() => {
-				if (shutdownHook) {
-					shutdownHook();
-				}
-				logger.info("Stopping application...");
-			});
-			const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
-			signals.forEach(signal => process.on(signal, shutdownHandler));
+		const controller = new AbortController();
+		await handler(config, controller.signal);
+
+		const shutdownHandler = once(() => {
+			controller.abort();
+			logger.info("Stopping application...");
 		});
+		const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
+		signals.forEach(signal => process.on(signal, shutdownHandler));
 	}
 }
