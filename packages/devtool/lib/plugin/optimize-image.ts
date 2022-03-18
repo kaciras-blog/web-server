@@ -85,7 +85,7 @@ export default function optimizeImage(include?: RegExp): Plugin {
 
 		// 仅在客户端的生产环境构建时才启用。
 		apply(config, env) {
-			return !config.build?.ssr && env.command === "build";
+			return !config.build?.ssr && env.mode === "production";
 		},
 
 		async generateBundle(_, bundle) {

@@ -66,8 +66,9 @@ export default function compressAssets(options: CompressOptions): Plugin {
 	return {
 		name: "kaciras:compress-assets",
 
+		// 因为 OutputGenerate 钩子仅在构建时调用，所以省了 command 判断。
 		apply(config, env) {
-			return force || !config.build?.ssr && env.command === "build";
+			return force || !config.build?.ssr && env.mode === "production";
 		},
 
 		/**
