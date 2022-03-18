@@ -1,11 +1,12 @@
 /**
  * koa-static 和 koa-send 扩展性不能满足本项目的需要，特别是升级规则，所以就自己撸一个。
+ *
  * 主要参考了它俩的设计：
  * https://github.com/koajs/send
  * https://github.com/koajs/static
  */
 import { extname, join, normalize, parse, resolve, sep } from "path";
-import { BaseContext, Middleware, Next } from "koa";
+import { BaseContext, Middleware } from "koa";
 import fs from "fs-extra";
 import replaceExt from "replace-ext";
 import createError from "http-errors";
@@ -122,9 +123,9 @@ class DefaultFileSelector implements FileSelector {
 }
 
 /**
- * 选择器列表，靠前的优先。
+ * 选择器列表，用于发送优化版的文件，靠前的优先。
  */
-const Selectors: FileSelector[] = [
+const selectors: FileSelector[] = [
 	new TypeUpgrade("image/avif", ".avif"),
 	new TypeUpgrade("image/webp", ".webp"),
 	new EncodingUpgrade("br", ".br"),
@@ -160,36 +161,18 @@ function resolvePath(root: string, path: string) {
 }
 
 /**
- * 处理 Koa 请求，如果该请求访问了本地文件则发送，否则调用下一个中间件。
+ * 发送一个本地文件，支持一些升级规则。
  *
- * @param root 静态资源目录
+ * @param path 要发送的文件路径
  * @param options 选项
- * @param ctx Koa请求
- * @param next 调用下一个中间件的函数
+ * @param ctx Koa 上下文
  */
-async function serve(root: string, options: Options, ctx: BaseContext, next: Next) {
-	switch (ctx.method) {
-		case "GET":
-		case "HEAD":
-		case "OPTIONS":
-			break;
-		default:
-			return next();
-	}
-
-	let { path } = ctx;
-	try {
-		path = decodeURIComponent(path);
-	} catch (e) {
-		ctx.throw(400, "failed to decode");
-	}
-	path = resolvePath(root, path);
-
+export async function send(ctx: BaseContext, path: string, options: Options = {}) {
 	let file: string | false | undefined;
 	let stats: fs.Stats;
 
-	for (const selector of Selectors) {
-		const selected = selector.select(ctx, path);
+	for (const s of selectors) {
+		const selected = s.select(ctx, path);
 		if (!selected) {
 			continue;
 		}
@@ -197,7 +180,7 @@ async function serve(root: string, options: Options, ctx: BaseContext, next: Nex
 			stats = await fs.stat(selected);
 			if (!stats.isDirectory()) {
 				file = selected;
-				selector.setHeaders(ctx, path);
+				s.setHeaders(ctx, path);
 				break;
 			}
 		} catch (err) {
@@ -209,17 +192,43 @@ async function serve(root: string, options: Options, ctx: BaseContext, next: Nex
 		}
 	}
 
-	if (!file) {
-		return next();
+	if (file) {
+		ctx.set("Content-Length", stats!.size.toString());
+		ctx.set("Last-Modified", stats!.mtime.toUTCString());
+		ctx.body = fs.createReadStream(file);
+
+		options.customResponse?.(ctx, file, stats!);
 	}
-
-	ctx.set("Content-Length", stats!.size.toString());
-	ctx.set("Last-Modified", stats!.mtime.toUTCString());
-	ctx.body = fs.createReadStream(file);
-
-	options.customResponse?.(ctx, file, stats!);
 }
 
+/**
+ * 处理 Koa 请求，如果该请求访问了本地文件则发送，否则调用下一个中间件。
+ *
+ * @param root 本地文件目录
+ * @param options 选项
+ */
 export default function (root: string, options: Options = {}): Middleware {
-	return (ctx, next) => serve(root, options, ctx, next);
+	return async (ctx, next) => {
+		switch (ctx.method) {
+			case "HEAD":
+			case "GET":
+			case "OPTIONS":
+				break;
+			default:
+				return next();
+		}
+
+		let { path } = ctx;
+		try {
+			path = decodeURIComponent(path);
+		} catch (e) {
+			ctx.throw(400, "failed to decode");
+		}
+		path = resolvePath(root, path);
+
+		await send(ctx, path, options);
+
+		// 如果前面的中间件设置了 body 则会出问题，但应该没这种情况。
+		if (!ctx.body) return next();
+	};
 }
