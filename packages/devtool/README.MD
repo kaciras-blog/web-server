@@ -1,11 +1,11 @@
-# 项目简介
+# @kaciras-blog/devtool
 
 Kaciras Blog 的开发套件，包含了构建配置，支持服务端渲染和热重载。
 
 # 用法
 
 ```shell script
-npm install @kaciras-blog/devtool
+pnpm install @kaciras-blog/devtool
 ```
 
 然后在 package.json 里加入：

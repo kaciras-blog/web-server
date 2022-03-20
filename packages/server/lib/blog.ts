@@ -26,20 +26,18 @@ const logger = log4js.getLogger();
 const CSP_REPORT_URI = "/csp-report";
 
 /**
- * 设置 CSP 头的中间件，能提高点安全性。一些指令在 <meta> 元素中无效，所以要在服务端配置。
+ * 设置一些安全相关的响应头，一些指令在 <meta> 元素中无效，必须在服务端配置。
  *
- * 【Content-Security-Policy】
- * frame-ancestors: 没想出有什么嵌入其它网站的必要
- * object-src: 禁止一些过时元素
- * block-all-mixed-content: 我全站都是HTTPS，也不太会去用HTTP的服务
- * 其他的限制太死了，暂时没开启
+ * <h2>Content-Security-Policy</h2>
+ * frame-ancestors: 没想出有什么嵌入其它网站的必要。
+ * object-src: 禁止一些过时元素。
+ * block-all-mixed-content: 我全站都是HTTPS，也不太会去用HTTP的服务。
+ * 其他的限制太死了，暂时没开启。
  *
- * 【HSTS】
- * HSTS 纯粹是跟底层 TLS 相关的头，不应该在这里配置，而且在 localhost 下会弹一堆警告。
- *
- * TODO: 目前的配置比较简单就直接写死了，复杂了再考虑 koa-helmet
+ * <h2>HSTS</h2>
+ * 纯粹是跟底层 TLS 相关的头，不应该在这里配置，而且在 localhost 下会弹一堆警告。
  */
-async function securityFilter(ctx: BaseContext, next: Next) {
+async function harden(ctx: BaseContext, next: Next) {
 	await next();
 	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; " +
 		"object-src 'none'; block-all-mixed-content; report-uri " + CSP_REPORT_URI);
@@ -93,7 +91,7 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 	return (builder: AppBuilder) => {
 		builder.useBeforeAll(conditional());
 		builder.useBeforeAll(bodyParser());
-		builder.useBeforeAll(securityFilter);
+		builder.useBeforeAll(harden);
 
 		const adminFilter = adminOnlyFilter(address);
 		const router = new Router();
