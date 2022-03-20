@@ -3,8 +3,8 @@ import fs from "fs";
 import { describe, expect, it, vi } from "vitest";
 import supertest from "supertest";
 import Koa, { BaseContext } from "koa";
-import { FIXTURE_DIR } from "./test-utils";
-import serve from "../lib/koa/static-files";
+import { FIXTURE_DIR } from "../test-utils";
+import serve from "../../lib/koa/static-files";
 
 it("should serve from cwd when root = '.'", async () => {
 	const app = new Koa();

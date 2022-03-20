@@ -3,7 +3,7 @@ import supertest from "supertest";
 import Koa from "koa";
 import multer from "@koa/multer";
 import { BadDataError, ParamsError } from "@kaciras-blog/media/lib/errors";
-import { download, DownloadContext, upload } from "../lib/koa/media";
+import { download, DownloadContext, upload } from "../../lib/koa/media";
 
 vi.mock("fs");
 

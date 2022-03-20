@@ -2,7 +2,7 @@ import { expect, it, SpyInstanceFn, vi } from "vitest";
 import axios from "axios";
 import Koa from "koa";
 import supertest from "supertest";
-import sitemapMiddleware from "../lib/koa/sitemap";
+import sitemapMiddleware from "../../lib/koa/sitemap";
 
 vi.mock("axios");
 
