@@ -1,18 +1,18 @@
 import { readFileSync } from "fs";
-import { Middleware } from "koa";
+import { Context } from "koa";
 import { createServer, ViteDevServer } from "vite";
 import { AppBuilder, configureGlobalAxios, getBlogPlugin, renderSSR } from "@kaciras-blog/server";
 import getViteConfig from "../build-config.js";
 import { ResolvedDevConfig } from "../options.js";
 
-function devSSR(options: ResolvedDevConfig, vite: ViteDevServer): Middleware {
-	return async (ctx) => {
+function devSSR(options: ResolvedDevConfig, vite: ViteDevServer) {
+	return async (ctx: Context) => {
 		let template = readFileSync("index.html", "utf8");
 		template = await vite.transformIndexHtml(ctx.href, template);
-		const ssrEntry = await vite.ssrLoadModule("/src/entry-server.ts");
+		const entry = await vite.ssrLoadModule("/src/entry-server.ts");
 
 		try {
-			await renderSSR(ctx, template, ssrEntry.default, {});
+			await renderSSR(ctx, entry.default(template, {}));
 		} catch (e) {
 			vite.ssrFixStacktrace(e);
 			ctx.status = 500;

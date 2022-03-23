@@ -33,23 +33,19 @@ export interface RenderContext {
 	 * 例如 "/about/me?start=20&count=20#friends"
 	 */
 	readonly path: string;
-
-	/**
-	 * HTML 模板，由客户端构建生成。
-	 */
-	readonly template: string;
-
-	/**
-	 * 资源清单，包含了每个模块的依赖模块列表。
-	 * 由 Vite的 Vue 插件在 SSR 时生成。
-	 */
-	readonly manifest: SSRManifest;
 }
 
 /**
- * 服务端渲染函数，返回渲染出来的 HTML 结果。
+ * 服务端渲染函数，接收上下文对象，返回渲染出来的 HTML。
  */
-export type SSREntry = (ctx: RenderContext) => Promise<string>;
+export type SSRenderer = (ctx: RenderContext) => Promise<string>;
+
+/**
+ *
+ * @param template HTML 模板
+ * @param manifest 资源清单，包含了每个模块的依赖模块列表。
+ */
+export type SSREntry = (template: string, manifest: SSRManifest) => SSRenderer;
 
 /**
  * 在服务端渲染页面，如果出现了异常，则渲染错误页面并设置对应的状态码。
@@ -59,21 +55,12 @@ export type SSREntry = (ctx: RenderContext) => Promise<string>;
  * 这样整个页面相关的逻辑都在一起运行，耦合度更低，也避免了导入不一致的问题。
  *
  * @param ctx HTTP 请求上下文
- * @param template HTML 模板
  * @param entry 服务端入口
- * @param manifest 资源清单
  */
-export async function renderSSR(
-	ctx: Context,
-	template: string,
-	entry: SSREntry,
-	manifest: SSRManifest,
-) {
+export async function renderSSR(ctx: Context, entry: SSRenderer) {
 	const renderCtx: RenderContext = {
-		template,
-		manifest,
-		path: ctx.url,
 		request: ctx,
+		path: ctx.url,
 	};
 
 	try {
@@ -102,25 +89,22 @@ export async function renderSSR(
  * 使用指定目录下的构建结果来创建服务端渲染器。
  *
  * @param outputDir 构建的输出目录
- * @param ssr
+ * @param ssr 服务端入口的源文件名
  */
 export async function productionSSRPlugin(outputDir: string, ssr: string) {
-	function getPath(file: string) {
-		return resolve(outputDir, file);
-	}
 
 	function read(file: string) {
-		return readFileSync(getPath(file), "utf8");
+		return readFileSync(resolve(outputDir, file), "utf8");
 	}
 
-	const template = read("client/index.html");
-	const manifest = JSON.parse(read("server/ssr-manifest.json"));
+	let url = basename(ssr, extname(ssr)) + ".js";
+	url = "file://" + resolve(outputDir, "server/" + url);
+	const createServerRenderer = (await import(url)).default as SSREntry;
 
-	const entry = basename(ssr, extname(ssr)) + ".js";
-	const url = "file://" + getPath("server/" + entry);
-	const render = (await import(url)).default;
+	const render = createServerRenderer(
+		read("client/index.html"),
+		JSON.parse(read("server/ssr-manifest.json")),
+	);
 
-	return (api: AppBuilder) => api.useFallBack((ctx) => {
-		return renderSSR(ctx, template, render, manifest);
-	});
+	return (api: AppBuilder) => api.useFallBack(ctx => renderSSR(ctx, render));
 }
