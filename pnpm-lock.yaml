@@ -69,6 +69,7 @@ importers:
   packages/media:
     specifiers:
       '@kaciras-blog/nativelib': ^0.3.1
+      '@kaciras/utilities': ^0.1.0
       '@types/cli-progress': ^3.9.2
       '@types/fs-extra': ^9.0.13
       '@types/imagemin-gifsicle': ^7.0.1
@@ -90,6 +91,7 @@ importers:
       svgo: ^2.8.0
     dependencies:
       '@kaciras-blog/nativelib': 0.3.1
+      '@kaciras/utilities': 0.1.0
       cli-progress: 3.10.0
       execa: 6.1.0
       fs-extra: 10.0.1
@@ -275,6 +277,10 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /@kaciras/utilities/0.1.0:
+    resolution: {integrity: sha512-VpAAGxHbC/K/8zSuBJaGvi+6NiNdScDMgIw403S1CIAFeGOia+NefWlNxWGjzPXoVQpOe0NYB2o5H6o29WWj8w==}
+    dev: false
 
   /@koa/multer/3.0.0_multer@1.4.4:
     resolution: {integrity: sha512-y+OQBmex5D1jIl723gAEUYcAWPEicIXppaAKw/zCMfpllQ08ZNweDPwoCLxEoatqd5pCu2XG6V8dl67JRq3RJw==}
