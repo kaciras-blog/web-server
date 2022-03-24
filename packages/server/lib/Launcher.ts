@@ -9,6 +9,8 @@ import { resolveConfig, ResolvedConfig } from "./config.js";
 import { once } from "./functions.js";
 import { Awaitable } from "vitest";
 
+const logger = log4js.getLogger("init");
+
 /*
  * 第二版中不再捕获 uncaughtException 和 unhandledRejection, let it crash.
  * 请求中的错误由框架（Koa）捕获，如果进程中止考虑在外层比如 systemd 中重启。
@@ -17,25 +19,28 @@ import { Awaitable } from "vitest";
 const require = createRequire(import.meta.url);
 
 export async function loadConfig(profile: string) {
-	let configFile = path.join(process.cwd(), "config");
+	let file = path.join(process.cwd(), "config");
 	if (profile) {
-		configFile = path.join(configFile, profile);
+		file = path.join(file, profile);
 	}
 
 	// 先 resolve 一下，以便把配置文件内部的异常区分开
 	try {
-		configFile = require.resolve(configFile);
+		file = require.resolve(file);
 	} catch (e) {
-		console.error("Can not find config file: " + configFile);
+		console.error("Can not find config file: " + file);
 		process.exit(1);
 	}
 
-	configFile = "file://" + configFile;
-	return resolveConfig((await import(configFile)).default);
+	const config = (await import("file://" + file)).default;
+	return { config: resolveConfig(config), file };
 }
 
 /**
  * 命令处理函数，用来定义一个启动命令。
+ *
+ * <h2>关闭方式</h2>
+ * AbortSignal 比起返回关闭函数更灵活，而且把运行看作一个过程的话，中断也符合语境。
  *
  * @param options 应用的配置
  * @param signal 在关闭时取消的信号。
@@ -65,7 +70,8 @@ export default class Launcher {
 		require("module").Module._initPaths();
 
 		const args = parseArgs(argv);
-		const config = await loadConfig(args.profile);
+		const { config, file } = await loadConfig(args.profile);
+
 
 		log4js.configure({
 			appenders: {
@@ -78,8 +84,7 @@ export default class Launcher {
 				default: { appenders: ["console"], level: "debug" },
 			},
 		});
-
-		const logger = log4js.getLogger("init");
+		logger.info(`Use config file: ${file}`);
 
 		const command = args._[0];
 		const handler = this.commands.get(command);
