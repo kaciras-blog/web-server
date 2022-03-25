@@ -65,14 +65,6 @@ export default class Launcher {
 	}
 
 	async run(argv: string[]) {
-		// 添加当前工作目录到模块路径中，在使用 npm link 本地安装时需要。
-		process.env.NODE_PATH = path.resolve("node_modules");
-		require("module").Module._initPaths();
-
-		const args = parseArgs(argv);
-		const { config, file } = await loadConfig(args.profile);
-
-
 		log4js.configure({
 			appenders: {
 				console: {
@@ -84,6 +76,9 @@ export default class Launcher {
 				default: { appenders: ["console"], level: "debug" },
 			},
 		});
+
+		const args = parseArgs(argv);
+		const { config, file } = await loadConfig(args.profile);
 		logger.info(`Use config file: ${file}`);
 
 		const command = args._[0];
