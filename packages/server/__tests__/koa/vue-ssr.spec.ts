@@ -6,7 +6,7 @@ import { RenderContext, renderSSR } from "../../lib/koa/vue-ssr";
 const entry = vi.fn<[RenderContext]>(async () => "<p>bar</p>");
 
 const koa = new Koa();
-koa.use(ctx => renderSSR(ctx, "<div>foo</div>", entry, {}));
+koa.use(ctx => renderSSR(ctx, entry));
 const callback = koa.callback();
 
 it("should pass the render context", async () => {
@@ -16,8 +16,6 @@ it("should pass the render context", async () => {
 	expect(context.path).toBe("/test?a=b");
 	expect(context.status).toBeUndefined();
 	expect(context.error).toBeUndefined();
-	expect(context.template).toBe("<div>foo</div>");
-	expect(context.manifest).toStrictEqual({});
 });
 
 it("should render the page", async () => {

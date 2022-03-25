@@ -41,6 +41,13 @@ export interface RenderContext {
 export type SSRenderer = (ctx: RenderContext) => Promise<string>;
 
 /**
+ * 服务端入口的默认导出，用于初始化渲染函数的函数。
+ *
+ * 因为渲染所用的参数的生命周期分两种：
+ * 1）启动后就不变的，主要是构建结果和选项。
+ * 2）请求相关的，包括 URL、Cookie 等。
+ *
+ * 所以把服务端函数也分两个，对应上述的两类参数。
  *
  * @param template HTML 模板
  * @param manifest 资源清单，包含了每个模块的依赖模块列表。
@@ -86,7 +93,7 @@ export async function renderSSR(ctx: Context, entry: SSRenderer) {
 }
 
 /**
- * 使用指定目录下的构建结果来创建服务端渲染器。
+ * 使用构建结果来创建服务端渲染器，用于生产模式。
  *
  * @param outputDir 构建的输出目录
  * @param ssr 服务端入口的源文件名

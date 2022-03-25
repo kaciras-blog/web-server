@@ -24,7 +24,7 @@ export async function loadConfig(profile: string) {
 		file = path.join(file, profile);
 	}
 
-	// 先 resolve 一下，以便把配置文件内部的异常区分开
+	// 先 resolve 一下，以便把配置文件内部的异常区分开。
 	try {
 		file = require.resolve(file);
 	} catch (e) {
@@ -34,6 +34,12 @@ export async function loadConfig(profile: string) {
 
 	const config = (await import("file://" + file)).default;
 	return { config: resolveConfig(config), file };
+}
+
+function onExit(handler: () => any) {
+	const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
+	handler = once(handler);
+	signals.forEach(signal => process.on(signal, handler));
 }
 
 /**
@@ -85,7 +91,7 @@ export default class Launcher {
 		const handler = this.commands.get(command);
 		if (!handler) {
 			const names = Array.from(this.commands.keys()).join(", ");
-			console.error(`Unknown command: ${command}, supported commands: ${names}`);
+			console.error(`Unknown command: ${command}, supported: ${names}`);
 			process.exit(2);
 		}
 
@@ -94,11 +100,9 @@ export default class Launcher {
 		const controller = new AbortController();
 		await handler(config, controller.signal);
 
-		const shutdownHandler = once(() => {
+		onExit(() => {
 			controller.abort();
-			logger.info("Stopping application...");
+			logger.info("Signal detected, stopping application...");
 		});
-		const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
-		signals.forEach(signal => process.on(signal, shutdownHandler));
 	}
 }
