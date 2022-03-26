@@ -29,7 +29,7 @@ export default async function (options: ResolvedDevConfig, signal: AbortSignal) 
 	const builder = new AppBuilder();
 
 	const vite = await createServer({
-		...getViteConfig(options, false),
+		...getViteConfig(options, false,false),
 		server: { middlewareMode: "ssr" },
 	});
 
