@@ -30,7 +30,13 @@ export default function getViteConfig(options: ResolvedDevConfig, isSSR: boolean
 	env.API_PUBLIC = backend.public;
 	env.API_INTERNAL = backend.internal;
 
-	const define: Record<string, unknown> = {};
+	/*
+	 * Webpack 等旧一代工具常用 `typeof window` 来判断环境，至今仍有许多库使用这种方法，
+	 * 但 Vite 这样以 ESM 为基准的默认不内联它们，所以手动兼容一下，以便 Tree Shaking。
+	 */
+	const define: Record<string, unknown> = {
+		"typeof window": isSSR ? "'undefined'" : "'object'",
+	};
 	for (const [k, v] of Object.entries(env)) {
 		define["import.meta.env." + k] = JSON.stringify(v);
 	}
