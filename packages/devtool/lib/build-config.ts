@@ -9,7 +9,6 @@ import { ResolvedDevConfig } from "./options.js";
 import compressAssets from "./plugin/compress-assets.js";
 import SWPlugin from "./plugin/service-worker.js";
 import optimizeImage from "./plugin/optimize-image.js";
-import psi from "./plugin/process-image.js";
 
 /**
  * 创建 Vite 的配置。由于架构不同，仅需一个函数，比以前三个 getWebpackConfig 简单多了。
@@ -77,7 +76,7 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		plugins: [
 			bundleAnalyzer && visualizer(),
 			debug && inspect(),
-			psi(),
+
 			vueSvgSfc(),
 			vue(vueOptions),
 

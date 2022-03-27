@@ -20,7 +20,9 @@ const cropPresets = createPresetCropper({
 
 /**
  * 裁剪和缩放图片的加载器，通过 url 中的参数来裁剪和缩放图片。
- * 仅支持位图，SVG 没法简单地裁剪且无需缩放。
+ * 仅支持位图，因为 SVG 没法简单地裁剪且无需缩放。
+ *
+ * TODO: Vite 的开发模式不支持 emitFile，这个功能可能无法实现。
  */
 export default function processImage(): Plugin {
 	let viteConfig: ResolvedConfig;
