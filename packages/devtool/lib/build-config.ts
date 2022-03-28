@@ -32,6 +32,8 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 	/*
 	 * Webpack 等旧一代工具常用 `typeof window` 来判断环境，至今仍有许多库使用这种方法，
 	 * 但 Vite 这样以 ESM 为基准的默认不内联它们，所以手动兼容一下，以便 Tree Shaking。
+	 *
+	 * 因为开发模式下客户端和 SSR 端共用一套配置，所以只能在构建模式里替换，作为优化手段。
 	 */
 	if (isBuild) {
 		define["typeof window"] = isSSR ? "'undefined'" : "'object'";
@@ -54,13 +56,14 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		mode,
 		build: {
 			assetsDir: options.assetsDir,
-			target: build.target,
-
-			ssr: isSSR && ssr,
-			ssrManifest: isSSR,
 			outDir: outputDir,
 
+			target: build.target,
 			sourcemap,
+			ssr: isSSR && ssr,
+
+			// 客户端构建也能生成，所以使用 isSSR 变量。
+			ssrManifest: isSSR,
 
 			// 图片体积大很正常，所以放宽点。
 			chunkSizeWarningLimit: 2048,

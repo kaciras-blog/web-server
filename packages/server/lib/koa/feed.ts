@@ -34,7 +34,7 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 			link: origin + "/",
 			language: "zh-CN",
 			favicon: `${origin}/favicon.ico`,
-			copyright: `All rights reserved 2020-2022, ${author}`,
+			copyright: "CC-BY-4.0",
 			feedLinks: getLinksFor(origin),
 		});
 

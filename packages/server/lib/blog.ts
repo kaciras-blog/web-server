@@ -26,7 +26,7 @@ const logger = log4js.getLogger();
 const CSP_REPORT_URI = "/csp-report";
 
 /**
- * 设置一些安全相关的响应头，一些指令在 <meta> 元素中无效，必须在服务端配置。
+ * 设置一些安全相关的响应头，这些指令在 <meta> 元素中无效，必须由服务端配置。
  *
  * <h2>Content-Security-Policy</h2>
  * frame-ancestors: 没想出有什么嵌入其它网站的必要。

@@ -36,7 +36,7 @@ export async function loadConfig(profile: string) {
 	return { config: resolveConfig(config), file };
 }
 
-function onExit(handler: () => any) {
+function onExit(handler: () => unknown) {
 	const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
 	handler = once(handler);
 	signals.forEach(signal => process.on(signal, handler));
