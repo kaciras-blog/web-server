@@ -58,9 +58,11 @@ importers:
       '@types/markdown-it': ^12.2.3
       markdown-it: ^12.3.2
       markdown-it-anchor: ^8.4.1
+      markdown-it-footnote: ^3.0.3
       markdown-it-toc-done-right: ^4.2.0
     dependencies:
       markdown-it-anchor: 8.4.1_d643ca6eb40ae68ab966a77bead78073
+      markdown-it-footnote: 3.0.3
       markdown-it-toc-done-right: 4.2.0
     devDependencies:
       '@types/markdown-it': 12.2.3
@@ -3016,6 +3018,10 @@ packages:
     dependencies:
       '@types/markdown-it': 12.2.3
       markdown-it: 12.3.2
+    dev: false
+
+  /markdown-it-footnote/3.0.3:
+    resolution: {integrity: sha512-YZMSuCGVZAjzKMn+xqIco9d1cLGxbELHZ9do/TSYVzraooV8ypsppKNmUJ0fVH5ljkCInQAtFpm8Rb3eXSrt5w==}
     dev: false
 
   /markdown-it-toc-done-right/4.2.0:
