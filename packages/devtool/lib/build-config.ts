@@ -79,7 +79,11 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			// 关闭压缩测试增加性能，因为另有插件做压缩。
 			reportCompressedSize: false,
 
-			// 本项目已经全线转 ESM，不再兼容 CJS。
+			// Vite 的 SSR 无法注入异步模块的关键样式，这会导致布局移动，
+			// 而且全站的 CSS 文件也不大，所以关闭了。
+			cssCodeSplit: false,
+
+			// 本项目已经全线转 ESM，不再兼容 CommonJS。
 			rollupOptions: {
 				output: { format: "esm" },
 			},
