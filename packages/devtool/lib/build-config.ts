@@ -97,7 +97,7 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 
 			serviceWorker && SWPlugin(serviceWorker),
 
-			optimizeImage(new RegExp("static/")),
+			optimizeImage(new RegExp("^static/")),
 			compressAssets({ algorithm: "gz" }),
 			compressAssets({ algorithm: "br" }),
 		],
