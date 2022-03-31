@@ -22,6 +22,8 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		bundleAnalyzer, serviceWorker, vueOptions,
 	} = build;
 
+	const minify = mode ? mode === "production" : isBuild;
+
 	let { outputDir } = options;
 	if (ssr) {
 		outputDir = join(outputDir, isSSR ? "server" : "client");
@@ -54,12 +56,18 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		},
 		define,
 		mode,
+		css: {
+			modules: {
+				generateScopedName: minify ? "[hash:base64:5]" : undefined,
+			},
+		},
 		build: {
 			assetsDir: options.assetsDir,
 			outDir: outputDir,
 
 			target: build.target,
 			sourcemap,
+			minify,
 			ssr: isSSR && ssr,
 
 			// 客户端构建也能生成，所以使用 isSSR 变量。
