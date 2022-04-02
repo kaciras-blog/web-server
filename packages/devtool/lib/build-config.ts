@@ -70,18 +70,14 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			minify,
 			ssr: isSSR && ssr,
 
-			// 客户端构建也能生成，所以使用 isSSR 变量。
-			ssrManifest: isSSR,
+			// 两端都有效，但仅客户端生成的才是正确的。
+			ssrManifest: !isSSR,
 
 			// 图片体积大很正常，所以放宽点。
 			chunkSizeWarningLimit: 2048,
 
 			// 关闭压缩测试增加性能，因为另有插件做压缩。
 			reportCompressedSize: false,
-
-			// Vite 的 SSR 无法注入异步模块的关键样式，这会导致布局移动，
-			// 而且全站的 CSS 文件也不大，所以关闭了。
-			cssCodeSplit: false,
 
 			// 本项目已经全线转 ESM，不再兼容 CommonJS。
 			rollupOptions: {

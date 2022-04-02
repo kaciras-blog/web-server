@@ -110,7 +110,7 @@ export async function productionSSRPlugin(outputDir: string, ssr: string) {
 
 	const render = createServerRenderer(
 		read("client/index.html"),
-		JSON.parse(read("server/ssr-manifest.json")),
+		JSON.parse(read("client/ssr-manifest.json")),
 	);
 
 	return (api: AppBuilder) => api.useFallBack(ctx => renderSSR(ctx, render));
