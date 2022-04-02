@@ -16,7 +16,6 @@ export function Anchor(markdownIt: MarkdownIt) {
 	markdownIt.use<AnchorRaw.AnchorOptions>(AnchorRaw, {
 		permalink: AnchorRaw.permalink.linkInsideHeader({
 			placement: "after",
-			ariaHidden: true,
 			class: "anchor-link",
 		}),
 		slugify: title => title.trim().toLowerCase().replace(/\s+/g, "-"),
