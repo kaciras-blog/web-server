@@ -109,6 +109,10 @@ export default class CachedService implements MediaService {
 		return { ...attrs, file };
 	}
 
+	/**
+	 * 对新文件，先生成缓存后保存原图，因为已存在是通过原图判断的，这样相当于一个事务，
+	 * 避免保存时出错（比如权限设置错误）后出现不一致的状态。
+	 */
 	async save(request: SaveRequest) {
 		const { store, optimizer } = this;
 
@@ -118,11 +122,12 @@ export default class CachedService implements MediaService {
 		const hash = hashName(buffer);
 		const name = hash + "." + type;
 
-		const createNew = await store.save(name, buffer);
-		if (createNew) {
-			const items = await optimizer.buildCache(request);
-			await store.putCaches(hash, items);
+		const exists = await store.load(name);
+		if (exists) {
+			return name;
 		}
-		return name;
+		const items = await optimizer.buildCache(request);
+		await store.putCaches(hash, items);
+		return store.save(name, buffer).then(() => name);
 	}
 }
