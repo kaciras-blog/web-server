@@ -73,6 +73,8 @@ export async function encodeAVIF(buffer: Buffer) {
 /**
  * 对传统格式（jpg、png、gif）的优化，都是有损压缩，优化结果与原格式相同。
  *
+ * TODO: imagemin 的库有多余的解码过程，以后考虑直接集成编码器到 node addon。
+ *
  * @param buffer 图片
  * @param type 图片的格式
  * @return 优化后的图片

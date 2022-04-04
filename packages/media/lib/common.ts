@@ -38,7 +38,7 @@ export function hashName(buffer: Buffer) {
 /**
  * 将 FileBody 的多种数据类型类型统一转换为 Buffer。
  *
- * 字符串使用 UTF-8 解码。
+ * 如果是字符串则使用 UTF-8 解码。
  */
 export async function bodyToBuffer(body: FileBody) {
 	if (typeof body === "string") {

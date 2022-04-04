@@ -62,16 +62,16 @@ export type SSREntry = (template: string, manifest: SSRManifest) => SSRenderer;
  * 这样整个页面相关的逻辑都在一起运行，耦合度更低，也避免了导入不一致的问题。
  *
  * @param ctx HTTP 请求上下文
- * @param entry 服务端入口
+ * @param render 服务端渲染函数
  */
-export async function renderSSR(ctx: Context, entry: SSRenderer) {
+export async function renderSSR(ctx: Context, render: SSRenderer) {
 	const renderCtx: RenderContext = {
 		request: ctx,
 		path: ctx.url,
 	};
 
 	try {
-		ctx.body = await entry(renderCtx);
+		ctx.body = await render(renderCtx);
 		ctx.status = renderCtx.status ?? 200;
 	} catch (e) {
 		switch (e.code) {
@@ -83,7 +83,7 @@ export async function renderSSR(ctx: Context, entry: SSRenderer) {
 		}
 
 		ctx.status = 503;
-		ctx.body = await entry({
+		ctx.body = await render({
 			error: e,
 			...renderCtx,
 		});

@@ -163,9 +163,9 @@ function resolvePath(root: string, path: string) {
 /**
  * 发送一个本地文件，支持一些升级规则。
  *
+ * @param ctx Koa 上下文
  * @param path 要发送的文件路径
  * @param options 选项
- * @param ctx Koa 上下文
  */
 export async function send(ctx: BaseContext, path: string, options: Options = {}) {
 	let file: string | false | undefined;
