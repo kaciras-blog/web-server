@@ -28,6 +28,7 @@
 		"@rollup/plugin-replace": "^4.0.0",
 		"@vitejs/plugin-vue": "^2.2.4",
 		"colorette": "^2.0.16",
+		"es-module-lexer": "^0.10.4",
 		"log4js": "^6.4.4",
 		"magic-string": "^0.26.1",
 		"rollup": "^2.70.1",

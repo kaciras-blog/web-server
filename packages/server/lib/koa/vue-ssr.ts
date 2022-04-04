@@ -9,7 +9,10 @@ const logger = log4js.getLogger("SSR");
 /**
  * ssrManifest 选项生成的文件，Vite 没有这个的类型。
  */
-export type SSRManifest = Record<string, string[]>;
+export interface SSRManifest {
+	chunks: Record<string, string[]>;
+	modules: Record<string, string>;
+}
 
 export interface RenderContext {
 
