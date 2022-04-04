@@ -3,8 +3,8 @@ import { OutputAsset, PluginContext } from "rollup";
 import { Plugin } from "vite";
 import { MediaAttrs, Optimizer, RasterOptimizer, SVGOptimizer } from "@kaciras-blog/media";
 
-const sss = new SVGOptimizer();
-const rs = new RasterOptimizer();
+const svgOptimizer = new SVGOptimizer();
+const rasterOptimizer = new RasterOptimizer();
 
 function interpolateName(raw: string, attrs: MediaAttrs) {
 	const { type, encoding } = attrs;
@@ -28,17 +28,16 @@ async function optimize(this: PluginContext, asset: OutputAsset) {
 	const name = asset.fileName;
 	const type = extname(name).slice(1);
 
-	let optimizer: Optimizer;
-
 	// TODO: 跟 media 服务复用代码
+	let optimizer: Optimizer;
 	switch (type) {
 		case "svg":
-			optimizer = sss;
+			optimizer = svgOptimizer;
 			break;
 		case "jpg":
 		case "png":
 		case "gif":
-			optimizer = rs;
+			optimizer = rasterOptimizer;
 			break;
 		default:
 			return;
