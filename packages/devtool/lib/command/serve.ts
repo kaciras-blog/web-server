@@ -12,7 +12,7 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer) {
 		const entry = await vite.ssrLoadModule("/src/entry-server.ts");
 
 		try {
-			await renderSSR(ctx, entry.default(template, {}));
+			await renderSSR(ctx, entry.default(template));
 		} catch (e) {
 			vite.ssrFixStacktrace(e);
 			ctx.status = 500;
