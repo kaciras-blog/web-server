@@ -9,14 +9,14 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer) {
 	return async (ctx: Context) => {
 		let template = readFileSync("index.html", "utf8");
 		template = await vite.transformIndexHtml(ctx.href, template);
-		const entry = await vite.ssrLoadModule("/src/entry-server.ts");
+		const entry = await vite.ssrLoadModule(options.ssr!);
 
 		try {
 			await renderSSR(ctx, entry.default(template));
 		} catch (e) {
 			vite.ssrFixStacktrace(e);
 			ctx.status = 500;
-			console.log(ctx.body = e.stack);
+			console.log(ctx.body = e.stack, e);
 		}
 	};
 }
