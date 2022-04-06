@@ -1,7 +1,7 @@
 import { cwd } from "process";
 import { join } from "path";
 import { UserConfig } from "vite";
-import visualizer from "rollup-plugin-visualizer";
+import { visualizer } from "rollup-plugin-visualizer";
 import inspect from "vite-plugin-inspect";
 import vue from "@vitejs/plugin-vue";
 import vueSvgSfc from "vite-plugin-svg-sfc";
@@ -83,7 +83,7 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			},
 		},
 		plugins: [
-			bundleAnalyzer && visualizer(),
+			bundleAnalyzer && !isSSR && visualizer(),
 			debug && inspect(),
 
 			ssrManifestPlugin(),
