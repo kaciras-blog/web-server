@@ -26,6 +26,18 @@ import { parse as parseImports } from "es-module-lexer";
 import type { OutputChunk } from "rollup";
 import type { Plugin, ResolvedConfig } from "vite";
 
+interface ChunkMetadata {
+	importedAssets: Set<string>;
+	importedCss: Set<string>;
+}
+
+declare module "rollup" {
+	// noinspection JSUnusedGlobalSymbols
+	export interface RenderedChunk {
+		viteMetadata: ChunkMetadata;
+	}
+}
+
 const preloadMethod = "__vitePreload";
 
 const isWindows = platform() === "win32";
@@ -68,7 +80,7 @@ export function ssrManifestPlugin(): Plugin {
 				}
 				const { importedCss, importedAssets } = chunk.viteMetadata;
 
-				for (const id in chunk.modules) {
+				for (const id of Object.keys(chunk.modules)) {
 					const normalizedId = normalizePath(relative(config.root, id));
 					modules[normalizedId] = chunk.fileName;
 				}
@@ -93,14 +105,14 @@ export function ssrManifestPlugin(): Plugin {
 					} catch (e: any) {
 						this.error(e, e.idx);
 					}
-					for (let index = 0; index < imports.length; index++) {
-						const { s: start, e: end, n: name } = imports[index];
+					for (const { s: start, e: end, n: name } of imports) {
 						// check the chunk being imported
 						const url = code.slice(start, end);
 						const deps: string[] = [];
 						const ownerFilename = chunk.fileName;
 						// literal import - trace direct imports and add to deps
 						const analyzed: Set<string> = new Set<string>();
+
 						const addDeps = (filename: string) => {
 							if (filename === ownerFilename) return;
 							if (analyzed.has(filename)) return;
