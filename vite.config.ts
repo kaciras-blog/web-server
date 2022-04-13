@@ -8,6 +8,7 @@ export default defineConfig({
 
 		clearMocks: true,
 
-		include: ["packages/*/__tests__/**/*.spec.ts"],
+		// include: ["packages/*/__tests__/**/*.spec.ts"],
+		include: ["packages/markdown/__tests__/**/media.spec.ts"],
 	},
 });

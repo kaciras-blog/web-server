@@ -37,7 +37,7 @@
 		"vite": "^2.9.1",
 		"vite-plugin-inspect": "^0.4.3",
 		"vite-plugin-svg-sfc": "^0.3.0",
-		"vue": "^3.2.31"
+		"vue": "^3.2.32"
 	},
 	"devDependencies": {
 		"deepmerge": "^4.2.2"
