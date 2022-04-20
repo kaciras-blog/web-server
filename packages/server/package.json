@@ -25,11 +25,11 @@
 		"@kaciras-blog/media": "workspace:^",
 		"@koa/multer": "^3.0.0",
 		"@koa/router": "^10.1.1",
-		"@vue/server-renderer": "^3.2.32",
+		"@vue/server-renderer": "^3.2.33",
 		"axios": "^0.26.1",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.2",
-		"fs-extra": "^10.0.1",
+		"fs-extra": "^10.1.0",
 		"hash-sum": "^2.0.0",
 		"http-errors": "^2.0.0",
 		"koa": "^2.13.4",
@@ -37,7 +37,7 @@
 		"koa-compose": "^4.1.0",
 		"koa-compress": "^5.1.0",
 		"koa-conditional-get": "^3.0.0",
-		"log4js": "^6.4.4",
+		"log4js": "^6.4.5",
 		"markdown-it": "^12.3.2",
 		"minimist": "^1.2.6",
 		"multer": "^1.4.4",
@@ -45,7 +45,7 @@
 		"replace-ext": "^2.0.0",
 		"sitemap": "^7.1.1",
 		"source-map-support": "^0.5.21",
-		"vue": "^3.2.32"
+		"vue": "^3.2.33"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.3",
