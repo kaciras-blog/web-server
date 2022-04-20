@@ -9,7 +9,7 @@
 		"directory": "packages/media"
 	},
 	"engines": {
-		"node": ">=17"
+		"node": ">=18"
 	},
 	"type": "module",
 	"files": [

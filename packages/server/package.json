@@ -15,7 +15,7 @@
 		"lib"
 	],
 	"engines": {
-		"node": ">=17"
+		"node": ">=18"
 	},
 	"bin": {
 		"blog-server": "bin/blog-server.js"

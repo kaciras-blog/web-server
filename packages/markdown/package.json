@@ -8,14 +8,14 @@
 		"url": "https://github.com/kaciras-blog/web-server",
 		"directory": "packages/markdown"
 	},
+	"engines": {
+		"node": ">=18"
+	},
 	"type": "module",
 	"main": "lib/index.js",
 	"files": [
 		"lib"
 	],
-	"engines": {
-		"node": ">=17"
-	},
 	"dependencies": {
 		"markdown-it-anchor": "^8.6.2",
 		"markdown-it-footnote": "^3.0.3",
