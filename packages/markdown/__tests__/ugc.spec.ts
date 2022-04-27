@@ -7,5 +7,5 @@ it("should set the attribute", () => {
 	markdownIt.use(UGC);
 
 	const html = markdownIt.render("[test](http://example.com)");
-	expect(html).toBe('<p><a href="http://example.com" rel="ugc,nofollow">test</a></p>');
+	expect(html.trimEnd()).toBe('<p><a href="http://example.com" rel="ugc,nofollow">test</a></p>');
 });
