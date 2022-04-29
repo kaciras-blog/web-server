@@ -3,7 +3,7 @@ import sharp, { Sharp } from "sharp";
 import { BadDataError, ProcessorError } from "../errors.js";
 import { LoadRequest, SaveRequest } from "../MediaService.js";
 import { MediaAttrs, Optimizer } from "../CachedService.js";
-import { crop } from "./param-processor.js";
+import { crop, flip, rotate } from "./param-processor.js";
 import { encodeAVIF, encodeWebp, optimizeRaster } from "./encoder.js";
 
 /**
@@ -17,6 +17,15 @@ const INPUT_FORMATS = ["jpg", "png", "gif"];
 const FORMATS = ["avif", "webp"];
 
 /**
+ * 支持的处理函数，注意顺序不要搞错。
+ */
+const processors = [
+	{ name: "rotate", fn: rotate },
+	{ name: "crop", fn: crop },
+	{ name: "flip", fn: flip },
+];
+
+/**
  * 如果抛出的是 ProcessorError，则返回 undefined。
  */
 function unprocessable(e: Error) {
@@ -27,17 +36,21 @@ export default class RasterOptimizer implements Optimizer {
 
 	async check(request: SaveRequest) {
 		const { buffer, parameters, type } = request;
-
 		let image: Sharp | null = null;
-		if (parameters.crop) {
-			image = crop(sharp(buffer), parameters.crop);
+
+		for (const { name, fn } of processors) {
+			const argument = parameters[name];
+			if (argument) {
+				image ??= sharp(buffer);
+				image = fn(image, argument);
+			}
 		}
 
-		if (type === "jpeg") {
-			request.type = "jpg";
-		}
 		if (image) {
-			request.buffer = await image.toBuffer();
+			request.buffer = await image.png().toBuffer();
+			request.type = "png";
+		} else if (type === "jpeg") {
+			request.type = "jpg";
 		}
 
 		if (INPUT_FORMATS.indexOf(request.type) < 0) {

@@ -1,11 +1,12 @@
-import { describe, expect, it, MockedObject, vi } from "vitest";
+import { describe, expect, it, MockedFunction, MockedObject, vi } from "vitest";
 import { readFixture } from "../test-utils";
-import { BadDataError, crop, ProcessorError } from "../../lib";
+import { BadDataError, crop, ProcessorError, resize } from "../../lib";
 import * as encoder from "../../lib/image/encoder";
 import RasterOptimizer from "../../lib/image/RasterOptimizer";
 
 vi.mock("../../lib/image/param-processor", () => ({
 	crop: vi.fn(),
+	resize: vi.fn(),
 }));
 
 vi.mock("../../lib/image/encoder", () => ({
@@ -52,10 +53,11 @@ describe("check", () => {
 		expect(request.type).toBe("jpg");
 	});
 
-	it("should crop the image", async () => {
+	it("should process the image", async () => {
 		const cropped = Buffer.alloc(0);
-		const fn = crop as any;
+		const fn = crop as MockedFunction<any>;
 		fn.mockReturnValue({
+			png() { return this; },
 			toBuffer() { return cropped; },
 		});
 		const request = {
@@ -67,6 +69,7 @@ describe("check", () => {
 
 		expect(request.buffer).toBe(cropped);
 		expect(fn.mock.calls[0][1]).toBe("foobar");
+		expect(resize).not.toHaveBeenCalled();
 	});
 });
 
