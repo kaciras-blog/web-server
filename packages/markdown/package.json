@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras-blog/markdown",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"description": "Markdown-it plugins for Kaciras Blog",
 	"license": "MIT",
 	"repository": {
