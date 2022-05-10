@@ -3,7 +3,7 @@ import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
 import { Media, TOC } from "@kaciras-blog/markdown";
 import { once } from "../functions.js";
-import { addQuery, CachedFetcher } from "../fetch-helper.js";
+import { buildURL, CachedFetcher } from "../fetch-helper.js";
 import { ResolvedConfig } from "../config.js";
 
 const markdownIt = new MarkdownIt();
@@ -16,7 +16,7 @@ interface FeedContext extends ExtendableContext {
 
 export default function createFeedMiddleware(config: ResolvedConfig) {
 	const { author, title } = config.app;
-	const articleApi = config.backend.internal + "/articles";
+	const baseURL = config.backend.internal;
 
 	const getLinksFor = (origin: string) => ({
 		rss: `${origin}/feed/rss`,
@@ -62,7 +62,7 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 	const fetcher = new CachedFetcher(7 * 86400 * 1000);
 
 	return async (ctx: FeedContext) => {
-		const url = addQuery(articleApi, {
+		const url = buildURL(baseURL, "/articles", {
 			origin: ctx.origin,
 			content: true,
 			count: 10,

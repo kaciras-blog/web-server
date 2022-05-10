@@ -1,17 +1,31 @@
+import { URL } from "url";
 import { BaseContext } from "koa";
 
-export function addQuery(url: string, params: Record<string, any>) {
-	const search = new URLSearchParams();
+/**
+ * 根据基准 URL，URL 片段和查询参数来组合成完整的 URL。
+ *
+ * <h2>参数的处理</h2>
+ * URLSearchParams 会将 undefined 值序列化为字符串，这里处理下。
+ * https://github.com/whatwg/url/issues/427
+ *
+ * @param base 基准 URL，在 url 是相对时才会起效
+ * @param url 如果是相对 URL，则会将 base 用作基准
+ * @param params 键值对形式的参数
+ */
+export function buildURL(
+	base: string,
+	url: string,
+	params: Record<string, any>,
+) {
+	const parsed = new URL(url, base);
+	const { searchParams } = parsed;
 
-	// URLSearchParams 会将 undefined 值序列化为字符串，这里处理下。
-	// https://github.com/whatwg/url/issues/427
 	for (const k of Object.keys(params)) {
 		if (params[k] !== undefined)
-			search.set(k, params[k]);
+			searchParams.set(k, params[k]);
 	}
 
-	const query = search.toString();
-	return query ? `${url}?${query}` : url;
+	return parsed.toString();
 }
 
 export function getProxyHeaders(ctx: BaseContext) {
