@@ -1,7 +1,7 @@
 import { Feed } from "feed";
 import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
-import { Media, TOC } from "@kaciras-blog/markdown";
+import { Footnote, Media, TOC } from "@kaciras-blog/markdown";
 import { once } from "../functions.js";
 import { buildURL, CachedFetcher } from "../fetch-helper.js";
 import { ResolvedConfig } from "../config.js";
@@ -9,6 +9,7 @@ import { ResolvedConfig } from "../config.js";
 const markdownIt = new MarkdownIt();
 markdownIt.use(TOC);
 markdownIt.use(Media);
+markdownIt.use(Footnote);
 
 interface FeedContext extends ExtendableContext {
 	params: { type: string };
