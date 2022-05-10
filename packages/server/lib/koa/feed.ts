@@ -3,7 +3,7 @@ import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
 import { Media, TOC } from "@kaciras-blog/markdown";
 import { once } from "../functions.js";
-import { CachedFetcher } from "../axios-helper.js";
+import { addQuery, CachedFetcher } from "../fetch-helper.js";
 import { ResolvedConfig } from "../config.js";
 
 const markdownIt = new MarkdownIt();
@@ -62,16 +62,15 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 	const fetcher = new CachedFetcher(7 * 86400 * 1000);
 
 	return async (ctx: FeedContext) => {
-		const params = new URLSearchParams({
+		const url = addQuery(articleApi, {
 			origin: ctx.origin,
 			content: true,
 			count: 10,
 			sort: "id,DESC",
-			// category: ctx.query.category,
+			category: ctx.query.category,
 			recursive: true,
 		});
-
-		const feed = await fetcher.request(`${articleApi}?${params}`, r => buildFeed(ctx.origin, r));
+		const feed = await fetcher.request(url, r => buildFeed(ctx.origin, r));
 
 		switch (ctx.params.type) {
 			case "rss":

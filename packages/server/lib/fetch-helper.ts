@@ -1,3 +1,26 @@
+import { BaseContext } from "koa";
+
+export function addQuery(url: string, params: Record<string, any>) {
+	const search = new URLSearchParams();
+
+	// URLSearchParams 会将 undefined 值序列化为字符串，这里处理下。
+	// https://github.com/whatwg/url/issues/427
+	for (const k of Object.keys(params)) {
+		if (params[k] !== undefined)
+			search.set(k, params[k]);
+	}
+
+	const query = search.toString();
+	return query ? `${url}?${query}` : url;
+}
+
+export function getProxyHeaders(ctx: BaseContext) {
+	return {
+		"X-Forwarded-For": ctx.ip,
+		Cookie: ctx.headers.cookie!,
+	};
+}
+
 type ResponseParser<R> = (response: Response) => Promise<R>;
 
 interface CacheEntry {
@@ -5,7 +28,6 @@ interface CacheEntry {
 	time: Date;
 	cleaner?: NodeJS.Timeout;
 }
-
 
 export class CachedFetcher {
 

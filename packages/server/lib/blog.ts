@@ -18,6 +18,7 @@ import { ResolvedConfig } from "./config.js";
 import { download, upload } from "./koa/media.js";
 import sitemapHandler from "./koa/sitemap.js";
 import feedHandler from "./koa/feed.js";
+import { getProxyHeaders } from "./fetch-helper";
 
 const logger = log4js.getLogger();
 
@@ -82,10 +83,7 @@ export function adminOnlyFilter(host: string) {
 
 	return async (ctx: ExtendableContext, next: Next) => {
 		const response = await fetch(url, {
-			headers: {
-				"X-Forwarded-For": ctx.ip,
-				Cookie: ctx.headers.cookie!,
-			},
+			headers: getProxyHeaders(ctx),
 		});
 		const { id } = await response.json();
 		return id === 2 ? next() : (ctx.status = 403);
