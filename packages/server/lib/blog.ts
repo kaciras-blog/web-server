@@ -1,5 +1,4 @@
 import { join } from "path";
-import Axios from "axios";
 import log4js from "log4js";
 import { BaseContext, ExtendableContext, Next } from "koa";
 import conditional from "koa-conditional-get";
@@ -19,7 +18,6 @@ import { ResolvedConfig } from "./config.js";
 import { download, upload } from "./koa/media.js";
 import sitemapHandler from "./koa/sitemap.js";
 import feedHandler from "./koa/feed.js";
-import { configureForProxy } from "./axios-helper.js";
 
 const logger = log4js.getLogger();
 
@@ -83,8 +81,14 @@ export function adminOnlyFilter(host: string) {
 	const url = host + "/user";
 
 	return async (ctx: ExtendableContext, next: Next) => {
-		const { data } = await Axios.get(url, configureForProxy(ctx));
-		return data.id === 2 ? next() : (ctx.status = 403);
+		const response = await fetch(url, {
+			headers: {
+				"X-Forwarded-For": ctx.ip,
+				Cookie: ctx.headers.cookie!,
+			},
+		});
+		const { id } = await response.json();
+		return id === 2 ? next() : (ctx.status = 403);
 	};
 }
 

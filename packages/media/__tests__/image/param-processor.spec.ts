@@ -38,6 +38,7 @@ describe("flip", () => {
 		const cropped = flip(sharp(buffer), "X");
 		const raw = await cropped.raw().toBuffer();
 
+		// Little endian
 		const pixels = new Uint32Array(raw.buffer);
 		expect(pixels[0]).toBe(0xFF000000);
 		expect(pixels[15]).toBe(0);

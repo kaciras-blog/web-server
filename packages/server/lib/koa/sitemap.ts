@@ -1,4 +1,3 @@
-import axios from "axios";
 import { BaseContext } from "koa";
 import log4js from "log4js";
 import { EnumChangefreq, SitemapStream, streamToPromise } from "sitemap";
@@ -39,15 +38,14 @@ class ArticleCollection implements SitemapResource {
 	}
 
 	public async addItems(sitemap: SitemapStream) {
-		const response = await axios.get(this.url, {
-			params: { count: 20, sort: "update_time,DESC" },
-		});
+		const response = await fetch(`${this.url}?count=20&sort=update_time,DESC`);
 
 		if (response.status !== 200) {
 			throw new Error("Api server response status: " + response.status);
 		}
 
-		for (const article of response.data.items as ArticlePreview[]) {
+		const { items } = await response.json();
+		for (const article of items as ArticlePreview[]) {
 			sitemap.write({
 				url: `/article/${article.id}/${article.urlTitle}`,
 				priority: 1.0,

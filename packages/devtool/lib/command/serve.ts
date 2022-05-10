@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { Context } from "koa";
 import { createServer, ViteDevServer } from "vite";
-import { AppBuilder, configureGlobalAxios, getBlogPlugin, renderSSR } from "@kaciras-blog/server";
+import { AppBuilder, getBlogPlugin, renderSSR } from "@kaciras-blog/server";
 import getViteConfig from "../build-config.js";
 import { ResolvedDevConfig } from "../options.js";
 
@@ -25,7 +25,6 @@ function devSSR(options: ResolvedDevConfig, vite: ViteDevServer) {
  * 启动开发服务器，它提供了热重载和服务端渲染功能。
  */
 export default async function (options: ResolvedDevConfig, signal: AbortSignal) {
-	const closeHttp2Sessions = configureGlobalAxios(options.backend);
 	const builder = new AppBuilder();
 
 	const vite = await createServer({
@@ -55,7 +54,6 @@ export default async function (options: ResolvedDevConfig, signal: AbortSignal) 
 	const connector = vite.middlewares.listen(80);
 	console.info("\n- Local URL: http://localhost/\n");
 
-	signal.addEventListener("abort", closeHttp2Sessions);
 	signal.addEventListener("abort", () => vite.close());
 	signal.addEventListener("abort", () => connector.close());
 }

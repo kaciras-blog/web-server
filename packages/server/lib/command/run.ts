@@ -7,7 +7,6 @@ import getBlogPlugin from "../blog.js";
 import { productionSSRPlugin } from "../koa/vue-ssr.js";
 import staticFiles, { send } from "../koa/static-files.js";
 import startServer from "../create-server.js";
-import { configureGlobalAxios } from "../axios-helper.js";
 import { ResolvedConfig, SimpleLogConfig } from "../config.js";
 
 /**
@@ -63,13 +62,11 @@ function staticFilesCacheControl(ctx: BaseContext) {
 }
 
 export default async function run(options: ResolvedConfig, signal: AbortSignal) {
-	const { backend, outputDir, ssr, server } = options;
+	const { outputDir, ssr, server } = options;
 	let staticDir = outputDir;
 
 	configureLog4js(options.app.logging);
 	const logger = log4js.getLogger();
-	const closeHttp2Sessions = configureGlobalAxios(backend);
-
 	const builder = new AppBuilder();
 
 	// brotli 压缩慢，效率也就比 gzip 高一点，用在动态内容上不值得
@@ -97,7 +94,5 @@ export default async function run(options: ResolvedConfig, signal: AbortSignal) 
 
 	const connector = await startServer(app.callback(), server);
 	logger.info("Startup completed.");
-
-	signal.addEventListener("abort", closeHttp2Sessions);
 	signal.addEventListener("abort", () => connector.forceClose());
 }

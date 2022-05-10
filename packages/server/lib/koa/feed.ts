@@ -1,4 +1,3 @@
-import Axios, { AxiosResponse } from "axios";
 import { Feed } from "feed";
 import { ExtendableContext } from "koa";
 import MarkdownIt from "markdown-it";
@@ -25,8 +24,8 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 		atom: `${origin}/feed/atom`,
 	});
 
-	function buildFeed(response: AxiosResponse) {
-		const { origin } = response.config.params;
+	async function buildFeed(origin: string, response: Response) {
+		const { items } = await response.json();
 
 		const feed = new Feed({
 			title,
@@ -38,7 +37,7 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 			feedLinks: getLinksFor(origin),
 		});
 
-		feed.items = response.data.items.map((article: any) => ({
+		feed.items = items.map((article: any) => ({
 			title: article.title,
 			image: origin + article.cover,
 			date: new Date(article.update),
@@ -60,20 +59,19 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 
 	// Feed 里包含了文章的内容，其需要从 Markdown 转换成 HTML 会消耗蚊子大点性能，
 	// 虽然缓存这东西也没啥意义，但是既然写了个 CachedFetcher，怎么也得拿出来用用。
-	const fetcher = new CachedFetcher(Axios, buildFeed, 7 * 86400 * 1000);
+	const fetcher = new CachedFetcher(7 * 86400 * 1000);
 
 	return async (ctx: FeedContext) => {
-		const feed = await fetcher.request({
-			url: articleApi,
-			params: {
-				origin: ctx.origin,
-				content: true,
-				count: 10,
-				sort: "id,DESC",
-				category: ctx.query.category,
-				recursive: true,
-			},
+		const params = new URLSearchParams({
+			origin: ctx.origin,
+			content: true,
+			count: 10,
+			sort: "id,DESC",
+			// category: ctx.query.category,
+			recursive: true,
 		});
+
+		const feed = await fetcher.request(`${articleApi}?${params}`, r => buildFeed(ctx.origin, r));
 
 		switch (ctx.params.type) {
 			case "rss":
