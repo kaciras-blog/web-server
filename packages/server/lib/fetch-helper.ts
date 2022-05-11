@@ -13,10 +13,13 @@ import { BaseContext } from "koa";
  * @param params 键值对形式的参数
  */
 export function buildURL(
-	base: string,
+	base: string | null | undefined,
 	url: string,
 	params: Record<string, any>,
 ) {
+	// 增大 base 的类型范围到任意 falsy 值。
+	base ||= undefined;
+
 	const parsed = new URL(url, base);
 	const { searchParams } = parsed;
 
@@ -28,6 +31,11 @@ export function buildURL(
 	return parsed.toString();
 }
 
+/**
+ * 获取一个 HTTP 请求头，用于表明请求是被代理的，并包含必要的信息。
+ *
+ * @param ctx Koa 请求上下文
+ */
 export function getProxyHeaders(ctx: BaseContext) {
 	return {
 		"X-Forwarded-For": ctx.ip,
