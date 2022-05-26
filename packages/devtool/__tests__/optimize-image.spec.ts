@@ -1,5 +1,5 @@
-import { expect, it } from "vitest";
 import { statSync } from "fs";
+import { expect, it } from "vitest";
 import { RollupOutput } from "rollup";
 import { avoidEmptyChunkTS, getAsset, resolveFixture, runVite } from "./test-utils";
 import optimizeImage from "../lib/plugin/optimize-image";

@@ -1,10 +1,10 @@
 import { join } from "path";
+import { mkdirSync, mkdtempSync, rmSync } from "fs";
+import { tmpdir } from "os";
 import { InputOptions, RollupOutput } from "rollup";
 import { build, InlineConfig, Plugin } from "vite";
 import { afterEach, beforeEach, expect } from "vitest";
 import deepmerge from "deepmerge";
-import { mkdirSync, mkdtempSync, rmSync } from "fs";
-import { tmpdir } from "os";
 
 const TE_ID = resolveFixture("_TEST_ENTRY_.js");
 

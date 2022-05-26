@@ -4,10 +4,10 @@ import { createRequire } from "module";
 import parseArgs from "minimist";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/media";
+import { Awaitable } from "vitest";
 import run from "./command/run.js";
 import { resolveConfig, ResolvedConfig } from "./config.js";
 import { once } from "./functions.js";
-import { Awaitable } from "vitest";
 
 const logger = log4js.getLogger("init");
 
