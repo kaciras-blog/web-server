@@ -58,7 +58,7 @@ export default function processImage(): Plugin {
 		renderChunk(code) {
 			const s = new MagicString(code);
 
-			s.replace(assetUrlRE, (_, hash, postfix) => {
+			s.replace(assetUrlRE, (_, hash, postfix = "") => {
 				const name = this.getFileName(hash);
 				return viteConfig.base + name + postfix;
 			});

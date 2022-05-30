@@ -19,10 +19,9 @@ export function buildURL(
 ) {
 	// 增大 base 的类型范围到任意 falsy 值。
 	base ||= undefined;
-
 	const parsed = new URL(url, base);
-	const { searchParams } = parsed;
 
+	const { searchParams } = parsed;
 	for (const k of Object.keys(params)) {
 		if (params[k] !== undefined)
 			searchParams.set(k, params[k]);
@@ -37,10 +36,13 @@ export function buildURL(
  * @param ctx Koa 请求上下文
  */
 export function getProxyHeaders(ctx: BaseContext) {
-	return {
+	const headers: HeadersInit = {
 		"X-Forwarded-For": ctx.ip,
-		Cookie: ctx.headers.cookie!,
 	};
+	if (ctx.headers.cookie) {
+		headers.Cookie = ctx.headers.cookie;
+	}
+	return headers;
 }
 
 type ResponseParser<R> = (response: Response) => Promise<R>;

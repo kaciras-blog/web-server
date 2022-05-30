@@ -3,12 +3,12 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
 	test: {
-		/* for example, use global to avoid globals imports (describe, test, expect): */
-		// globals: true,
-
 		clearMocks: true,
 
-		// include: ["packages/*/__tests__/**/*.spec.ts"],
-		include: ["packages/markdown/__tests__/**/media.spec.ts"],
+		// 多线程目前有很多 Bug。
+		threads: false,
+		isolate: false,
+
+		include: ["packages/*/__tests__/**/*.spec.ts"],
 	},
 });

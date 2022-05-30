@@ -51,7 +51,7 @@ export default function createFeedMiddleware(config: ResolvedConfig) {
 			content: markdownIt.render(article.content),
 		}));
 
-		// 几个输出的结果也缓存一下，一个大约占60K内存
+		// 几个输出的结果也缓存一下，一个大约占 60K 内存
 		feed.json1 = once(feed.json1);
 		feed.rss2 = once(feed.rss2);
 		feed.atom1 = once(feed.atom1);

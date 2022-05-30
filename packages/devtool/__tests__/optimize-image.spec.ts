@@ -42,10 +42,11 @@ function optimize(input: string, include?: RegExp) {
 it("should compress images", async () => {
 	const bundle = await optimize("test.png");
 
-	// 1 个图片输出，1 个额外的 WebP，1 个入口文件。
-	expect(bundle.output).toHaveLength(3);
+	// 1 个图片输出，1 个额外的 WebP，1 个额外的 AVIF，1 个入口文件。
+	expect(bundle.output).toHaveLength(4);
 	await expectSmaller(bundle, "test.png");
 	await expectSmaller(bundle, "test.webp", "test.png");
+	await expectSmaller(bundle, "test.avif", "test.png");
 });
 
 it("should optimize SVG", async () => {
