@@ -123,12 +123,11 @@ export default class CachedService implements MediaService {
 		const hash = hashName(buffer);
 		const name = hash + "." + type;
 
-		const exists = await store.load(name);
-		if (exists) {
-			return name;
+		const createNew = await store.save(name, buffer);
+		if (createNew) {
+			const items = await optimizer.buildCache(request);
+			await store.putCaches(hash, items);
 		}
-		const items = await optimizer.buildCache(request);
-		await store.putCaches(hash, items);
-		return store.save(name, buffer).then(() => name);
+		return name;
 	}
 }
