@@ -24,7 +24,7 @@ export interface FileInfo {
 export interface FileStore {
 
 	/**
-	 * 保存资源到源文件存储。
+	 * 保存资源到源文件存储，不会覆盖已存在的文件。
 	 *
 	 * @param name 名字
 	 * @param data 数据

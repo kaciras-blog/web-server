@@ -6,7 +6,7 @@ Kaciras Blog 的前端的开发工具和页面服务器。
 
 该项目由 [kaciras-blog/website](https://github.com/kaciras-blog/website) 使用，无法单独启动。
 
-# 目录
+# 模块
 
 * [@kaciras-blog/server](packages/server) 博客的前端服务器，处理页面请求和各种静态资源。
 
@@ -15,12 +15,3 @@ Kaciras Blog 的前端的开发工具和页面服务器。
 * [@kaciras-blog/markdown](packages/markdown) 一些自定义的 Markdown 语法处理器。
 
 * [@kaciras-blog/devtool](packages/devtool) 博客的开发套件，包含了构建配置，支持服务端渲染和热重载。
-
-详细的说明见各自的 README.md
-
-# 构建
-
-```shell script
-npm install
-npm compile
-```

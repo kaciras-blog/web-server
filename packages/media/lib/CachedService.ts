@@ -110,9 +110,8 @@ export default class CachedService implements MediaService {
 	}
 
 	/**
-	 * 对新文件，先生成缓存后保存原图，因为已存在是通过原图判断的，这样相当于一个事务，
-	 * 避免保存时出错（比如权限设置错误）后出现不一致的状态。
-	 * 注意保存原图这一过程不是原子的，中途可能出错，所以这事务也不决对可靠。
+	 * 如果保存过程中出错，比如存储满了，则会进入不一致的状态。
+	 * 这种错误无法在内部解决，故没有（也无法）使用额外措施去恢复。
 	 */
 	async save(request: SaveRequest) {
 		const { store, optimizer } = this;

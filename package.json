@@ -6,11 +6,10 @@
 	},
 	"type": "module",
 	"scripts": {
-		"clean": "tsc --build --clean",
-		"compile": "tsc",
 		"lint": "eslint --fix --ext .ts .",
+		"compile": "tsc",
 		"test": "vitest run",
-		"release": "tsc && pnpm publish --no-git-checks"
+		"release": "tsc && pnpm publish -r --no-git-checks"
 	},
 	"devDependencies": {
 		"@kaciras/eslint-config-core": "^2.4.0",
