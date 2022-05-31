@@ -8,6 +8,7 @@ export interface BlogServerConfig {
 	server: ServerOptions;
 	app: AppOptions;
 	backend: BackendOptions;
+	env: Record<string, any>;
 }
 
 export interface SimpleLogConfig {

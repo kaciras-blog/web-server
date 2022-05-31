@@ -18,6 +18,7 @@ import { ResolvedConfig } from "./config.js";
 import { download, upload } from "./koa/media.js";
 import sitemapHandler from "./koa/sitemap.js";
 import feedHandler from "./koa/feed.js";
+import sentryTunnel from "./koa/sentry.js";
 import { getProxyHeaders } from "./fetch-helper.js";
 
 const logger = log4js.getLogger();
@@ -101,7 +102,7 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 
 	return (builder: AppBuilder) => {
 		builder.useBeforeAll(conditional());
-		builder.useBeforeAll(bodyParser());
+		builder.useBeforeAll(bodyParser({ enableTypes: ["text", "json"] }));
 		builder.useBeforeAll(harden);
 
 		const adminFilter = adminOnlyFilter(address);
@@ -112,6 +113,11 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		router.get("/sw-check", toggleSW(app.serviceWorker));
 		router.get("/sitemap.xml", sitemapHandler(address));
 		router.post(CSP_REPORT_URI, reportCSP);
+
+		const { SENTRY_DSN, SENTRY_TUNNEL } = options.env;
+		if (SENTRY_DSN && SENTRY_TUNNEL) {
+			router.post(SENTRY_TUNNEL, sentryTunnel(SENTRY_DSN));
+		}
 
 		// 过大的媒体建议直接传到第三方存储
 		const multerInstance = multer({ limits: { fileSize: 50 * 1024 * 1024 } });

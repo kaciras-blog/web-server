@@ -14,7 +14,6 @@ export interface BuildOptions {
 	mode?: string;
 	sourcemap?: boolean | "inline" | "hidden";
 	target?: string | string[];
-	env?: Record<string, any>;
 	bundleAnalyzer?: boolean;
 	debug?: boolean;
 	serviceWorker?: ServiceWorkerOptions;

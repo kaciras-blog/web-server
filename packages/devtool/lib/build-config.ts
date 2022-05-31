@@ -17,9 +17,9 @@ import { ssrManifestPlugin } from "./plugin/ssr-manifest-ex.js";
  * 因为 ConfigEnv 没有 SSR 信息，所以没用 UserConfigFn 而是传 isSSR 参数来区分。
  */
 export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: boolean) {
-	const { backend, build, ssr } = options;
+	const { backend, build, ssr, env = {} } = options;
 	const {
-		mode, env = {}, debug, sourcemap,
+		mode, debug, sourcemap,
 		bundleAnalyzer, serviceWorker, vueOptions,
 	} = build;
 
