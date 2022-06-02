@@ -1,13 +1,10 @@
 import sharp, { WebpOptions } from "sharp";
-import Pngquant from "imagemin-pngquant";
-import Gifsicle from "imagemin-gifsicle";
-import mozjpeg from "mozjpeg";
-import { execa } from "execa";
 import isPng from "is-png";
+import { execa } from "execa";
+import mozjpeg from "mozjpeg";
+import Pngquant from "pngquant-bin";
+import Gifsicle from "gifsicle";
 import { BadDataError, ParamsError, ProcessorError } from "../errors.js";
-
-const pngquant = Pngquant({ strip: true });
-const gifsicle = Gifsicle({ optimizationLevel: 3 });
 
 const WebPLossy: WebpOptions = {
 	quality: 75,
@@ -71,6 +68,28 @@ export async function encodeAVIF(buffer: Buffer) {
 }
 
 /**
+ * 调用外部的图片优化工具，返回优化后的结果。
+ *
+ * <h2>为什么自己做</h2>
+ * imagemin-* 有一些老依赖会导致 vitest 失败，而且它也就是个简单的封装。
+ *
+ * @param file 优化工具的执行文件路径
+ * @param input 图片数据
+ * @param args 执行参数
+ * @throws BadDataError 如果无法优化该图片
+ */
+function exec(file: string, input: Buffer, args?: string[]) {
+	const options = {
+		maxBuffer: Infinity,
+		input,
+		encoding: null,
+	};
+	return execa(file, args, options)
+		.catch(BadDataError.convert)
+		.then(process => process.stdout);
+}
+
+/**
  * 对传统格式（jpg、png、gif）的优化，都是有损压缩，优化结果与原格式相同。
  *
  * TODO: imagemin 的库有多余的解码过程，以后考虑直接集成编码器到 node addon。
@@ -81,26 +100,25 @@ export async function encodeAVIF(buffer: Buffer) {
  */
 export async function optimizeRaster(buffer: Buffer, type: string) {
 	switch (type) {
-		case "gif":
-			if (!isGif(buffer)) {
-				throw new BadDataError("不支持非 GIF 图转 GIF");
-			}
-			return gifsicle(buffer).catch(BadDataError.convert);
-		case "jpeg":
-		case "jpg":
-			// imagemin-mozjpeg 限制输入必须为 JPEG 格式所以不能用，而且它还没类型定义。
-			return (await execa(mozjpeg, {
-				maxBuffer: Infinity,
-				input: buffer,
-				encoding: null,
-			}).catch(BadDataError.convert)).stdout;
 		case "png":
 			// 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用。
 			if (!isPng(buffer)) {
 				throw new BadDataError("请先转成 PNG 再压缩");
 			}
-			return pngquant(buffer).catch(BadDataError.convert);
+			return exec(Pngquant, buffer, ["-", "--strip"]);
+		case "jpeg":
+		case "jpg":
+			return exec(mozjpeg, buffer);
+		case "gif":
+			if (!isGif(buffer)) {
+				throw new BadDataError("不支持非 GIF 图转 GIF");
+			}
+			return exec(Gifsicle, buffer, [
+				"--optimize=3",
+				"--no-warnings",
+				"--no-app-extensions",
+			]);
 		default:
-			throw new ParamsError("不支持的格式：" + type);
+			throw new ParamsError(`同格式优化：不支持 ${type} 类型的图片。`);
 	}
 }
