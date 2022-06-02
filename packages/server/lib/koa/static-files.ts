@@ -6,8 +6,9 @@
  * https://github.com/koajs/static
  */
 import { extname, join, normalize, parse, resolve, sep } from "path";
+import fs from "fs";
+import { stat } from "fs/promises";
 import { BaseContext, Middleware } from "koa";
-import fs from "fs-extra";
 import replaceExt from "replace-ext";
 import createError from "http-errors";
 
@@ -177,7 +178,7 @@ export async function send(ctx: BaseContext, path: string, options: Options = {}
 			continue;
 		}
 		try {
-			stats = await fs.stat(selected);
+			stats = await stat(selected);
 			if (!stats.isDirectory()) {
 				file = selected;
 				s.setHeaders(ctx, path);

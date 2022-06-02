@@ -1,7 +1,7 @@
 import { tmpdir } from "os";
 import { join } from "path";
+import fs from "fs";
 import { afterEach, expect, it } from "vitest";
-import fs from "fs-extra";
 import buildCache from "../../lib/command/build-cache";
 import { readFixture } from "../test-utils";
 

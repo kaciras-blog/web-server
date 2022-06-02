@@ -1,5 +1,5 @@
+import { readFileSync } from "fs";
 import { expect, it } from "vitest";
-import fs from "fs-extra";
 import Koa from "koa";
 import supertest from "supertest";
 import sendFileRange, { FileRangeReader } from "../../lib/koa/send-range";
@@ -21,7 +21,7 @@ it("should send file without Range", async () => {
 	await supertest(app.callback())
 		.get("/")
 		.expect("Content-Length", "475")
-		.expect(200, fs.readFileSync(FILE, { encoding: "utf8" }));
+		.expect(200, readFileSync(FILE, { encoding: "utf8" }));
 });
 
 it("should send file part", async () => {

@@ -75,7 +75,6 @@ importers:
       '@kaciras-blog/nativelib': ^0.3.1
       '@kaciras/utilities': ^0.3.2
       '@types/cli-progress': ^3.11.0
-      '@types/fs-extra': ^9.0.13
       '@types/imagemin-gifsicle': ^7.0.1
       '@types/mime-types': ^2.1.1
       '@types/mozjpeg': ^5.0.0
@@ -84,7 +83,6 @@ importers:
       cli-progress: ^3.11.1
       execa: ^6.1.0
       file-type: ^17.1.2
-      fs-extra: ^10.1.0
       imagemin-gifsicle: ^7.0.0
       imagemin-pngquant: ^9.0.2
       is-png: ^3.0.1
@@ -98,7 +96,6 @@ importers:
       '@kaciras/utilities': 0.3.2
       cli-progress: 3.11.1
       execa: 6.1.0
-      fs-extra: 10.1.0
       imagemin-gifsicle: 7.0.0
       imagemin-pngquant: 9.0.2
       is-png: 3.0.1
@@ -109,7 +106,6 @@ importers:
       svgo: 2.8.0
     devDependencies:
       '@types/cli-progress': 3.11.0
-      '@types/fs-extra': 9.0.13
       '@types/imagemin-gifsicle': 7.0.1
       '@types/mime-types': 2.1.1
       '@types/mozjpeg': 5.0.0
@@ -124,7 +120,6 @@ importers:
       '@koa/multer': ^3.0.0
       '@koa/router': ^10.1.1
       '@types/combined-stream': ^1.0.3
-      '@types/fs-extra': ^9.0.13
       '@types/hash-sum': ^1.0.0
       '@types/http-errors': ^1.8.2
       '@types/koa': ^2.13.4
@@ -143,7 +138,6 @@ importers:
       '@vue/server-renderer': ^3.2.36
       combined-stream: ^1.0.8
       feed: ^4.2.2
-      fs-extra: ^10.1.0
       hash-sum: ^2.0.0
       http-errors: ^2.0.0
       koa: ^2.13.4
@@ -155,6 +149,7 @@ importers:
       log4js: ^6.5.2
       markdown-it: ^13.0.1
       memfs: ^3.4.4
+      mime-types: ^2.1.35
       minimist: ^1.2.6
       multer: 1.4.5-lts.1
       range-parser: ^1.2.1
@@ -171,7 +166,6 @@ importers:
       '@vue/server-renderer': 3.2.36_vue@3.2.36
       combined-stream: 1.0.8
       feed: 4.2.2
-      fs-extra: 10.1.0
       hash-sum: 2.0.0
       http-errors: 2.0.0
       koa: 2.13.4
@@ -181,6 +175,7 @@ importers:
       koa-conditional-get: 3.0.0
       log4js: 6.5.2
       markdown-it: 13.0.1
+      mime-types: 2.1.35
       minimist: 1.2.6
       multer: 1.4.5-lts.1
       range-parser: 1.2.1
@@ -190,7 +185,6 @@ importers:
       vue: 3.2.36
     devDependencies:
       '@types/combined-stream': 1.0.3
-      '@types/fs-extra': 9.0.13
       '@types/hash-sum': 1.0.0
       '@types/http-errors': 1.8.2
       '@types/koa': 2.13.4
@@ -478,12 +472,6 @@ packages:
       '@types/express-serve-static-core': 4.17.28
       '@types/qs': 6.9.7
       '@types/serve-static': 1.13.10
-    dev: true
-
-  /@types/fs-extra/9.0.13:
-    resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
-    dependencies:
-      '@types/node': 17.0.38
     dev: true
 
   /@types/hash-sum/1.0.0:

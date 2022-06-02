@@ -1,6 +1,7 @@
 import { URLSearchParams } from "url";
 import { join } from "path";
-import fs from "fs-extra";
+import { createReadStream, mkdirSync } from "fs";
+import fs from "fs/promises";
 import { Params } from "./MediaService.js";
 import { CacheItem, Data, FileStore } from "./FileStore.js";
 
@@ -13,7 +14,7 @@ import { CacheItem, Data, FileStore } from "./FileStore.js";
 async function getFileInfo(path: string) {
 	try {
 		const { size, mtime } = await fs.stat(path);
-		const data = fs.createReadStream(path);
+		const data = createReadStream(path);
 		return { size, mtime, data };
 	} catch (e) {
 		// 试试写在一行，好像可读性还可以……
@@ -55,8 +56,8 @@ export default class LocalFileStore implements FileStore {
 		this.source = source;
 		this.cache = cache;
 
-		fs.ensureDirSync(source);
-		fs.ensureDirSync(cache);
+		mkdirSync(source, { recursive: true });
+		mkdirSync(cache, { recursive: true });
 	}
 
 	async save(name: string, data: Data) {

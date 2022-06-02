@@ -1,6 +1,6 @@
 import { join } from "path";
 import { tmpdir } from "os";
-import fs from "fs-extra";
+import fs from "fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import LocalFileStore from "../lib/LocalFileStore";
 
@@ -37,8 +37,8 @@ describe("listCache", () => {
 	it("should return all of cache item params", async () => {
 		const zone = join(cacheDir, "foobar");
 		fs.mkdirSync(zone);
-		fs.createFileSync(join(zone, "type=1&codec=av1"));
-		fs.createFileSync(join(zone, "type=2&encoding=br"));
+		fs.writeFileSync(join(zone, "type=1&codec=av1"), "");
+		fs.writeFileSync(join(zone, "type=2&encoding=br"), "");
 
 		const [a, b] = (await store.listCache("foobar"))!;
 

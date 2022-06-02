@@ -1,5 +1,5 @@
 import { join } from "path";
-import fs from "fs-extra";
+import { readFileSync } from "fs";
 
 export const FIXTURE_DIR = join(__dirname, "fixtures");
 
@@ -20,7 +20,7 @@ export function resolveFixture(name: string) {
  * @return 文件的文本内容
  */
 export function readFixtureText(name: string) {
-	return fs.readFileSync(resolveFixture(name), { encoding: "utf8" });
+	return readFileSync(resolveFixture(name), { encoding: "utf8" });
 }
 
 /**
