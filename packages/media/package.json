@@ -19,16 +19,16 @@
 	"types": "lib/index.ts",
 	"dependencies": {
 		"@kaciras-blog/nativelib": "^0.3.1",
-		"@kaciras/utilities": "^0.3.0",
+		"@kaciras/utilities": "^0.3.2",
 		"cli-progress": "^3.11.1",
 		"execa": "^6.1.0",
 		"fs-extra": "^10.1.0",
 		"imagemin-gifsicle": "^7.0.0",
 		"imagemin-pngquant": "^9.0.2",
 		"is-png": "^3.0.1",
-		"log4js": "^6.5.1",
+		"log4js": "^6.5.2",
 		"mozjpeg": "^8.0.0",
-		"sharp": "^0.30.5",
+		"sharp": "^0.30.6",
 		"simple-statistics": "^7.7.5",
 		"svgo": "^2.8.0"
 	},
@@ -40,6 +40,6 @@
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.30.2",
 		"@types/svgo": "^2.6.3",
-		"file-type": "^17.1.1"
+		"file-type": "^17.1.2"
 	}
 }
