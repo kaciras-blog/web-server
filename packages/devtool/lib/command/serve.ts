@@ -1,12 +1,11 @@
 import { readFileSync } from "fs";
-import { Context } from "koa";
 import { createServer, ViteDevServer } from "vite";
 import { AppBuilder, getBlogPlugin, renderSSR } from "@kaciras-blog/server";
 import getViteConfig from "../build-config.js";
 import { ResolvedDevConfig } from "../options.js";
 
 function devSSR(options: ResolvedDevConfig, vite: ViteDevServer) {
-	return async (ctx: Context) => {
+	return async (ctx: any) => {
 		let template = readFileSync("index.html", "utf8");
 		template = await vite.transformIndexHtml(ctx.href, template);
 		const entry = await vite.ssrLoadModule(options.ssr!);

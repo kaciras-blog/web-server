@@ -8,6 +8,7 @@ const optimizer = {
 };
 
 const store = {
+	list: vi.fn(),
 	save: vi.fn(),
 	load: vi.fn(),
 	putCaches: vi.fn(),

@@ -7,6 +7,7 @@ const store = {
 	putCaches: vi.fn(),
 	getCache: vi.fn(),
 	listCache: vi.fn(),
+	list: vi.fn(),
 	save: vi.fn<[Data, string], any>(() => Promise.resolve(true)),
 	load: vi.fn(),
 };
