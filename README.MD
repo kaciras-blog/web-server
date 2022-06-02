@@ -1,6 +1,6 @@
 # Kaciras 博客前端服务
 
-[![Build Status](https://travis-ci.org/kaciras-blog/web-server.svg?branch=master)](https://travis-ci.org/kaciras-blog/web-server)
+[![Test](https://github.com/kaciras-blog/web-server/actions/workflows/test.yml/badge.svg)](https://github.com/kaciras-blog/web-server/actions/workflows/test.yml)
 
 Kaciras Blog 的前端的开发工具和页面服务器。
 
