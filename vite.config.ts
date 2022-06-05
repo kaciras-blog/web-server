@@ -9,6 +9,10 @@ export default defineConfig({
 		threads: false,
 		isolate: false,
 
+		coverage: {
+			reporter: ["lcov"],
+		},
+
 		include: ["packages/*/__tests__/**/*.spec.ts"],
 	},
 });
