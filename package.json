@@ -12,12 +12,12 @@
 		"release": "tsc && pnpm publish -r --no-git-checks"
 	},
 	"devDependencies": {
-		"@kaciras/eslint-config-core": "^2.4.0",
-		"@kaciras/eslint-config-typescript": "^2.4.0",
+		"@kaciras/eslint-config-core": "^2.4.1",
+		"@kaciras/eslint-config-typescript": "^2.4.1",
 		"c8": "^7.11.3",
-		"eslint": "^8.16.0",
-		"typescript": "^4.7.2",
-		"vite": "^2.9.9",
-		"vitest": "^0.13.1"
+		"eslint": "^8.17.0",
+		"typescript": "^4.7.3",
+		"vite": "^2.9.10",
+		"vitest": "^0.14.1"
 	}
 }
