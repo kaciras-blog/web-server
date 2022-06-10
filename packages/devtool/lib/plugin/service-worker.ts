@@ -93,7 +93,9 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 		},
 
 		async generateBundle(_, bundle) {
-			const files = Object.keys(bundle).filter(isInclude);
+			// Rollup 有并发编译的过程，故 bundle 中键的顺序不确定。
+			// 所以排个序避免意外地内容改变。
+			const files = Object.keys(bundle).filter(isInclude).sort();
 
 			// 一律格式化，反正生产模式还会压缩的。
 			await buildSW(JSON.stringify(files, null, "\t"));
