@@ -47,7 +47,7 @@ describe("download", () => {
 			.get("/notfound.jpg")
 			.expect(404);
 
-		expect(mockService.load.mock.calls).toHaveLength(1);
+		expect(mockService.load).toHaveBeenCalledOnce();
 	});
 
 	it("should resolve Accept-* headers", async () => {
@@ -91,10 +91,11 @@ describe("upload", () => {
 			.post("/image?foo=bar&foo=s")
 			.attach("file", IMAGE_DATA, { filename: "test.gif", contentType: "image/gif" });
 
-		const [request] = mockService.save.mock.calls[0];
-		expect(request.type).toBe("gif");
-		expect(request.buffer).toStrictEqual(IMAGE_DATA);
-		expect(request.parameters.foo).toBe("bar");
+		expect(mockService.save).toHaveBeenCalledWith({
+			type: "gif",
+			buffer: IMAGE_DATA,
+			parameters: { foo: "bar" },
+		});
 	});
 
 	it("should respond file path", async () => {
@@ -112,7 +113,7 @@ describe("upload", () => {
 			.post("/image")
 			.expect(400);
 
-		expect(mockService.save.mock.calls).toHaveLength(0);
+		expect(mockService.save).not.toHaveBeenCalled();
 	});
 
 	it("should fail with unsupported file type", async () => {

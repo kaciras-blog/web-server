@@ -77,7 +77,7 @@ describe("once", () => {
 		expect(wrapped()).toBe(0);
 		expect(wrapped()).toBe(0);
 
-		expect(func.mock.calls).toHaveLength(1);
+		expect(func).toHaveBeenCalledTimes(1);
 	});
 
 	it("should allow calls after exception", () => {
@@ -95,6 +95,6 @@ describe("once", () => {
 		expect(() => wrapped(true)).toThrow();
 		expect(wrapped(false)).toBe(123456);
 
-		expect(func.mock.calls).toHaveLength(3);
+		expect(func).toHaveBeenCalledTimes(3);
 	});
 });

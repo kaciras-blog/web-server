@@ -46,8 +46,8 @@ describe("load", () => {
 
 		expect(result).toBeNull();
 
-		expect(optimizer.select.mock.calls).toHaveLength(0);
-		expect(store.load.mock.calls).toHaveLength(1);
+		expect(optimizer.select).not.toHaveBeenCalled();
+		expect(store.load).toHaveBeenCalledOnce();
 	});
 
 	it("should return the original file if specified", async () => {
@@ -61,8 +61,8 @@ describe("load", () => {
 		expect(result!.file).toBe(loadResponse.file);
 		expect(result!.type).toBe("png");
 
-		expect(optimizer.select.mock.calls).toHaveLength(0);
-		expect(store.load.mock.calls).toHaveLength(1);
+		expect(optimizer.select).not.toHaveBeenCalled();
+		expect(store.load).toHaveBeenCalledOnce();
 	});
 
 	it("should return only cached by default", async () => {
@@ -72,8 +72,8 @@ describe("load", () => {
 		});
 
 		expect(result).toBeNull();
-		expect(optimizer.select.mock.calls).toHaveLength(1);
-		expect(store.load.mock.calls).toHaveLength(0);
+		expect(optimizer.select).toHaveBeenCalledOnce();
+		expect(store.load).not.toHaveBeenCalled();
 	});
 
 	it("should get cache list to select", async () => {
@@ -87,9 +87,7 @@ describe("load", () => {
 
 		await service.load(loadRequest);
 
-		const [items, req] = optimizer.select.mock.calls[0];
-		expect(items).toBe(attrsList);
-		expect(req).toBe(loadRequest);
+		expect(optimizer.select).toHaveBeenCalledWith(attrsList, loadRequest);
 	});
 
 	it("should get file from cache", async () => {
@@ -100,9 +98,7 @@ describe("load", () => {
 
 		expect(result).toStrictEqual(loadResponse);
 
-		const [hash, attrs] = store.getCache.mock.calls[0];
-		expect(hash).toBe("maoG0wFHmNhgAcMkRo1J");
-		expect(attrs).toStrictEqual({ type: "webp" });
+		expect(store.getCache).toHaveBeenCalledWith("maoG0wFHmNhgAcMkRo1J", { type: "webp" });
 	});
 });
 
@@ -117,8 +113,8 @@ describe("save", () => {
 		});
 
 		expect(result).toBe("maoG0wFHmNhgAcMkRo1J.png");
-		expect(store.save.mock.calls).toHaveLength(1);
-		expect(optimizer.buildCache.mock.calls).toHaveLength(0);
+		expect(store.save).toHaveBeenCalledOnce();
+		expect(optimizer.buildCache).not.toHaveBeenCalled();
 	});
 
 	it("should build cache for new file", async () => {
@@ -136,7 +132,7 @@ describe("save", () => {
 		});
 
 		expect(result).toBe("maoG0wFHmNhgAcMkRo1J.png");
-		expect(optimizer.buildCache.mock.calls).toHaveLength(1);
-		expect(store.putCaches.mock.calls).toHaveLength(1);
+		expect(optimizer.buildCache).toHaveBeenCalledOnce();
+		expect(store.putCaches).toHaveBeenCalledOnce();
 	});
 });

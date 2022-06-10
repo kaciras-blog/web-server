@@ -38,12 +38,12 @@ it("should compress images", async () => {
 
 	await optimize("test.png");
 
-	expect(buildRaster).toHaveBeenCalledTimes(1);
-
-	const [info] = buildRaster.mock.calls[0];
-	expect(info.type).toBe("png");
-	expect(info.parameters).toStrictEqual({});
-	expect(info.buffer).toStrictEqual(readFileSync(resolveFixture("test.png")));
+	expect(buildRaster).toHaveBeenCalledOnce();
+	expect(buildRaster).toHaveBeenCalledWith({
+		type: "png",
+		parameters: {},
+		buffer: readFileSync(resolveFixture("test.png")),
+	});
 });
 
 it("should emit additional files", async () => {

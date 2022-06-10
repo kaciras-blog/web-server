@@ -30,28 +30,30 @@ const saveRequest: SaveRequest = {
 
 it("should dispatch load calls", () => {
 	dispatcher.load(loadRequest);
-	expect(service1.load.mock.calls[0][0]).toBe(loadRequest);
-	expect(fallback.load.mock.calls).toHaveLength(0);
+	expect(service1.load).toHaveBeenCalledWith(loadRequest);
+	expect(fallback.load).not.toHaveBeenCalled();
 });
 
 it("should dispatch save calls", () => {
 	dispatcher.save(saveRequest);
-	expect(service1.save.mock.calls[0][0]).toBe(saveRequest);
-	expect(fallback.save.mock.calls).toHaveLength(0);
+	expect(service1.save).toHaveBeenCalledWith(saveRequest);
+	expect(fallback.save).not.toHaveBeenCalled();
 });
 
 it("should load from fallback if no matched", () => {
 	const request = { ...loadRequest, name: "baz.png" };
 	dispatcher.load(request);
-	expect(service1.load.mock.calls).toHaveLength(0);
-	expect(fallback.load.mock.calls[0][0]).toBe(request);
+
+	expect(service1.load).not.toHaveBeenCalled();
+	expect(fallback.load).toHaveBeenCalledWith(request);
 });
 
 it("should save from fallback if no matched", () => {
 	const request = { ...saveRequest, type: "png" };
 	dispatcher.save(request);
-	expect(service1.save.mock.calls).toHaveLength(0);
-	expect(fallback.save.mock.calls[0][0]).toBe(request);
+
+	expect(service1.save).not.toHaveBeenCalled();
+	expect(fallback.save).toHaveBeenCalledWith(request);
 });
 
 it("should throw if no matched and no fallback",async () => {
