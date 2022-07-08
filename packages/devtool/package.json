@@ -29,7 +29,7 @@
 		"@vitejs/plugin-vue": "^2.3.3",
 		"colorette": "^2.0.19",
 		"es-module-lexer": "^0.10.5",
-		"log4js": "^6.5.2",
+		"log4js": "^6.6.0",
 		"magic-string": "^0.26.2",
 		"rollup": "^2.75.7",
 		"rollup-plugin-visualizer": "^5.6.0",

@@ -24,7 +24,7 @@
 		"execa": "^6.1.0",
 		"gifsicle": "^7.0.1",
 		"is-png": "^3.0.1",
-		"log4js": "^6.5.2",
+		"log4js": "^6.6.0",
 		"mozjpeg": "^8.0.0",
 		"pngquant-bin": "^8.0.1",
 		"sharp": "^0.30.7",
