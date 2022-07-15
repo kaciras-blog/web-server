@@ -5,6 +5,27 @@ import { readFixture } from "../test-utils";
 
 const buffer = readFixture("tile_16x16.png");
 
+/**
+ * 断言 tile_16x16 这张图四个区域的颜色。
+ *
+ * 黑色 - 0xFF000000
+ * 白色 - 0xFFFFFFFF
+ * 透明 - 0
+ *
+ * @param data 像素数组
+ * @param tl 左上
+ * @param tr 右上
+ * @param bl 左下
+ * @param br 右下
+ */
+function assertTiles(data: Buffer, tl: number, tr: number, bl: number, br: number) {
+	const pixels = new Uint32Array(data.buffer);
+	expect(pixels[0]).toBe(tl);
+	expect(pixels[15]).toBe(tr);
+	expect(pixels[240]).toBe(bl);
+	expect(pixels[255]).toBe(br);
+}
+
 describe("crop", () => {
 	it.each([
 		"_INVALID_",
@@ -34,16 +55,25 @@ describe("flip", () => {
 		expect(() => flip(sharp(), arg)).toThrow(ParamsError);
 	});
 
-	it("should flip the image", async () => {
+	it("should flip the image about X axis", async () => {
 		const cropped = flip(sharp(buffer), "X");
 		const raw = await cropped.raw().toBuffer();
 
-		// Little endian
-		const pixels = new Uint32Array(raw.buffer);
-		expect(pixels[0]).toBe(0xFF000000);
-		expect(pixels[15]).toBe(0);
-		expect(pixels[240]).toBe(0);
-		expect(pixels[255]).toBe(0xFFFFFFFF);
+		assertTiles(raw, 0xFF000000, 0, 0, 0xFFFFFFFF);
+	});
+
+	it("should flip the image about Y axis", async () => {
+		const cropped = flip(sharp(buffer), "Y");
+		const raw = await cropped.raw().toBuffer();
+
+		assertTiles(raw, 0xFFFFFFFF, 0, 0, 0xFF000000);
+	});
+
+	it("should flip the image both X & Y axis", async () => {
+		const cropped = flip(sharp(buffer), "YX");
+		const raw = await cropped.raw().toBuffer();
+
+		assertTiles(raw, 0, 0xFFFFFFFF, 0xFF000000, 0);
 	});
 });
 
@@ -59,11 +89,7 @@ describe("rotate", () => {
 		const cropped = rotate(sharp(buffer), "90");
 		const raw = await cropped.raw().toBuffer();
 
-		const pixels = new Uint32Array(raw.buffer);
-		expect(pixels[0]).toBe(0xFFFFFFFF);
-		expect(pixels[15]).toBe(0);
-		expect(pixels[240]).toBe(0);
-		expect(pixels[255]).toBe(0xFF000000);
+		assertTiles(raw, 0xFFFFFFFF, 0, 0, 0xFF000000);
 	});
 });
 
