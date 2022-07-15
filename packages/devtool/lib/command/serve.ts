@@ -28,7 +28,8 @@ export default async function (options: ResolvedDevConfig, signal: AbortSignal) 
 
 	const vite = await createServer({
 		...getViteConfig(options, false,false),
-		server: { middlewareMode: "ssr" },
+		appType: "custom",
+		server: { middlewareMode: true },
 	});
 
 	builder.addPlugin(getBlogPlugin(options));
