@@ -76,11 +76,6 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 
 			// 关闭压缩测试增加性能，因为另有插件做压缩。
 			reportCompressedSize: false,
-
-			// 本项目已经全线转 ESM，不再兼容 CommonJS。
-			rollupOptions: {
-				output: { format: "esm" },
-			},
 		},
 		plugins: [
 			bundleAnalyzer && !isSSR && visualizer(),
