@@ -39,6 +39,6 @@
 		"@types/pngquant-bin": "^4.0.0",
 		"@types/sharp": "^0.30.4",
 		"@types/svgo": "^2.6.3",
-		"file-type": "^17.1.2"
+		"file-type": "^17.1.3"
 	}
 }
