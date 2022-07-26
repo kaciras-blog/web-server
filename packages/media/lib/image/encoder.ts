@@ -1,8 +1,6 @@
 import sharp, { WebpOptions } from "sharp";
-import isPng from "is-png";
 import { execa } from "execa";
 import mozjpeg from "mozjpeg";
-import Pngquant from "pngquant-bin";
 import Gifsicle from "gifsicle";
 import { BadDataError, ParamsError, ProcessorError } from "../errors.js";
 
@@ -101,11 +99,7 @@ function exec(file: string, input: Buffer, args?: string[]) {
 export async function optimizeRaster(buffer: Buffer, type: string) {
 	switch (type) {
 		case "png":
-			// 经测试，optipng 难以再压缩 pngquant 处理后的图片，故不使用。
-			if (!isPng(buffer)) {
-				throw new BadDataError("请先转成 PNG 再压缩");
-			}
-			return exec(Pngquant, buffer, ["-", "--strip"]);
+			return sharp(buffer).png({ palette: true }).toBuffer();
 		case "jpeg":
 		case "jpg":
 			return exec(mozjpeg, buffer);
