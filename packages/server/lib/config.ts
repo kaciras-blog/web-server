@@ -51,12 +51,12 @@ export interface BackendOptions {
 	timeout: number; // TODO: 还未实现
 	internal: string;
 	cert?: string | true;
-	public: string | AddersSelector;
+	public: string | number | AddersSelector;
 }
 
 export interface AddersSelector {
-	http: string;
-	https: string;
+	http: string | number;
+	https: string | number;
 }
 
 export interface ServerOptions {
