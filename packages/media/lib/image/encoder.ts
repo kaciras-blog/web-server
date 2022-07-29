@@ -99,7 +99,10 @@ function exec(file: string, input: Buffer, args?: string[]) {
 export async function optimizeRaster(buffer: Buffer, type: string) {
 	switch (type) {
 		case "png":
-			return sharp(buffer).png({ palette: true }).toBuffer();
+			return sharp(buffer)
+				.png({ palette: true })
+				.toBuffer()
+				.catch(BadDataError.convert);
 		case "jpeg":
 		case "jpg":
 			return exec(mozjpeg, buffer);
