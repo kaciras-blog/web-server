@@ -34,7 +34,7 @@
 		"@types/gifsicle": "^5.2.0",
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
-		"@types/sharp": "^0.30.4",
+		"@types/sharp": "^0.30.5",
 		"@types/svgo": "^2.6.3",
 		"file-type": "^17.1.6"
 	}
