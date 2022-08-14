@@ -1,10 +1,10 @@
-import { cwd } from "process";
 import { join } from "path";
 import { UserConfig } from "vite";
 import { visualizer } from "rollup-plugin-visualizer";
+import tsconfigPaths from "vite-tsconfig-paths";
 import inspect from "vite-plugin-inspect";
-import vue from "@vitejs/plugin-vue";
 import vueSvgSfc from "vite-plugin-svg-sfc";
+import vue from "@vitejs/plugin-vue";
 import { ResolvedDevConfig } from "./options.js";
 import compressAssets from "./plugin/compress-assets.js";
 import SWPlugin from "./plugin/service-worker.js";
@@ -49,12 +49,6 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 	}
 
 	return <UserConfig>{
-		resolve: {
-			alias: [{
-				find: new RegExp("^@/"),
-				replacement: join(cwd(), "src") + "/",
-			}],
-		},
 		define,
 		mode,
 		css: {
@@ -80,6 +74,8 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		plugins: [
 			bundleAnalyzer && !isSSR && visualizer(),
 			debug && inspect(),
+
+			tsconfigPaths({ loose: true }),
 
 			ssrManifestPlugin(),
 			vueSvgSfc(),

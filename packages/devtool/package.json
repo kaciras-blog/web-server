@@ -37,6 +37,7 @@
 		"vite": "^3.0.6",
 		"vite-plugin-inspect": "^0.6.0",
 		"vite-plugin-svg-sfc": "^0.4.0",
+		"vite-tsconfig-paths": "^3.5.0",
 		"vue": "^3.2.37"
 	},
 	"devDependencies": {
