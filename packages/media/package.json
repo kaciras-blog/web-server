@@ -36,6 +36,6 @@
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.30.5",
 		"@types/svgo": "^2.6.4",
-		"file-type": "^17.1.6"
+		"file-type": "^18.0.0"
 	}
 }
