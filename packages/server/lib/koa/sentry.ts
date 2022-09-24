@@ -18,7 +18,7 @@ export default function sentryTunnel(dsn: string) {
 	const url = `https://${host}/api/${pathname}/envelope/`;
 
 	return async (ctx: ExtendableContext) => {
-		const envelope: string = ctx.request.body;
+		const envelope = ctx.request.rawBody;
 		const header = JSON.parse(envelope.split("\n")[0]);
 
 		if (header.dsn !== dsn) {
@@ -29,6 +29,9 @@ export default function sentryTunnel(dsn: string) {
 			const response = await fetch(url, {
 				method: "POST",
 				body: envelope,
+				headers: {
+					"X-Forwarded-For": ctx.ip,
+				},
 			});
 			ctx.body = await response.json();
 		} catch (e) {
