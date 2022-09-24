@@ -1,5 +1,5 @@
 import { join } from "path";
-import { UserConfig } from "vite";
+import { InlineConfig } from "vite";
 import { visualizer } from "rollup-plugin-visualizer";
 import tsconfigPaths from "vite-tsconfig-paths";
 import inspect from "vite-plugin-inspect";
@@ -48,9 +48,13 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		define["import.meta.env." + k] = JSON.stringify(v);
 	}
 
-	return <UserConfig>{
+	return <InlineConfig>{
 		define,
 		mode,
+
+		// 禁止自动加载 vite.config.js，避免插件被添加两次。
+		configFile: false,
+
 		css: {
 			modules: {
 				generateScopedName: minify ? "[hash:base64:5]" : undefined,
