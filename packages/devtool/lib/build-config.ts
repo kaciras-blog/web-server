@@ -42,6 +42,8 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		define["typeof window"] = isSSR ? "'undefined'" : "'object'";
 	}
 
+	env.SENTRY_DSN = options.sentry.dsn;
+	env.SENTRY_TUNNEL = options.sentry.tunnel;
 	env.API_INTERNAL = backend.internal;
 	env.API_PUBLIC = backend.public;
 	for (const [k, v] of Object.entries(env)) {

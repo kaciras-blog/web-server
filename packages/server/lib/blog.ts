@@ -114,9 +114,9 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		router.get("/sitemap.xml", sitemapHandler(address));
 		router.post(CSP_REPORT_URI, reportCSP);
 
-		const { SENTRY_DSN, SENTRY_TUNNEL } = options.env;
-		if (SENTRY_DSN && SENTRY_TUNNEL) {
-			router.post(SENTRY_TUNNEL, sentryTunnel(SENTRY_DSN));
+		const { dsn, tunnel } = options.sentry;
+		if (dsn && tunnel) {
+			router.post("/sentry", sentryTunnel(dsn));
 		}
 
 		// 过大的媒体建议直接传到第三方存储

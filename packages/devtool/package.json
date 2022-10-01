@@ -26,6 +26,7 @@
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras-blog/server": "workspace:^",
 		"@rollup/plugin-replace": "^4.0.0",
+		"@sentry/cli": "^2.6.0",
 		"@vitejs/plugin-vue": "^3.1.0",
 		"colorette": "^2.0.19",
 		"es-module-lexer": "^1.0.3",

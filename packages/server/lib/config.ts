@@ -5,10 +5,19 @@ export interface BlogServerConfig {
 	assetsDir: string;
 	ssr?: string;
 
+	sentry: SentryOptions;
 	server: ServerOptions;
 	app: AppOptions;
 	backend: BackendOptions;
 	env: Record<string, any>;
+}
+
+export interface SentryOptions {
+	dsn?: string;
+	tunnel: boolean;
+	authToken?: string;
+	org?: string;
+	project?: string;
 }
 
 export interface SimpleLogConfig {
