@@ -81,11 +81,12 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			bundleAnalyzer && !isSSR && visualizer(),
 			debug && inspect(),
 
-			tsconfigPaths({ loose: true }),
-
 			ssrManifestPlugin(),
 			vueSvgSfc(),
 			vue(vueOptions),
+
+			// 注意顺序，不能放到加载器之前。
+			tsconfigPaths({ loose: true, projects: ["tsconfig.json"] }),
 
 			serviceWorker && SWPlugin(serviceWorker),
 
