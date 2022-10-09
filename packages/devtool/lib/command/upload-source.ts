@@ -22,7 +22,7 @@ export default async function (options: ResolvedDevConfig) {
 		// url: sentryOptions.url,
 	});
 
-	const release = `${name}@${version}`;
+	const release = `${name.replace("/", ".")}@${version}`;
 	await cli.releases.new(release);
 	await cli.releases.uploadSourceMaps(release, { include: [build!.outDir!] });
 }
