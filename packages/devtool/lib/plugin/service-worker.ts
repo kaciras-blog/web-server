@@ -3,7 +3,7 @@ import { OutputOptions, rollup } from "rollup";
 import { Plugin, ResolvedConfig } from "vite";
 import replace from "@rollup/plugin-replace";
 
-const includedPlugins = [
+const includedVitePlugins = [
 	"commonjs",
 	"alias",
 	"vite:resolve",
@@ -20,8 +20,9 @@ type FilterFn = (name: string) => boolean;
 
 export interface ServiceWorkerOptions {
 	src: string;
-	dist?: string;
 	includes?: RegExp | FilterFn;
+	dist?: string;
+	plugins?: Array<string | Plugin>;
 }
 
 /**
@@ -39,7 +40,7 @@ export interface ServiceWorkerOptions {
  * @param options 插件选项
  */
 export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
-	const { src, dist = "/sw.js", includes = () => true } = options;
+	const { src, dist = "/sw.js", includes = () => true, plugins = [] } = options;
 
 	const isInclude = typeof includes === "function"
 		? includes
@@ -47,35 +48,31 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 
 	let viteConfig: ResolvedConfig;
 
-	function swBuildConfig(manifest: string) {
-		const plugins = viteConfig.plugins
-			.filter(p => includedPlugins.includes(p.name));
+	/**
+	 * 生成专门用于构建 ServiceWorker 的 rollup 配置，主要是选择插件。
+	 *
+	 * @param files 需要缓存的静态资源列表
+	 */
+	function swBuildConfig(files: string[]) {
+		const names = [
+			...includedVitePlugins,
+			...plugins.filter(i => typeof i === "string"),
+		];
 
-		plugins.push(replace({
-			preventAssignment: true,
-			"self.__WB_MANIFEST": manifest,
-		}));
+		// 一律格式化，反正生产模式还会压缩的；另外 Rollup 有并发编译的过程，
+		// 故 bundle 中键的顺序不确定，所以排个序避免意外的 Hash 变动。
+		const manifest = JSON.stringify(files.sort(), null, "\t");
 
-		return { input: src, plugins };
-	}
+		const used: Plugin[] = [
+			replace({
+				"self.__WB_MANIFEST": manifest,
+				preventAssignment: true,
+			}),
+			...viteConfig.plugins.filter(p => names.includes(p.name)),
+			...plugins.filter(i => typeof i !== "string") as Plugin[],
+		];
 
-	async function buildSW(manifest: string) {
-		const { outDir, sourcemap } = viteConfig.build;
-
-		const config = swBuildConfig(manifest);
-		const bundle = await rollup(config);
-
-		const output: OutputOptions = {
-			file: join(outDir, dist),
-			format: "es",
-			exports: "none",
-			sourcemap,
-			inlineDynamicImports: true,
-		};
-
-		return bundle.write(output)
-			.then(w => w.output[0])
-			.finally(() => bundle.close());
+		return { input: src, plugins: used };
 	}
 
 	/*
@@ -93,12 +90,22 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 		},
 
 		async generateBundle(_, bundle) {
-			// Rollup 有并发编译的过程，故 bundle 中键的顺序不确定。
-			// 所以排个序避免意外地内容改变。
-			const files = Object.keys(bundle).filter(isInclude).sort();
+			const files = Object.keys(bundle).filter(isInclude);
+			const { outDir, sourcemap } = viteConfig.build;
 
-			// 一律格式化，反正生产模式还会压缩的。
-			await buildSW(JSON.stringify(files, null, "\t"));
+			const swBundle = await rollup(swBuildConfig(files));
+
+			const output: OutputOptions = {
+				file: join(outDir, dist),
+				format: "es",
+				exports: "none",
+				sourcemap,
+				inlineDynamicImports: true,
+			};
+
+			await swBundle.write(output)
+				.then(w => w.output[0])
+				.finally(() => swBundle.close());
 		},
 	};
 }

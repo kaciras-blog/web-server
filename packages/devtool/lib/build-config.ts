@@ -50,6 +50,10 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		define["import.meta.env." + k] = JSON.stringify(v);
 	}
 
+	if (serviceWorker) {
+		(serviceWorker.plugins ??= []).push("vite:tsconfig-paths");
+	}
+
 	return <InlineConfig>{
 		define,
 		mode,
