@@ -27,7 +27,7 @@
 		"mozjpeg": "^8.0.0",
 		"sharp": "^0.31.1",
 		"simple-statistics": "^7.7.6",
-		"svgo": "^2.8.0"
+		"svgo": "^3.0.0"
 	},
 	"devDependencies": {
 		"@types/cli-progress": "^3.11.0",
@@ -35,7 +35,6 @@
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.31.0",
-		"@types/svgo": "^2.6.4",
 		"file-type": "^18.0.0"
 	}
 }

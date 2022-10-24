@@ -1,6 +1,6 @@
 import zlib, { InputType } from "zlib";
 import { promisify } from "util";
-import { optimize, OptimizeOptions } from "svgo";
+import { Config, optimize } from "svgo";
 import { LoadRequest, SaveRequest } from "../MediaService.js";
 import { MediaAttrs, Optimizer } from "../CachedService.js";
 import { BadDataError } from "../errors.js";
@@ -17,7 +17,7 @@ const ENCODINGS = ["br", "gzip"];
 // SVGO 的 inlineStyles 不能处理无法内联的特性，比如媒体查询，
 // Rollup 官网的 Hook 图可以触发该 BUG。
 // 相关的 Issue：https://github.com/svg/svgo/issues/1359
-const svgoConfig: OptimizeOptions = {
+const svgoConfig: Config = {
 	plugins: [{
 		name: "preset-default",
 		params: {
@@ -38,13 +38,14 @@ export default class SVGOptimizer implements Optimizer {
 	}
 
 	async buildCache({ buffer }: SaveRequest) {
-		const result = optimize(buffer.toString(), svgoConfig);
-		if (result.modernError) {
-			throw new BadDataError("无法将文件作为 SVG 优化");
-		}
-
 		const promises = [];
-		const { data } = result;
+		let data: string;
+
+		try {
+			data = optimize(buffer.toString(), svgoConfig).data;
+		} catch (cause) {
+			throw new BadDataError("无法将文件作为 SVG 优化", { cause });
+		}
 
 		const compress = async (encoding: "gzip" | "br") => {
 			const compressed = await algorithms[encoding](data);
