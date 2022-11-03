@@ -66,6 +66,15 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 				generateScopedName: minify ? "[hash:base64:5]" : undefined,
 			},
 		},
+		/*
+		 * ssrLoadModule 优先选择导入 CJS，但外部模块未被处理仍使用 import 导入 ESM，
+		 * 以至于 vue-router 之类双导出库被分别解析到两个不同的文件。
+		 *
+		 * 看了下 Vite 源码似乎不容易解决，目前只能先包含到构建里，也可以去提个 Issue。
+		 */
+		ssr: {
+			noExternal: isBuild ? undefined : "@kaciras-blog/uikit",
+		},
 		build: {
 			assetsDir: options.assetsDir,
 			outDir: outputDir,
