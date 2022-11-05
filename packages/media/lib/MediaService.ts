@@ -10,7 +10,7 @@ import { FileInfo } from "./FileStore.js";
  * HTTP 协议仅支持后两者，即 Accept 和 Accept-Encoding，而最内层的编码却没有对应的头部。
  * 如果要原生使用，通常是在 HTML 靠 <source> 标签选择，但这与本项目的后端选择策略相悖。
  *
- * 目前的想法是在前端通过 HTMLMediaElement.canPlayType() 检测支持，然后加入请求头。
+ * 目前的想法是在前端检测支持的程度，然后加入请求头。
  * 这部分比较复杂，因为编码还可以细分各种 Profile，实现可以参考：
  * https://cconcolato.github.io/media-mime-support
  * https://evilmartians.com/chronicles/better-web-video-with-av1-codec
@@ -42,7 +42,7 @@ export interface LoadRequest<T = Params> {
 	name: string;
 
 	/**
-	 * 请求参数，可以自定义。
+	 * 请求参数，对应 URL 的查询部分，类型可以自定义。
 	 */
 	parameters: T;
 
@@ -56,6 +56,8 @@ export interface LoadRequest<T = Params> {
 	 * 仅靠 Accept 可能无法区分变体，比如视频编码无法从标准请求头获取。
 	 * 这里的解决方案是通过前端检测支持的编码，然后加到请求头中。
 	 *
+	 * 因为作用与 Accept-* 相似，所以也作为一个必需属性。
+	 *
 	 * @see https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Video_codecs
 	 */
 	codecs: string[];
@@ -66,10 +68,14 @@ export interface LoadRequest<T = Params> {
  */
 export interface LoadResponse {
 
-	/** 资源文件信息 */
+	/**
+	 * 资源文件信息。
+	 */
 	file: FileInfo;
 
-	/** 资源的类型，例如 svg、mp4 */
+	/**
+	 * 资源的类型，例如 svg、mp4。
+	 */
 	type: string;
 
 	/**

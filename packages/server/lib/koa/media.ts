@@ -43,16 +43,21 @@ function filterFirst(query: ParsedUrlQuery) {
  */
 export async function download(service: MediaService, ctx: DownloadContext) {
 	const { name } = ctx.params;
+	const { codecs } = ctx.query;
 
 	const acceptTypes = acceptList(ctx.get("accept"))
 		.map(mime.extension)
 		.filter(Boolean) as string[];
 
+	const parsedCodecs = typeof codecs !== "string"
+		? []
+		: codecs.split(",");
+
 	const result = await service.load({
-		name: ctx.params.name,
+		name,
+		codecs: parsedCodecs,
 		acceptTypes,
 		acceptEncodings: acceptList(ctx.get("accept-encoding")),
-		codecs: ctx.get("x-supported-codecs").split(","),
 		parameters: filterFirst(ctx.query),
 	});
 

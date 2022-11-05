@@ -59,7 +59,8 @@ describe("download", () => {
 			.set("Accept-Encoding", "gzip, deflate, br")
 			.expect(404);
 
-		const { acceptTypes, acceptEncodings } = mockService.load.mock.calls[0][0];
+		const { acceptTypes, acceptEncodings, codecs } = mockService.load.mock.calls[0][0];
+		expect(codecs).toStrictEqual([]);
 		expect(acceptTypes).toStrictEqual(["webp"]);
 		expect(acceptEncodings).toStrictEqual(["gzip", "deflate", "br"]);
 	});
@@ -72,6 +73,18 @@ describe("download", () => {
 			.expect(200)
 			.expect("Content-Encoding", "br")
 			.expect(IMAGE_DATA);
+	});
+
+	it("should resolve codecs parameter", async () => {
+		mockService.load.mockResolvedValue(null);
+
+		await supertest(callback)
+			.get("/notfound.jpg?codecs=hevc,av1,vp9")
+			.set("Accept", "video/*,*/*")
+			.expect(404);
+
+		const { codecs } = mockService.load.mock.calls[0][0];
+		expect(codecs).toStrictEqual(["hevc", "av1", "vp9"]);
 	});
 });
 
@@ -135,7 +148,7 @@ describe("upload", () => {
 	});
 
 	it("should throw on non-media errors", async () => {
-		mockService.save.mockRejectedValueOnce(new Error());
+		mockService.save.mockRejectedValueOnce(new Error("Mocked error"));
 
 		await supertest(callback)
 			.post("/image")
