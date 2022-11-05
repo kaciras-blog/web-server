@@ -90,9 +90,7 @@ describe("download", () => {
 
 describe("upload", () => {
 	const app = new Koa();
-	const uploader = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
-
-	app.use(uploader.single("file"));
+	app.use(multer().single("file"));
 	app.use((ctx) => upload(mockService as any, ctx));
 
 	const callback = app.callback();

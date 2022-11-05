@@ -119,8 +119,8 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 			router.post("/sentry", sentryTunnel(dsn));
 		}
 
-		// 过大的媒体建议直接传到第三方存储
-		const multerInstance = multer({ limits: { fileSize: 50 * 1024 * 1024 } });
+		// 因为先检查了权限，所以不用限制大小了，另外前面的反代也有限制的功能。
+		const multerInstance = multer();
 		const uploader = multerInstance.single("file");
 
 		const imageStore = new LocalFileStore(
@@ -139,7 +139,7 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 			join(app.dataDir.data, "video"),
 			join(app.dataDir.cache, "video"),
 		);
-		const vs = new VariantService(videoStore, ["av1"]);
+		const vs = new VariantService(videoStore, ["av1", "hevc"]);
 		// @ts-ignore
 		router.get("/video/:name", ctx => download(vs, ctx));
 		router.post("/video", adminFilter, uploader, (ctx: any) => upload(vs, ctx));
