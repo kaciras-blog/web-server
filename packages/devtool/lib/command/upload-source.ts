@@ -5,13 +5,16 @@ import SentryCli from "@sentry/cli";
 import { ResolvedDevConfig } from "../options";
 import getViteConfig from "../build-config.js";
 
+/**
+ * 上传 SourceMaps 到 Sentry.io，该命令不构建而是采用先前的结果，请在部署时调用。
+ */
 export default async function (options: ResolvedDevConfig) {
 	const { authToken, org, project } = options.sentry;
 	if (!authToken) {
 		throw new Error("需要填写 SENTRY_TOKEN 环境变量。");
 	}
 
-	// @ts-ignore JSON.parse 支持 Buffer 类型。
+	// @ts-ignore Node 里的 JSON.parse 支持 Buffer 类型。
 	const { name, version } = JSON.parse(readFileSync(join(cwd(), "package.json")));
 	const { build } = getViteConfig(options, true, false);
 
@@ -19,7 +22,6 @@ export default async function (options: ResolvedDevConfig) {
 		authToken,
 		org: org,
 		project: project,
-		// url: sentryOptions.url,
 	});
 
 	const release = `${name.replace("/", ".")}@${version}`;

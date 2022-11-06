@@ -91,7 +91,7 @@ export default async function s(source: string, cache: string) {
 		rows.push({
 			type,
 			count: list.length,
-			totalSize: sum(sizes),
+			totalSize: formatSize(sum(sizes)),
 			mean: formatSize(mean(sizes)),
 			median: formatSize(median(sizes)),
 		});

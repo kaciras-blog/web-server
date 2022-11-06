@@ -15,7 +15,7 @@ interface FeedContext extends ExtendableContext {
 	params: { type: string };
 }
 
-export default function createFeedMiddleware(config: ResolvedConfig) {
+export default function feedMiddleware(config: ResolvedConfig) {
 	const { author, title } = config.app;
 	const baseURL = config.backend.internal;
 

@@ -50,7 +50,7 @@ export function configureLog4js({ level, file, noConsole }: SimpleLogConfig) {
 }
 
 /**
- * /static 目录下的文件是有Hash名的，可以永久缓存，图标资源缓存的时间短点，其它不缓存。
+ * /static 目录下的文件名带 Hash，可以永久缓存，图标资源缓存的时间短点，其它不缓存。
  */
 function staticFilesCacheControl(ctx: BaseContext) {
 	const { path } = ctx;

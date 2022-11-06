@@ -17,7 +17,7 @@ import AppBuilder, { FunctionPlugin } from "./AppBuilder.js";
 import { ResolvedConfig } from "./config.js";
 import { download, upload } from "./koa/media.js";
 import sitemapHandler from "./koa/sitemap.js";
-import feedHandler from "./koa/feed.js";
+import feedMiddleware from "./koa/feed.js";
 import sentryTunnel from "./koa/sentry.js";
 import { getProxyHeaders } from "./fetch-helper.js";
 
@@ -108,8 +108,7 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		const adminFilter = adminOnlyFilter(address);
 		const router = new Router();
 
-		// @ts-ignore Record 默认有 undefined 了，没想好怎么改。
-		router.get("/feed/:type", feedHandler(options));
+		router.get("/feed/:type", feedMiddleware(options));
 		router.get("/sw-check", toggleSW(app.serviceWorker));
 		router.get("/sitemap.xml", sitemapHandler(address));
 		router.post(CSP_REPORT_URI, reportCSP);

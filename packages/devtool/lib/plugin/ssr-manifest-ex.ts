@@ -19,12 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { basename, dirname, join, posix, relative } from "path";
-import { platform } from "os";
 import type { ImportSpecifier } from "es-module-lexer";
 import { parse as parseImports } from "es-module-lexer";
 import type { OutputChunk } from "rollup";
 import type { Plugin, ResolvedConfig } from "vite";
+import { basename, dirname, join, posix, relative } from "path";
+import { platform } from "os";
 
 interface ChunkMetadata {
 	importedAssets: Set<string>;
@@ -92,45 +92,47 @@ export function ssrManifestPlugin(): Plugin {
 				// so we only need to record info for non-entry chunks.
 				if (!chunk.isEntry) {
 					mappedChunks.push(base + chunk.fileName);
-					importedCss.forEach((file) => mappedChunks.push(base + file));
+					importedCss.forEach(file => mappedChunks.push(base + file));
 				}
-				importedAssets.forEach((file) => mappedChunks.push(base + file));
+				importedAssets.forEach(file => mappedChunks.push(base + file));
 
-				if (chunk.code.includes(preloadMethod)) {
-					// generate css deps map
-					const code = chunk.code;
-					let imports: ImportSpecifier[];
-					try {
-						imports = parseImports(code)[0].filter((i) => i.d > -1);
-					} catch (e: any) {
-						this.error(e, e.idx);
-					}
-					for (const { s: start, e: end, n: name } of imports) {
-						// check the chunk being imported
-						const url = code.slice(start, end);
-						const deps: string[] = [];
-						const ownerFilename = chunk.fileName;
-						// literal import - trace direct imports and add to deps
-						const analyzed: Set<string> = new Set<string>();
+				if (!chunk.code.includes(preloadMethod)) {
+					continue;
+				}
 
-						const addDeps = (filename: string) => {
-							if (filename === ownerFilename) return;
-							if (analyzed.has(filename)) return;
-							analyzed.add(filename);
-							const chunk = bundle[filename] as OutputChunk | undefined;
-							if (chunk) {
-								chunk.viteMetadata.importedCss.forEach((file) => {
-									deps.push(`/${file}`);
-								});
-								chunk.imports.forEach(addDeps);
-							}
-						};
-						const normalizedFile = normalizePath(
-							join(dirname(chunk.fileName), url.slice(1, -1)),
-						);
-						addDeps(normalizedFile);
-						chunks[basename(name!)] = deps;
-					}
+				// generate css deps map
+				const code = chunk.code;
+				let imports: ImportSpecifier[];
+				try {
+					imports = parseImports(code)[0].filter((i) => i.d > -1);
+				} catch (e: any) {
+					this.error(e, e.idx);
+				}
+				for (const { s: start, e: end, n: name } of imports) {
+					// check the chunk being imported
+					const url = code.slice(start, end);
+					const deps: string[] = [];
+					const ownerFilename = chunk.fileName;
+					// literal import - trace direct imports and add to deps
+					const analyzed: Set<string> = new Set<string>();
+
+					const addDeps = (filename: string) => {
+						if (filename === ownerFilename) return;
+						if (analyzed.has(filename)) return;
+						analyzed.add(filename);
+						const chunk = bundle[filename] as OutputChunk | undefined;
+						if (chunk) {
+							chunk.viteMetadata.importedCss.forEach((file) => {
+								deps.push(`/${file}`);
+							});
+							chunk.imports.forEach(addDeps);
+						}
+					};
+					const normalizedFile = normalizePath(
+						join(dirname(chunk.fileName), url.slice(1, -1)),
+					);
+					addDeps(normalizedFile);
+					chunks[basename(name!)] = deps;
 				}
 			}
 

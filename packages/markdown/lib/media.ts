@@ -15,9 +15,9 @@
  * https://talk.commonmark.org/t/embedded-audio-and-video/441
  * https://talk.commonmark.org/t/generic-directives-plugins-syntax/444
  *
- * 【附加属性的语法】
+ * TODO:附加属性的语法
  * 有一种提案是在后面用大括号：@type[...](...){ key="value" }
- * 目前只有宽高两个附加属性，且图片已经用加在URL参数上的形式了，为了统一暂时选择URL参数。
+ * 目前只有宽高两个属性，且图片已经用加在 URL 参数上的形式了，就暂未支持它。
  *
  * 【为什么不用 GitLab Flavored Markdown】
  * 复用图片的语法，依靠扩展名来区分媒体类型有两个缺陷：
@@ -191,7 +191,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
  * @param markdownIt markdownIt实例
  * @param map 渲染函数选项，用于自定义
  */
-export default function (markdownIt: MarkdownIt, map: RendererMap = DefaultRenderMap) {
+export default function (markdownIt: MarkdownIt, map = DefaultRenderMap) {
 
 	markdownIt.renderer.rules.media = (tokens, idx) => {
 		const token = tokens[idx];
