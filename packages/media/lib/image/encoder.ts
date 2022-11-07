@@ -6,8 +6,8 @@ import { BadDataError, ParamsError, ProcessorError } from "../errors.js";
 
 const WebPLossy: WebpOptions = {
 	quality: 75,
+	effort: 5,
 	smartSubsample: true,
-	reductionEffort: 5,
 };
 
 /**
