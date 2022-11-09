@@ -1,34 +1,33 @@
 import { performance } from "perf_hooks";
+import { readFileSync } from "fs";
 import MarkdownIt from "markdown-it";
-import MediaPlugin from "../lib/media.js";
+import { Footnote, Media, TOC } from "../lib/index.js";
 
 /*
- * JS写的解析器（356.02ms）比正则（56.43ms）慢了7倍。
+ * JS 写的解析器（356.02ms）比正则（56.43ms）慢了7倍。
  * 但即便如此，单次渲染时间差也在 1ms 之内。
  */
 
 const markdownIt = new MarkdownIt();
-markdownIt.use(MediaPlugin);
+markdownIt.use(TOC);
+markdownIt.use(Media);
+markdownIt.use(Footnote);
 
 async function run(name: string, text: string) {
 
-	async function iter() {
+	function iter() {
 		for (let i = 0; i < 1000; i++) markdownIt.render(text);
 	}
 
 	// warm up
-	await iter();
-	await iter();
-	await iter();
-	await iter();
-	await iter();
+	iter();
 
 	const start = performance.now();
-	await Promise.all([iter(), iter(), iter(), iter(), iter()]);
+	iter();
 	const end = performance.now();
 
 	console.log("\n" + name);
-	console.log(`${(end - start).toFixed(2)} ms`);
+	console.log(`${(end - start).toFixed(3)} ms`);
 }
 
 run("normal", "@gif[A [gif] video](/video/foobar.mp4)");
@@ -40,3 +39,5 @@ run("non-match", `
 
 @example.com: 这是我看到的最多的做法，其优势就是简单
 `);
+
+run("article", readFileSync("markdown.txt", "utf8"));
