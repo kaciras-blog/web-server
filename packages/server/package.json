@@ -64,6 +64,6 @@
 		"@types/supertest": "^2.0.12",
 		"koa-static": "^5.0.0",
 		"memfs": "^3.4.12",
-		"supertest": "^6.3.1"
+		"supertest": "^6.3.2"
 	}
 }
