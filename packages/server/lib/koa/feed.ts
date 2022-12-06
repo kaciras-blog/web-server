@@ -88,7 +88,7 @@ export default function feedMiddleware(config: ResolvedConfig) {
 				break;
 			default:
 				ctx.status = 404;
-				ctx.body = { message: "不支持的 Feed 类型", links: getLinksFor(ctx.origin) };
+				ctx.body = { detail: "不支持的 Feed 类型", links: getLinksFor(ctx.origin) };
 		}
 	};
 }

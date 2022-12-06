@@ -113,7 +113,7 @@ export async function upload(service: MediaService, ctx: Context) {
 			throw err;
 		}
 		ctx.status = 400;
-		ctx.body = err.message;
+		ctx.body = { detail: err.message };
 
 		// 虽然在请求中返回了错误信息，但还是记录一下日志
 		logger.warn(err.message, err);
