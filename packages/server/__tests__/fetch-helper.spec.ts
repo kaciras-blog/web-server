@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildURL } from "../lib/index";
+import { buildURL } from "../lib/index.js";
 
 describe("buildURL", () => {
 	it.each([null, ""])("should ignore falsy base value %#", () => {

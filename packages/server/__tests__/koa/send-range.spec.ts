@@ -2,8 +2,8 @@ import { readFileSync } from "fs";
 import { expect, it } from "vitest";
 import Koa from "koa";
 import supertest from "supertest";
-import sendFileRange, { FileRangeReader } from "../../lib/koa/send-range";
-import { FIXTURE_DIR } from "../test-utils";
+import sendFileRange, { FileRangeReader } from "../../lib/koa/send-range.js";
+import { FIXTURE_DIR } from "../test-utils.js";
 
 const FILE = FIXTURE_DIR + "/sendrange.txt";
 

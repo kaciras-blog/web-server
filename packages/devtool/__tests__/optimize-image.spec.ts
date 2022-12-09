@@ -2,8 +2,8 @@ import { readFileSync, statSync } from "fs";
 import { expect, it, vi } from "vitest";
 import { RollupOutput } from "rollup";
 import { RasterOptimizer, SVGOptimizer } from "@kaciras-blog/media";
-import { avoidEmptyChunkTS, getAsset, resolveFixture, runVite } from "./test-utils";
-import optimizeImage from "../lib/plugin/optimize-image";
+import { avoidEmptyChunkTS, getAsset, resolveFixture, runVite } from "./test-utils.js";
+import optimizeImage from "../lib/plugin/optimize-image.js";
 
 const buildRaster = vi.spyOn(RasterOptimizer.prototype, "buildCache");
 const buildSVG = vi.spyOn(SVGOptimizer.prototype, "buildCache");

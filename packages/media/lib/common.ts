@@ -1,5 +1,5 @@
 import { xxHash3_128 } from "@kaciras-blog/nativelib";
-import { FileBody } from "./FileStore";
+import { FileBody } from "./FileStore.js";
 
 /**
  * 对数据执行 Hash 运算，返回 20 个字符的 url-safe base64 字符串。

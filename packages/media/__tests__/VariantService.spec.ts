@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { expect, it, vi } from "vitest";
-import VariantService from "../lib/VariantService";
-import { BadDataError, Data } from "../lib";
+import { BadDataError, Data } from "../lib/index.js";
+import VariantService from "../lib/VariantService.js";
 
 const store = {
 	putCaches: vi.fn(),

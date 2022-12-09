@@ -1,8 +1,8 @@
 import { join } from "path";
 import { readdirSync, readFileSync, statSync } from "fs";
 import { expect, it } from "vitest";
-import { avoidEmptyChunkTS, resolveFixture, runVite, useTempDirectory, viteWrite } from "./test-utils";
-import { compressAssets } from "../lib";
+import { avoidEmptyChunkTS, resolveFixture, runVite, useTempDirectory, viteWrite } from "./test-utils.js";
+import compressAssets from "../lib/plugin/compress-assets.js";
 
 const bigSvg = readFileSync(resolveFixture("big.svg"));
 const scriptJs = readFileSync(resolveFixture("script.js"));

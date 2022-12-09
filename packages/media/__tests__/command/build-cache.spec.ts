@@ -2,8 +2,8 @@ import { tmpdir } from "os";
 import { join } from "path";
 import fs from "fs";
 import { afterEach, expect, it } from "vitest";
-import buildCache from "../../lib/command/build-cache";
-import { readFixture } from "../test-utils";
+import buildCache from "../../lib/command/build-cache.js";
+import { readFixture } from "../test-utils.js";
 
 const root = fs.mkdtempSync(join(tmpdir(), "test-"));
 const nameRaster = "maoG0wFHmNhgAcMkRo1J.png";

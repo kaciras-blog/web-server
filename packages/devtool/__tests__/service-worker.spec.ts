@@ -1,8 +1,8 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { expect, it } from "vitest";
-import { resolveFixture, runVite, useTempDirectory } from "./test-utils";
-import SWPlugin from "../lib/plugin/service-worker";
+import { resolveFixture, runVite, useTempDirectory } from "./test-utils.js";
+import SWPlugin from "../lib/plugin/service-worker.js";
 
 const outDir = useTempDirectory();
 

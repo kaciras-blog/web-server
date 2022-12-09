@@ -1,8 +1,8 @@
 import { describe, expect, it, MockedFunction, MockedObject, vi } from "vitest";
-import { readFixture } from "../test-utils";
-import { BadDataError, crop, ProcessorError, resize } from "../../lib";
-import * as encoder from "../../lib/image/encoder";
-import RasterOptimizer from "../../lib/image/RasterOptimizer";
+import { readFixture } from "../test-utils.js";
+import { BadDataError, crop, ProcessorError, resize } from "../../lib/index.js";
+import * as encoder from "../../lib/image/encoder.js";
+import RasterOptimizer from "../../lib/image/RasterOptimizer.js";
 
 vi.mock("../../lib/image/param-processor", () => ({
 	crop: vi.fn(),

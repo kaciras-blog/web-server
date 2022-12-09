@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { fileTypeFromBuffer } from "file-type";
 import sharp from "sharp";
-import { readFixture } from "../test-utils";
-import { BadDataError, encodeAVIF, encodeWebp, optimizeRaster, ParamsError, ProcessorError } from "../../lib";
+import { readFixture } from "../test-utils.js";
+import { BadDataError, encodeAVIF, encodeWebp, optimizeRaster, ParamsError, ProcessorError } from "../../lib/index.js";
 
 it("should throw ParamsError on unsupported type", () => {
 	const buffer = Buffer.from("data is unrelated");

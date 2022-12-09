@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
-import { crop, flip, ParamsError, resize, rotate } from "../../lib/index";
-import { readFixture } from "../test-utils";
+import { crop, flip, ParamsError, resize, rotate } from "../../lib/index.js";
+import { readFixture } from "../test-utils.js";
 
 const buffer = readFixture("tile_16x16.png");
 

@@ -2,7 +2,7 @@ import { join } from "path";
 import { tmpdir } from "os";
 import fs from "fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import LocalFileStore from "../lib/LocalFileStore";
+import LocalFileStore from "../lib/LocalFileStore.js";
 
 const root = fs.mkdtempSync(join(tmpdir(), "test-"));
 

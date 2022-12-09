@@ -1,13 +1,13 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { promisify } from "util";
-import { brotliCompress, gzip } from "zlib";
+import { brotliCompress, gzip, InputType } from "zlib";
 import { Plugin } from "vite";
 
 // 经测试，最大压缩率参数（如 BROTLI_MAX_QUALITY）用不用大小都一样。
 
 const zlibMap = {
-	gz: promisify(gzip),
+	gz: promisify<InputType, Buffer>(gzip),
 	br: promisify(brotliCompress),
 };
 

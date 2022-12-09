@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
-import { readFixture } from "../test-utils";
-import { BadDataError, ParamsError } from "../../lib";
-import PresetCropFilter from "../../lib/image/preset-processor";
+import { readFixture } from "../test-utils.js";
+import { BadDataError, ParamsError } from "../../lib/index.js";
+import PresetCropFilter from "../../lib/image/preset-processor.js";
 
 const buffer = readFixture("tile_16x16.png");
 

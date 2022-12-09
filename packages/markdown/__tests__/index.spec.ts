@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import MarkdownIt from "markdown-it/lib";
-import { Anchor, Classify, Footnote } from "../lib/index";
+import { Anchor, Classify, Footnote } from "../lib/index.js";
 
 it("should add class to inlined code block", () => {
 	const markdownIt = new MarkdownIt();

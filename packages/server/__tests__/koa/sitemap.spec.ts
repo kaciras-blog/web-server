@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import Koa from "koa";
 import supertest from "supertest";
-import sitemapMiddleware from "../../lib/koa/sitemap";
+import sitemapMiddleware from "../../lib/koa/sitemap.js";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

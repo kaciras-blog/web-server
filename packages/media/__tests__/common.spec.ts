@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { hashName } from "../lib/common";
+import { hashName } from "../lib/common.js";
 
 it("should generate hash name", () => {
 	const name = hashName(Buffer.from("foo+bar"));

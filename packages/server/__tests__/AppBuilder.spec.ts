@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { Context, Next } from "koa";
 import supertest from "supertest";
-import AppBuilder from "../lib/AppBuilder";
+import AppBuilder from "../lib/AppBuilder.js";
 
 it("should add middleware in order", async () => {
 	const calls: number[] = [];

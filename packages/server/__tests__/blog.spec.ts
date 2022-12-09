@@ -1,7 +1,7 @@
 import { describe, it, vi } from "vitest";
 import Koa from "koa";
 import supertest from "supertest";
-import { adminOnlyFilter } from "../lib/blog";
+import { adminOnlyFilter } from "../lib/blog.js";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

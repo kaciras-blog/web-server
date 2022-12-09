@@ -1,9 +1,9 @@
 import tls from "tls";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import supertest from "supertest";
-import startServer, { createSNICallback, ServerGroup } from "../lib/create-server";
-import { ServerOptions } from "../lib/config";
-import { resolveFixture } from "./test-utils";
+import startServer, { createSNICallback, ServerGroup } from "../lib/create-server.js";
+import { ServerOptions } from "../lib/config.js";
+import { resolveFixture } from "./test-utils.js";
 
 const HTTPS_URL = "https://localhost:12501";
 

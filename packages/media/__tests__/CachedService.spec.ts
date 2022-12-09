@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import CachedService from "../lib/CachedService";
+import CachedService from "../lib/CachedService.js";
 
 const optimizer = {
 	check: vi.fn(),

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { debounceFirst, once } from "../lib/functions";
+import { debounceFirst, once } from "../lib/functions.js";
 
 describe("debounceFirst", () => {
 

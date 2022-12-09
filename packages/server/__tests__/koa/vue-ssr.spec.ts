@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import supertest from "supertest";
 import Koa from "koa";
-import { RenderContext, renderSSR } from "../../lib/koa/vue-ssr";
+import { RenderContext, renderSSR } from "../../lib/koa/vue-ssr.js";
 
 const entry = vi.fn<[RenderContext]>(async () => "<p>bar</p>");
 

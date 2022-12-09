@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { cwd } from "process";
 import { join } from "path";
 import SentryCli from "@sentry/cli";
-import { ResolvedDevConfig } from "../options";
+import { ResolvedDevConfig } from "../options.js";
 import getViteConfig from "../build-config.js";
 
 /**
