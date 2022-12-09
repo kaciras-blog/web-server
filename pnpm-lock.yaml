@@ -35,7 +35,6 @@ importers:
       log4js: ^6.7.1
       rollup: ^2.79.1
       rollup-plugin-visualizer: ^5.8.3
-      source-map-support: ^0.5.21
       vite: ^3.2.5
       vite-plugin-inspect: ^0.7.9
       vite-plugin-svg-sfc: ^1.0.0
@@ -52,7 +51,6 @@ importers:
       log4js: 6.7.1
       rollup: 2.79.1
       rollup-plugin-visualizer: 5.8.3_rollup@2.79.1
-      source-map-support: 0.5.21
       vite: 3.2.5
       vite-plugin-inspect: 0.7.9_rollup@2.79.1+vite@3.2.5
       vite-plugin-svg-sfc: 1.0.0
@@ -154,7 +152,6 @@ importers:
       range-parser: ^1.2.1
       replace-ext: ^2.0.0
       sitemap: ^7.1.1
-      source-map-support: ^0.5.21
       supertest: ^6.3.2
       vue: ^3.2.45
     dependencies:
@@ -179,7 +176,6 @@ importers:
       range-parser: 1.2.1
       replace-ext: 2.0.0
       sitemap: 7.1.1
-      source-map-support: 0.5.21
       vue: 3.2.45
     devDependencies:
       '@types/combined-stream': 1.0.3
@@ -4379,13 +4375,6 @@ packages:
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
-
-  /source-map-support/0.5.21:
-    resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
-    dependencies:
-      buffer-from: 1.1.2
-      source-map: 0.6.1
-    dev: false
 
   /source-map/0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
