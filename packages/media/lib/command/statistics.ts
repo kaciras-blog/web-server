@@ -1,5 +1,5 @@
 import { mean, median, sum } from "simple-statistics";
-import { formatSize } from "@kaciras/utilities";
+import { formatSize } from "@kaciras/utilities/node";
 import {
 	CachedService,
 	DispatchService,
