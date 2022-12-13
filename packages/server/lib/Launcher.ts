@@ -5,9 +5,9 @@ import parseArgs from "minimist";
 import log4js from "log4js";
 import { buildCache } from "@kaciras-blog/media";
 import { Awaitable } from "vitest";
+import { onExit } from "@kaciras/utilities/node";
 import run from "./command/run.js";
 import { resolveConfig, ResolvedConfig } from "./config.js";
-import { once } from "./functions.js";
 
 const logger = log4js.getLogger("init");
 
@@ -34,12 +34,6 @@ export async function loadConfig(profile: string) {
 
 	const config = (await import("file://" + file)).default;
 	return { config: resolveConfig(config), file };
-}
-
-function onExit(handler: () => unknown) {
-	const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
-	handler = once(handler);
-	signals.forEach(signal => process.on(signal, handler));
 }
 
 /**
