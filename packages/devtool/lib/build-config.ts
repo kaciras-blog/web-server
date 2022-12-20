@@ -98,7 +98,6 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			vueSvgSfc(),
 			vue(vueOptions),
 
-			// 注意顺序，不能放到加载器之前。
 			tsconfigPaths({ loose: true, projects: ["tsconfig.json"] }),
 
 			serviceWorker && SWPlugin(serviceWorker),
