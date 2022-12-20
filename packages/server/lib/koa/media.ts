@@ -106,8 +106,11 @@ export async function upload(service: MediaService, ctx: Context) {
 			type,
 			parameters: filterFirst(ctx.query),
 		});
+
+		const location = `${ctx.path}/${name}`;
 		ctx.status = 200;
-		ctx.set("Location", `${ctx.path}/${name}`);
+		ctx.body = { location };
+		ctx.set("Location", location);
 	} catch (err) {
 		if (!(err instanceof MediaError)) {
 			throw err;
