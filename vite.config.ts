@@ -5,10 +5,6 @@ export default defineConfig({
 	test: {
 		clearMocks: true,
 
-		// 多线程目前有很多 Bug。
-		threads: false,
-		isolate: false,
-
 		coverage: {
 			reporter: ["lcov"],
 		},
