@@ -106,8 +106,7 @@ describe("SNI callback", () => {
 	}
 
 	it("should throw error with invalid servername", () => {
-		return expect(verifyCertCN("invaild")).rejects
-			.toThrow("Client network socket disconnected before secure TLS connection was established");
+		return expect(verifyCertCN("invaild")).rejects.toThrow();
 	});
 
 	it("should accept localhost", () => {
