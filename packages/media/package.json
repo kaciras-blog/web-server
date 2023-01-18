@@ -26,7 +26,7 @@
 		"log4js": "^6.7.1",
 		"mozjpeg": "^8.0.0",
 		"sharp": "^0.31.3",
-		"simple-statistics": "^7.8.0",
+		"simple-statistics": "^7.8.2",
 		"svgo": "^3.0.2"
 	},
 	"devDependencies": {
@@ -35,6 +35,6 @@
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.31.1",
-		"file-type": "^18.1.0"
+		"file-type": "^18.2.0"
 	}
 }
