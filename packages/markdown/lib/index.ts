@@ -6,6 +6,7 @@ export { default as TOC } from "markdown-it-toc-done-right";
 
 export * from "./media.js";
 
+export { default as Collapsible } from "./collapsible.js";
 export { default as UGC } from "./ugc.js";
 export { default as Media } from "./media.js";
 
