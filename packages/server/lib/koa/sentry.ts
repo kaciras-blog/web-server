@@ -7,15 +7,15 @@ const logger = log4js.getLogger("Sentry");
  * 代理 Sentry 的报告请求，用于解决呗 ADBlocker 或浏览器的隐私设置屏蔽的问题。
  *
  * 比起直连，代理有一些缺点：
- * 1）没发现怎么传递 IP。
+ * 1）传递 IP 有点问题。
  * 2）增加了服务器的流量消耗，可能会降低蚊子肉大小的性能。
  *
  * @param dsn 跟前端的 DSN 一致，用于检查请求
  * @see https://github.com/getsentry/examples/tree/master/tunneling
  */
 export default function sentryTunnel(dsn: string) {
-	const { host, pathname } = new URL(dsn);
-	const url = `https://${host}/api/${pathname}/envelope/`;
+	const { protocol, host, pathname } = new URL(dsn);
+	const url = `${protocol}//${host}/api${pathname}/envelope/`;
 
 	return async (ctx: ExtendableContext) => {
 		const envelope = ctx.request.rawBody;
@@ -33,7 +33,10 @@ export default function sentryTunnel(dsn: string) {
 					"X-Forwarded-For": ctx.ip,
 				},
 			});
-			ctx.body = await response.json();
+			response.headers.forEach((v, k) => {
+				ctx.response.headers[k] = v;
+			});
+			ctx.body = response.body;
 		} catch (e) {
 			ctx.body = {};
 			logger.warn("无法代理请求到 Sentry", e);
