@@ -29,15 +29,15 @@
 		"@sentry/cli": "^2.12.0",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"colorette": "^2.0.19",
-		"es-module-lexer": "^1.1.0",
+		"es-module-lexer": "^1.1.1",
 		"log4js": "^6.7.1",
-		"rollup": "^3.12.0",
+		"rollup": "^3.14.0",
 		"rollup-plugin-visualizer": "^5.9.0",
-		"vite": "^4.0.4",
+		"vite": "^4.1.1",
 		"vite-plugin-inspect": "^0.7.15",
 		"vite-plugin-svg-sfc": "^1.2.0",
 		"vite-tsconfig-paths": "^4.0.5",
-		"vue": "^3.2.45"
+		"vue": "^3.2.47"
 	},
 	"devDependencies": {
 		"deepmerge": "^4.3.0"
