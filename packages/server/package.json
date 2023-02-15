@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@kaciras-blog/markdown": "workspace:^",
 		"@kaciras-blog/media": "workspace:^",
-		"@kaciras/utilities": "^0.6.3",
+		"@kaciras/utilities": "^0.6.4",
 		"@koa/multer": "^3.0.2",
 		"@koa/router": "^12.0.0",
 		"combined-stream": "^1.0.8",
@@ -38,7 +38,7 @@
 		"log4js": "^6.7.1",
 		"markdown-it": "^13.0.1",
 		"mime-types": "^2.1.35",
-		"minimist": "^1.2.7",
+		"minimist": "^1.2.8",
 		"multer": "1.4.5-lts.1",
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
