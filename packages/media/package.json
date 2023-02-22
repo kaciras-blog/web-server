@@ -20,10 +20,10 @@
 	"dependencies": {
 		"@kaciras-blog/nativelib": "^0.3.1",
 		"@kaciras/utilities": "^0.6.4",
-		"cli-progress": "^3.11.2",
+		"cli-progress": "^3.12.0",
 		"execa": "^7.0.0",
 		"gifsicle": "^7.0.1",
-		"log4js": "^6.7.1",
+		"log4js": "^6.8.0",
 		"mozjpeg": "^8.0.0",
 		"sharp": "^0.31.3",
 		"simple-statistics": "^7.8.3",
@@ -35,6 +35,6 @@
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
 		"@types/sharp": "^0.31.1",
-		"file-type": "^18.2.0"
+		"file-type": "^18.2.1"
 	}
 }
