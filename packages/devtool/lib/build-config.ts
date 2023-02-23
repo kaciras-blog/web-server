@@ -5,87 +5,22 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import inspect from "vite-plugin-inspect";
 import vueSvgSfc from "vite-plugin-svg-sfc";
 import vue from "@vitejs/plugin-vue";
-import { GetManualChunk, GetModuleInfo } from "rollup";
 import { ResolvedDevConfig } from "./options.js";
 import compressAssets from "./plugin/compress-assets.js";
 import SWPlugin from "./plugin/service-worker.js";
 import optimizeImage from "./plugin/optimize-image.js";
 import { ssrManifestPlugin } from "./plugin/ssr-manifest-ex.js";
+import { mergeByPriority } from "./manual-chunks.js";
 
-function manualOptimizeChunks(): GetManualChunk {
-	const cache = new Map<string, string[]>();
-
-	function getRootsDFS(
-		id: string,
-		getModuleInfo: GetModuleInfo,
-		importStack: string[] = [],
-	) {
-		const cached = cache.get(id);
-		if (cached) {
-			return cached;
-		}
-		if (importStack.includes(id)) {
-			// circular deps!
-			cache.set(id, []);
-			return [];
-		}
-
-		const mod = getModuleInfo(id);
-		if (!mod) {
-			cache.set(id, []);
-			return [];
-		}
-
-		const { importers } = mod;
-		if (importers.length === 0) {
-			cache.set(id, [id]);
-			return [id];
-		}
-		const roots: string[] = [];
-
-		for (const importer of importers) {
-			roots.push(...getRootsDFS(
-				importer,
-				getModuleInfo,
-				importStack.concat(id),
-			));
-		}
-		if (mod.dynamicImporters.length) {
-			roots.push(id);
-		}
-
-		cache.set(id, roots);
-		return roots;
-	}
-
-	const priority = [
-		"index.html",
-		"MarkdownView.vue",
-		"EditorPage.vue",
+function chunkNameAdnPriority(id: string) {
+	const name = basename(id);
+	const list = [
 		"Console.vue",
+		"EditorPage.vue",
+		"MarkdownView.vue",
+		"index.html",
 	];
-
-	return (id, { getModuleInfo }) => {
-		const roots = new Set(getRootsDFS(id, getModuleInfo));
-
-		let kx = "ERROR!!!";
-		let i = Infinity;
-		for (let k of roots) {
-			k = basename(k);
-			let p = priority.indexOf(k);
-			if (p === -1) {
-				p = Infinity;
-			}
-			if (p <= i) {
-				i = p;
-				kx = k;
-			}
-		}
-
-		// console.log(`${id} -> ${Array.from(roots)}`);
-		console.log(`${id} -> ${kx}`);
-		return kx;
-	};
+	return { name, value: list.indexOf(name) };
 }
 
 /**
@@ -161,9 +96,9 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			minify,
 			ssr: isSSR && ssr,
 
-			rollupOptions: isSSR ? undefined: {
+			rollupOptions: isSSR ? undefined : {
 				output: {
-					manualChunks: manualOptimizeChunks(),
+					manualChunks: mergeByPriority(chunkNameAdnPriority),
 				},
 			},
 
