@@ -4,48 +4,40 @@ type GetPriority = (id: string) => { name: string; value: number };
 
 export function mergeByPriority(getPriority: GetPriority): GetManualChunk {
 	const cache = new Map<string, string[]>();
+	const importStack: string[] = [];
 
-	function getChunksDFS(
-		id: string,
-		getModuleInfo: GetModuleInfo,
-		importStack: string[] = [],
-	) {
+	function addToCache(key: string, value: string[]) {
+		cache.set(key, value);
+		return value;
+	}
+
+	function getChunksDFS(id: string, getModuleInfo: GetModuleInfo) {
 		const cached = cache.get(id);
 		if (cached) {
 			return cached;
 		}
 		if (importStack.includes(id)) {
-			// circular deps!
-			cache.set(id, []);
-			return [];
+			return addToCache(id, []); // circular deps!
 		}
 
-		const mod = getModuleInfo(id);
-		if (!mod) {
-			cache.set(id, []);
-			return [];
-		}
-
-		const { importers } = mod;
+		const { importers, dynamicImporters } = getModuleInfo(id)!;
 		if (importers.length === 0) {
-			cache.set(id, [id]);
-			return [id];
+			return addToCache(id, [id]);
 		}
-		const roots: string[] = [];
 
+		const chunks: string[] = [];
+
+		if (dynamicImporters.length) {
+			chunks.push(id);
+		}
+
+		importStack.push(id);
 		for (const importer of importers) {
-			roots.push(...getChunksDFS(
-				importer,
-				getModuleInfo,
-				importStack.concat(id),
-			));
+			chunks.push(...getChunksDFS(importer, getModuleInfo));
 		}
-		if (mod.dynamicImporters.length) {
-			roots.push(id);
-		}
+		importStack.pop();
 
-		cache.set(id, roots);
-		return roots;
+		return addToCache(id, chunks);
 	}
 
 	return (id, { getModuleInfo }) => {
