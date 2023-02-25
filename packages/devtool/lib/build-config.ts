@@ -12,6 +12,7 @@ import optimizeImage from "./plugin/optimize-image.js";
 import { ssrManifestPlugin } from "./plugin/ssr-manifest-ex.js";
 import { mergeByPriority } from "./manual-chunks.js";
 
+// 这个函数应该放到 website 项目里，但这需要重新设计架构，下一版再说。
 function chunkNameAdnPriority(id: string) {
 	const name = basename(id);
 	const list = [
@@ -113,7 +114,7 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			debug && inspect(),
 
 			ssrManifestPlugin(),
-			vueSvgSfc(),
+			vueSvgSfc({ svgProps: attrs => delete attrs.class }),
 			vue(vueOptions),
 
 			tsconfigPaths({ loose: true, projects: ["tsconfig.json"] }),
