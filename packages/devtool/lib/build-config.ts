@@ -11,6 +11,7 @@ import SWPlugin from "./plugin/service-worker.js";
 import optimizeImage from "./plugin/optimize-image.js";
 import { ssrManifestPlugin } from "./plugin/ssr-manifest-ex.js";
 import { mergeByPriority } from "./manual-chunks.js";
+import htmlStringPlugin from "./plugin/html-string.js";
 
 // 这个函数应该放到 website 项目里，但这需要重新设计架构，下一版再说。
 function chunkNameAdnPriority(id: string) {
@@ -114,6 +115,7 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			debug && inspect(),
 
 			ssrManifestPlugin(),
+			htmlStringPlugin(),
 			vueSvgSfc({ svgProps: attrs => delete attrs.class }),
 			vue(vueOptions),
 
