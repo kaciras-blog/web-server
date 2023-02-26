@@ -26,29 +26,12 @@ export function testEntry(code: string): Plugin {
 	};
 }
 
-export function avoidEmptyChunkTS(): Plugin {
-	let id: string;
-
-	return {
-		name: "test:avoid-empty-chunk-warning",
-		enforce: "pre",
-		buildStart(options) {
-			id = (options.input as string[])[0];
-		},
-		resolveId(source: string) {
-			if (source !== id) {
-				return null;
-			}
-			return { id, moduleSideEffects: "no-treeshake" };
-		},
-	};
-}
-
 const baseConfig: InlineConfig = {
 	logLevel: "silent",
 	build: {
 		write: false,
 		rollupOptions: {
+			onwarn: () => {},
 			output: {
 				entryFileNames: "[name].js",
 				chunkFileNames: "[name].js",

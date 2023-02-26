@@ -2,7 +2,7 @@ import { readFileSync, statSync } from "fs";
 import { expect, it, vi } from "vitest";
 import { RollupOutput } from "rollup";
 import { RasterOptimizer, SVGOptimizer } from "@kaciras-blog/media";
-import { avoidEmptyChunkTS, getAsset, resolveFixture, runVite } from "./test-utils.js";
+import { getAsset, resolveFixture, runVite } from "./test-utils.js";
 import optimizeImage from "../lib/plugin/optimize-image.js";
 
 const buildRaster = vi.spyOn(RasterOptimizer.prototype, "buildCache");
@@ -25,7 +25,6 @@ function optimize(input: string, include?: RegExp) {
 			rollupOptions: { input },
 		},
 		plugins: [
-			avoidEmptyChunkTS(),
 			optimizeImage(include),
 		],
 	});

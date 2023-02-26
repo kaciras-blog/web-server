@@ -1,7 +1,7 @@
 import { join } from "path";
 import { readdirSync, readFileSync, statSync } from "fs";
 import { expect, it } from "vitest";
-import { avoidEmptyChunkTS, resolveFixture, runVite, useTempDirectory, viteWrite } from "./test-utils.js";
+import { resolveFixture, runVite, useTempDirectory, viteWrite } from "./test-utils.js";
 import compressAssets from "../lib/plugin/compress-assets.js";
 
 const bigSvg = readFileSync(resolveFixture("big.svg"));
@@ -23,7 +23,6 @@ it("should skip small files", async () => {
 			},
 		},
 		plugins: [
-			avoidEmptyChunkTS(),
 			compressAssets({ algorithm: "gz" }),
 		],
 	});
@@ -39,7 +38,6 @@ it("should not skip incompressible files", async () => {
 			},
 		},
 		plugins: [
-			avoidEmptyChunkTS(),
 			compressAssets({ algorithm: "gz" }),
 		],
 	});
@@ -55,7 +53,6 @@ it("should compress assets", async () => {
 			},
 		},
 		plugins: [
-			avoidEmptyChunkTS(),
 			compressAssets({ algorithm: "gz" }),
 			compressAssets({ algorithm: "br" }),
 		],
@@ -97,7 +94,6 @@ it("should only run at client build", async () => {
 			ssr: true,
 		},
 		plugins: [
-			avoidEmptyChunkTS(),
 			compressAssets({ algorithm: "gz" }),
 		],
 	});
@@ -115,7 +111,6 @@ it("should discard files with bad compress ratio", async () => {
 			},
 		},
 		plugins: [
-			avoidEmptyChunkTS(),
 			compressAssets({ algorithm: "gz" }),
 		],
 	});
