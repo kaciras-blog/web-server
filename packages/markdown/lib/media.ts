@@ -36,6 +36,8 @@ import StateBlock from "markdown-it/lib/rules_block/state_block.js";
 
 function parseMedia(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
 	const offset = state.tShift[startLine] + state.bMarks[startLine];
+
+	// JS 的傻逼正则不能设置结束位置，必须得截字符串。
 	const src = state.src.slice(offset, state.eMarks[startLine]);
 
 	let directive: GenericDirective;
@@ -44,9 +46,9 @@ function parseMedia(state: StateBlock, startLine: number, endLine: number, silen
 	} catch (e) {
 		return false;
 	}
-	const { type, label, href } = directive;
 
 	if (!silent) {
+		const { type, label, href } = directive;
 		const token = state.push("media", type, 0);
 		token.attrs = [["href", href]];
 		token.content = label;
@@ -74,7 +76,7 @@ interface GenericDirective {
  * @return 包含各个部分的对象
  * @throws 如果给定的文本不符合指令语法
  */
-function tokenize(src: string): GenericDirective {
+function tokenize(src: string) {
 	const match = /^@([a-z][a-z0-9\-_]*)/i.exec(src);
 	if (!match) {
 		throw new Error("Invalid type syntax");
@@ -91,7 +93,7 @@ function tokenize(src: string): GenericDirective {
 	const href = unescapeMd(src.slice(labelEnd + 2, srcEnd));
 	const label = unescapeMd(src.slice(typePart.length + 1, labelEnd));
 
-	return { type, label, href };
+	return { type, label, href } as GenericDirective;
 }
 
 /**
@@ -99,14 +101,14 @@ function tokenize(src: string): GenericDirective {
  *
  * @param src 文本
  * @param i 起始位置
- * @param begin 左括号的字符码
- * @param end 右括号字符码
+ * @param open 左括号的字符码
+ * @param close 右括号字符码
  * @return 结束位置
  * @throws 如果给定的片段不符合语法
  */
-function readBracket(src: string, i: number, begin: number, end: number) {
-	if (src.charCodeAt(i) !== begin) {
-		const expect = String.fromCharCode(begin);
+function readBracket(src: string, i: number, open: number, close: number) {
+	if (src.charCodeAt(i) !== open) {
+		const expect = String.fromCharCode(open);
 		const actual = src.charAt(i);
 		throw new Error(`Expect ${expect}, but found ${actual}`);
 	}
@@ -118,10 +120,10 @@ function readBracket(src: string, i: number, begin: number, end: number) {
 			case 0x5C:
 				++i;
 				break;
-			case begin:
+			case open:
 				level++;
 				break;
-			case end:
+			case close:
 				level--;
 				break;
 		}
@@ -132,8 +134,7 @@ function readBracket(src: string, i: number, begin: number, end: number) {
 }
 
 /**
- * 检查链接，处理 URL 转义和 XSS 攻击。
- * 如果链接具有 XSS 风险则返回空字符串。
+ * 检查链接，处理 URL 转义和 XSS 攻击，如果有风险则返回空字符串。
  *
  * @param md MarkdownIt 的实例
  * @param link 需要检查的链接
@@ -152,18 +153,18 @@ export function checkLink(md: MarkdownIt, link: string) {
  * 与传统的 Markdown 语法不同，通用指令旨在支持一系列的扩展功能，其几个片段的意义由指令决定，
  * 解析器只做提取，故只有在渲染函数中才能确定字段是不是链接。
  */
-export interface RendererMap {
+export interface DirectiveMap {
 
 	[type: string]: (href: string, label: string, md: MarkdownIt) => string;
 }
 
 /**
- * 默认的指令表，有 audio、video 和 gif 类型，简单地渲染为<audio>和<video>元素
+ * 默认的指令表，有 audio、video 和 gif 类型，简单地渲染为 <audio> 和 <video>
  */
-export const DefaultRenderMap: Readonly<RendererMap> = {
+export const defaultDirectiveMap: Readonly<DirectiveMap> = {
 
 	audio(src: string) {
-		return `<audio src=${src} controls></audio>`;
+		return `<audio src="${src}" controls></audio>`;
 	},
 
 	video(src: string, poster: string, md: MarkdownIt) {
@@ -191,8 +192,7 @@ export const DefaultRenderMap: Readonly<RendererMap> = {
  * @param markdownIt markdownIt实例
  * @param map 渲染函数选项，用于自定义
  */
-export default function (markdownIt: MarkdownIt, map = DefaultRenderMap) {
-
+export default function (markdownIt: MarkdownIt, map = defaultDirectiveMap) {
 	markdownIt.renderer.rules.media = (tokens, idx) => {
 		const token = tokens[idx];
 		const { tag, content } = token;

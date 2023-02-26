@@ -1,6 +1,6 @@
-import { Plugin, ResolvedConfig } from "vite";
-import htmlnano from "htmlnano";
+import { Plugin } from "vite";
 import MagicString from "magic-string";
+import { process } from "htmlnano";
 
 /**
  * Does not work if attribute value contains "/>".
@@ -8,28 +8,28 @@ import MagicString from "magic-string";
 const selfCloseRE = /<([^\s>]+)([^>]*)\/>/gs;
 
 const minifyOptions = {
+	skipConfigLoading: true,
 	minifyCss: false,
 	minifyJs: false,
 	collapseWhitespace: "all",
-	removeAttributeQuotes: true,
 };
 
-async function process(html: string) {
+async function transformHTML(html: string) {
 	html = html.replaceAll(selfCloseRE, "<$1$2></$1>");
-	return (await htmlnano.process(html, minifyOptions)).html;
+	return (await process(html, minifyOptions)).html;
 }
 
 /**
- *
+ * 支持自闭和标签，以及去除标签间的空白。
  */
 export default function htmlStringPlugin(): Plugin {
-	let viteConfig: ResolvedConfig;
+	let sourcemap: boolean | string;
 
 	return {
 		name: "kaciras:html-string",
 
 		configResolved(config) {
-			viteConfig = config;
+			sourcemap = config.build.sourcemap;
 		},
 
 		async transform(code, id) {
@@ -43,17 +43,12 @@ export default function htmlStringPlugin(): Plugin {
 				const e = code.indexOf("`;", i);
 				let html = code.slice(i + 6, e);
 
-				html = await process(html);
+				html = await transformHTML(html);
 				s.overwrite(i, e, "`" + html);
 				i = code.indexOf("$HTML`", e);
 			}
 
-			if (!s.hasChanged()) {
-				return null;
-			}
-
-			const { sourcemap } = viteConfig.build;
-			return {
+			return !s.hasChanged() ? null : {
 				code: s.toString(),
 				map: sourcemap ? s.generateMap({ hires: true }) : null,
 			};

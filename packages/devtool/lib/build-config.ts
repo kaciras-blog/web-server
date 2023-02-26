@@ -22,7 +22,7 @@ function chunkNameAdnPriority(id: string) {
 		"MarkdownView.vue",
 		"index.html",
 	];
-	return { name, value: list.indexOf(name) };
+	return { name, priority: list.indexOf(name) };
 }
 
 /**

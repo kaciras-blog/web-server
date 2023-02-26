@@ -3,6 +3,30 @@ import { readFileSync } from "fs";
 import MarkdownIt from "markdown-it";
 import { Footnote, Media, TOC } from "../lib/index.js";
 
+
+function counterPlugin(markdownIt: MarkdownIt) {
+	const inner = markdownIt.renderer.render;
+	markdownIt.renderer.render = function (tokens, options, env) {
+		const counter = env.counter = Object.create(null);
+		for (const { type, children } of tokens) {
+			counter[type] ??= 0;
+			counter[type] += 1;
+
+			if (type === "inline") {
+				for (const { type } of children!) {
+					counter[type] ??= 0;
+					counter[type] += 1;
+				}
+			}
+
+
+		}
+
+		return inner.call(this, tokens, options, env);
+	};
+}
+
+
 /*
  * JS 写的解析器（356.02ms）比正则（56.43ms）慢了7倍。
  * 但即便如此，单次渲染时间差也在 1ms 之内。
@@ -12,6 +36,7 @@ const markdownIt = new MarkdownIt();
 markdownIt.use(TOC);
 markdownIt.use(Media);
 markdownIt.use(Footnote);
+markdownIt.use(counterPlugin);
 
 async function run(name: string, text: string) {
 
@@ -27,7 +52,7 @@ async function run(name: string, text: string) {
 	const end = performance.now();
 
 	console.log("\n" + name);
-	console.log(`${(end - start).toFixed(3)} ms`);
+	console.log(`${((end - start) / 1000).toFixed(3)} ms`);
 }
 
 run("normal", "@gif[A [gif] video](/video/foobar.mp4)");

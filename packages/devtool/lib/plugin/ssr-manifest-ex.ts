@@ -23,34 +23,12 @@ import type { ImportSpecifier } from "es-module-lexer";
 import { parse as parseImports } from "es-module-lexer";
 import type { OutputChunk } from "rollup";
 import type { Plugin, ResolvedConfig } from "vite";
-import { basename, dirname, join, posix, relative } from "path";
-import { platform } from "os";
-
-interface ChunkMetadata {
-	importedAssets: Set<string>;
-	importedCss: Set<string>;
-}
-
-declare module "rollup" {
-	// noinspection JSUnusedGlobalSymbols
-	export interface RenderedChunk {
-		viteMetadata: ChunkMetadata;
-	}
-}
+import { normalizePath } from "vite";
+import { basename, dirname, join, relative } from "path";
 
 const preloadMethod = "__vitePreload";
 
-const isWindows = platform() === "win32";
-
-function slash(p: string): string {
-	return p.replace(/\\/g, "/");
-}
-
-function normalizePath(id: string): string {
-	return posix.normalize(isWindows ? slash(id) : id);
-}
-
-// 感觉 Vite 的这个插件有问题，复制过来修改并测试，也许会提 PR。
+// 感觉 Vite 的这个插件有问题，复制过来修改下，也许会提 PR。
 // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/ssr/ssrManifestPlugin.ts
 
 export function ssrManifestPlugin(): Plugin {
@@ -78,7 +56,7 @@ export function ssrManifestPlugin(): Plugin {
 				if (chunk.type !== "chunk") {
 					continue;
 				}
-				const { importedCss, importedAssets } = chunk.viteMetadata;
+				const { importedCss, importedAssets } = chunk.viteMetadata!;
 
 				for (const id of Object.keys(chunk.modules)) {
 					const normalizedId = normalizePath(relative(config.root, id));
@@ -104,10 +82,11 @@ export function ssrManifestPlugin(): Plugin {
 				const code = chunk.code;
 				let imports: ImportSpecifier[];
 				try {
-					imports = parseImports(code)[0].filter((i) => i.d > -1);
+					imports = parseImports(code)[0].filter(i => i.n && i.d > -1);
 				} catch (e: any) {
 					this.error(e, e.idx);
 				}
+
 				for (const { s: start, e: end, n: name } of imports) {
 					// check the chunk being imported
 					const url = code.slice(start, end);
@@ -122,8 +101,8 @@ export function ssrManifestPlugin(): Plugin {
 						analyzed.add(filename);
 						const chunk = bundle[filename] as OutputChunk | undefined;
 						if (chunk) {
-							chunk.viteMetadata.importedCss.forEach((file) => {
-								deps.push(`/${file}`);
+							chunk.viteMetadata!.importedCss.forEach(file => {
+								deps.push(join(base, file));
 							});
 							chunk.imports.forEach(addDeps);
 						}
