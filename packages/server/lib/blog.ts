@@ -20,6 +20,7 @@ import sitemapHandler from "./koa/sitemap.js";
 import feedMiddleware from "./koa/feed.js";
 import sentryTunnel from "./koa/sentry.js";
 import { getProxyHeaders } from "./fetch-helper.js";
+import * as diagnostics from "./koa/diagnostics.js";
 
 const logger = log4js.getLogger();
 
@@ -112,6 +113,10 @@ export default function getBlogPlugin(options: ResolvedConfig): FunctionPlugin {
 		router.get("/sw-check", toggleSW(app.serviceWorker));
 		router.get("/sitemap.xml", sitemapHandler(address));
 		router.post(CSP_REPORT_URI, reportCSP);
+
+		router.post("/diagnostics/gc", diagnostics.runGC);
+		router.get("/diagnostics/heap-dump", diagnostics.heapSnapshot);
+		router.get("/diagnostics/v8", diagnostics.v8Statistics);
 
 		const { dsn, tunnel } = options.sentry;
 		if (dsn && tunnel) {
