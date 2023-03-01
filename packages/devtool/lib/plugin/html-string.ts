@@ -1,9 +1,9 @@
 import { Plugin } from "vite";
 import MagicString from "magic-string";
-import { process } from "htmlnano";
 
 /**
  * Does not work if attribute value contains "/>".
+ * https://stackoverflow.com/a/14028108/7065321
  */
 const selfCloseRE = /<([^\s>]+)([^>]*)\/>/gs;
 
@@ -15,8 +15,7 @@ const minifyOptions = {
 };
 
 async function transformHTML(html: string) {
-	html = html.replaceAll(selfCloseRE, "<$1$2></$1>");
-	return (await process(html, minifyOptions)).html;
+	return html.replaceAll(selfCloseRE, "<$1$2></$1>");
 }
 
 /**
