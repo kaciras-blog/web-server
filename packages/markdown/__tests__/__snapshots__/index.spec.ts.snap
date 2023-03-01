@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should add anchor to titles 1`] = `
 "<h1 id=\\"foobar\\" tabindex=\\"-1\\">foobar <a class=\\"anchor-link\\" href=\\"#foobar\\">#</a></h1>

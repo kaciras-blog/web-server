@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import supertest from "supertest";
+import { noop } from "@kaciras/utilities/node";
 import Koa from "koa";
 import multer from "@koa/multer";
 import { BadDataError, ParamsError } from "@kaciras-blog/media";
@@ -92,6 +93,7 @@ describe("upload", () => {
 	const app = new Koa();
 	app.use(multer().single("file"));
 	app.use((ctx) => upload(mockService as any, ctx));
+	app.onerror = noop; // 不打印警告。
 
 	const callback = app.callback();
 
