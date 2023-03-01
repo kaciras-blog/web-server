@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@kaciras-blog/markdown": "workspace:^",
 		"@kaciras-blog/media": "workspace:^",
-		"@kaciras/utilities": "^0.6.4",
+		"@kaciras/utilities": "^0.6.5",
 		"@koa/multer": "^3.0.2",
 		"@koa/router": "^12.0.0",
 		"combined-stream": "^1.0.8",
