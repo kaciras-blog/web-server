@@ -1,57 +1,45 @@
 import StateBlock from "markdown-it/lib/rules_block/state_block.js";
 import MarkdownIt from "markdown-it";
 
-function search(state: StateBlock, pattern: string, line: number, endLine: number) {
-	const { src, bMarks } = state;
-	for (; line < endLine; line++) {
-		if (src.startsWith(pattern, bMarks[line])) return line;
-	}
+function isWholeLine(state: StateBlock, lineNum: number, text: string) {
+	const { src, bMarks, tShift, eMarks } = state;
+	const i = bMarks[lineNum] + tShift[lineNum];
+	const k = eMarks[lineNum];
+	return i + text.length === k && src.startsWith(text, i);
 }
 
 function parse(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
-	const { src, md, bMarks } = state;
-	let line = startLine;
+	const { src, md, bMarks, tShift, eMarks } = state;
 
-	if (!src.startsWith("<details>", bMarks[line++])) {
-		return false;
+	if (!isWholeLine(state, startLine, "<details>")) {
+		return false; // MarkdownIt 的匹配总是从当前行开始，不要往下搜索。
 	}
 
-	let summaryEnd;
-	if (src.startsWith("<summary>", bMarks[line])) {
-		summaryEnd = search(state, "</summary>", line + 1, endLine);
-		if (summaryEnd === undefined) {
-			return false;
+	let line = startLine + 1;
+	let nestingLevel = 1;
+	for (; line < endLine && nestingLevel > 0; line++) {
+		if (isWholeLine(state, line, "<details>")) {
+			nestingLevel += 1;
+		} else if (isWholeLine(state, line, "</details>")) {
+			nestingLevel -= 1;
 		}
-		line = summaryEnd + 1;
 	}
 
-	const blockEnd = search(state, "</details>", line, endLine);
-	if (blockEnd === undefined) {
-		return false;
+	if (nestingLevel !== 0) {
+		return false; // Markdown 不完整，为了安全性不要输出半开标签，即使浏览器也能处理。
 	}
 
 	const oldParent = state.parentType;
 	const oldLineMax = state.lineMax;
 	(state.parentType as string) = "collapsible";
-	state.lineMax = blockEnd;
+	state.lineMax = line - 1;
 
 	let token = state.push("collapsible_open", "details", 1);
 	token.block = true;
 	token.markup = "<details>";
-	token.map = [startLine, blockEnd];
+	token.map = [startLine, startLine + 1];
 
-	if (summaryEnd) {
-		state.push("summary_open", "summary", 1);
-
-		// md.inline.parse(params, md, state.env, tokens);
-		token = state.push("inline", "", 0);
-		token.children = [];
-		token.content = src.slice(bMarks[startLine + 1] + 9, bMarks[summaryEnd]);
-
-		state.push("summary_close", "summary", -1);
-	}
-
-	md.block.tokenize(state, line, blockEnd);
+	md.block.tokenize(state, startLine + 1, line - 1);
 
 	token = state.push("collapsible_close", "details", -1);
 	token.block = true;
@@ -59,12 +47,37 @@ function parse(state: StateBlock, startLine: number, endLine: number, silent: bo
 
 	state.parentType = oldParent;
 	state.lineMax = oldLineMax;
-	state.line = blockEnd + 1;
+
+	state.line = line;
+	return true;
+}
+
+function parseSummary(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
+	const { src, bMarks, eMarks } = state;
+
+	if (!isWholeLine(state, startLine, "<summary>")) {
+		return false; // MarkdownIt 的匹配总是从当前行开始，不要往下搜索。
+	}
+	if (state.tokens.at(-1)?.type !== "collapsible_open") {
+		return false; // 限制 <summary> 必须紧跟 <details>，避免写法太多导致以后修改困难。
+	}
+
+	let line = (startLine += 1);
+	for (; line < endLine; line++) {
+		if (isWholeLine(state, line, "</summary>")) break;
+	}
+
+	state.push("summary_open", "summary", 1);
+	const token = state.push("inline", "", 0);
+	token.children = [];
+	token.content = src.slice(bMarks[startLine], eMarks[line - 1]);
+	state.push("summary_close", "summary", -1);
+
+	state.line = line + 1;
 	return true;
 }
 
 export default function (markdownIt: MarkdownIt) {
-	markdownIt.block.ruler.before("fence", "collapsible", parse, {
-		alt: ["paragraph", "reference", "blockquote", "list"],
-	});
+	markdownIt.block.ruler.before("fence", "collapsible", parse);
+	markdownIt.block.ruler.before("fence", "summary", parseSummary);
 }

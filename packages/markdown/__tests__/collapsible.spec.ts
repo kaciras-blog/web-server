@@ -14,16 +14,8 @@ Inside
 </details>
 After
 	`);
-	expect(html).toMatchInlineSnapshot(`
-		"<details>
-		<h1>Test</h1>
-		<p>Inside</p>
-		</details>
-		<p>After</p>
-		"
-	`);
+	expect(html).toBe("<details>\n<h1>Test</h1>\n<p>Inside</p>\n</details>\n<p>After</p>\n");
 });
-
 
 it("should render summary", () => {
 	const html = markdownIt.render(`
@@ -37,9 +29,7 @@ Inside
 </details>`);
 	expect(html).toMatchInlineSnapshot(`
 		"<details>
-		<summary>
-		# Some <code>code</code> text
-		</summary>
+		<summary># Some <code>code</code> text</summary>
 		<h1>Test</h1>
 		<p>Inside</p>
 		</details>
@@ -56,24 +46,48 @@ it("should restrict summary that must at first", () => {
 </summary>
 Content
 </details>`);
+
 	expect(html).toMatchInlineSnapshot(`
 		"<details>
-		<p>&lt;summary&gt;</p>
-		<h1>Header</h1>
-		<p>&lt;/summary&gt;
-		Content</p>
+		<summary># Header</summary>
+		<p>Content</p>
 		</details>
 		"
 	`);
 });
 
-it("should skip brokens", () => {
-	const html = markdownIt.render(`
-<details>
-Content`);
+it("should skip broken text", () => {
+	const html = markdownIt.render("<details>\nContent");
+	expect(html).toBe("<p>&lt;details&gt;\nContent</p>\n");
+});
+
+it("should support nesting", () => {
+	const html = markdownIt.render("<details>\n<details>\nContent\n</details>\n</details>");
+	expect(html).toBe("<details>\n<details>\n<p>Content</p>\n</details>\n</details>\n");
+});
+
+it("should able to placed inside blockquote", () => {
+	const html = markdownIt.render(
+		"> Text Before\n" +
+		"> \n" +
+		"> <details>\n" +
+		"> <summary>\n" +
+		"> Description\n" +
+		"> </summary>\n" +
+		"> Content\n" +
+		"> </details>\n" +
+		"> \n" +
+		"> Text After\n");
+
 	expect(html).toMatchInlineSnapshot(`
-		"<p>&lt;details&gt;
-		Content</p>
+		"<blockquote>
+		<p>Text Before</p>
+		<details>
+		<summary>Description</summary>
+		<p>Content</p>
+		</details>
+		<p>Text After</p>
+		</blockquote>
 		"
 	`);
-}); 
+});
