@@ -27,4 +27,5 @@ export default async function (options: ResolvedDevConfig) {
 	const release = `${name.replace("/", ".")}@${version}`;
 	await cli.releases.new(release);
 	await cli.releases.uploadSourceMaps(release, { include: [build!.outDir!] });
+	await cli.releases.finalize(release);
 }
