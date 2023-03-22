@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@kaciras-blog/markdown": "workspace:^",
 		"@kaciras-blog/media": "workspace:^",
-		"@kaciras/utilities": "^0.6.5",
+		"@kaciras/utilities": "^0.7.0",
 		"@koa/multer": "^3.0.2",
 		"@koa/router": "^12.0.0",
 		"combined-stream": "^1.0.8",
@@ -31,7 +31,7 @@
 		"hash-sum": "^2.0.0",
 		"http-errors": "^2.0.0",
 		"koa": "^2.14.1",
-		"koa-bodyparser": "^4.3.0",
+		"koa-bodyparser": "^4.4.0",
 		"koa-compose": "^4.1.0",
 		"koa-compress": "^5.1.0",
 		"koa-conditional-get": "^3.0.0",
