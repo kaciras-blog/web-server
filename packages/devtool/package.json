@@ -40,8 +40,5 @@
 		"vite-plugin-svg-sfc": "^1.2.0",
 		"vite-tsconfig-paths": "^4.0.7",
 		"vue": "^3.2.47"
-	},
-	"devDependencies": {
-		"deepmerge": "^4.3.1"
 	}
 }

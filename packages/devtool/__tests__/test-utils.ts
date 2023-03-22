@@ -2,23 +2,22 @@ import { join } from "path";
 import { mkdirSync, mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { InputOptions, RollupOutput } from "rollup";
-import { build, InlineConfig, Plugin } from "vite";
+import { build, InlineConfig, mergeConfig, Plugin } from "vite";
 import { afterEach, beforeEach, expect } from "vitest";
-import deepmerge from "deepmerge";
 
 const TE_ID = resolveFixture("_TEST_ENTRY_.js");
 
-export function testEntry(code: string): Plugin {
+export function testEntry(code: string, name = TE_ID): Plugin {
 	return {
 		name: "test-entry",
 		options(options: InputOptions) {
-			return { ...options, input: TE_ID };
+			return { ...options, input: name };
 		},
 		resolveId(source: string) {
-			return source === TE_ID ? source : null;
+			return source === name ? source : null;
 		},
 		load(id: string) {
-			if (id !== TE_ID) {
+			if (id !== name) {
 				return null;
 			}
 			return { code, moduleSideEffects: "no-treeshake" };
@@ -48,7 +47,8 @@ function autoResolve(object: any, key: string) {
 }
 
 export function runVite(config: InlineConfig) {
-	config = deepmerge(baseConfig, config);
+// Vite 自带了 mergeConfig 函数，也是递归合并对象，而且增加了对某些属性的特殊处理。
+	config = mergeConfig(baseConfig, config);
 
 	autoResolve(config.build?.rollupOptions, "input");
 	autoResolve(config.build, "ssr");
@@ -57,7 +57,7 @@ export function runVite(config: InlineConfig) {
 }
 
 export function viteWrite(outDir: string, config: InlineConfig) {
-	return runVite(deepmerge(config, { build: { outDir, write: true } }));
+	return runVite(mergeConfig(config, { build: { outDir, write: true } }));
 }
 
 /**

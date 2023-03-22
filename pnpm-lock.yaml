@@ -32,7 +32,6 @@ importers:
       '@sentry/cli': ^2.15.2
       '@vitejs/plugin-vue': ^4.1.0
       colorette: ^2.0.19
-      deepmerge: ^4.3.1
       es-module-lexer: ^1.2.0
       htmlnano: ^2.0.3
       log4js: ^6.9.1
@@ -62,8 +61,6 @@ importers:
       vite-plugin-svg-sfc: 1.2.0
       vite-tsconfig-paths: 4.0.7_vite@4.2.1
       vue: 3.2.47
-    devDependencies:
-      deepmerge: 4.3.1
 
   packages/markdown:
     specifiers:
@@ -2384,11 +2381,6 @@ packages:
 
   /deep-is/0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
-    dev: true
-
-  /deepmerge/4.3.1:
-    resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
-    engines: {node: '>=0.10.0'}
     dev: true
 
   /define-lazy-prop/2.0.0:
