@@ -1,9 +1,12 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"lib": ["ESNext", "DOM"],
 		"module": "ESNext",
-		"moduleResolution": "NodeNext",
+		"lib": ["ESNext", "DOM"],
+
+		// 虽然没用打包器，但 bundler 可以解决 CJS 包的类型导出问题。
+		"moduleResolution": "bundler",
+
 		"sourceMap": true,
 		"strict": true,
 		"skipLibCheck": true,
