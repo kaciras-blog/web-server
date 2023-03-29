@@ -7,6 +7,9 @@ type GetPriority = (id: string) => { name: string; priority: number };
 
 /**
  * 基于优先级的模块合并，该算法会将被多个 Chunk 同步导入的模块合并到其中优先级最高的一个里面。
+ * 该算法能够减少 Chunk 的数量，但会导致低优先级的 Chunk 消耗额外的流量。
+ *
+ * 该功能占用 Rollup 的 manualChunks 选项，无法与 splitVendorChunkPlugin 一起用。
  *
  * # Rollup 会添加同样的功能吗？
  * 最近添加了个 experimentalMinChunkSize，但经测试对本项目的问题没用。

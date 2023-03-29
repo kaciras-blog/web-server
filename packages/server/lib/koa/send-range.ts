@@ -1,5 +1,5 @@
 /*
- * koa-range 2年没更新，也没找到其它能替代的库，故自己写一个。
+ * koa-range 2 年没更新，也没找到其它能替代的库，故自己写一个。
  *
  * https://github.com/koajs/koa-range
  */
@@ -44,23 +44,21 @@ export class FileRangeReader implements RangeReader {
 		this.filename = filename;
 	}
 
+	// N 段范围的话会打开 N 次文件，性能好像有点问题。
 	getData(range?: Range) {
 		return fs.createReadStream(this.filename, range);
 	}
 }
 
 /**
- * 处理Range请求，发送部分文件。
+ * 处理 Range 请求，发送文件的一部分。暂不支持 If-Range 头。
  *
  * 该函数中会设置状态码，Accept-Ranges，Content-Length 和 Content-Range 头，
  * 请在调用该函数之前设置ctx.type
  *
- * 暂不支持 If-Range 头。
- *
- * @see https://tools.ietf.org/html/rfc7233#section-4.1
- *
  * @param ctx Koa上下文
  * @param reader 数据源
+ * @see https://tools.ietf.org/html/rfc7233#section-4.1
  */
 export default function sendFileRange(ctx: BaseContext, reader: RangeReader) {
 	const { size } = reader;

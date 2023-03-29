@@ -8,9 +8,7 @@ function isWholeLine(state: StateBlock, lineNum: number, text: string) {
 	return i + text.length === k && src.startsWith(text, i);
 }
 
-function parse(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
-	const { src, md, bMarks, tShift, eMarks } = state;
-
+function parse(state: StateBlock, startLine: number, endLine: number) {
 	if (!isWholeLine(state, startLine, "<details>")) {
 		return false; // MarkdownIt 的匹配总是从当前行开始，不要往下搜索。
 	}
@@ -39,7 +37,7 @@ function parse(state: StateBlock, startLine: number, endLine: number, silent: bo
 	token.markup = "<details>";
 	token.map = [startLine, startLine + 1];
 
-	md.block.tokenize(state, startLine + 1, line - 1);
+	state.md.block.tokenize(state, startLine + 1, line - 1);
 
 	token = state.push("collapsible_close", "details", -1);
 	token.block = true;
@@ -52,14 +50,15 @@ function parse(state: StateBlock, startLine: number, endLine: number, silent: bo
 	return true;
 }
 
-function parseSummary(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
+// 先仅支持在 summary 里写行内语法，如果由需求再看看要不要支持全部。
+function parseSummary(state: StateBlock, startLine: number, endLine: number) {
 	const { src, bMarks, eMarks } = state;
 
 	if (!isWholeLine(state, startLine, "<summary>")) {
 		return false; // MarkdownIt 的匹配总是从当前行开始，不要往下搜索。
 	}
 	if (state.tokens.at(-1)?.type !== "collapsible_open") {
-		return false; // 限制 <summary> 必须紧跟 <details>，避免写法太多导致以后修改困难。
+		return false; // 限制 <summary> 必须紧跟 <details>，避免写法太多以后修改困难。
 	}
 
 	let line = (startLine += 1);

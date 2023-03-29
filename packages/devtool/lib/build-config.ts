@@ -26,7 +26,7 @@ function chunkNameAdnPriority(id: string) {
 }
 
 /**
- * 创建 Vite 的配置。由于架构不同，仅需一个函数，比以前三个 getWebpackConfig 简单多了。
+ * 创建 Vite 的配置。仅需一个函数，比以前三个 getWebpackConfig 简单多了。
  *
  * 因为 ConfigEnv 没有 SSR 信息，所以没用 UserConfigFn 而是传 isSSR 参数来区分。
  */

@@ -213,7 +213,6 @@ export default function (root: string, options: Options = {}): Middleware {
 		switch (ctx.method) {
 			case "HEAD":
 			case "GET":
-			case "OPTIONS":
 				break;
 			default:
 				return next();

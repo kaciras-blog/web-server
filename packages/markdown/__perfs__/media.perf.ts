@@ -38,7 +38,7 @@ markdownIt.use(Media);
 markdownIt.use(Footnote);
 markdownIt.use(counterPlugin);
 
-async function run(name: string, text: string) {
+function run(name: string, text: string) {
 
 	function iter() {
 		for (let i = 0; i < 1000; i++) markdownIt.render(text);

@@ -58,7 +58,6 @@ function parseChunks(res: supertest.Response, callback: (err: Error | null, body
 	let data = "";
 	res.on("data", d => data += d);
 	res.on("end", () => {
-		// @ts-ignore DefinedTypes 跟不上版本
 		const boundary = res.headers["content-type"]
 			.substring("multipart/byteranges; boundary=".length);
 

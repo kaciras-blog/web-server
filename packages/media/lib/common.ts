@@ -36,9 +36,7 @@ export function hashName(buffer: Buffer) {
 }
 
 /**
- * 将 FileBody 的多种数据类型类型统一转换为 Buffer。
- *
- * 如果是字符串则使用 UTF-8 解码。
+ * 将 FileBody 的多种数据类型类型统一转换为 Buffer。如果是字符串则使用 UTF-8 解码。
  */
 export async function bodyToBuffer(body: FileBody) {
 	if (typeof body === "string") {
@@ -47,6 +45,8 @@ export async function bodyToBuffer(body: FileBody) {
 		return body;
 	}
 
+	// NodeJS 16+ 新出的模块：
+	// return import("stream/consumers").buffer(body);
 	const chunks = [];
 	for await (const chunk of body) {
 		chunks.push(chunk);
