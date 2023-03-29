@@ -1,5 +1,5 @@
 import { mean, median, sum } from "simple-statistics";
-import { formatSize } from "@kaciras/utilities/node";
+import { dataSizeIEC } from "@kaciras/utilities/node";
 import {
 	CachedService,
 	DispatchService,
@@ -53,8 +53,8 @@ class ServiceChecker {
 		rows.push({
 			name,
 			count: items.length,
-			median: formatSize(median(sizes)),
-			mean: formatSize(mean(sizes)),
+			median: dataSizeIEC.formatDiv(median(sizes)),
+			mean: dataSizeIEC.formatDiv(mean(sizes)),
 			"ratio %": (sum(sizes) / uncompressed * 100).toFixed(2),
 		});
 	}
@@ -91,9 +91,9 @@ export default async function s(source: string, cache: string) {
 		rows.push({
 			type,
 			count: list.length,
-			totalSize: formatSize(sum(sizes)),
-			mean: formatSize(mean(sizes)),
-			median: formatSize(median(sizes)),
+			totalSize: dataSizeIEC.formatDiv(sum(sizes)),
+			mean: dataSizeIEC.formatDiv(mean(sizes)),
+			median: dataSizeIEC.formatDiv(median(sizes)),
 		});
 	}
 	flushTable("所有源文件大小统计（按类型分组）：");
