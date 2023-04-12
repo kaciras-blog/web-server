@@ -33,7 +33,7 @@
 		"koa": "^2.14.1",
 		"koa-bodyparser": "^4.4.0",
 		"koa-compose": "^4.1.0",
-		"koa-compress": "^5.1.0",
+		"koa-compress": "^5.1.1",
 		"koa-conditional-get": "^3.0.0",
 		"log4js": "^6.9.1",
 		"markdown-it": "^13.0.1",
@@ -63,7 +63,7 @@
 		"@types/replace-ext": "^2.0.0",
 		"@types/supertest": "^2.0.12",
 		"koa-static": "^5.0.0",
-		"memfs": "^3.4.13",
+		"memfs": "^3.5.0",
 		"supertest": "^6.3.3"
 	}
 }
