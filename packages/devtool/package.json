@@ -10,7 +10,7 @@
 	},
 	"type": "module",
 	"engines": {
-		"node": ">=18"
+		"node": ">=20"
 	},
 	"main": "lib/index.js",
 	"types": "lib/index.ts",
@@ -26,19 +26,19 @@
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras-blog/server": "workspace:^",
 		"@rollup/plugin-replace": "^5.0.2",
-		"@sentry/cli": "^2.17.1",
+		"@sentry/cli": "^2.17.3",
 		"@vitejs/plugin-vue": "^4.1.0",
-		"colorette": "^2.0.19",
+		"colorette": "^2.0.20",
 		"es-module-lexer": "^1.2.1",
-		"htmlnano": "^2.0.3",
+		"htmlnano": "^2.0.4",
 		"log4js": "^6.9.1",
 		"magic-string": "^0.30.0",
-		"rollup": "^3.20.2",
+		"rollup": "^3.20.6",
 		"rollup-plugin-visualizer": "^5.9.0",
-		"vite": "^4.2.1",
-		"vite-plugin-inspect": "^0.7.20",
+		"vite": "^4.2.2",
+		"vite-plugin-inspect": "^0.7.22",
 		"vite-plugin-svg-sfc": "^1.2.1",
-		"vite-tsconfig-paths": "^4.1.0",
+		"vite-tsconfig-paths": "^4.2.0",
 		"vue": "^3.2.47"
 	}
 }

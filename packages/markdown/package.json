@@ -9,7 +9,7 @@
 		"directory": "packages/markdown"
 	},
 	"engines": {
-		"node": ">=18"
+		"node": ">=20"
 	},
 	"type": "module",
 	"main": "lib/index.js",
