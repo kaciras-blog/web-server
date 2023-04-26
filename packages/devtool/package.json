@@ -30,7 +30,6 @@
 		"@vitejs/plugin-vue": "^4.2.0",
 		"colorette": "^2.0.20",
 		"es-module-lexer": "^1.2.1",
-		"htmlnano": "^2.0.4",
 		"log4js": "^6.9.1",
 		"magic-string": "^0.30.0",
 		"rollup": "^3.21.0",
