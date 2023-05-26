@@ -16,10 +16,10 @@
 		"@kaciras/eslint-config-typescript": "^2.5.1",
 		"@vitest/coverage-c8": "^0.31.1",
 		"c8": "^7.13.0",
-		"eslint": "^8.40.0",
+		"eslint": "^8.41.0",
 		"mockttp": "^3.7.5",
 		"typescript": "^5.0.4",
-		"vite": "^4.3.7",
+		"vite": "^4.3.8",
 		"vitest": "^0.31.1"
 	}
 }
