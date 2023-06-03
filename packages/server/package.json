@@ -63,7 +63,7 @@
 		"@types/replace-ext": "^2.0.0",
 		"@types/supertest": "^2.0.12",
 		"koa-static": "^5.0.0",
-		"memfs": "^3.5.1",
+		"memfs": "^3.5.2",
 		"supertest": "^6.3.3"
 	}
 }
