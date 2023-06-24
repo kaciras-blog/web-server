@@ -109,8 +109,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2
       '@kaciras/utilities':
-        specifier: ^0.9.1
-        version: 0.9.1
+        specifier: ^0.9.2
+        version: 0.9.2
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
@@ -161,8 +161,8 @@ importers:
         specifier: workspace:^
         version: link:../media
       '@kaciras/utilities':
-        specifier: ^0.9.1
-        version: 0.9.1
+        specifier: ^0.9.2
+        version: 0.9.2
       '@koa/multer':
         specifier: ^3.0.2
         version: 3.0.2(multer@1.4.5-lts.1)
@@ -185,8 +185,8 @@ importers:
         specifier: ^2.14.2
         version: 2.14.2
       koa-bodyparser:
-        specifier: ^4.4.0
-        version: 4.4.0
+        specifier: ^4.4.1
+        version: 4.4.1
       koa-compose:
         specifier: ^4.1.0
         version: 4.1.0
@@ -920,8 +920,8 @@ packages:
       eslint-utils: 3.0.0(eslint@8.43.0)
     dev: true
 
-  /@kaciras/utilities@0.9.1:
-    resolution: {integrity: sha512-mLE0DZwnVIzP+LktdjGHkBZoc2zRE1Ys3ZyX/pxY0tjLBZMCptoAGeRmr6GmUOKEpDbS7gfAjP57hC4PRTE5jg==}
+  /@kaciras/utilities@0.9.2:
+    resolution: {integrity: sha512-YxK3VpclAoDBC8BQPBeflE0RH6rQFEvHc6KGiPaIA5zZ2s3aTMvYjr4Fu85B3Tj1fBZC0YOVNUrj/ggmlYaO3Q==}
     dev: false
 
   /@koa/multer@3.0.2(multer@1.4.5-lts.1):
@@ -3975,12 +3975,13 @@ packages:
       json-buffer: 3.0.0
     dev: false
 
-  /koa-bodyparser@4.4.0:
-    resolution: {integrity: sha512-AXPY7wwKZUmbgb8VkTEUFoRNOlx6aWRJwEnQD+zfNf33/7KSAkN4Oo9BqlIk80D+5TvuqlhpQT5dPVcyxl5Zsw==}
+  /koa-bodyparser@4.4.1:
+    resolution: {integrity: sha512-kBH3IYPMb+iAXnrxIhXnW+gXV8OTzCu8VPDqvcDHW9SQrbkHmqPQtiZwrltNmSq6/lpipHnT7k7PsjlVD7kK0w==}
     engines: {node: '>=8.0.0'}
     dependencies:
       co-body: 6.1.0
       copy-to: 2.0.1
+      type-is: 1.6.18
     dev: false
 
   /koa-compose@4.1.0:
