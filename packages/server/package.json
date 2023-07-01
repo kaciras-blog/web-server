@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@kaciras-blog/markdown": "workspace:^",
 		"@kaciras-blog/media": "workspace:^",
-		"@kaciras/utilities": "^0.9.2",
+		"@kaciras/utilities": "^0.9.3",
 		"@koa/multer": "^3.0.2",
 		"@koa/router": "^12.0.0",
 		"combined-stream": "^1.0.8",
@@ -63,7 +63,7 @@
 		"@types/replace-ext": "^2.0.0",
 		"@types/supertest": "^2.0.12",
 		"koa-static": "^5.0.0",
-		"memfs": "^3.5.3",
+		"memfs": "^4.2.0",
 		"supertest": "^6.3.3"
 	}
 }
