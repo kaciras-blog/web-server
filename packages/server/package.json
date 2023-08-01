@@ -49,7 +49,7 @@
 		"@types/combined-stream": "^1.0.3",
 		"@types/hash-sum": "^1.0.0",
 		"@types/http-errors": "^2.0.1",
-		"@types/koa": "^2.13.6",
+		"@types/koa": "^2.13.8",
 		"@types/koa-bodyparser": "^4.3.10",
 		"@types/koa-compress": "^4.0.3",
 		"@types/koa-conditional-get": "^2.0.0",
