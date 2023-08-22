@@ -21,11 +21,11 @@
 		"@kaciras-blog/nativelib": "^0.3.2",
 		"@kaciras/utilities": "^0.10.0",
 		"cli-progress": "^3.12.0",
-		"execa": "^7.2.0",
+		"execa": "^8.0.1",
 		"gifsicle": "^7.0.1",
 		"log4js": "^6.9.1",
 		"mozjpeg": "^8.0.0",
-		"sharp": "^0.32.4",
+		"sharp": "^0.32.5",
 		"simple-statistics": "^7.8.3",
 		"svgo": "^3.0.2"
 	},
