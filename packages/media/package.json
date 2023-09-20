@@ -25,12 +25,12 @@
 		"gifsicle": "^7.0.1",
 		"log4js": "^6.9.1",
 		"mozjpeg": "^8.0.0",
-		"sharp": "^0.32.5",
+		"sharp": "^0.32.6",
 		"simple-statistics": "^7.8.3",
 		"svgo": "^3.0.2"
 	},
 	"devDependencies": {
-		"@types/cli-progress": "^3.11.0",
+		"@types/cli-progress": "^3.11.2",
 		"@types/gifsicle": "^5.2.0",
 		"@types/mime-types": "^2.1.1",
 		"@types/mozjpeg": "^5.0.0",
