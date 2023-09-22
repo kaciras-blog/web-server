@@ -1,15 +1,9 @@
+import { coreRenderer } from "@kaciras-blog/markdown/presets";
 import { Feed } from "feed";
 import { ExtendableContext } from "koa";
-import MarkdownIt from "markdown-it";
-import { Footnote, Media, TOC } from "@kaciras-blog/markdown";
 import { once } from "../functions.js";
 import { buildURL, CachedFetcher } from "../fetch-helper.js";
 import { ResolvedConfig } from "../config.js";
-
-const markdownIt = new MarkdownIt();
-markdownIt.use(TOC);
-markdownIt.use(Media);
-markdownIt.use(Footnote);
 
 interface FeedContext extends ExtendableContext {
 	params: { type: string };
@@ -48,7 +42,7 @@ export default function feedMiddleware(config: ResolvedConfig) {
 				name: author,
 			},
 			link: `${origin}/article/${article.id}/${article.urlTitle}`,
-			content: markdownIt.render(article.content),
+			content: coreRenderer.render(article.content),
 		}));
 
 		// 几个输出的结果也缓存一下，一个大约占 60K 内存

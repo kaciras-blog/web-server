@@ -21,7 +21,7 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/markdown": "workspace:^",
+		"@kaciras-blog/markdown": "^3.0.1",
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras/utilities": "^0.10.1",
 		"@koa/multer": "^3.0.2",
@@ -36,7 +36,6 @@
 		"koa-compress": "^5.1.1",
 		"koa-conditional-get": "^3.0.0",
 		"log4js": "^6.9.1",
-		"markdown-it": "^13.0.1",
 		"mime-types": "^2.1.35",
 		"minimist": "^1.2.8",
 		"multer": "1.4.5-lts.1",
@@ -56,7 +55,6 @@
 		"@types/koa-static": "^4.0.2",
 		"@types/koa__multer": "^2.0.5",
 		"@types/koa__router": "^12.0.1",
-		"@types/markdown-it": "^13.0.1",
 		"@types/mime-types": "^2.1.1",
 		"@types/minimist": "^1.2.2",
 		"@types/range-parser": "^1.2.4",

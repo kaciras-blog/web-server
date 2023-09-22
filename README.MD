@@ -12,6 +12,4 @@ Kaciras Blog 的前端的开发工具和页面服务器。
 
 * [@kaciras-blog/media](packages/media) 媒体资源处理模块，处理媒体资源请求，支持优化、转码图片等功能。
 
-* [@kaciras-blog/markdown](packages/markdown) 一些自定义的 Markdown 语法处理器。
-
 * [@kaciras-blog/devtool](packages/devtool) 博客的开发套件，包含了构建配置，支持服务端渲染和热重载。
