@@ -7,7 +7,7 @@ export default defineConfig({
 
 		coverage: {
 			reporter: ["lcov"],
-			provider: "c8",
+			provider: "v8",
 		},
 
 		include: ["packages/*/__tests__/**/*.spec.ts"],
