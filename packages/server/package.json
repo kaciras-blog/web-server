@@ -59,9 +59,9 @@
 		"@types/minimist": "^1.2.2",
 		"@types/range-parser": "^1.2.4",
 		"@types/replace-ext": "^2.0.0",
-		"@types/supertest": "^2.0.12",
+		"@types/supertest": "^2.0.13",
 		"koa-static": "^5.0.0",
-		"memfs": "^4.3.0",
+		"memfs": "^4.5.0",
 		"supertest": "^6.3.3"
 	}
 }
