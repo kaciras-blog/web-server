@@ -103,8 +103,8 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 				},
 			},
 
-			// 图片体积大很正常，所以放宽点。
-			chunkSizeWarningLimit: 2048,
+			// 不需要每次都提醒，构建大小应该在优化期处理。
+			chunkSizeWarningLimit: Infinity,
 
 			// 关闭压缩测试增加性能，因为另有插件做压缩。
 			reportCompressedSize: false,
