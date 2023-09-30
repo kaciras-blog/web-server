@@ -5,6 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import inspect from "vite-plugin-inspect";
 import vueSvgSfc from "vite-plugin-svg-sfc";
 import vue from "@vitejs/plugin-vue";
+import autoprefixer from "autoprefixer";
 import { ResolvedDevConfig } from "./options.js";
 import compressAssets from "./plugin/compress-assets.js";
 import SWPlugin from "./plugin/service-worker.js";
@@ -12,16 +13,17 @@ import optimizeImage from "./plugin/optimize-image.js";
 import { ssrManifestPlugin } from "./plugin/ssr-manifest-ex.js";
 import { mergeByPriority } from "./manual-chunks.js";
 
+const chunkPriority = [
+	"Console.vue",
+	"EditorPage.vue",
+	"MarkdownView.vue",
+	"index.html",
+];
+
 // 这个函数应该放到 website 项目里，但这需要重新设计架构，下一版再说。
 function chunkNameAdnPriority(id: string) {
 	const name = basename(id);
-	const list = [
-		"Console.vue",
-		"EditorPage.vue",
-		"MarkdownView.vue",
-		"index.html",
-	];
-	return { name, priority: list.indexOf(name) };
+	return { name, priority: chunkPriority.indexOf(name) };
 }
 
 /**
@@ -77,6 +79,9 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 		css: {
 			modules: {
 				generateScopedName: minify ? "[hash:base64:5]" : undefined,
+			},
+			postcss: {
+				plugins: [autoprefixer()],
 			},
 		},
 		/*
