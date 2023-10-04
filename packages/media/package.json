@@ -30,9 +30,9 @@
 		"svgo": "^3.0.2"
 	},
 	"devDependencies": {
-		"@types/cli-progress": "^3.11.2",
+		"@types/cli-progress": "^3.11.3",
 		"@types/gifsicle": "^5.2.0",
-		"@types/mime-types": "^2.1.1",
+		"@types/mime-types": "^2.1.2",
 		"@types/mozjpeg": "^5.0.0",
 		"file-type": "^18.5.0"
 	}
