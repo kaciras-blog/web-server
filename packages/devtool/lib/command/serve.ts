@@ -1,7 +1,6 @@
 import { readFileSync } from "fs";
 import { createServer, ViteDevServer } from "vite";
 import { AppBuilder, getBlogPlugin, renderSSR } from "@kaciras-blog/server";
-import startServer from "@kaciras-blog/server/lib/create-server.js";
 import getViteConfig from "../build-config.js";
 import { ResolvedDevConfig } from "../options.js";
 
@@ -52,9 +51,8 @@ export default async function (options: ResolvedDevConfig, signal: AbortSignal) 
 	app.proxy = !!options.server.useForwardedHeaders;
 	vite.middlewares.use(app.callback());
 
-	const connector = await startServer(vite.middlewares as any, options.server);
-
-	console.info("\n- Local URL: https://localhost/\n");
+	const connector = vite.middlewares.listen(80);
+	console.info("\n- Local URL: http://localhost/\n");
 
 	signal.addEventListener("abort", () => vite.close());
 	signal.addEventListener("abort", () => connector.close());
