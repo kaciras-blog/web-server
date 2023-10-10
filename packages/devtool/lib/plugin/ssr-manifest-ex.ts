@@ -83,8 +83,8 @@ export function ssrManifestPlugin(): Plugin {
 				let imports: ImportSpecifier[];
 				try {
 					imports = parseImports(code)[0].filter(i => i.n && i.d > -1);
-				} catch (e: any) {
-					this.error(e, e.idx);
+				} catch (e) {
+					this.error(e);
 				}
 
 				for (const { s: start, e: end, n: name } of imports) {
