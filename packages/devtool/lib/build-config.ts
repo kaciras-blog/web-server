@@ -13,17 +13,20 @@ import optimizeImage from "./plugin/optimize-image.js";
 import { ssrManifestPlugin } from "./plugin/ssr-manifest-ex.js";
 import { mergeByPriority } from "./manual-chunks.js";
 
-const chunkPriority = [
-	"Console.vue",
-	"EditorPage.vue",
-	"MarkdownView.vue",
-	"index.html",
+const chunkPriority: Array<[RegExp, string]> = [
+	[/Console\.vue/, "Console"],
+	[/Edit\w+Page\.vue/, "EditorPage"],
+	[/MarkdownView\.vue/, "MarkdownView"],
+	[/index\.html/, "index"],
 ];
 
 // 这个函数应该放到 website 项目里，但这需要重新设计架构，下一版再说。
 function chunkNameAdnPriority(id: string) {
 	const name = basename(id);
-	return { name, priority: chunkPriority.indexOf(name) };
+	const i = chunkPriority.findIndex(x => x[0].test(name));
+	return i === -1
+		? { name, priority: -1 }
+		: { name: chunkPriority[i][1], priority: i };
 }
 
 /**
