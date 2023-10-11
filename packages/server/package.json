@@ -21,7 +21,7 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/markdown": "^3.0.1",
+		"@kaciras-blog/markdown": "^3.0.2",
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras/utilities": "^0.10.1",
 		"@koa/multer": "^3.0.2",
@@ -61,7 +61,7 @@
 		"@types/replace-ext": "^2.0.0",
 		"@types/supertest": "^2.0.14",
 		"koa-static": "^5.0.0",
-		"memfs": "^4.5.0",
+		"memfs": "^4.6.0",
 		"supertest": "^6.3.3"
 	}
 }
