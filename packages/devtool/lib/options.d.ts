@@ -1,6 +1,7 @@
 import { Options as VueOptions } from "@vitejs/plugin-vue";
 import { BlogServerConfig, ResolvedConfig } from "@kaciras-blog/server";
-import { ServiceWorkerOptions } from "./plugin/service-worker";
+import { PriorityArg } from "./manual-chunks.js";
+import { ServiceWorkerOptions } from "./plugin/service-worker.js";
 
 export interface DevelopmentOptions extends BlogServerConfig {
 	build: BuildOptions;
@@ -18,4 +19,5 @@ export interface BuildOptions {
 	debug?: boolean;
 	serviceWorker?: ServiceWorkerOptions;
 	vueOptions: VueOptions;
+	chunkPriority?: PriorityArg;
 }

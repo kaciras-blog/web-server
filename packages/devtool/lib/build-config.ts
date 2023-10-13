@@ -1,4 +1,4 @@
-import { basename, join } from "path";
+import { join } from "path";
 import { InlineConfig } from "vite";
 import { visualizer } from "rollup-plugin-visualizer";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -13,22 +13,6 @@ import optimizeImage from "./plugin/optimize-image.js";
 import { ssrManifestPlugin } from "./plugin/ssr-manifest-ex.js";
 import { mergeByPriority } from "./manual-chunks.js";
 
-const chunkPriority: Array<[RegExp, string]> = [
-	[/Console\.vue/, "Console"],
-	[/Edit\w+Page\.vue/, "EditorPage"],
-	[/MarkdownView\.vue/, "MarkdownView"],
-	[/index\.html/, "index"],
-];
-
-// 这个函数应该放到 website 项目里，但这需要重新设计架构，下一版再说。
-function chunkNameAdnPriority(id: string) {
-	const name = basename(id);
-	const i = chunkPriority.findIndex(x => x[0].test(name));
-	return i === -1
-		? { name, priority: -1 }
-		: { name: chunkPriority[i][1], priority: i };
-}
-
 /**
  * 创建 Vite 的配置。仅需一个函数，比以前三个 getWebpackConfig 简单多了。
  *
@@ -37,7 +21,7 @@ function chunkNameAdnPriority(id: string) {
 export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: boolean) {
 	const { backend, build, ssr, env = {} } = options;
 	const {
-		mode, debug, sourcemap,
+		mode, debug, sourcemap, chunkPriority,
 		bundleAnalyzer, serviceWorker, vueOptions,
 	} = build;
 
@@ -105,9 +89,9 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			minify,
 			ssr: isSSR && ssr,
 
-			rollupOptions: isSSR ? undefined : {
+			rollupOptions: isSSR || !chunkPriority ? undefined : {
 				output: {
-					manualChunks: mergeByPriority(chunkNameAdnPriority),
+					manualChunks: mergeByPriority(chunkPriority),
 				},
 			},
 
