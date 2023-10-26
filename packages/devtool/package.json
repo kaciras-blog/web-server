@@ -35,10 +35,10 @@
 		"magic-string": "^0.30.5",
 		"rollup": "^4.1.4",
 		"rollup-plugin-visualizer": "^5.9.2",
-		"vite": "^4.4.11",
+		"vite": "^4.5.0",
 		"vite-plugin-inspect": "^0.7.40",
 		"vite-plugin-svg-sfc": "^1.2.1",
 		"vite-tsconfig-paths": "^4.2.1",
-		"vue": "^3.3.4"
+		"vue": "^3.3.7"
 	}
 }

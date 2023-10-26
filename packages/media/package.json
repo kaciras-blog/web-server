@@ -31,9 +31,9 @@
 	},
 	"devDependencies": {
 		"@types/cli-progress": "^3.11.4",
-		"@types/gifsicle": "^5.2.0",
-		"@types/mime-types": "^2.1.2",
-		"@types/mozjpeg": "^5.0.0",
+		"@types/gifsicle": "^5.2.1",
+		"@types/mime-types": "^2.1.3",
+		"@types/mozjpeg": "^5.0.1",
 		"file-type": "^18.5.0"
 	}
 }
