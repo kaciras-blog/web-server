@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@kaciras-blog/markdown": "^3.2.0",
 		"@kaciras-blog/media": "workspace:^",
-		"@kaciras/utilities": "^0.10.2",
+		"@kaciras/utilities": "^0.10.3",
 		"@koa/multer": "^3.0.2",
 		"@koa/router": "^12.0.1",
 		"combined-stream": "^1.0.8",
@@ -42,7 +42,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^7.1.1",
-		"vue": "^3.3.9"
+		"vue": "^3.3.10"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.6",
