@@ -12,8 +12,8 @@
 		"release": "tsc && pnpm publish -r --no-git-checks"
 	},
 	"devDependencies": {
-		"@kaciras/eslint-config-core": "^2.6.1",
-		"@kaciras/eslint-config-typescript": "^2.6.2",
+		"@kaciras/eslint-config-core": "^2.6.3",
+		"@kaciras/eslint-config-typescript": "^2.6.3",
 		"@vitest/coverage-v8": "^1.1.0",
 		"eslint": "^8.56.0",
 		"mockttp": "^3.10.0",
