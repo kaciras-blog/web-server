@@ -42,13 +42,13 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^7.1.1",
-		"vue": "^3.4.5"
+		"vue": "^3.4.10"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.6",
 		"@types/hash-sum": "^1.0.2",
 		"@types/http-errors": "^2.0.4",
-		"@types/koa": "^2.13.12",
+		"@types/koa": "^2.14.0",
 		"@types/koa-bodyparser": "^4.3.12",
 		"@types/koa-compress": "^4.0.6",
 		"@types/koa-conditional-get": "^2.0.3",
