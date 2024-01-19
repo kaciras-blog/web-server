@@ -39,7 +39,7 @@ export default function sentryTunnel(dsn: string) {
 			ctx.body = response.body;
 		} catch (e) {
 			ctx.body = {};
-			logger.warn("无法代理请求到 Sentry", e);
+			logger.warn(`无法代理请求到 Sentry: ${e.message}`);
 		}
 	};
 }

@@ -18,7 +18,7 @@ const logger = log4js.getLogger("init");
 
 const require = createRequire(import.meta.url);
 
-export async function loadConfig(profile: string) {
+async function loadConfig(profile: string) {
 	let file = path.join(process.cwd(), "config");
 	if (profile) {
 		file = path.join(file, profile);
