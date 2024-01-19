@@ -4,6 +4,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import tsconfigPaths from "vite-tsconfig-paths";
 import inspect from "vite-plugin-inspect";
 import vueSvgSfc from "vite-plugin-svg-sfc";
+import replace from "@rollup/plugin-replace";
 import vue from "@vitejs/plugin-vue";
 import autoprefixer from "autoprefixer";
 import { ResolvedDevConfig } from "./options.js";
@@ -33,17 +34,6 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 	}
 
 	const define: Record<string, unknown> = {};
-
-	/*
-	 * Webpack 等旧一代工具常用 `typeof window` 来判断环境，至今仍有许多库使用这种方法，
-	 * 但 Vite 这样以 ESM 为基准的默认不内联它们，所以手动兼容一下，以便 Tree Shaking。
-	 *
-	 * 因为开发模式下客户端和 SSR 端共用一套配置，所以只能在构建模式里替换，作为优化手段。
-	 */
-	if (isBuild) {
-		define["typeof window"] = isSSR ? "'undefined'" : "'object'";
-	}
-
 	env.SENTRY_DSN = options.sentry.dsn;
 	env.SENTRY_TUNNEL = options.sentry.tunnel;
 	env.API_INTERNAL = backend.internal;
@@ -99,6 +89,16 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 			ssrManifestPlugin(),
 			vueSvgSfc({ svgProps: attrs => delete attrs.class }),
 			vue(vueOptions),
+
+			/*
+			 * Webpack 等旧一代工具常用 `typeof window` 来判断环境，至今仍有许多库使用这种方法，
+			 * 但 Vite 这样以 ESM 为基准的默认不内联它们，所以手动兼容一下，以便 Tree Shaking。
+			 *
+			 * 因为开发模式下客户端和 SSR 端共用一套配置，所以只能在构建模式里替换，作为优化手段。
+			 */
+			replace({
+				"typeof window": isSSR ? "'undefined'" : "'object'",
+			}),
 
 			tsconfigPaths({ loose: true, projects: ["tsconfig.json"] }),
 

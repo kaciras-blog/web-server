@@ -64,10 +64,7 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 		const manifest = JSON.stringify(files.sort(), null, "\t");
 
 		const used: Plugin[] = [
-			replace({
-				"self.__WB_MANIFEST": manifest,
-				preventAssignment: true,
-			}),
+			replace({ "self.__WB_MANIFEST": manifest }),
 			...viteConfig.plugins.filter(p => names.includes(p.name)),
 			...plugins.filter(i => typeof i !== "string") as Plugin[],
 		];
