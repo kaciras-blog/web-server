@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should emit the service worker chunk 1`] = `
-"const n=["entry-images.js","tantrum.gif","test.png"];for(const t of n)console.log(t);
+"const o=["entry-images.js","tantrum.gif","test.png","visible-off.svg"];for(const s of o)console.log(s);
 "
 `;

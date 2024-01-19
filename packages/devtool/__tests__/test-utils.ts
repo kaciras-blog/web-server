@@ -28,6 +28,7 @@ export function testEntry(code: string, name = TE_ID): Plugin {
 const baseConfig: InlineConfig = {
 	logLevel: "silent",
 	build: {
+		assetsInlineLimit: 0,
 		write: false,
 		rollupOptions: {
 			onwarn: () => {},

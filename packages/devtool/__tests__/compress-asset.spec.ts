@@ -14,9 +14,9 @@ function getSize(name: string) {
 }
 
 it("should skip small files", async () => {
-	await runVite({
+	const bundle = await runVite({
 		build: {
-			write: true,
+			write: false,
 			outDir,
 			rollupOptions: {
 				input: "instruction.svg",
@@ -27,7 +27,7 @@ it("should skip small files", async () => {
 		],
 	});
 
-	expect(readdirSync(outDir)).toHaveLength(2);
+	expect(bundle.output).toHaveLength(2);
 });
 
 it("should not skip incompressible files", async () => {

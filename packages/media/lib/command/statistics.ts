@@ -125,4 +125,4 @@ export default async function s(source: string, cache: string) {
 	flushTable("模拟请求，测试对不同浏览器优化的效果 - 图片：");
 }
 
-await s("D:\\blog_data/data/image", "D:\\blog_data/cache/image");
+await s("D:/Coding/Blog/data/data/image", "D:/Coding/Blog/data/cache/image");
