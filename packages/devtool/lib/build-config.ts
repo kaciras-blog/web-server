@@ -92,12 +92,16 @@ export default function (options: ResolvedDevConfig, isBuild: boolean, isSSR: bo
 
 			/*
 			 * Webpack 等旧一代工具常用 `typeof window` 来判断环境，至今仍有许多库使用这种方法，
-			 * 但 Vite 这样以 ESM 为基准的默认不内联它们，所以手动兼容一下，以便 Tree Shaking。
+			 * 但 Vite 默认不内联它们，所以手动兼容一下，以便 Tree Shaking。
 			 *
 			 * 因为开发模式下客户端和 SSR 端共用一套配置，所以只能在构建模式里替换，作为优化手段。
+			 *
+			 * 【注意】此处假定 typeof 后面的一定是全局对象，应该不会有人用它们当变量名吧。
 			 */
-			replace({
+			isBuild && replace({
 				"typeof window": isSSR ? "'undefined'" : "'object'",
+				"typeof document": isSSR ? "'undefined'" : "'object'",
+				"typeof process": isSSR ? "'object'" : "'undefined'",
 			}),
 
 			tsconfigPaths({ loose: true, projects: ["tsconfig.json"] }),
