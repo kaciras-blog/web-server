@@ -61,8 +61,9 @@ export async function download(service: MediaService, ctx: DownloadContext) {
 		parameters: filterFirst(ctx.query),
 	});
 
+	// 跨域默认仅发送域名作为 Referer，Firefox 的隐私增强也不拦截，所以还是可以用的。
 	if (!result) {
-		logger.warn(`请求了不存在的资源：${name}`);
+		logger.warn(`请求了不存在的资源：${name}，Referrer=${ctx.headers.referer}`);
 		return ctx.status = 404;
 	}
 
