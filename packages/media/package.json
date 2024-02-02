@@ -19,7 +19,7 @@
 	"types": "lib/index.ts",
 	"dependencies": {
 		"@kaciras-blog/nativelib": "^0.3.2",
-		"@kaciras/utilities": "^0.12.0",
+		"@kaciras/utilities": "^0.12.1",
 		"cli-progress": "^3.12.0",
 		"execa": "^8.0.1",
 		"gifsicle": "^7.0.1",
