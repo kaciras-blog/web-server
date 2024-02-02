@@ -88,7 +88,7 @@ export function getAsset(bundle: RollupOutput, name: string) {
  * @return 完整路径
  */
 export function resolveFixture(name: string) {
-	return join(__dirname, "fixtures", name);
+	return join(import.meta.dirname, "fixtures", name);
 }
 
 export function useTempDirectory() {
