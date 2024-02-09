@@ -21,7 +21,7 @@
 		"blog-server": "bin/blog-server.js"
 	},
 	"dependencies": {
-		"@kaciras-blog/markdown": "^3.2.1",
+		"@kaciras-blog/markdown": "^3.2.2",
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras/utilities": "^0.12.1",
 		"@koa/multer": "^3.0.2",
@@ -42,7 +42,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^7.1.1",
-		"vue": "^3.4.15"
+		"vue": "^3.4.17"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.6",
