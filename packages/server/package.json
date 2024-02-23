@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@kaciras-blog/markdown": "^3.2.2",
 		"@kaciras-blog/media": "workspace:^",
-		"@kaciras/utilities": "^0.12.1",
+		"@kaciras/utilities": "^0.12.2",
 		"@koa/multer": "^3.0.2",
 		"@koa/router": "^12.0.1",
 		"combined-stream": "^1.0.8",
@@ -48,7 +48,7 @@
 		"@types/combined-stream": "^1.0.6",
 		"@types/hash-sum": "^1.0.2",
 		"@types/http-errors": "^2.0.4",
-		"@types/koa": "^2.14.0",
+		"@types/koa": "^2.15.0",
 		"@types/koa-bodyparser": "^4.3.12",
 		"@types/koa-compress": "^4.0.6",
 		"@types/koa-conditional-get": "^2.0.3",
@@ -61,7 +61,7 @@
 		"@types/replace-ext": "^2.0.2",
 		"@types/supertest": "^6.0.2",
 		"koa-static": "^5.0.0",
-		"memfs": "^4.7.0",
+		"memfs": "^4.7.7",
 		"supertest": "^6.3.4"
 	}
 }
