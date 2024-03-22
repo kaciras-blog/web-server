@@ -14,11 +14,11 @@
 	"devDependencies": {
 		"@kaciras/eslint-config-core": "^2.6.4",
 		"@kaciras/eslint-config-typescript": "^2.6.4",
-		"@vitest/coverage-v8": "^1.3.1",
+		"@vitest/coverage-v8": "^1.4.0",
 		"eslint": "^8.57.0",
 		"mockttp": "^3.10.1",
-		"typescript": "^5.4.2",
-		"vite": "^5.1.6",
-		"vitest": "^1.3.1"
+		"typescript": "^5.4.3",
+		"vite": "^5.2.2",
+		"vitest": "^1.4.0"
 	}
 }
