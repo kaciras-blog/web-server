@@ -101,12 +101,14 @@ export default class CachedService implements MediaService {
 			return null; // 没有该文件的缓存。
 		}
 
-		const attrs = await optimizer.select(items as MediaAttrs[], request);
+		const attrs = optimizer.select(items as MediaAttrs[], request);
 		if (!attrs) {
 			return null; // 缓存中没有适合客户端的。
 		}
-		const file = (await store.getCache(hash, attrs))!;
-		return { ...attrs, file };
+		return {
+			...attrs,
+			file: (await store.getCache(hash, attrs))!,
+		};
 	}
 
 	/**

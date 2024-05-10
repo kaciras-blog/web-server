@@ -1,14 +1,14 @@
 import { Params } from "./MediaService.js";
 import ReadableStream = NodeJS.ReadableStream;
 
-export type Data = string | Buffer;
+export type Data = string | Uint8Array;
 
 /**
  * 资源的数据，比较灵活可以用多种类型。
  *
  * 可以通过 `bodyToBuffer()` 转换成 Buffer。
  */
-export type FileBody = ReadableStream | Buffer | string;
+export type FileBody = ReadableStream | Uint8Array | string;
 
 export interface CacheItem {
 	data: Data;

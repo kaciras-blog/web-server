@@ -80,7 +80,7 @@ function exec(file: string, input: Buffer, args?: string[]) {
 	const options = {
 		maxBuffer: Infinity,
 		input,
-		encoding: null,
+		encoding: "buffer" as const,
 	};
 	return execa(file, args, options)
 		.catch(BadDataError.convert)
