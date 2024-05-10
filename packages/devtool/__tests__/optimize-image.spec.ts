@@ -52,8 +52,8 @@ it("should emit additional files", async () => {
 
 	const bundle = await optimize("test.png");
 
-	// 1 个优化后的，1 个原始图片，1 个入口文件。
-	expect(bundle.output).toHaveLength(3);
+	// 1 个优化后的，1 个原始图片。
+	expect(bundle.output).toHaveLength(2);
 	expectUnoptimized(bundle, "test.png");
 	expect(getAsset(bundle, "test.foo")).toStrictEqual(Buffer.from("111"));
 });
@@ -65,8 +65,7 @@ it("should override original if needed", async () => {
 
 	const bundle = await optimize("test.png");
 
-	// 1 个优化后的，1 个入口文件。
-	expect(bundle.output).toHaveLength(2);
+	expect(bundle.output).toHaveLength(1);
 	expect(getAsset(bundle, "test.png")).toStrictEqual(Buffer.from("111"));
 });
 
@@ -77,8 +76,8 @@ it("should append encoding suffix", async () => {
 
 	const bundle = await optimize("visible-off.svg");
 
-	// 1 个优化后的，1 个原始图片，1 个入口文件。
-	expect(bundle.output).toHaveLength(3);
+	// 1 个优化后的，1 个原始图片。
+	expect(bundle.output).toHaveLength(2);
 	expect(getAsset(bundle, "visible-off.svg.gz")).toStrictEqual(Buffer.from("111"));
 });
 

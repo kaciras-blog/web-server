@@ -27,7 +27,7 @@ it("should skip small files", async () => {
 		],
 	});
 
-	expect(bundle.output).toHaveLength(2);
+	expect(bundle.output).toHaveLength(1);
 });
 
 it("should not skip incompressible files", async () => {
@@ -42,7 +42,7 @@ it("should not skip incompressible files", async () => {
 		],
 	});
 
-	expect(readdirSync(outDir)).toHaveLength(2);
+	expect(readdirSync(outDir)).toHaveLength(1);
 });
 
 it("should compress assets", async () => {
@@ -58,7 +58,7 @@ it("should compress assets", async () => {
 		],
 	});
 
-	expect(readdirSync(outDir)).toHaveLength(4);
+	expect(readdirSync(outDir)).toHaveLength(3);
 
 	const gzipSize = getSize("big.svg.gz");
 	expect(gzipSize).toBeLessThan(bigSvg.length);
@@ -115,5 +115,5 @@ it("should discard files with bad compress ratio", async () => {
 		],
 	});
 
-	expect(readdirSync(outDir)).toHaveLength(2);
+	expect(readdirSync(outDir)).toHaveLength(1);
 });
