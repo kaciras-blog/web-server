@@ -41,7 +41,7 @@
 		"multer": "1.4.5-lts.1",
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
-		"sitemap": "^7.1.1",
+		"sitemap": "^8.0.0",
 		"vue": "^3.4.27"
 	},
 	"devDependencies": {
