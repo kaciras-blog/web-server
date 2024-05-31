@@ -6,7 +6,7 @@ import { buildURL, CachedFetcher } from "../fetch-helper.js";
 import { ResolvedConfig } from "../config.js";
 
 const md = new MarkdownIt();
-md.use(kfmPreset);
+md.use(kfmPreset, { plain: true });
 
 interface FeedContext extends ExtendableContext {
 	params: { type: string };
