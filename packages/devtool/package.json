@@ -25,9 +25,9 @@
 	"dependencies": {
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras-blog/server": "workspace:^",
-		"@rollup/plugin-replace": "^5.0.5",
+		"@rollup/plugin-replace": "^5.0.7",
 		"@sentry/cli": "^2.32.1",
-		"@vitejs/plugin-vue": "^5.0.4",
+		"@vitejs/plugin-vue": "^5.0.5",
 		"autoprefixer": "^10.4.19",
 		"colorette": "^2.0.20",
 		"es-module-lexer": "^1.5.3",
