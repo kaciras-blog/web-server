@@ -66,7 +66,7 @@ export default function SWPlugin(options: ServiceWorkerOptions): Plugin {
 		const used: Plugin[] = [
 			replace({ "self.__WB_MANIFEST": manifest }),
 			...viteConfig.plugins.filter(p => names.includes(p.name)),
-			...plugins.filter(i => typeof i !== "string") as Plugin[],
+			...plugins.filter(i => typeof i !== "string"),
 		];
 
 		return { input: src, plugins: used };

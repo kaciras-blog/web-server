@@ -1,7 +1,7 @@
+import * as consumers from "stream/consumers";
 import { join, parse } from "path";
 import { Presets, SingleBar } from "cli-progress";
 import { LocalFileStore, RasterOptimizer, SVGOptimizer } from "../index.js";
-import { bodyToBuffer } from "../common.js";
 
 const parameters = {};
 
@@ -39,7 +39,7 @@ export default async function (options: any) {
 		if (!file) {
 			throw new Error("文件状态不一致，也可能是程序错误");
 		}
-		const buffer = await bodyToBuffer(file.data);
+		const buffer = await consumers.buffer(file.data);
 
 		/*
 		 * 优化器出异常可能导致生成部分缓存，且外部难以判断是否成功。

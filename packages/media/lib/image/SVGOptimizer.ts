@@ -1,4 +1,4 @@
-import zlib, { InputType } from "zlib";
+import { brotliCompress, gzip, InputType } from "zlib";
 import { promisify } from "util";
 import { Config, optimize } from "svgo";
 import { LoadRequest, SaveRequest } from "../MediaService.js";
@@ -6,8 +6,8 @@ import { MediaAttrs, Optimizer } from "../CachedService.js";
 import { BadDataError } from "../errors.js";
 
 const algorithms = {
-	gzip: promisify<InputType, Buffer>(zlib.gzip),
-	br: promisify<InputType, Buffer>(zlib.brotliCompress),
+	gzip: promisify<InputType, Buffer>(gzip),
+	br: promisify<InputType, Buffer>(brotliCompress),
 };
 
 const THRESHOLD = 2048;
@@ -65,8 +65,7 @@ export default class SVGOptimizer implements Optimizer {
 	select(items: MediaAttrs[], request: LoadRequest) {
 		const { acceptEncodings } = request;
 
-		const encodings = ENCODINGS
-			.filter(e => acceptEncodings.includes(e as any));
+		const encodings = ENCODINGS.filter(e => acceptEncodings.includes(e));
 
 		return [...encodings, undefined]
 			.map(e => items.find(i => i.encoding === e))

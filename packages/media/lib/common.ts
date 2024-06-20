@@ -1,5 +1,4 @@
 import { xxHash3_128 } from "@kaciras-blog/nativelib";
-import { FileBody } from "./FileStore.js";
 
 /**
  * 对数据执行 Hash 运算，返回 20 个字符的 url-safe base64 字符串。
@@ -33,23 +32,4 @@ import { FileBody } from "./FileStore.js";
  */
 export function hashName(buffer: Buffer) {
 	return xxHash3_128(buffer).toString("base64url").slice(0, 20);
-}
-
-/**
- * 将 FileBody 的多种数据类型类型统一转换为 Buffer。如果是字符串则使用 UTF-8 解码。
- */
-export async function bodyToBuffer(body: FileBody) {
-	if (typeof body === "string") {
-		return Buffer.from(body);
-	} else if (Buffer.isBuffer(body)) {
-		return body;
-	}
-
-	// NodeJS 16+ 新出的模块：
-	// return import("stream/consumers").buffer(body);
-	const chunks = [];
-	for await (const chunk of body) {
-		chunks.push(chunk);
-	}
-	return Buffer.concat(chunks as Buffer[]);
 }

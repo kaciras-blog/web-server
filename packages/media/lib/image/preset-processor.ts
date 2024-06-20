@@ -12,7 +12,7 @@ export interface Presets {
 async function getPresetArgs(image: Sharp) {
 	const stats = await image.stats().catch(BadDataError.convert);
 	const metadata = await image.metadata().catch(BadDataError.convert);
-	return [metadata, stats] as [Metadata, Stats];
+	return [metadata, stats] as const;
 }
 
 /**

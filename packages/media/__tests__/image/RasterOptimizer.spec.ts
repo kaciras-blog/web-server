@@ -1,4 +1,4 @@
-import { describe, expect, it, MockedFunction, MockedObject, vi } from "vitest";
+import { describe, expect, it, MockedFunction, vi } from "vitest";
 import { readFixture } from "../test-utils.js";
 import { BadDataError, crop, ProcessorError, resize } from "../../lib/index.js";
 import * as encoder from "../../lib/image/encoder.js";
@@ -75,7 +75,7 @@ describe("check", () => {
 });
 
 describe("buildCache", () => {
-	const { optimizeRaster, encodeWebp, encodeAVIF } = encoder as MockedObject<typeof encoder>;
+	const { optimizeRaster, encodeWebp, encodeAVIF } = vi.mocked(encoder);
 
 	it("should optimize the image", async () => {
 		optimizeRaster.mockResolvedValue(Buffer.alloc(3));
