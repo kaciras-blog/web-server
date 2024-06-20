@@ -42,7 +42,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^8.0.0",
-		"vue": "^3.4.27"
+		"vue": "^3.4.29"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.6",
@@ -61,7 +61,7 @@
 		"@types/replace-ext": "^2.0.2",
 		"@types/supertest": "^6.0.2",
 		"koa-static": "^5.0.0",
-		"memfs": "^4.9.2",
+		"memfs": "^4.9.3",
 		"supertest": "^7.0.0"
 	}
 }
