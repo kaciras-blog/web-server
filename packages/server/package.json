@@ -42,7 +42,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^8.0.0",
-		"vue": "^3.4.30"
+		"vue": "^3.4.31"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.6",
