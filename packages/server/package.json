@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@kaciras-blog/markdown": "^3.3.0",
 		"@kaciras-blog/media": "workspace:^",
-		"@kaciras/utilities": "^1.0.2",
+		"@kaciras/utilities": "^1.0.3",
 		"@koa/multer": "^3.0.2",
 		"@koa/router": "^12.0.1",
 		"combined-stream": "^1.0.8",
@@ -42,7 +42,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^8.0.0",
-		"vue": "^3.4.34"
+		"vue": "^3.4.35"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.6",
@@ -61,7 +61,7 @@
 		"@types/replace-ext": "^2.0.2",
 		"@types/supertest": "^6.0.2",
 		"koa-static": "^5.0.0",
-		"memfs": "^4.9.4",
+		"memfs": "^4.11.1",
 		"supertest": "^7.0.0"
 	}
 }
