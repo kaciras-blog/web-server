@@ -10,6 +10,12 @@ const WebPLossy: WebpOptions = {
 	smartSubsample: true,
 };
 
+const WebPLossless: WebpOptions = {
+	quality: 99,
+	effort: 6,
+	lossless: true,
+};
+
 /**
  * 判断图片数据是否是 GIF 格式，GIF 图片的前三字节为 GIF 这仨字。
  *
@@ -42,7 +48,7 @@ export async function encodeWebp(buffer: Buffer) {
 	const input = sharp(buffer, { failOn: "none" });
 	const task = Promise.all([
 		input.webp(WebPLossy).toBuffer(),
-		input.webp({ lossless: true }).toBuffer(),
+		input.webp(WebPLossless).toBuffer(),
 	]);
 
 	const [lossy, lossless] = await task.catch(BadDataError.convert);
