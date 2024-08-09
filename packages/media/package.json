@@ -34,6 +34,6 @@
 		"@types/gifsicle": "^5.2.2",
 		"@types/mime-types": "^2.1.4",
 		"@types/mozjpeg": "^5.0.2",
-		"file-type": "^19.3.0"
+		"file-type": "^19.4.0"
 	}
 }
