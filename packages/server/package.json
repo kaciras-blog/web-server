@@ -25,7 +25,7 @@
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras/utilities": "^1.0.3",
 		"@koa/multer": "^3.0.2",
-		"@koa/router": "^12.0.1",
+		"@koa/router": "^13.0.0",
 		"combined-stream": "^1.0.8",
 		"feed": "^4.2.2",
 		"hash-sum": "^2.0.0",
@@ -42,7 +42,7 @@
 		"range-parser": "^1.2.1",
 		"replace-ext": "^2.0.0",
 		"sitemap": "^8.0.0",
-		"vue": "^3.4.37"
+		"vue": "^3.4.38"
 	},
 	"devDependencies": {
 		"@types/combined-stream": "^1.0.6",
