@@ -22,13 +22,3 @@ export function resolveFixture(name: string) {
 export function readFixtureText(name: string) {
 	return readFileSync(resolveFixture(name), { encoding: "utf8" });
 }
-
-/**
- * 返回一个Promise，在指定的时间后完成，可用于模拟耗时的操作，或搭配FakeTimers实现异步等待。
- *
- * @param time 时间，毫秒
- * @return 在指定的时间后完成的 Promise
- */
-export function sleep(time = 0) {
-	return new Promise<void>(resolve => setTimeout(resolve, time));
-}
