@@ -21,12 +21,12 @@
 		"@kaciras-blog/nativelib": "^0.3.2",
 		"@kaciras/utilities": "^1.0.4",
 		"cli-progress": "^3.12.0",
-		"execa": "^9.4.0",
+		"execa": "^9.4.1",
 		"gifsicle": "^7.0.1",
 		"log4js": "^6.9.1",
 		"mozjpeg": "^8.0.0",
 		"sharp": "^0.33.5",
-		"simple-statistics": "^7.8.5",
+		"simple-statistics": "^7.8.7",
 		"svgo": "^3.3.2"
 	},
 	"devDependencies": {
@@ -34,6 +34,6 @@
 		"@types/gifsicle": "^5.2.2",
 		"@types/mime-types": "^2.1.4",
 		"@types/mozjpeg": "^5.0.2",
-		"file-type": "^19.5.0"
+		"file-type": "^19.6.0"
 	}
 }
