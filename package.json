@@ -1,6 +1,6 @@
 {
 	"private": true,
-	"author": "Kaciras <Kaciras@outlook.com>",
+	"author": "Kaciras <contact@kaciras.com>",
 	"type": "module",
 	"scripts": {
 		"lint": "eslint --fix --ext .ts .",
