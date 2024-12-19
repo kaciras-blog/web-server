@@ -49,8 +49,7 @@ async function harden(ctx: BaseContext, next: Next) {
 	await next();
 	// ctx.set("Cross-Origin-Embedder-Policy", "require-corp");
 	ctx.set("Cross-Origin-Opener-Policy", "same-origin");
-	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; " +
-		"object-src 'none'; block-all-mixed-content; report-uri " + CSP_REPORT_URI);
+	ctx.set("Content-Security-Policy", "frame-ancestors 'self'; object-src 'none'; report-uri " + CSP_REPORT_URI);
 }
 
 function reportCSP(ctx: ExtendableContext) {
