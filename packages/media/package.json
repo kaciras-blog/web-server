@@ -23,7 +23,7 @@
 		"cli-progress": "^3.12.0",
 		"execa": "^9.5.2",
 		"log4js": "^6.9.1",
-		"simple-statistics": "^7.8.7",
+		"simple-statistics": "^7.8.8",
 		"svgo": "^3.3.2"
 	},
 	"devDependencies": {

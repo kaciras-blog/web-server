@@ -9,13 +9,13 @@
 		"release": "tsc && pnpm publish -r --no-git-checks"
 	},
 	"devDependencies": {
-		"@kaciras/eslint-config-core": "^3.2.1",
-		"@kaciras/eslint-config-typescript": "^3.2.1",
-		"@vitest/coverage-v8": "^3.0.7",
-		"eslint": "^9.21.0",
+		"@kaciras/eslint-config-core": "^3.3.0",
+		"@kaciras/eslint-config-typescript": "^3.3.0",
+		"@vitest/coverage-v8": "^3.0.8",
+		"eslint": "^9.22.0",
 		"mockttp": "^3.16.0",
 		"typescript": "^5.8.2",
-		"vite": "^6.2.0",
-		"vitest": "^3.0.7"
+		"vite": "^6.2.1",
+		"vitest": "^3.0.8"
 	}
 }
