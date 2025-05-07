@@ -27,7 +27,7 @@
 		"@koa/multer": "^3.1.0",
 		"@koa/router": "^13.1.0",
 		"combined-stream": "^1.0.8",
-		"feed": "^4.2.2",
+		"feed": "^5.0.0",
 		"hash-sum": "^2.0.0",
 		"http-errors": "^2.0.0",
 		"koa": "^3.0.0",
@@ -61,7 +61,7 @@
 		"@types/replace-ext": "^2.0.2",
 		"@types/supertest": "^6.0.3",
 		"koa-static": "^5.0.0",
-		"memfs": "^4.17.0",
+		"memfs": "^4.17.1",
 		"supertest": "^7.1.0"
 	}
 }
