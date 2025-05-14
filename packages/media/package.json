@@ -21,7 +21,7 @@
 		"@kaciras-blog/nativelib": "^0.3.2",
 		"@kaciras/utilities": "^1.0.4",
 		"cli-progress": "^3.12.0",
-		"execa": "^9.5.2",
+		"execa": "^9.5.3",
 		"log4js": "^6.9.1",
 		"simple-statistics": "^7.8.8",
 		"svgo": "^3.3.2"
