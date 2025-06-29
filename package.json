@@ -12,10 +12,10 @@
 		"@kaciras/eslint-config-core": "^3.3.0",
 		"@kaciras/eslint-config-typescript": "^3.3.0",
 		"@vitest/coverage-v8": "^3.2.4",
-		"eslint": "^9.29.0",
+		"eslint": "^9.30.0",
 		"mockttp": "^4.0.1",
 		"typescript": "^5.8.3",
-		"vite": "^6.3.5",
+		"vite": "^7.0.0",
 		"vitest": "^3.2.4"
 	}
 }
