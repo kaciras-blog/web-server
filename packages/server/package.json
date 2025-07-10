@@ -25,7 +25,7 @@
 		"@kaciras-blog/media": "workspace:^",
 		"@kaciras/utilities": "^1.0.4",
 		"@koa/multer": "^4.0.0",
-		"@koa/router": "^13.1.0",
+		"@koa/router": "^13.1.1",
 		"combined-stream": "^1.0.8",
 		"feed": "^5.1.0",
 		"hash-sum": "^2.0.0",
@@ -62,6 +62,6 @@
 		"@types/supertest": "^6.0.3",
 		"koa-static": "^5.0.0",
 		"memfs": "^4.17.2",
-		"supertest": "^7.1.1"
+		"supertest": "^7.1.3"
 	}
 }
